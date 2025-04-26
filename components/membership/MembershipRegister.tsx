@@ -25,7 +25,7 @@ export default function MembershipRegister() {
       setIsLoading(false)
       toast({
         title: "Registration successful",
-        description: "Welcome to Destiny Builders! Check your email for verification.",
+        description: "Please complete your verification to activate your account.",
       })
       router.push("/membership/verification")
     }, 1500)
@@ -100,7 +100,7 @@ export default function MembershipRegister() {
       </Button>
 
       <p className="text-sm text-muted-foreground">
-        By clicking “Register”, you agree to our{" "}
+        By clicking "Register", you agree to our{" "}
         <Link href="/terms" className="text-green-600 hover:underline">
           Terms of Service
         </Link>{" "}

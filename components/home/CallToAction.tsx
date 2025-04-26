@@ -11,13 +11,13 @@ export default function CallToAction() {
           to get involved with Destiny Builders.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" className="bg-white text-green-700 hover:bg-gray-100">
+          <Button asChild size="lg" className="bg-white text-green-700 hover:bg-green-600 hover:text-white">
             <Link href="/membership/join">Become a Member</Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-green-600">
+          <Button asChild size="lg" variant="outline" className="border-white bg-green-400 text-gray-900 hover:text-white hover:bg-green-600">
             <Link href="/donate">Make a Donation</Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-green-600">
+          <Button asChild size="lg" variant="outline" className="border-white text-gray-900 bg-green-400 hover:text-white hover:bg-green-600">
             <Link href="/membership/volunteer">Volunteer With Us</Link>
           </Button>
         </div>

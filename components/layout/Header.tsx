@@ -46,7 +46,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-gray-100/95 backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <Image src="/logo.svg" alt="Destiny Builders Logo" width={50} height={50} className="h-10 w-auto" />
@@ -62,7 +62,7 @@ export default function Header() {
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {whoWeAreLinks.map((link) => (
-                      <ListItem key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
@@ -72,7 +72,7 @@ export default function Header() {
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {resourcesLinks.map((link) => (
-                      <ListItem key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
@@ -82,13 +82,13 @@ export default function Header() {
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {membershipLinks.map((link) => (
-                      <ListItem key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/donate" legacyBehavior passHref>
+                <Link href="/donate"  legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>Donate</NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -102,7 +102,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button asChild variant="default" className="hidden md:inline-flex bg-green-600 hover:bg-green-700">
+          <Button asChild variant="default" className="hidden md:inline-flex border border-green-700 hover:bg-green-700">
             <Link href="/membership/portal">Membership Portal</Link>
           </Button>
 
@@ -123,8 +123,8 @@ export default function Header() {
             <MobileNavLink href="/donate" title="Donate" />
             <MobileNavLink href="/contact" title="Contact Us" />
             <div className="pt-4">
-              <Button asChild className="w-full bg-green-600 hover:bg-green-700">
-                <Link href="/membership/portal">Membership Portal</Link>
+              <Button asChild className="w-full border border-green-700   hover:bg-green-700">
+                <Link href="/membership/portal" >Membership Portal</Link>
               </Button>
             </div>
           </div>
@@ -141,6 +141,7 @@ const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWit
         <NavigationMenuLink asChild>
           <Link
             ref={ref}
+            href={props.href || "#"}
             className={cn(
               "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
               className,
@@ -161,7 +162,7 @@ function MobileNavLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
-      className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
+      className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-gray-400 hover:text-accent-foreground"
     >
       {title}
     </Link>
