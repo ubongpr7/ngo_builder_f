@@ -1,151 +1,215 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import {
+  BarChart3,
+  Calendar,
+  ClipboardList,
+  FileText,
+  Home,
+  LayoutDashboard,
+  MessageSquare,
+  Package,
+  Settings,
+  Users,
+  Wallet,
+  FolderOpen,
+  PieChart,
+  Camera,
+  BookOpen,
+  Heart,
+  Building,
+  ChevronDown,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Users, FileText, Folder, Calendar, Settings, LogOut, Package, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-const sidebarItems = [
-  {
-    title: "Dashboard",
-    href: "/membership/dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    title: "My Profile",
-    href: "/membership/dashboard/profile",
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    title: "Projects",
-    href: "/membership/dashboard/projects",
-    icon: <Folder className="h-5 w-5" />,
-  },
-  {
-    title: "Reports",
-    href: "/membership/dashboard/reports",
-    icon: <FileText className="h-5 w-5" />,
-  },
-  {
-    title: "Inventory",
-    href: "/membership/dashboard/inventory",
-    icon: <Package className="h-5 w-5" />,
-  },
-  {
-    title: "Assets",
-    href: "/membership/dashboard/inventory/assets",
-    icon: <Package className="h-5 w-5" />,
-  },
-  {
-    title: "Events",
-    href: "/membership/dashboard/events",
-    icon: <Calendar className="h-5 w-5" />,
-  },
-  {
-    title: "Settings",
-    href: "/membership/dashboard/settings",
-    icon: <Settings className="h-5 w-5" />,
-  },
-]
 
 export default function DashboardSidebar() {
   const pathname = usePathname()
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const toggleButtonRef = useRef<HTMLButtonElement>(null)
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
+    projects: true,
+    inventory: false,
+    finance: false,
+    reporting: false,
+  })
 
-  // Close sidebar when clicking outside or pressing escape
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node) &&
-        toggleButtonRef.current &&
-        !toggleButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsMobileOpen(false)
-      }
-    }
+  const toggleMenu = (menu: string) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [menu]: !prev[menu],
+    }))
+  }
 
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsMobileOpen(false)
-      }
-    }
+  const isActive = (path: string) => {
+    return pathname === path
+  }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    document.addEventListener("keydown", handleEscapeKey)
+  const NavItem = ({
+    href,
+    icon: Icon,
+    children,
+  }: {
+    href: string
+    icon: React.ElementType
+    children: React.ReactNode
+  }) => (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-gray-100",
+        isActive(href) ? "bg-gray-100 text-green-700 font-medium" : "text-gray-600",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{children}</span>
+    </Link>
+  )
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener("keydown", handleEscapeKey)
-    }
-  }, [])
-
-  // Close sidebar when route changes on mobile
-  useEffect(() => {
-    setIsMobileOpen(false)
-  }, [pathname])
+  const NavSection = ({
+    title,
+    name,
+    icon: Icon,
+    children,
+  }: {
+    title: string
+    name: string
+    icon: React.ElementType
+    children: React.ReactNode
+  }) => (
+    <div className="space-y-1">
+      <Button
+        variant="ghost"
+        className="w-full justify-between px-3 py-2 text-sm font-medium"
+        onClick={() => toggleMenu(name)}
+      >
+        <div className="flex items-center gap-3">
+          <Icon className="h-4 w-4" />
+          <span>{title}</span>
+        </div>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", openMenus[name] ? "rotate-180" : "")} />
+      </Button>
+      {openMenus[name] && <div className="ml-6 space-y-1">{children}</div>}
+    </div>
+  )
 
   return (
-    <>
-      {/* Mobile Toggle Button */}
-      <div className="md:hidden fixed top-4 left-4 z-30">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          ref={toggleButtonRef}
-          aria-label="Toggle sidebar"
-        >
-          {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      {/* Mobile Overlay */}
-      {isMobileOpen && <div className="md:hidden fixed inset-0 bg-black/20 z-20" aria-hidden="true" />}
-
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef}
-        className={cn(
-          "fixed md:sticky top-0 left-0 z-20 flex flex-col w-64 bg-white border-r h-screen transition-transform duration-300 ease-in-out",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-        )}
-      >
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-bold text-green-700">Member Portal</h2>
-          <p className="text-sm text-gray-500">Destiny Builders</p>
-        </div>
-
-        <div className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
-          {sidebarItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                pathname === item.href ? "bg-green-50 text-green-700" : "text-gray-700 hover:bg-gray-100",
-              )}
-            >
-              {item.icon}
-              <span className="ml-3">{item.title}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="p-4 border-t">
-          <Link
-            href="/logout"
-            className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="ml-3">Logout</span>
+    <div className="hidden border-r bg-white lg:block lg:w-64">
+      <div className="flex h-full flex-col gap-2">
+        <div className="flex h-14 items-center border-b px-4">
+          <Link href="/membership/dashboard" className="flex items-center gap-2 font-semibold">
+            <LayoutDashboard className="h-5 w-5 text-green-600" />
+            <span>Destiny Builders</span>
           </Link>
         </div>
+        <div className="flex-1 overflow-auto py-2 px-4">
+          <nav className="grid gap-1">
+            <NavItem href="/membership/dashboard" icon={Home}>
+              Overview
+            </NavItem>
+
+            <NavSection title="Projects" name="projects" icon={FolderOpen}>
+              <NavItem href="/membership/dashboard/projects" icon={ClipboardList}>
+                All Projects
+              </NavItem>
+              <NavItem href="/membership/dashboard/projects/daily-updates" icon={FileText}>
+                Daily Updates
+              </NavItem>
+              <NavItem href="/membership/dashboard/projects/tasks" icon={ClipboardList}>
+                Tasks
+              </NavItem>
+              <NavItem href="/membership/dashboard/projects/milestones" icon={Calendar}>
+                Milestones
+              </NavItem>
+              <NavItem href="/membership/dashboard/projects/teams" icon={Users}>
+                Teams
+              </NavItem>
+            </NavSection>
+
+            <NavSection title="Inventory" name="inventory" icon={Package}>
+              <NavItem href="/membership/dashboard/inventory" icon={BarChart3}>
+                Overview
+              </NavItem>
+              <NavItem href="/membership/dashboard/inventory/assets" icon={Package}>
+                Assets
+              </NavItem>
+              <NavItem href="/membership/dashboard/inventory/maintenance" icon={Settings}>
+                Maintenance
+              </NavItem>
+              <NavItem href="/membership/dashboard/inventory/audits" icon={ClipboardList}>
+                Audits
+              </NavItem>
+            </NavSection>
+
+            <NavSection title="Finance" name="finance" icon={Wallet}>
+              <NavItem href="/membership/dashboard/finance" icon={BarChart3}>
+                Overview
+              </NavItem>
+              <NavItem href="/membership/dashboard/finance/donations" icon={Heart}>
+                Donations
+              </NavItem>
+              <NavItem href="/membership/dashboard/finance/expenses" icon={FileText}>
+                Expenses
+              </NavItem>
+              <NavItem href="/membership/dashboard/finance/grants" icon={FileText}>
+                Grants
+              </NavItem>
+              <NavItem href="/membership/dashboard/finance/budgets" icon={PieChart}>
+                Budgets
+              </NavItem>
+            </NavSection>
+
+            <NavSection title="Reporting" name="reporting" icon={FileText}>
+              <NavItem href="/membership/dashboard/reporting" icon={BarChart3}>
+                Overview
+              </NavItem>
+              <NavItem href="/membership/dashboard/reporting/project-reports" icon={FileText}>
+                Project Reports
+              </NavItem>
+              <NavItem href="/membership/dashboard/reporting/financial-reports" icon={PieChart}>
+                Financial Reports
+              </NavItem>
+              <NavItem href="/membership/dashboard/reporting/impact-metrics" icon={BarChart3}>
+                Impact Metrics
+              </NavItem>
+            </NavSection>
+
+            <NavItem href="/membership/dashboard/events" icon={Calendar}>
+              Events
+            </NavItem>
+            <NavItem href="/membership/dashboard/members" icon={Users}>
+              Members
+            </NavItem>
+            <NavItem href="/membership/dashboard/volunteers" icon={Heart}>
+              Volunteers
+            </NavItem>
+            <NavItem href="/membership/dashboard/partners" icon={Building}>
+              Partners
+            </NavItem>
+            <NavItem href="/membership/dashboard/media" icon={Camera}>
+              Media Gallery
+            </NavItem>
+            <NavItem href="/membership/dashboard/blog" icon={BookOpen}>
+              Blog
+            </NavItem>
+            <NavItem href="/membership/dashboard/messages" icon={MessageSquare}>
+              Messages
+            </NavItem>
+          </nav>
+        </div>
+        <div className="mt-auto border-t p-4">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+            <div className="h-8 w-8 rounded-full bg-gray-200"></div>
+            <div>
+              <div className="text-sm font-medium">John Doe</div>
+              <div className="text-xs text-gray-500">Project Manager</div>
+            </div>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   )
 }

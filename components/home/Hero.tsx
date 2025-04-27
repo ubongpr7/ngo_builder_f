@@ -23,7 +23,7 @@ export default function Hero() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Button asChild size="lg" className="bg-green-600 hover:bg-green-700">
-                <Link href="/membership/join">Join Our Community</Link>
+                <Link href="/membership/join" className="text-gray-900">Join Our Community</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link href="/about">Learn More</Link>
