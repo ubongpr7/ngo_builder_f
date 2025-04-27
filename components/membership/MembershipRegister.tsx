@@ -10,9 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { Eye, EyeOff } from "lucide-react"
 
 export default function MembershipRegister() {
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -29,6 +32,14 @@ export default function MembershipRegister() {
       })
       router.push("/membership/verification")
     }, 1500)
+  }
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword)
   }
 
   return (
@@ -87,15 +98,35 @@ export default function MembershipRegister() {
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" required />
+        <div className="relative">
+          <Input id="password" type={showPassword ? "text" : "password"} required />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={togglePasswordVisibility}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input id="confirmPassword" type="password" required />
+        <div className="relative">
+          <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} required />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={toggleConfirmPasswordVisibility}
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+          >
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
 
-      <Button type="submit" className="w-full bg-green-600 text-gray-100 hover:bg-green-700" disabled={isLoading}>
+      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
         {isLoading ? "Registering..." : "Register"}
       </Button>
 
@@ -105,7 +136,7 @@ export default function MembershipRegister() {
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="text-green-600  hover:underline">
+        <Link href="/privacy" className="text-green-600 hover:underline">
           Privacy Policy
         </Link>
         .
