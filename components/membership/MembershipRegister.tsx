@@ -95,7 +95,7 @@ export default function MembershipRegister() {
         <Input id="confirmPassword" type="password" required />
       </div>
 
-      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
+      <Button type="submit" className="w-full bg-green-600 text-gray-100 hover:bg-green-700" disabled={isLoading}>
         {isLoading ? "Registering..." : "Register"}
       </Button>
 
@@ -105,7 +105,7 @@ export default function MembershipRegister() {
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="text-green-600 hover:underline">
+        <Link href="/privacy" className="text-green-600  hover:underline">
           Privacy Policy
         </Link>
         .
