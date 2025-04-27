@@ -141,3 +141,8 @@ select {
   @apply bg-white text-black border border-gray-300 rounded-md p-2;
   appearance: none; /* Remove native dropdown arrow for custom styling (optional) */
 }
+
+option {
+  background-color: bg-gray-50; /* force option bg for supporting browsers */
+  color: text-gray-900;
+}
