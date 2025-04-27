@@ -5,20 +5,67 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
 
   // Define public paths that don't require authentication
-  const isPublicPath = path === "/login" || path === "/register" || path === "/forgot-password"
+  const publicPaths = [
+    // Home page
+    "/",
+
+    // Authentication related
+    "/membership/portal",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+
+    // About section
+    "/about",
+    "/vision-mission",
+    "/core-values",
+    "/history",
+    "/leadership",
+
+    // Resources section
+    "/resources",
+    "/resources/publications",
+    "/resources/reports",
+    "/resources/media",
+
+    // Blog section
+    "/blog",
+    "/blog/category",
+
+    // Information pages
+    "/faqs",
+    "/contact",
+    "/donate",
+    "/privacy-policy",
+    "/terms-of-service",
+
+    // Membership information pages
+    "/membership/benefits",
+    "/membership/join",
+    "/membership/tiers",
+    "/membership/volunteer",
+    "/membership/partner",
+
+    // Verification page (accessible after registration)
+    "/membership/verification",
+  ]
+
+  // Check if the current path starts with any of the public paths
+  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
 
   // Get the token from the cookies
   const token = request.cookies.get("accessToken")?.value || ""
 
   // Redirect logic
-  if (isPublicPath && token) {
-    // If user is logged in and tries to access a public path, redirect to dashboard
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+  if (isPublicPath && token && path !== "/membership/verification") {
+    // If user is logged in and tries to access a public path (except verification),
+    // redirect to dashboard
+    return NextResponse.redirect(new URL("/membership/dashboard", request.url))
   }
 
   if (!isPublicPath && !token) {
     // If user is not logged in and tries to access a protected path, redirect to login
-    return NextResponse.redirect(new URL("/login", request.url))
+    return NextResponse.redirect(new URL("/membership/portal", request.url))
   }
 
   return NextResponse.next()
@@ -26,5 +73,8 @@ export function middleware(request: NextRequest) {
 
 // Configure which paths should be processed by the middleware
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    // Match all paths except static files, api routes, and specific excluded paths
+    "/((?!api|_next/static|_next/image|favicon.ico|images|assets|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)",
+  ],
 }
