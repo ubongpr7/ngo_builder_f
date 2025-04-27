@@ -8,10 +8,8 @@ export const metadata: Metadata = {
 
 export default function VerificationPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-center mb-6">
-        Please complete your verification to activate your Destiny Builders membership
-      </h1>
+    <div className="w-full px-2 sm:px-4 py-4 sm:py-8">
+      <h1 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 px-2">Complete your verification</h1>
       <KYCVerificationForm />
     </div>
   )
