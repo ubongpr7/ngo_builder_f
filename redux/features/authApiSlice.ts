@@ -44,10 +44,10 @@ const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     djoserVerifyAccount: builder.mutation({
-      query: ({ uuid, token }) => ({
+      query: ({ uid, token }) => ({
         url: "/auth-api/users/activation/",
         method: "POST",
-        body: { uuid, token },
+        body: { uid, token },
       }),
     }),
 
