@@ -58,6 +58,7 @@ const authApiSlice = apiSlice.injectEndpoints({
         // body: { id, },
       }),
     }),
+    
     register: builder.mutation({
       query: ({  email, password, re_password }) => ({
         url: "/auth-api/users/",
@@ -77,6 +78,23 @@ const authApiSlice = apiSlice.injectEndpoints({
         url: "/jwt/verify/",
         method: "POST",
       }),
+    }),
+    resendCode: builder.mutation<void, { email: string }>({
+      query: (data) => ({
+        url: '/api/v1/accounts/verify/',
+        method: 'GET',
+        params: {  
+          email: data.email
+        }
+      })
+    }),
+    
+    verifyCode: builder.mutation<void, { email: string; code: string }>({
+      query: (data) => ({
+        url: '/api/v1/accounts/verify/',
+        method: 'POST',
+        body: data
+      })
     }),
     logout: builder.mutation({
       query: () => ({
@@ -116,6 +134,7 @@ export const {
   useGetUserActiveStatusQuery,
   useRegisterMutation,
   useVerifyMutation,
+  useVerifyCodeMutation,
   useDjoserVerifyAccountMutation,
   useGetverifyAccountMutation,
   useLogoutMutation,
