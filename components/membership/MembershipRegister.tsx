@@ -9,29 +9,41 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
+import { toast } from "react-toastify"
+import { setCookie } from "cookies-next";
+import { useState, useMemo } from 'react';
 
+
+import { Eye, EyeOff } from "lucide-react"
+import { useRegisterMutation } from "@/redux/features/authApiSlice"
+import { ErrorResponse, RegisterResponse } from "../interfaces/authResponse"
 export default function MembershipRegister() {
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
+  const [registerUser, { isLoading }] = useRegisterMutation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsLoading(true)
+    const formData = {
+      first_name: (e.currentTarget.elements.namedItem("firstName") as HTMLInputElement).value,
+      last_ame: (e.currentTarget.elements.namedItem("lastName") as HTMLInputElement).value,
+      email: (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value,
+      membership_type: (e.currentTarget.elements.namedItem("membershipType") as HTMLInputElement)?.value || "",
+      password: (e.currentTarget.elements.namedItem("password") as HTMLInputElement).value,
+      confirmPassword: (e.currentTarget.elements.namedItem("confirmPassword") as HTMLInputElement).value,
+    };
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      toast({
-        title: "Registration successful",
-        description: "Please complete your verification to activate your account.",
-      })
-      router.push("/membership/verification")
-    }, 1500)
+    try {
+      const userData = await registerUser(formData).unwrap() as RegisterResponse;
+      toast.success("Registration successful! Redirecting...");
+      setCookie("userID", userData.id);
+      router.push("/accounts/verify");
+    } catch (error) {
+      const apiError = error as ErrorResponse;
+      const errorMessage = apiError.data?.detail || "Registration failed";
+      toast.error(errorMessage);
+    }
   }
 
   const togglePasswordVisibility = () => {

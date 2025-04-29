@@ -58,10 +58,10 @@ const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     register: builder.mutation({
-      query: ({ first_name, email, password, re_password }) => ({
+      query: ({ first_name,last_ame, email,membership_type, password, re_password }) => ({
         url: "/api/v1/accounts/register/",
         method: "POST",
-        body: { first_name, email, password, re_password },
+        body: { first_name,last_ame,membership_type: "general", email, password, re_password },
       }),
     }),
     verify: builder.mutation({
