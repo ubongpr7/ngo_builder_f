@@ -48,7 +48,7 @@ export function middleware(request: NextRequest) {
     "/membership/volunteer",
     "/membership/partner",
     
-    'kyc',
+    '/kyc',
     'admin/member-verification',
 
     // Verification page (accessible after registration)
