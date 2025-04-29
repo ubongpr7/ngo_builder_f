@@ -14,6 +14,7 @@ export function middleware(request: NextRequest) {
     "/forgot-password",
     "/reset-password",
     "/verify-email",
+    "/accounts/verify",
 
     // About section
     "/about",
