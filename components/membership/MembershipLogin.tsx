@@ -178,7 +178,7 @@ export default function VerificationLoginForm() {
 
         <Button 
           type="submit" 
-          className="w-full gap-2"
+          className="w-full gap-2 bg-green-400 hover:bg-green-500 texy-gray-900"
           disabled={isLoading}
         >
           {isLoading && <RotateCw className="h-4 w-4 animate-spin" />}

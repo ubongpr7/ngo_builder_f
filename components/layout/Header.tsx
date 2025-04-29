@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
 import { Menu, X } from "lucide-react"
+import { ToastContainer } from "react-toastify";
 
 const whoWeAreLinks = [
   { title: "About Us", href: "/about" },
@@ -52,6 +53,8 @@ export default function Header() {
           <Image src="/logo.svg" alt="Destiny Builders Logo" width={50} height={50} className="h-10 w-auto" />
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
+
+        <ToastContainer position="top-right" autoClose={3000} />
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex">
