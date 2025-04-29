@@ -1,85 +1,105 @@
+// middleware.ts
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
+  const accessToken = request.cookies.get("accessToken")?.value || ""
+  const userId = request.cookies.get("userID")?.value || ""
 
-  // Define public paths that don't require authentication
+  // Public paths that don't require authentication
   const publicPaths = [
-    // Home page
     "/",
-
-    // Authentication related
+    "/activate",
+    "/accounts/verify",
     "/membership/portal",
     "/forgot-password",
     "/reset-password",
     "/verify-email",
-    "/accounts/verify",
-
-    // About section
     "/about",
     "/vision-mission",
     "/core-values",
     "/history",
     "/leadership",
-
-    // Resources section
     "/resources",
     "/resources/publications",
     "/resources/reports",
     "/resources/media",
-
-    // Blog section
     "/blog",
     "/blog/category",
-
-    // Information pages
     "/faqs",
     "/contact",
     "/donate",
     "/privacy-policy",
     "/terms-of-service",
-
-
-    // Membership information pages
     "/membership/benefits",
     "/membership/join",
     "/membership/tiers",
     "/membership/volunteer",
     "/membership/partner",
-    
-    '/kyc',
-    'admin/member-verification',
-
-    // Verification page (accessible after registration)
+    "/kyc",
+    "/admin/member-verification",
     "/membership/verification",
   ]
 
-  // Check if the current path starts with any of the public paths
-  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
+  // Paths accessible even with valid token
+  const allowedWithTokenPaths = [
+    "/activate",
+    "/accounts/verify",
+    "/logout",
+    "/api/auth",
+  ]
 
-  // Get the token from the cookies
-  const token = request.cookies.get("accessToken")?.value || ""
+  // Check path types
+  const isPublicPath = publicPaths.some(publicPath => 
+    path === publicPath || path.startsWith(`${publicPath}/`)
+  )
 
-  // Redirect logic
-  if (isPublicPath && token && path !== "/membership/verification") {
-    // If user is logged in and tries to access a public path (except verification),
-    // redirect to dashboard
+  const isAllowedWithToken = allowedWithTokenPaths.some(allowedPath =>
+    path.startsWith(allowedPath)
+  )
+
+  // Handle activation paths
+  const isActivationPath = path.startsWith("/activate")
+  const isDirectActivationLink = path.match(/^\/activate\/[^\/]+\/[^\/]+$/)
+
+  // Special case: Direct activation links (from email)
+  if (isDirectActivationLink) {
+    // Allow access without any cookies
+    if (!accessToken && !userId) return NextResponse.next()
+    
+    // If logged in but accessing activation link, allow completion
+    if (accessToken) return NextResponse.next()
+  }
+
+  // Special case: Verification status page
+  if (path.startsWith("/accounts/verify")) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/membership/portal", request.url))
+    }
+    return NextResponse.next()
+  }
+
+  // Redirect logged-in users from public paths
+  if (isPublicPath && accessToken && !isAllowedWithToken) {
     return NextResponse.redirect(new URL("/membership/dashboard", request.url))
   }
 
-  if (!isPublicPath && !token) {
-    // If user is not logged in and tries to access a protected path, redirect to login
+  // Protect private paths from unauthenticated users
+  if (!isPublicPath && !accessToken && !isAllowedWithToken) {
+    return NextResponse.redirect(new URL("/membership/portal", request.url))
+  }
+
+  // Final check for activation paths
+  if (isActivationPath && !isDirectActivationLink && !userId) {
     return NextResponse.redirect(new URL("/membership/portal", request.url))
   }
 
   return NextResponse.next()
 }
 
-// Configure which paths should be processed by the middleware
 export const config = {
   matcher: [
-    // Match all paths except static files, api routes, and specific excluded paths
     "/((?!api|_next/static|_next/image|favicon.ico|images|assets|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)",
   ],
 }
