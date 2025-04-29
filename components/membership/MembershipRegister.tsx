@@ -58,10 +58,6 @@ export default function MembershipRegister() {
         <Input id="email" type="email" placeholder="name@example.com" required />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input id="phone" type="tel" placeholder="+234 123 456 7890" required />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
