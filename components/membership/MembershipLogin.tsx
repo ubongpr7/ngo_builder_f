@@ -11,7 +11,7 @@ import { Eye, EyeOff, RotateCw } from "lucide-react"
 import { 
   useLoginMutation, 
   useVerifyCodeMutation,
-  useGetverifyAccountMutation
+  useResendCodeMutation
 } from '@/redux/features/authApiSlice'
 
 interface LoginFormData {
@@ -29,7 +29,7 @@ export default function VerificationLoginForm() {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginFormData>()
   
   // API mutations
-  const [sendCode] = useGetverifyAccountMutation()
+  const [sendCode] = useResendCodeMutation()
   const [verifyCode] = useVerifyCodeMutation()
   const [login, { isLoading }] = useLoginMutation()
 
@@ -182,7 +182,7 @@ export default function VerificationLoginForm() {
           disabled={isLoading}
         >
           {isLoading && <RotateCw className="h-4 w-4 animate-spin" />}
-          {showCodeInput ? "Verify Code" : "Send Verification Code"}
+          {showCodeInput ? "Verify Code" : "Login"}
         </Button>
 
         {showCodeInput && (

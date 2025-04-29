@@ -51,14 +51,6 @@ const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    getverifyAccount: builder.mutation({
-      query: ({ id }) => ({
-        url: `/api/v1/accounts/verify/?id=${id}`,
-        method: "GET",
-        // body: { id, },
-      }),
-    }),
-    
     register: builder.mutation({
       query: ({  email, password, re_password }) => ({
         url: "/auth-api/users/",
@@ -136,7 +128,7 @@ export const {
   useVerifyMutation,
   useVerifyCodeMutation,
   useDjoserVerifyAccountMutation,
-  useGetverifyAccountMutation,
+  useResendCodeMutation,
   useLogoutMutation,
   useActivationMutation,
   useResetPasswordMutation,
