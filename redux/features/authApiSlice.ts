@@ -64,6 +64,13 @@ const authApiSlice = apiSlice.injectEndpoints({
         body: {  email, password, re_password },
       }),
     }),
+
+    getUserActiveStatus: builder.query({
+      query: (user_id) => ({
+        url: `api/v1/accounts/check-active${user_id}`
+      }),
+    }),
+    
     verify: builder.mutation({
       query: () => ({
         url: "/jwt/verify/",
@@ -105,6 +112,7 @@ export const {
   useRetrieveUserQuery,
   useSocialAuthenticateMutation,
   useLoginMutation,
+  useGetUserActiveStatusQuery,
   useRegisterMutation,
   useVerifyMutation,
   useVerifyAccountMutation,
