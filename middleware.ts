@@ -39,12 +39,16 @@ export function middleware(request: NextRequest) {
     "/privacy-policy",
     "/terms-of-service",
 
+
     // Membership information pages
     "/membership/benefits",
     "/membership/join",
     "/membership/tiers",
     "/membership/volunteer",
     "/membership/partner",
+    
+    'kyc',
+    'admin/member-verification',
 
     // Verification page (accessible after registration)
     "/membership/verification",
