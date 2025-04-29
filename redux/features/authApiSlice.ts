@@ -67,7 +67,7 @@ const authApiSlice = apiSlice.injectEndpoints({
 
     getUserActiveStatus: builder.query({
       query: (user_id) => ({
-        url: `api/v1/accounts/check-active/${user_id}`
+        url: `api/v1/accounts/check-active/${user_id}/`
       }),
     }),
     
