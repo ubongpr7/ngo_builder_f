@@ -34,7 +34,7 @@ export default function ActivationPage({
         setCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(interval)
-            router.push('/')
+            router.push('/membership/portal')
             return 0
           }
           return prev - 1

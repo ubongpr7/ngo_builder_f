@@ -18,7 +18,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     if (data?.is_active) {
       toast.success('Email verified! Redirecting to dashboard...')
-      router.push('/dashboard')
+      router.push('/membership/portal')
     }
   }, [data, router])
 
