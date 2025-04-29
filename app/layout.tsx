@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer"
 import { ThemeProvider } from "@/components/theme-provider"
 import NextTopLoader from 'nextjs-toploader';
 import StoreProvider from "@/redux/provider"
+import { ToastContainer } from "react-toastify"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -23,6 +24,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
       <NextTopLoader />
+      <ToastContainer position="top-right" autoClose={3000} />
+
       <StoreProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <div className="text-gray-900 bg-gray-50 flex min-h-screen flex-col">

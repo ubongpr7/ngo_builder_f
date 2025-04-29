@@ -54,7 +54,6 @@ export default function Header() {
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
 
-        <ToastContainer position="top-right" autoClose={3000} />
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex">
