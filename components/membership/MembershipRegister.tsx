@@ -25,12 +25,9 @@ export default function MembershipRegister() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = {
-      first_name: (e.currentTarget.elements.namedItem("firstName") as HTMLInputElement).value,
-      last_ame: (e.currentTarget.elements.namedItem("lastName") as HTMLInputElement).value,
       email: (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value,
-      membership_type: (e.currentTarget.elements.namedItem("membershipType") as HTMLInputElement)?.value || "",
       password: (e.currentTarget.elements.namedItem("password") as HTMLInputElement).value,
-      confirmPassword: (e.currentTarget.elements.namedItem("confirmPassword") as HTMLInputElement).value,
+      re_password: (e.currentTarget.elements.namedItem("confirmPassword") as HTMLInputElement).value,
     };
 
     try {
@@ -55,17 +52,7 @@ export default function MembershipRegister() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
-          <Input id="firstName" placeholder="John" required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
-          <Input id="lastName" placeholder="Doe" required />
-        </div>
-      </div>
-
+      
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" type="email" placeholder="name@example.com" required />
@@ -74,37 +61,6 @@ export default function MembershipRegister() {
       <div className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
         <Input id="phone" type="tel" placeholder="+234 123 456 7890" required />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="country">Country</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select your country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="nigeria">Nigeria</SelectItem>
-            <SelectItem value="ghana">Ghana</SelectItem>
-            <SelectItem value="kenya">Kenya</SelectItem>
-            <SelectItem value="southafrica">South Africa</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="membershipType">Membership Type</Label>
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="Select membership type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="general">General Member</SelectItem>
-            <SelectItem value="volunteer">Volunteer</SelectItem>
-            <SelectItem value="partner">Strategic Partner</SelectItem>
-            <SelectItem value="ceo">Partnering CEO</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="space-y-2">
