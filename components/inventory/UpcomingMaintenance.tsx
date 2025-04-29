@@ -1,66 +1,84 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Calendar, PenToolIcon as Tool } from "lucide-react"
+import Link from "next/link"
 
 export default function UpcomingMaintenance() {
-  // This would be fetched from the API in a real application
-  const maintenanceTasks = [
+  // Sample data - would come from your API
+  const maintenanceItems = [
     {
       id: 1,
-      asset: "Generator",
-      dueDate: "2023-10-20",
+      assetName: "Projector",
+      assetTag: "IT-PRJ-001",
+      scheduledDate: "2023-07-15",
+      daysRemaining: 3,
       priority: "High",
-      assignedTo: "Maintenance Team",
+      assignedTo: "IT Department",
     },
     {
       id: 2,
-      asset: "Air Conditioner",
-      dueDate: "2023-10-25",
+      assetName: "Transport Van",
+      assetTag: "VEH-VAN-001",
+      scheduledDate: "2023-07-20",
+      daysRemaining: 8,
       priority: "Medium",
-      assignedTo: "HVAC Contractor",
+      assignedTo: "Logistics Team",
     },
     {
       id: 3,
-      asset: "Company Van",
-      dueDate: "2023-11-05",
+      assetName: "HP LaserJet Printer",
+      assetTag: "IT-PRT-001",
+      scheduledDate: "2023-07-25",
+      daysRemaining: 13,
       priority: "Low",
-      assignedTo: "Auto Service",
+      assignedTo: "Admin Staff",
     },
   ]
 
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case "High":
+        return <Badge className="bg-red-100 text-red-800 border-red-200">High</Badge>
+      case "Medium":
+        return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Medium</Badge>
+      case "Low":
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Low</Badge>
+      default:
+        return <Badge>Unknown</Badge>
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {maintenanceTasks.map((task) => (
-        <div key={task.id} className="flex items-start space-x-4">
-          <div
-            className={`bg-gray-100 rounded-full p-2 ${
-              task.priority === "High" ? "bg-red-100" : task.priority === "Medium" ? "bg-amber-100" : "bg-blue-100"
-            }`}
-          >
-            <Tool
-              className={`h-4 w-4 ${
-                task.priority === "High"
-                  ? "text-red-500"
-                  : task.priority === "Medium"
-                    ? "text-amber-500"
-                    : "text-blue-500"
-              }`}
-            />
-          </div>
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium">{task.asset}</p>
-            <div className="flex items-center text-xs text-gray-500">
-              <Calendar className="h-3 w-3 mr-1" />
-              <span>Due: {task.dueDate}</span>
+      {maintenanceItems.length > 0 ? (
+        maintenanceItems.map((item) => (
+          <div key={item.id} className="flex items-start justify-between border-b pb-3">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <Tool className="h-4 w-4 text-gray-500" />
+                <p className="font-medium">{item.assetName}</p>
+                {getPriorityBadge(item.priority)}
+              </div>
+              <p className="text-sm text-gray-500">{item.assetTag}</p>
+              <div className="flex items-center space-x-1 text-xs text-gray-500">
+                <Calendar className="h-3 w-3" />
+                <span>{item.scheduledDate}</span>
+                <span className="font-medium text-amber-600">({item.daysRemaining} days remaining)</span>
+              </div>
             </div>
-            <p className="text-xs text-gray-500">Assigned to: {task.assignedTo}</p>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/membership/dashboard/inventory/assets/${item.id}`}>View</Link>
+            </Button>
           </div>
-          <Button variant="outline" size="sm">
-            Schedule
-          </Button>
+        ))
+      ) : (
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <Tool className="mb-2 h-10 w-10 text-gray-400" />
+          <p className="text-sm text-gray-500">No upcoming maintenance scheduled</p>
         </div>
-      ))}
+      )}
     </div>
   )
 }

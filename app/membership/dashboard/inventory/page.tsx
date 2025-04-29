@@ -4,7 +4,7 @@ import InventoryDashboard from "@/components/inventory/InventoryDashboard"
 
 export const metadata: Metadata = {
   title: "Inventory Dashboard | Destiny Builders",
-  description: "Manage and track organizational assets and inventory",
+  description: "Manage your organization's assets and inventory",
 }
 
 export default function InventoryDashboardPage() {

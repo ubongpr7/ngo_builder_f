@@ -1,38 +1,42 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, AlertTriangle, Clock, TrendingDown } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Package, AlertTriangle, Clock, DollarSign } from "lucide-react"
 
 export default function InventoryStats() {
-  // This would be fetched from the API in a real application
+  // This would be replaced with real data from your API
   const stats = [
     {
       title: "Total Assets",
       value: "1,284",
-      icon: <Package className="h-8 w-8 text-green-600" />,
-      change: "+12% from last month",
-      trend: "up",
+      icon: <Package className="h-5 w-5 text-green-600" />,
+      change: "+12.5%",
+      changeType: "positive",
+      changeText: "from last month",
     },
     {
       title: "Maintenance Due",
       value: "23",
-      icon: <AlertTriangle className="h-8 w-8 text-amber-500" />,
-      change: "5 critical",
-      trend: "neutral",
+      icon: <AlertTriangle className="h-5 w-5 text-amber-600" />,
+      change: "+4",
+      changeType: "negative",
+      changeText: "from last month",
     },
     {
       title: "Expiring Warranties",
-      value: "8",
-      icon: <Clock className="h-8 w-8 text-blue-500" />,
-      change: "Next 30 days",
-      trend: "neutral",
+      value: "15",
+      icon: <Clock className="h-5 w-5 text-blue-600" />,
+      change: "-2",
+      changeType: "positive",
+      changeText: "from last month",
     },
     {
-      title: "Depreciation",
-      value: "$12,450",
-      icon: <TrendingDown className="h-8 w-8 text-purple-500" />,
-      change: "This quarter",
-      trend: "down",
+      title: "Asset Value",
+      value: "$245,890",
+      icon: <DollarSign className="h-5 w-5 text-purple-600" />,
+      change: "+$12,450",
+      changeType: "positive",
+      changeText: "from last month",
     },
   ]
 
@@ -40,19 +44,20 @@ export default function InventoryStats() {
     <>
       {stats.map((stat, index) => (
         <Card key={index}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            {stat.icon}
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <p
-              className={`text-xs ${
-                stat.trend === "up" ? "text-green-500" : stat.trend === "down" ? "text-red-500" : "text-gray-500"
-              }`}
-            >
-              {stat.change}
-            </p>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-x-2">
+              <div className="flex items-center justify-center rounded-md bg-gray-50 p-2">{stat.icon}</div>
+              <div className="flex items-center text-xs text-gray-500">
+                <span className={stat.changeType === "positive" ? "text-green-600" : "text-red-600"}>
+                  {stat.change}
+                </span>
+                <span className="ml-1">{stat.changeText}</span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+              <p className="text-2xl font-bold">{stat.value}</p>
+            </div>
           </CardContent>
         </Card>
       ))}

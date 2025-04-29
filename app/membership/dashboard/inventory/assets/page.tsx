@@ -4,7 +4,7 @@ import InventoryManagement from "@/components/inventory/InventoryManagement"
 
 export const metadata: Metadata = {
   title: "Asset Management | Destiny Builders",
-  description: "Manage and track organizational assets",
+  description: "Manage your organization's assets",
 }
 
 export default function AssetManagementPage() {
