@@ -3,7 +3,39 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useGetLoggedInUserQuery } from './userApiSlice';
 import { UserData } from './userApiSlice';
 
-export const publicRoutes = ['/accounts/signin','/','','/accounts/signin/verify', '/accounts','/accounts/verify', '/accounts/forgot-password'];
+export const publicRoutes = [
+  "/",
+  "/activate",
+  "/accounts/verify",
+  "/membership/portal",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/about",
+  "/vision-mission",
+  "/core-values",
+  "/history",
+  "/leadership",
+  "/resources",
+  "/resources/publications",
+  "/resources/reports",
+  "/resources/media",
+  "/blog",
+  "/blog/category",
+  "/faqs",
+  "/contact",
+  "/donate",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/membership/benefits",
+  "/membership/join",
+  "/membership/tiers",
+  "/membership/volunteer",
+  "/membership/partner",
+  "/kyc",
+  "/admin/member-verification",
+  "/membership/verification",
+]
 
 export const useAuth = () => {
   const router = useRouter();
@@ -15,12 +47,6 @@ export const useAuth = () => {
     refetchOnMountOrArgChange: true,
   });
 
-  useEffect(() => {
-    if (!isLoading && !isPublic && !user) {
-      sessionStorage.setItem('redirectUrl', pathname);
-      router.push('/accounts/signin');
-    }
-  }, [user, isLoading, isPublic, pathname, router]);
 
   return {
     user: user as UserData | undefined,
