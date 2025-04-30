@@ -20,9 +20,11 @@ interface AddressFormProps {
   formData: AddressFormData
   updateFormData: (data: Partial<AddressFormData>) => void
   onComplete: () => void
+  userId:string,
+  profileId:string
 }
 
-export default function AddressForm({ formData, updateFormData, onComplete }: AddressFormProps) {
+export default function AddressForm({ formData, updateFormData, onComplete,userId,profileId }: AddressFormProps) {
   const [updateUserProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -113,7 +115,7 @@ export default function AddressForm({ formData, updateFormData, onComplete }: Ad
 
     try {
       await updateUserProfile({
-        id:9,
+        id:profileId,
         data:{address: {
           country: formData.country,
           region: formData.region,

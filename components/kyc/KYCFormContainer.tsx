@@ -18,7 +18,7 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 
 const TOTAL_STEPS = 7
 
-export default function KYCFormContainer() {
+export default function KYCFormContainer({profileId,userId}: {profileId:string,userId:string}) {
   const router = useRouter()
   const [userProfileId, setUserProfileId] = useState('0')
   const { data: userProfile, isLoading } = useGetProfileQuery(userProfileId, { skip: userProfileId === '0' })
@@ -293,7 +293,9 @@ export default function KYCFormContainer() {
             </TabsList>
 
             <TabsContent value="personal-info">
-              <PersonalInfoForm
+              <PersonalInfoForm 
+                profileId={profileId}
+                userId={userId}
                 formData={formState.personalInfo}
                 updateFormData={(data) => updateFormData("personalInfo", data)}
                 onComplete={() => handleStepComplete(1)}
@@ -302,6 +304,7 @@ export default function KYCFormContainer() {
 
             <TabsContent value="address">
               <AddressForm
+                profileId={profileId}
                 formData={formState.address}
                 updateFormData={(data) => updateFormData("address", data)}
                 onComplete={() => handleStepComplete(2)}
@@ -310,6 +313,7 @@ export default function KYCFormContainer() {
 
             <TabsContent value="contact-info">
               <ContactInfoForm
+                profileId={profileId}
                 formData={formState.contactInfo}
                 updateFormData={(data) => updateFormData("contactInfo", data)}
                 onComplete={() => handleStepComplete(3)}
@@ -318,6 +322,7 @@ export default function KYCFormContainer() {
 
             <TabsContent value="identity-verification">
               <IdentityVerificationForm
+                profileId={profileId}
                 formData={formState.identityVerification}
                 updateFormData={(data) => updateFormData("identityVerification", data)}
                 onComplete={() => handleStepComplete(4)}
@@ -326,6 +331,7 @@ export default function KYCFormContainer() {
 
             <TabsContent value="professional-info">
               <ProfessionalInfoForm
+                profileId={profileId}
                 formData={formState.professionalInfo}
                 updateFormData={(data) => updateFormData("professionalInfo", data)}
                 onComplete={() => handleStepComplete(5)}
@@ -334,6 +340,7 @@ export default function KYCFormContainer() {
 
             <TabsContent value="expertise">
               <ExpertiseForm
+                profileId={profileId}
                 formData={formState.expertise}
                 updateFormData={(data) => updateFormData("expertise", data)}
                 onComplete={() => handleStepComplete(6)}
@@ -342,7 +349,8 @@ export default function KYCFormContainer() {
 
             <TabsContent value="roles">
               <RolesForm
-                formData={formState.roles}
+              profileId={profileId}
+              formData={formState.roles}
                 updateFormData={(data) => updateFormData("roles", data)}
                 onComplete={() => handleStepComplete(7)}
               />

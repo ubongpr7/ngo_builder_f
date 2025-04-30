@@ -13,12 +13,14 @@ interface PersonalInfoFormProps {
   formData: PersonalInfoFormData
   updateFormData: (data: Partial<PersonalInfoFormData>) => void
   onComplete: () => void
+  profileId:string
+  userId:string
 }
 
-export default function PersonalInfoForm({ formData, updateFormData, onComplete }: PersonalInfoFormProps) {
+export default function PersonalInfoForm({ formData, updateFormData, onComplete,profileId,userId }: PersonalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateUserMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [userID,setUserID] =useState(9) 
+  
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -45,7 +47,7 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete 
     try {
       await updateUserProfile(
         {
-          id: userID,
+          id: userId,
        data: {first_name: formData.first_name,
         last_name: formData.last_name,
         }

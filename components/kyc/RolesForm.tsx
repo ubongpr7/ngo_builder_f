@@ -12,10 +12,12 @@ import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISli
 interface RolesFormProps {
   formData: RolesFormData
   updateFormData: (data: Partial<RolesFormData>) => void
-  onComplete: () => void
+  onComplete: () => void,
+  userId:string,
+  profileId:string
 }
 
-export default function RolesForm({ formData, updateFormData, onComplete }: RolesFormProps) {
+export default function RolesForm({ formData, updateFormData, onComplete,userId,profileId }: RolesFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -45,7 +47,7 @@ export default function RolesForm({ formData, updateFormData, onComplete }: Role
 
     try {
       await updateUserProfile({
-        id: 9,
+        id: profileId,
         data: {
         is_mentor: formData.is_mentor,
         is_project_manager: formData.is_project_manager,

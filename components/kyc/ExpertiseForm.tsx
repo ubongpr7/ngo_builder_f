@@ -14,9 +14,11 @@ interface ExpertiseFormProps {
   formData: ExpertiseFormData
   updateFormData: (data: Partial<ExpertiseFormData>) => void
   onComplete: () => void
+  userId:string,
+  profileId:string
 }
 
-export default function ExpertiseForm({ formData, updateFormData, onComplete }: ExpertiseFormProps) {
+export default function ExpertiseForm({ formData, updateFormData, onComplete,userId,profileId }: ExpertiseFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const { data: expertiseAreas, isLoading: isLoadingExpertise } = useGetExpertiseAreasQuery('')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -56,7 +58,7 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete }: 
 
     try {
       await updateUserProfile({
-        id: 9,
+        id: profileId,
         data:{
         expertise: formData.expertise,
         }

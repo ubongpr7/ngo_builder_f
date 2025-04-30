@@ -15,12 +15,16 @@ interface IdentityVerificationFormProps {
   formData: IdentityVerificationFormData
   updateFormData: (data: Partial<IdentityVerificationFormData>) => void
   onComplete: () => void
+  userId:string,
+  profileId:string
 }
 
 export default function IdentityVerificationForm({
   formData,
   updateFormData,
   onComplete,
+  userId,
+  profileId
 }: IdentityVerificationFormProps) {
   const [submitKYC, { isLoading }] = useUpdateProfileMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -107,7 +111,7 @@ export default function IdentityVerificationForm({
         formDataObj.append("selfie_image", formData.selfie_image)
       }
 
-      await submitKYC({id:9,data:formDataObj}).unwrap()
+      await submitKYC({id:profileId,data:formDataObj}).unwrap()
       onComplete()
     } catch (error) {
       console.error("Failed to submit KYC documents:", error)

@@ -19,9 +19,11 @@ interface ContactInfoFormProps {
   formData: ContactInfoFormData
   updateFormData: (data: Partial<ContactInfoFormData>) => void
   onComplete: () => void
+  userId:string,
+  profileId:string
 }
 
-export default function ContactInfoForm({ formData, updateFormData, onComplete }: ContactInfoFormProps) {
+export default function ContactInfoForm({ formData, updateFormData, onComplete,userId,profileId }: ContactInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -47,7 +49,7 @@ export default function ContactInfoForm({ formData, updateFormData, onComplete }
 
     try {
       await updateUserProfile({
-        id: 9,
+        id: profileId,
         data:{
           phone_number: formData.phone_number,
           date_of_birth: formData.date_of_birth,

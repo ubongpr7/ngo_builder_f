@@ -13,10 +13,12 @@ interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
   updateFormData: (data: Partial<ProfessionalInfoFormData>) => void
   onComplete: () => void
+  profileId: string
+  userId: string
 }
 
 
-export default function ProfessionalInfoForm({ formData, updateFormData, onComplete }: ProfessionalInfoFormProps) {
+export default function ProfessionalInfoForm({ formData, updateFormData, onComplete,profileId,userId }: ProfessionalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery('')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -46,7 +48,7 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
 
     try {
       await updateUserProfile({
-        id: 9,
+        id: profileId,
         data: {
         membership_type: formData.membership_type,
         organization: formData.organization,
