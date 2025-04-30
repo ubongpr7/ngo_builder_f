@@ -8,16 +8,15 @@ import Header from "@/components/layout/Header"
 import Footer from "@/components/layout/Footer"
 import AuthenticatedHeader from "@/components/layout/AuthenticatedHeader"
 import AuthenticatedFooter from "@/components/layout/AuthenticatedFooter"
+import { useAuth } from "@/redux/features/users/useAuth"
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAppSelector((state: any) => state.auth)
   const pathname = usePathname()
+  const { isLoading, isAuthenticated, isPublic } = useAuth();
 
-  // Check if the current path is in the dashboard or other authenticated routes
   const isAuthenticatedRoute =
     pathname.startsWith("/dashboard") || pathname.startsWith("/kyc") || pathname === "/profile"
 
-  // If still loading auth state, you could show a loading indicator
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
