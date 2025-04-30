@@ -19,26 +19,28 @@ import { Bell, ChevronDown, LogOut, Menu, Settings, User, X } from "lucide-react
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "react-toastify"
 import router from "next/router"
+import { logout } from "@/redux/features/authSlice"
+import { useAppDispatch } from "@/redux/store"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Members", href: "/dashboard/members" },
-  { name: "Events", href: "/dashboard/events" },
-  { name: "Resources", href: "/dashboard/resources" },
+  { name: "Dashboard", href: "/membership/dashboard" },
+  { name: "Members", href: "/membership/dashboard/members" },
+  { name: "Events", href: "/memership/dashboard/events" },
+  // { name: "Resource s", href: "/dashboard/resources" },
 ]
 
 export default function AuthenticatedHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  const dispatch = useDispatch()
-  const [logout, { isLoading }] = useLogoutMutation();
+  const dispatch = useAppDispatch()
+  const [logoutM, { isLoading }] = useLogoutMutation();
 
   const handleLogout = async () => {
     try {
-      await logout('').unwrap();
+      await logoutM('').unwrap();
+      logout();
+      dispatch(logout());
       
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       
       router.push('/');
       
