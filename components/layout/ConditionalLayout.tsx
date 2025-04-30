@@ -18,13 +18,13 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     pathname.startsWith("/dashboard") || pathname.startsWith("/kyc") || pathname === "/profile"
 
   // If still loading auth state, you could show a loading indicator
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    )
-  }
+//   if (isLoading) {
+//     return (
+//       <div className="flex min-h-screen items-center justify-center">
+//         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+//       </div>
+//     )
+//   }
 
   return (
     <div className="text-gray-900 bg-gray-50 flex min-h-screen flex-col">
