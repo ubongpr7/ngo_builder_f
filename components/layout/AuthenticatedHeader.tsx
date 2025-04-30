@@ -4,7 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useDispatch } from "react-redux"
-import { logout } from "@/redux/features/authSlice"
+import { useLogoutMutation } from '../../redux/features/authApiSlice';
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Bell, ChevronDown, LogOut, Menu, Settings, User, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { toast } from "react-toastify"
+import router from "next/router"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard" },
@@ -28,12 +31,23 @@ export default function AuthenticatedHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const dispatch = useDispatch()
+  const [logout, { isLoading }] = useLogoutMutation();
 
-  const handleLogout = () => {
-    dispatch(logout())
-    // You might want to add additional logout logic here
-    // such as clearing tokens, redirecting, etc.
-  }
+  const handleLogout = async () => {
+    try {
+      await logout('').unwrap();
+      
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      
+      router.push('/');
+      
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Logout failed. Please try again.');
+    }
+  };
+
 
   return (
     <header className="bg-white shadow-sm">
