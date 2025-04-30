@@ -12,13 +12,7 @@ export const profileRelatedApiSlice = apiSlice.injectEndpoints({
     getExpertiseAreas: builder.query({
       query: () => `${management_api}/membership`,
     }),
-    updateUser: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/${management_api}/update/${id}/`,
-        method: 'PATCH',
-        body: data
-      }),
-    }),
+    
   }),
 });
 
@@ -26,6 +20,5 @@ export const {
      useGetIndustryQuery,
      useGetMembershipQuery,
      useGetExpertiseAreasQuery,
-     useUpdateUserMutation,
 
  } = profileRelatedApiSlice;

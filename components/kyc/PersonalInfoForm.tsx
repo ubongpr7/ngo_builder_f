@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
-import { useUpdateUserMutation } from "@/redux/features/profile/profileRelatedAPISlice"
+import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
 
 interface PersonalInfoFormProps {
   formData: PersonalInfoFormData
