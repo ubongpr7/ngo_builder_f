@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useSelector } from "react-redux"
+import { useAppSelector } from "@/redux/hooks"
 import { usePathname } from "next/navigation"
 import Header from "@/components/layout/Header"
 import Footer from "@/components/layout/Footer"
@@ -10,7 +10,7 @@ import AuthenticatedHeader from "@/components/layout/AuthenticatedHeader"
 import AuthenticatedFooter from "@/components/layout/AuthenticatedFooter"
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useSelector((state: any) => state.auth)
+  const { isAuthenticated, isLoading } = useAppSelector((state: any) => state.auth)
   const pathname = usePathname()
 
   // Check if the current path is in the dashboard or other authenticated routes

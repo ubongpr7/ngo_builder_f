@@ -9,14 +9,14 @@ import AuthenticatedHeader from "@/components/layout/AuthenticatedHeader"
 import AuthenticatedFooter from "@/components/layout/AuthenticatedFooter"
 import { ThemeProvider } from "@/components/theme-provider"
 import StoreProvider from "@/redux/provider"
-import { useSelector } from "react-redux"
+import { useAppSelector } from "@/redux/hooks"
 import { usePathname } from "next/navigation"
 
 const inter = Inter({ subsets: ["latin"] })
 
 // Client component that conditionally renders based on auth state
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useSelector((state: any) => state.auth)
+  const { isAuthenticated, isLoading } = useAppSelector((state: any) => state.auth)
   const pathname = usePathname()
 
   // Check if the current path is in the dashboard or other authenticated routes
