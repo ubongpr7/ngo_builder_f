@@ -45,7 +45,8 @@ export default function AuthenticatedHeader() {
       
       toast.success('Logged out successfully');
     } catch (error) {
-      dispatch(logout());
+      // dispatch(logout());
+      logout()
       router.push('/');
       
       toast.error('Logout failed. Please try again.');
