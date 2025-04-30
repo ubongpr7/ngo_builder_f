@@ -38,7 +38,6 @@ export default function AuthenticatedHeader() {
   const handleLogout = async () => {
     try {
       await logoutM('').unwrap();
-      logout();
       dispatch(logout());
       
       
@@ -46,6 +45,9 @@ export default function AuthenticatedHeader() {
       
       toast.success('Logged out successfully');
     } catch (error) {
+      dispatch(logout());
+      router.push('/');
+      
       toast.error('Logout failed. Please try again.');
     }
   };
