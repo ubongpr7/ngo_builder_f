@@ -141,4 +141,5 @@ select {
 option {
   background-color: bg-gray-50; /* force option bg for supporting browsers */
   color: text-gray-900;
+  z-index: 200;
 }

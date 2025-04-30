@@ -38,8 +38,8 @@ export default function AuthenticatedHeader() {
   const handleLogout = async () => {
     try {
       await logoutM('').unwrap();
-      dispatch(logout());
-      
+      // dispatch();
+      logout()
       
       router.push('/');
       
