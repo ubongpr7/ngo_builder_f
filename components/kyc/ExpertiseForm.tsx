@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -25,7 +25,14 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const { data: expertiseAreas, isLoading: isLoadingExpertise } = useGetExpertiseAreasQuery('')
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [maxReached, setMaxReached] = useState(false)
+  
+  // Initialize maxReached based on the initial formData
+  const [maxReached, setMaxReached] = useState(formData.expertise.length >= MAX_SELECTIONS)
+  
+  // Update maxReached whenever formData.expertise changes
+  useEffect(() => {
+    setMaxReached(formData.expertise.length >= MAX_SELECTIONS)
+  }, [formData.expertise])
 
   const handleExpertiseChange = (expertiseId: number) => {
     const updatedExpertise = [...formData.expertise]
@@ -35,15 +42,12 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
       // Remove if already selected
       const index = updatedExpertise.indexOf(expertiseId)
       updatedExpertise.splice(index, 1)
-      setMaxReached(false)
+      // maxReached will be updated by the useEffect
     } else {
       // Add if not selected and under the limit
       if (updatedExpertise.length < MAX_SELECTIONS) {
         updatedExpertise.push(expertiseId)
-        // Check if we've reached the max after adding
-        if (updatedExpertise.length === MAX_SELECTIONS) {
-          setMaxReached(true)
-        }
+        // maxReached will be updated by the useEffect
       } else {
         // Don't add and show error
         setErrors({
