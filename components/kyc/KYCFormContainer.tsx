@@ -70,15 +70,15 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
     },
   })
 
-  // Populate form with existing user data if available
+
   useEffect(() => {
     if (userProfile) {
       // Map user profile data to form state
       const updatedFormState = { ...formState }
-
+  
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
-
+  
       if (userProfile.address) {
         updatedFormState.address = {
           country: userProfile.address.country || null,
@@ -91,38 +91,39 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
           postal_code: userProfile.address.postal_code || null,
         }
       }
-
+  
       updatedFormState.contactInfo = {
         phone_number: userProfile.phone_number || "",
         date_of_birth: userProfile.date_of_birth || null,
         bio: userProfile.bio || null,
       }
-
+  
       // Set completed steps based on data presence
       const completedSteps: number[] = []
       if (updatedFormState.personalInfo.first_name && updatedFormState.personalInfo.last_name) {
         completedSteps.push(1)
       }
-
+  
       if (updatedFormState.address.country && updatedFormState.address.city) {
         completedSteps.push(2)
       }
-
+  
       if (updatedFormState.contactInfo.phone_number) {
         completedSteps.push(3)
       }
-
+  
       if (userProfile.id_document_type && userProfile.id_document_number) {
         completedSteps.push(4)
         updatedFormState.identityVerification = {
           id_document_type: userProfile.id_document_type,
           id_document_number: userProfile.id_document_number,
-          id_document_image_front: null,
-          id_document_image_back: null,
-          selfie_image: null,
+          // Pass the image URLs from the API response
+          id_document_image_front: userProfile.id_document_image_front || null,
+          id_document_image_back: userProfile.id_document_image_back || null,
+          selfie_image: userProfile.selfie_image || null,
         }
       }
-
+  
       if (userProfile.membership_type || userProfile.industry) {
         completedSteps.push(5)
         updatedFormState.professionalInfo = {
@@ -132,12 +133,12 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
           industry: userProfile.industry || null,
         }
       }
-
+  
       if (userProfile.expertise && userProfile.expertise.length > 0) {
         completedSteps.push(6)
         updatedFormState.expertise.expertise = userProfile.expertise
       }
-
+  
       if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(7)
         updatedFormState.roles = {
@@ -148,14 +149,13 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
           is_mentor: false, // Assuming this is not in your model
         }
       }
-
+  
       updatedFormState.completedSteps = completedSteps
       updatedFormState.currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
-
+  
       setFormState(updatedFormState)
     }
   }, [userProfile])
-
   const handleStepComplete = (step: number) => {
     setFormState((prev) => {
       const completedSteps = [...prev.completedSteps]
