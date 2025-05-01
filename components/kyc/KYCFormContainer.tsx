@@ -20,8 +20,7 @@ const TOTAL_STEPS = 7
 
 export default function KYCFormContainer({profileId,userId,first_name,last_name}: {profileId:string,userId:string,first_name:string,last_name:string}) {
   const router = useRouter()
-  const [userProfileId, setUserProfileId] = useState('0')
-  const { data: userProfile, isLoading } = useGetProfileQuery(profileId)
+  const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
 
   const [activeTab, setActiveTab] = useState("personal-info")
   const [formState, setFormState] = useState<KYCFormState>({
@@ -77,10 +76,8 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
       // Map user profile data to form state
       const updatedFormState = { ...formState }
 
-      if (userProfile.user) {
-        updatedFormState.personalInfo.first_name = first_name
-        updatedFormState.personalInfo.last_name = last_name
-      }
+      updatedFormState.personalInfo.first_name = first_name
+      updatedFormState.personalInfo.last_name = last_name
 
       if (userProfile.address) {
         updatedFormState.address = {
