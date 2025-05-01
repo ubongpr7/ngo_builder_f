@@ -2,25 +2,21 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Upload } from "lucide-react"
+import { Upload } from 'lucide-react'
 import type { IdentityVerificationFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice" 
-
-
-
-
 
 interface IdentityVerificationFormProps {
   formData: IdentityVerificationFormData
   updateFormData: (data: Partial<IdentityVerificationFormData>) => void
   onComplete: () => void
-  userId:string,
-  profileId:string
+  userId: string,
+  profileId: string
 }
 
 export default function IdentityVerificationForm({
@@ -42,6 +38,22 @@ export default function IdentityVerificationForm({
   const [frontImagePreview, setFrontImagePreview] = useState<string | null>(null)
   const [backImagePreview, setBackImagePreview] = useState<string | null>(null)
   const [selfieImagePreview, setSelfieImagePreview] = useState<string | null>(null)
+
+  // Initialize preview images from existing S3 URLs if available
+  useEffect(() => {
+    // Check if formData has URL properties for existing images
+    if (formData.id_document_image_front && typeof formData.id_document_image_front === 'object' && 'url' in formData.id_document_image_front) {
+      setFrontImagePreview(formData.id_document_image_front.url as string)
+    }
+    
+    if (formData.id_document_image_back && typeof formData.id_document_image_back === 'object' && 'url' in formData.id_document_image_back) {
+      setBackImagePreview(formData.id_document_image_back.url as string)
+    }
+    
+    if (formData.selfie_image && typeof formData.selfie_image === 'object' && 'url' in formData.selfie_image) {
+      setSelfieImagePreview(formData.selfie_image.url as string)
+    }
+  }, [formData])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "front" | "back" | "selfie") => {
     const file = e.target.files?.[0] || null
@@ -75,15 +87,28 @@ export default function IdentityVerificationForm({
       newErrors.id_document_number = "Document number is required"
     }
 
-    if (!formData.id_document_image_front) {
+    // Check if we have either a File object or an existing URL for each required image
+    const hasFrontImage = 
+      (formData.id_document_image_front instanceof File) || 
+      (typeof formData.id_document_image_front === 'object' && formData.id_document_image_front && 'url' in formData.id_document_image_front)
+    
+    const hasBackImage = 
+      (formData.id_document_image_back instanceof File) || 
+      (typeof formData.id_document_image_back === 'object' && formData.id_document_image_back && 'url' in formData.id_document_image_back)
+    
+    const hasSelfieImage = 
+      (formData.selfie_image instanceof File) || 
+      (typeof formData.selfie_image === 'object' && formData.selfie_image && 'url' in formData.selfie_image)
+
+    if (!hasFrontImage) {
       newErrors.id_document_image_front = "Front image of ID document is required"
     }
 
-    if (!formData.id_document_image_back) {
+    if (!hasBackImage) {
       newErrors.id_document_image_back = "Back image of ID document is required"
     }
 
-    if (!formData.selfie_image) {
+    if (!hasSelfieImage) {
       newErrors.selfie_image = "Selfie with ID is required"
     }
 
@@ -103,19 +128,20 @@ export default function IdentityVerificationForm({
       formDataObj.append("id_document_type", formData.id_document_type)
       formDataObj.append("id_document_number", formData.id_document_number)
 
-      if (formData.id_document_image_front) {
+      // Only append files if they are actual File objects (not URLs)
+      if (formData.id_document_image_front instanceof File) {
         formDataObj.append("id_document_image_front", formData.id_document_image_front)
       }
 
-      if (formData.id_document_image_back) {
+      if (formData.id_document_image_back instanceof File) {
         formDataObj.append("id_document_image_back", formData.id_document_image_back)
       }
 
-      if (formData.selfie_image) {
+      if (formData.selfie_image instanceof File) {
         formDataObj.append("selfie_image", formData.selfie_image)
       }
 
-      await submitKYC({id:profileId,data:formDataObj}).unwrap()
+      await submitKYC({id: profileId, data: formDataObj}).unwrap()
       onComplete()
     } catch (error) {
       console.error("Failed to submit KYC documents:", error)
