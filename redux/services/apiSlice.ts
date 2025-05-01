@@ -1,5 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
-import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
+import type { BaseQueryFn, FetchArgs as OriginalFetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
+
+// Extend FetchArgs to include a meta property
+interface FetchArgs extends OriginalFetchArgs {
+  meta?: {
+    isFileUpload?: boolean
+  }
+}
 import { setAuth, logout } from "../features/authSlice"
 import { Mutex } from "async-mutex"
 import { setCookie, getCookie, deleteCookie } from "cookies-next"
@@ -7,28 +14,44 @@ import env from "../../env_file"
 
 const mutex = new Mutex()
 
+// Base query for regular JSON requests
 const baseQuery = fetchBaseQuery({
   baseUrl: env.BACKEND_HOST_URL,
   credentials: "include",
-  prepareHeaders: (headers, { getState, endpoint, forced, type, ...rest }) => {
+  prepareHeaders: (headers) => {
     const token = getCookie("accessToken")
     if (token) {
       headers.set("Authorization", `Bearer ${token}`)
     }
-
-    // Check if the request body is FormData
-    // We can determine this by checking if the meta object has a formData flag
-    const isFormData = (rest as { meta?: { formData?: boolean } }).meta?.formData === true
-
-    // Only set Content-Type for non-FormData requests
-    // For FormData, the browser will automatically set the correct Content-Type with boundary
-    if (!isFormData) {
-      headers.set("Content-Type", "application/json")
-    }
-
+    headers.set("Content-Type", "application/json")
     return headers
   },
 })
+
+// Base query for file uploads - doesn't set Content-Type
+const fileUploadBaseQuery = fetchBaseQuery({
+  baseUrl: env.BACKEND_HOST_URL,
+  credentials: "include",
+  prepareHeaders: (headers) => {
+    const token = getCookie("accessToken")
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`)
+    }
+    // Don't set Content-Type - browser will set it automatically with boundary for FormData
+    return headers
+  },
+})
+
+// Helper function to determine if the request is a file upload
+const isFileUpload = (args: string | FetchArgs): boolean => {
+  if (typeof args === 'string') return false
+  
+  // Check if body is FormData
+  if (args.body instanceof FormData) return true
+  
+  // Check if there's a meta flag indicating file upload
+  return args.meta?.isFileUpload === true
+}
 
 const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
   args,
@@ -36,27 +59,11 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   extraOptions,
 ) => {
   await mutex.waitForUnlock()
-
-  // Check if we're dealing with FormData
-  const isFormData =
-    args instanceof FormData ||
-    (typeof args === "object" && args !== null && "body" in args && args.body instanceof FormData)
-
-  // Add formData flag to meta if needed
-  const argsWithMeta = isFormData
-  ? {
-      ...(typeof args === "object" && args !== null ? args : {}),
-      meta: {
-        ...((args as FetchArgs & { meta?: Record<string, unknown> }).meta || {}),
-        formData: true,
-      },
-    }
-  : args
-
-  if (typeof argsWithMeta === "object" && argsWithMeta !== null && !argsWithMeta.url) {
-    throw new Error("The 'url' property is required in FetchArgs.")
-  }
-  let result = await baseQuery(argsWithMeta as FetchArgs, api, extraOptions)
+  
+  // Choose the appropriate base query based on whether it's a file upload
+  const appropriateBaseQuery = isFileUpload(args) ? fileUploadBaseQuery : baseQuery
+  
+  let result = await appropriateBaseQuery(args, api, extraOptions)
 
   if (result?.data && ((args as FetchArgs).url === "/jwt/create/" || (args as FetchArgs).url === "/jwt/refresh/")) {
     const response = result.data as { access: string; refresh: string; access_token: string; id: string }
@@ -93,11 +100,8 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
             setCookie("accessToken", newAccessToken, { maxAge: 72 * 60 * 60, path: "/" })
 
             api.dispatch(setAuth())
-            if (typeof argsWithMeta === "object" && argsWithMeta !== null && argsWithMeta.url) {
-                result = await baseQuery(argsWithMeta as FetchArgs, api, extraOptions)
-            } else {
-                throw new Error("The 'url' property is required in FetchArgs.")
-            }
+            // Use the appropriate base query for the retry as well
+            result = await appropriateBaseQuery(args, api, extraOptions)
           } else {
             deleteCookie("accessToken")
             deleteCookie("refreshToken")
@@ -111,11 +115,8 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       }
     } else {
       await mutex.waitForUnlock()
-      if (typeof argsWithMeta === "object" && argsWithMeta !== null && argsWithMeta.url) {
-        result = await baseQuery(argsWithMeta as FetchArgs, api, extraOptions)
-      } else {
-        throw new Error("The 'url' property is required in FetchArgs.")
-      }
+      // Use the appropriate base query here too
+      result = await appropriateBaseQuery(args, api, extraOptions)
     }
   }
 
@@ -127,3 +128,18 @@ export const apiSlice = createApi({
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({}),
 })
+
+// Helper function to create file upload requests
+export const createFileUploadRequest = (
+  url: string, 
+  formData: FormData, 
+  method: 'POST' | 'PATCH' | 'PUT' = 'POST'
+): FetchArgs => {
+  return {
+    url,
+    method,
+    body: formData,
+    // This flag is optional but can be useful for debugging
+    meta: { isFileUpload: true }
+  }
+}

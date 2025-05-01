@@ -11,6 +11,10 @@ import { Upload } from "lucide-react"
 import type { IdentityVerificationFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice" 
 
+
+
+
+
 interface IdentityVerificationFormProps {
   formData: IdentityVerificationFormData
   updateFormData: (data: Partial<IdentityVerificationFormData>) => void
