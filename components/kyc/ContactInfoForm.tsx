@@ -1,38 +1,51 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import dynamic from "next/dynamic"
+import { isValidPhoneNumber } from 'libphonenumber-js'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon } from 'lucide-react'
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import type { ContactInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 
+// Dynamically import PhoneInput to avoid SSR issues
+const PhoneInput = dynamic(
+  () => import('react-phone-number-input'),
+  { 
+    ssr: false,
+    loading: () => <div className="border rounded p-2 h-10 flex items-center text-gray-400">Loading phone input...</div>
+  }
+);
+
+// Import the styles for the phone input
+import 'react-phone-number-input/style.css'
+
 interface ContactInfoFormProps {
   formData: ContactInfoFormData
   updateFormData: (data: Partial<ContactInfoFormData>) => void
   onComplete: () => void
-  userId:string,
-  profileId:string
+  userId: string,
+  profileId: string
 }
 
-export default function ContactInfoForm({ formData, updateFormData, onComplete,userId,profileId }: ContactInfoFormProps) {
+export default function ContactInfoForm({ formData, updateFormData, onComplete, userId, profileId }: ContactInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.phone_number.trim()) {
+    if (!formData.phone_number) {
       newErrors.phone_number = "Phone number is required"
-    } else if (!/^\+?[0-9\s\-()]{8,20}$/.test(formData.phone_number)) {
+    } else if (!isValidPhoneNumber(formData.phone_number)) {
       newErrors.phone_number = "Please enter a valid phone number"
     }
 
@@ -50,7 +63,7 @@ export default function ContactInfoForm({ formData, updateFormData, onComplete,u
     try {
       await updateUserProfile({
         id: profileId,
-        data:{
+        data: {
           phone_number: formData.phone_number,
           date_of_birth: formData.date_of_birth,
           bio: formData.bio,
@@ -68,13 +81,17 @@ export default function ContactInfoForm({ formData, updateFormData, onComplete,u
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="phone_number">Phone Number</Label>
-          <Input
-            id="phone_number"
-            value={formData.phone_number}
-            onChange={(e) => updateFormData({ phone_number: e.target.value })}
-            placeholder="+234 123 456 7890"
-            className={errors.phone_number ? "border-red-500" : ""}
-          />
+          <div className={cn(errors.phone_number ? "border-red-500 rounded" : "")}>
+            <PhoneInput
+              international
+              defaultCountry="NG" // Default to Nigeria, change as needed
+              value={formData.phone_number}
+              onChange={(value) => updateFormData({ phone_number: value || "" })}
+              placeholder="Enter phone number"
+              className="w-full"
+              inputClassName="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+          </div>
           {errors.phone_number && <p className="text-red-500 text-sm">{errors.phone_number}</p>}
         </div>
 
