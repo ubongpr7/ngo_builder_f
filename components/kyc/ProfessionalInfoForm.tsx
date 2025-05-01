@@ -9,6 +9,8 @@ import type { ProfessionalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useGetIndustryQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import { useGetMembershipQuery } from "@/redux/features/profile/profileRelatedAPISlice"
+import { Loader2 } from 'lucide-react'
+
 interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
   updateFormData: (data: Partial<ProfessionalInfoFormData>) => void
@@ -17,8 +19,7 @@ interface ProfessionalInfoFormProps {
   userId: string
 }
 
-
-export default function ProfessionalInfoForm({ formData, updateFormData, onComplete,profileId,userId }: ProfessionalInfoFormProps) {
+export default function ProfessionalInfoForm({ formData, updateFormData, onComplete, profileId, userId }: ProfessionalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery('')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -50,12 +51,11 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
       await updateUserProfile({
         id: profileId,
         data: {
-        membership_type: formData.membership_type,
-        organization: formData.organization,
-        position: formData.position,
-        industry: formData.industry,
+          membership_type: formData.membership_type,
+          organization: formData.organization,
+          position: formData.position,
+          industry: formData.industry,
         }
-        
       }).unwrap()
 
       onComplete()
@@ -64,15 +64,15 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
     }
   }
 
-  // Membership types (this would ideally come from an API)
-  // const membershipTypes = [
-  //   { id: 1, name: "Standard Member" },
-  //   { id: 2, name: "Executive" },
-  //   { id: 3, name: "CEO" },
-  //   { id: 4, name: "Country Director" },
-  //   { id: 5, name: "Partnership Body" },
-  //   { id: 6, name: "Sub-Head" },
-  // ]
+  // Show loading state while data is being fetched
+  if (isLoadingIndustries || isLoadingMembership) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+        <span className="ml-2">Loading form data...</span>
+      </div>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -87,11 +87,17 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
               <SelectValue placeholder="Select your membership type" />
             </SelectTrigger>
             <SelectContent>
-              {membershipTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id.toString()}>
-                  {type.name}
+              {membershipTypes && membershipTypes.length > 0 ? (
+                membershipTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-options" disabled>
+                  No membership types available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           {errors.membership_type && <p className="text-red-500 text-sm">{errors.membership_type}</p>}
@@ -122,17 +128,22 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
           <Select
             value={formData.industry?.toString() || ""}
             onValueChange={(value) => updateFormData({ industry: Number.parseInt(value) })}
-            disabled={isLoadingIndustries}
           >
             <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
             <SelectContent>
-              {industries?.map((industry) => (
-                <SelectItem key={industry.id} value={industry.id.toString()}>
-                  {industry.name}
+              {industries && industries.length > 0 ? (
+                industries.map((industry) => (
+                  <SelectItem key={industry.id} value={industry.id.toString()}>
+                    {industry.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-options" disabled>
+                  No industries available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
           {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
