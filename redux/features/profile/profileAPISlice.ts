@@ -21,7 +21,7 @@ export const profileApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     getProfile: builder.query({
-      query: (id) => `/${management_api}/profile/detail/${id}/`,
+      query: (id) => `/${management_api}/profile/${id}/`,
     }),
   
   

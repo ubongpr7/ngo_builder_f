@@ -21,7 +21,7 @@ const TOTAL_STEPS = 7
 export default function KYCFormContainer({profileId,userId}: {profileId:string,userId:string}) {
   const router = useRouter()
   const [userProfileId, setUserProfileId] = useState('0')
-  const { data: userProfile, isLoading } = useGetProfileQuery(userProfileId, { skip: userProfileId === '0' })
+  const { data: userProfile, isLoading } = useGetProfileQuery(profileId)
 
   const [activeTab, setActiveTab] = useState("personal-info")
   const [formState, setFormState] = useState<KYCFormState>({
