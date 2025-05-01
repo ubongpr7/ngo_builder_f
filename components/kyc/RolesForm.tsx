@@ -49,7 +49,6 @@ export default function RolesForm({ formData, updateFormData, onComplete,userId,
       await updateUserProfile({
         id: profileId,
         data: {
-        is_mentor: formData.is_mentor,
         is_project_manager: formData.is_project_manager,
         is_donor: formData.is_donor,
         is_volunteer: formData.is_volunteer,
@@ -110,7 +109,7 @@ export default function RolesForm({ formData, updateFormData, onComplete,userId,
                 Partner
               </label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className=" items-center hidden space-x-2">
               <Checkbox
                 id="mentor"
                 checked={formData.is_mentor}
