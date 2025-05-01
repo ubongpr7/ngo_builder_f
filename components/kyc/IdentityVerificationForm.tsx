@@ -65,17 +65,11 @@ export default function IdentityVerificationForm({
 
   // Initialize preview images from existing S3 URLs if available
   useEffect(() => {
-    console.log("Form data for images:", {
-      front: formData.id_document_image_front,
-      back: formData.id_document_image_back,
-      selfie: formData.selfie_image
-    })
     
     const frontUrl = getImageUrl(formData.id_document_image_front)
     const backUrl = getImageUrl(formData.id_document_image_back)
     const selfieUrl = getImageUrl(formData.selfie_image)
     
-    console.log("Extracted URLs:", { frontUrl, backUrl, selfieUrl })
     
     if (frontUrl) setFrontImagePreview(frontUrl)
     if (backUrl) setBackImagePreview(backUrl)
@@ -165,7 +159,6 @@ export default function IdentityVerificationForm({
       await submitKYC({id: profileId, data: formDataObj}).unwrap()
       onComplete()
     } catch (error) {
-      console.error("Failed to submit KYC documents:", error)
     }
   }
 
