@@ -122,6 +122,12 @@ export default function AuthenticatedHeader() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/profile/update" className="flex items-center gap-2 cursor-pointer">
+                  <Settings className="h-4 w-4" />
+                  <span>Update Profile</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer">
                 <LogOut className="h-4 w-4" />
