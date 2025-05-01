@@ -136,11 +136,7 @@ export default function IdentityVerificationForm({
               <RadioGroupItem value="national-id" id="national-id" />
               <Label htmlFor="national-id">National ID Card</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="drivers-license" id="drivers-license" />
-              <Label htmlFor="drivers-license">Driver's License</Label>
-            </div>
-          </RadioGroup>
+            
           {errors.id_document_type && <p className="text-red-500 text-sm">{errors.id_document_type}</p>}
         </div>
 
