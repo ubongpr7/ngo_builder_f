@@ -39,20 +39,47 @@ export default function IdentityVerificationForm({
   const [backImagePreview, setBackImagePreview] = useState<string | null>(null)
   const [selfieImagePreview, setSelfieImagePreview] = useState<string | null>(null)
 
+  // Helper function to extract URL from various possible data structures
+  const getImageUrl = (imageData: any): string | null => {
+    if (!imageData) return null
+    
+    // Case 1: imageData is a string URL directly
+    if (typeof imageData === 'string') return imageData
+    
+    // Case 2: imageData is an object with a url property
+    if (typeof imageData === 'object' && 'url' in imageData) return imageData.url
+    
+    // Case 3: imageData is an object with a different structure
+    // Common Django REST Framework patterns
+    if (typeof imageData === 'object') {
+      // Check for common URL field names
+      for (const field of ['url', 'file', 'path', 'src', 'image']) {
+        if (field in imageData && typeof imageData[field] === 'string') {
+          return imageData[field]
+        }
+      }
+    }
+    
+    return null
+  }
+
   // Initialize preview images from existing S3 URLs if available
   useEffect(() => {
-    // Check if formData has URL properties for existing images
-    if (formData.id_document_image_front && typeof formData.id_document_image_front === 'object' && 'url' in formData.id_document_image_front) {
-      setFrontImagePreview(formData.id_document_image_front.url as string)
-    }
+    console.log("Form data for images:", {
+      front: formData.id_document_image_front,
+      back: formData.id_document_image_back,
+      selfie: formData.selfie_image
+    })
     
-    if (formData.id_document_image_back && typeof formData.id_document_image_back === 'object' && 'url' in formData.id_document_image_back) {
-      setBackImagePreview(formData.id_document_image_back.url as string)
-    }
+    const frontUrl = getImageUrl(formData.id_document_image_front)
+    const backUrl = getImageUrl(formData.id_document_image_back)
+    const selfieUrl = getImageUrl(formData.selfie_image)
     
-    if (formData.selfie_image && typeof formData.selfie_image === 'object' && 'url' in formData.selfie_image) {
-      setSelfieImagePreview(formData.selfie_image.url as string)
-    }
+    console.log("Extracted URLs:", { frontUrl, backUrl, selfieUrl })
+    
+    if (frontUrl) setFrontImagePreview(frontUrl)
+    if (backUrl) setBackImagePreview(backUrl)
+    if (selfieUrl) setSelfieImagePreview(selfieUrl)
   }, [formData])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "front" | "back" | "selfie") => {
@@ -76,6 +103,12 @@ export default function IdentityVerificationForm({
     }
   }
 
+  // Helper function to check if we have a valid image (either File or URL)
+  const hasValidImage = (imageData: any): boolean => {
+    if (imageData instanceof File) return true
+    return getImageUrl(imageData) !== null
+  }
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
@@ -88,27 +121,15 @@ export default function IdentityVerificationForm({
     }
 
     // Check if we have either a File object or an existing URL for each required image
-    const hasFrontImage = 
-      (formData.id_document_image_front instanceof File) || 
-      (typeof formData.id_document_image_front === 'object' && formData.id_document_image_front && 'url' in formData.id_document_image_front)
-    
-    const hasBackImage = 
-      (formData.id_document_image_back instanceof File) || 
-      (typeof formData.id_document_image_back === 'object' && formData.id_document_image_back && 'url' in formData.id_document_image_back)
-    
-    const hasSelfieImage = 
-      (formData.selfie_image instanceof File) || 
-      (typeof formData.selfie_image === 'object' && formData.selfie_image && 'url' in formData.selfie_image)
-
-    if (!hasFrontImage) {
+    if (!hasValidImage(formData.id_document_image_front)) {
       newErrors.id_document_image_front = "Front image of ID document is required"
     }
 
-    if (!hasBackImage) {
+    if (!hasValidImage(formData.id_document_image_back)) {
       newErrors.id_document_image_back = "Back image of ID document is required"
     }
 
-    if (!hasSelfieImage) {
+    if (!hasValidImage(formData.selfie_image)) {
       newErrors.selfie_image = "Selfie with ID is required"
     }
 
