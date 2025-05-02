@@ -54,7 +54,6 @@ export default function JoinMembershipPage() {
                 <h3 className="font-bold mb-2">Pay Membership Dues</h3>
                 <p className="text-gray-600">Complete the payment process for your selected membership tier.</p>
               </div>
-
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div className="bg-green-100 text-green-800 w-8 h-8 rounded-full flex items-center justify-center font-bold mb-3">
                   4
@@ -65,7 +64,6 @@ export default function JoinMembershipPage() {
                 </p>
               </div>
             </div>
-
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4">Need More Information?</h2>
               <p className="text-gray-600 mb-4">

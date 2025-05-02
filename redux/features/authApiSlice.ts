@@ -71,12 +71,13 @@ const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
-    resendCode: builder.mutation<void, { email: string }>({
+    resendCode: builder.mutation<void, { email: string;password: string }>({
       query: (data) => ({
         url: '/api/v1/accounts/verify/',
         method: 'GET',
         params: {  
-          email: data.email
+          email: data.email,
+          password: data.password
         }
       })
     }),

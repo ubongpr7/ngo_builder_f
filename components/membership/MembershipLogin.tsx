@@ -47,22 +47,72 @@ export default function VerificationLoginForm() {
 
   const handleSendCode = async () => {
     try {
-      await sendCode({ email }).unwrap()
+      await sendCode({ email: email, password: password }).unwrap()
       setShowCodeInput(true)
       setResendCooldown(60)
       toast({
         title: "Verification sent",
         description: "Check your email for the 6-digit code",
       })
-    } catch (error) {
+    } catch (error: any) {
+      // Extract error details from RTK Query error object
+      const status = error?.status || 0
+      const errorData = error?.data || {}
+      
+      // Default error message
+      let errorTitle = "Failed to send code"
+      let errorDescription = "Please try again later"
+      
+      // Handle specific error status codes
+      switch (status) {
+        case 400:
+          errorTitle = "Invalid request"
+          errorDescription = errorData.detail || "Please check your information and try again"
+          break
+        case 401:
+          errorTitle = "Authentication failed"
+          errorDescription = "Your session may have expired. Please log in again"
+          break
+        case 403:
+          errorTitle = "Access denied"
+          errorDescription = "You don't have permission to perform this action"
+          break
+        case 404:
+          errorTitle = "Invalid credentials"
+          errorDescription = "The email or password you entered is incorrect"
+          break
+        case 429:
+          errorTitle = "Too many attempts"
+          errorDescription = "Please wait a moment before trying again"
+          break
+        case 500:
+        case 502:
+        case 503:
+          errorTitle = "Server error"
+          errorDescription = "We're experiencing technical difficulties. Please try again later"
+          break
+        default:
+          // Check if there's a network error
+          if (!navigator.onLine) {
+            errorTitle = "Network error"
+            errorDescription = "Please check your internet connection and try again"
+          } else if (errorData.detail) {
+            // Use the error detail from the API if available
+            errorDescription = errorData.detail
+          }
+      }
+      
+      // Display the appropriate error message
       toast({
         variant: "destructive",
-        title: "Failed to send code",
-        description: "Please check your email and try again",
+        title: errorTitle,
+        description: errorDescription,
       })
+      
+      // Log the error for debugging (consider removing in production)
+      console.error("Send code error:", error)
     }
   }
-
   const handleVerification = async (data: LoginFormData) => {
     if (!showCodeInput) {
       await handleSendCode()
