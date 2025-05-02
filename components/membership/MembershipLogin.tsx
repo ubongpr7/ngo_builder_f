@@ -81,7 +81,7 @@ export default function VerificationLoginForm() {
         password: data.password
       }).unwrap()
 
-      router.push(user.profile ? "/dashboard" : "/profile/create")
+      router.push(user.profile ? "/dashboard" : "/profile/update")
       
     } catch (error) {
       toast({
