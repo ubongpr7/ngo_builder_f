@@ -107,7 +107,7 @@ export default function DashboardPage() {
         <p className="mb-4">
           Your profile is 70% complete. Finish setting up your profile to get the most out of your membership.
         </p>
-        <Link href="/dashboard/profile" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        <Link href="/dashboard/profile" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 hover:text-white">
           Update Profile
         </Link>
       </div>
