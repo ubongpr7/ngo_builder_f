@@ -102,7 +102,7 @@ function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
 function FooterLink({ href, text }: { href: string; text: string }) {
   return (
     <li>
-      <Link href={href} className="text-green-100 hover:text-[#469620] hover:underline transition-colors">
+      <Link href={href} className="text-green-100 hover:text-[#469620] hover:underline transition-colors duration-100 ease-in-out">
         {text}
       </Link>
     </li>

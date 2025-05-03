@@ -48,13 +48,12 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="max-w-screen-2xl mx-auto flex h-20 items-center justify-between px-6 md:px-12">
+        {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto ml-10" />
+          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-12 w-auto" />
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
-
-
         {/* Desktop Navigation */}
         <div className="hidden md:flex">
           <NavigationMenu>
@@ -90,7 +89,7 @@ export default function Header() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/donate"  legacyBehavior passHref>
+                <Link href="/donate" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>Donate</NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -104,9 +103,10 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button asChild variant="default" className="hidden md:inline-flex border border-green-700 hover:bg-[#469620] hover:text-white">
+          <Button asChild variant="default" className="hidden md:inline-flex border border-green-700 hover:bg-[#469620] hover:text-white hover:shadow-custom">
             <Link href="/membership/portal">Membership Portal</Link>
           </Button>
+
 
           {/* Mobile menu button */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>

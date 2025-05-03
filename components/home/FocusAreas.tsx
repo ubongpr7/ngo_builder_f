@@ -3,11 +3,11 @@ import { Users, BookOpen, Laptop, Home, Heart, GraduationCap, UserPlus, Church, 
 
 export default function FocusAreas() {
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-[#171717] ">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">Strategic Focus Areas</h2>
-          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold text-[#fdd65b] lg:text-[39px]">Strategic Focus Areas</h2>
+          <p className="mt-4 text-[#8c8c8c] max-w-2xl mx-auto">
             Our work spans across multiple domains to ensure holistic development of individuals and communities.
           </p>
           <div className="mt-2 h-1 w-20 bg-green-600 mx-auto"></div>
@@ -80,8 +80,8 @@ function FocusArea({
   description: string
 }) {
   return (
-    <div className=" border border-[#469620] bg-white rounded-xl p-6 shadow-sm  hover:shadow-md transition-shadow flex flex-col items-center text-center">
-      <div className="bg-green-50 p-3 rounded-full mb-4 text-green-700">{icon}</div>
+    <div className=" border border-grey-600 bg-white rounded-xl p-6 shadow-sm  hover:shadow-md transition-shadow flex flex-col items-center text-center">
+      <div className="bg-[#fdd65b] p-3 rounded-full mb-4 text-black">{icon}</div>
       <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-600">{description}</p>
     </div>
