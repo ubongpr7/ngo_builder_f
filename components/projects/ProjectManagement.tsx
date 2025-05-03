@@ -97,7 +97,7 @@ export default function ProjectManagement() {
           <p className="text-gray-500">Manage and track organizational projects</p>
         </div>
         <div className="mt-4 md:mt-0">
-          <Button className="bg-green-600 hover:bg-green-700">
+          <Button className="bg-green-600 hover:bg-green-700 text-white">
             <Plus className="mr-2 h-4 w-4" /> New Project
           </Button>
         </div>
