@@ -46,14 +46,14 @@ export default function VerifyEmailPage() {
 
   return (
     <div className="max-w-md mx-auto text-center py-12 px-4">
-      <div className="space-y-6">
+      <div className="space-y-6 bg-white p-20">
         <div className="animate-pulse">
           <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
             <span className="text-2xl">✉️</span>
           </div>
         </div>
         
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900">
           Check Your Email
         </h1>
         
