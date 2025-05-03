@@ -1,6 +1,6 @@
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">Terms of Service</h1>
         <p className="text-gray-500 mb-8">Last updated: August 1, 2023</p>
@@ -160,13 +160,11 @@ export default function TermsOfServicePage() {
           </div>
           <div className="pl-8">
             <p className="text-gray-700 leading-relaxed">If you have any questions or concerns about these Terms, please contact us at:</p>
-            <p className="text-gray-700 mb-6">
-              Email: legal@destinybuilders.africa
-              <br />
-              Phone: +234 123 456 7890
-              <br />
-              Address: 123 Main Street, Lagos, Nigeria
-            </p>
+            <div className="text-gray-700 mb-6">
+              <p className="text-blue-700">Email: legal@destinybuilders.africa</p>
+              <p className="text-gray-700">Phone: +234 123 456 7890</p>
+              <p className="text-gray-700">Address: 123 Main Street, Lagos, Nigeria</p>
+            </div>
           </div>
         </div>
       </div>
