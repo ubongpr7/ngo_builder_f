@@ -27,8 +27,8 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Send us an email and we'll respond within 24 hours.</p>
-            <Button className="w-full bg-green-600 hover:bg-green-700">
-              <Mail className="mr-2 h-4 w-4" /> Email Us
+            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+              <Mail className="mr-2 h-4 w-4 text-white" /> Email Us
             </Button>
           </CardContent>
         </Card>
@@ -43,8 +43,8 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Available Monday-Friday, 9am-5pm WAT.</p>
-            <Button className="w-full bg-green-600 hover:bg-green-700">
-              <Phone className="mr-2 h-4 w-4" /> Call Us
+            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+              <Phone className="mr-2 h-4 w-4 text-white" /> Call Us
             </Button>
           </CardContent>
         </Card>
@@ -59,14 +59,14 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Get instant help from our support team.</p>
-            <Button className="w-full bg-green-600 hover:bg-green-700">
-              <MessageSquare className="mr-2 h-4 w-4" /> Start Chat
+            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+              <MessageSquare className="mr-2 h-4 w-4 text-white" /> Start Chat
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
 
       <Accordion type="single" collapsible className="w-full mb-12">
         <AccordionItem value="item-1">
@@ -113,16 +113,16 @@ export default function HelpPage() {
         </AccordionItem>
       </Accordion>
 
-      <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-        <h2 className="text-xl font-bold mb-2">Still Need Help?</h2>
-        <p className="mb-4">Our support team is here to assist you with any questions or issues you may have.</p>
+      <div className="bg-[#171717] p-6 rounded-lg border border-green-200">
+        <h2 className="text-xl font-bold mb-2 text-[#fdd65b]">Still Need Help?</h2>
+        <p className="mb-4 text-white">Our support team is here to assist you with any questions or issues you may have.</p>
         <div className="flex flex-wrap gap-4">
-          <Link href="/dashboard/contact" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          <Link href="/dashboard/contact" className="bg-[#fdd65b] text-black px-4 py-2 rounded hover:bg-green-700">
             Contact Support
           </Link>
           <Link
             href="/dashboard/faq"
-            className="bg-white border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-50"
+            className="bg-transparent border-2 border-white text-white px-4 py-2 rounded hover:bg-green-50"
           >
             View All FAQs
           </Link>
