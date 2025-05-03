@@ -197,14 +197,14 @@ export default function InventoryManagement() {
           <h1 className="text-2xl font-bold tracking-tight">Inventory Management</h1>
           <p className="text-gray-500">Track and manage organizational assets</p>
         </div>
-        <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
-          <Button variant="outline" className="flex items-center">
+        <div className="mt-4 md:mt-0 flex flex-wrap gap-2 ">
+          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out">
             <QrCode className="mr-2 h-4 w-4" /> Scan Asset
           </Button>
-          <Button variant="outline" className="flex items-center">
+          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out">
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
-          <Button asChild className="bg-green-600 hover:bg-green-700">
+          <Button asChild className="bg-green-600 hover:bg-green-700 text-white hover:text-white">
             <Link href="/membership/dashboard/inventory/assets/new">
               <Plus className="mr-2 h-4 w-4" /> Add Asset
             </Link>

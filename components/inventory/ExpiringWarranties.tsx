@@ -94,7 +94,7 @@ export default function ExpiringWarranties() {
               </td>
               <td className="py-3">{getStatusBadge(item.status, item.daysRemaining)}</td>
               <td className="py-3 text-right">
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="hover:bg-green-700 hover:text-white transition-colors">
                   <Link href={`/membership/dashboard/inventory/assets/${item.id}`}>View</Link>
                 </Button>
               </td>

@@ -69,7 +69,7 @@ export default function UpcomingMaintenance() {
               </div>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/membership/dashboard/inventory/assets/${item.id}`}>View</Link>
+              <Link href={`/membership/dashboard/inventory/assets/${item.id}`} className="hover:bg-green-700 hover:text-white transition-colors">View</Link>
             </Button>
           </div>
         ))

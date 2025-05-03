@@ -23,14 +23,14 @@ export default function InventoryDashboard() {
           <p className="text-gray-500">Overview of your organization's assets and inventory</p>
         </div>
         <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="border-green-600 hover:bg-green-700 hover:text-white">
             <a href="#" className="flex items-center">
               <FileText className="mr-2 h-4 w-4" />
               Generate Report
             </a>
           </Button>
           <Button asChild>
-            <a href="/membership/dashboard/inventory/assets/new" className="bg-green-600 hover:bg-green-700">
+            <a href="/membership/dashboard/inventory/assets/new" className="bg-green-600 hover:bg-green-700 text-white hover:text-white">
               Add New Asset
             </a>
           </Button>
