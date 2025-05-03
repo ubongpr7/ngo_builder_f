@@ -55,7 +55,7 @@ export default function DashboardPage() {
             <div className="border-b pb-4">
               <h3 className="font-medium">Quarterly Membership Meeting</h3>
               <p className="text-sm text-gray-600">Join us for our quarterly membership meeting on August 15th.</p>
-              <p className="text-xs text-gray-500 mt-1">Posted 1 week ago</p>
+              <p className="text-xs text-gray-500 mt-1 ">Posted 1 week ago</p>
             </div>
             <div>
               <h3 className="font-medium">Website Updates</h3>

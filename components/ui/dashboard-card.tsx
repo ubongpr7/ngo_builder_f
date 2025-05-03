@@ -21,7 +21,7 @@ export function DashboardCard({ title, value, description, icon, trend, footer, 
     <Card className={cn("overflow-hidden bg-white", className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-sm font-medium text-gray-700">{title}</CardTitle>
+          <CardTitle className="text-sm font-medium text-gray-700 text-left">{title}</CardTitle>
           {description && <CardDescription className="text-gray-500">{description}</CardDescription>}
         </div>
         {icon && <div className="h-9 w-9 rounded-md flex items-center justify-center bg-[#FDD65B]">{icon}</div>}
