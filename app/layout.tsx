@@ -22,6 +22,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/logo.jpg" />
+      </head>
       <body className={inter.className}>
         <NextTopLoader />
         <ToastContainer position="top-right" autoClose={3000} />
