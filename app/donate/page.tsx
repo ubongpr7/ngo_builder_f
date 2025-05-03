@@ -45,12 +45,12 @@ export default function DonatePage() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
           <div className="p-8">
-            <h2 className="text-2xl font-bold mb-6">Make a Donation</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Make a Donation</h2>
 
             <Tabs defaultValue="one-time" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="one-time">One-Time Donation</TabsTrigger>
-                <TabsTrigger value="monthly">Monthly Donation</TabsTrigger>
+                <TabsTrigger value="one-time" className="data-[state=active]:border-b-2 data-[state=active]:border-green-600">One-Time Donation</TabsTrigger>
+                <TabsTrigger value="monthly" className="data-[state=active]:border-b-2 data-[state=active]:border-green-600">Monthly Donation</TabsTrigger>
               </TabsList>
 
               <TabsContent value="one-time">
@@ -65,7 +65,7 @@ export default function DonatePage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-green-50 p-8 rounded-xl border border-green-100">
+          <div className="bg-green-50 p-8 rounded-xl border border-[#469620]">
             <h2 className="text-xl font-bold mb-4">Other Ways to Give</h2>
             <ul className="space-y-4">
               <li className="flex items-start">
@@ -104,7 +104,7 @@ export default function DonatePage() {
             </ul>
           </div>
 
-          <div className="bg-green-50 p-8 rounded-xl border border-green-100">
+          <div className="bg-green-50 p-8 rounded-xl border border-[#469620]">
             <h2 className="text-xl font-bold mb-4">Corporate Partnerships</h2>
             <p className="text-gray-600 mb-4">
               We welcome partnerships with corporations and businesses that share our vision and values. Corporate
@@ -136,7 +136,7 @@ export default function DonatePage() {
                 <span>Sponsorship of specific programs</span>
               </li>
             </ul>
-            <Button className="w-full bg-green-600 hover:bg-green-700">Become a Corporate Partner</Button>
+            <Button className="w-full bg-green-600 hover:bg-green-700 text-white ">Become a Corporate Partner</Button>
           </div>
         </div>
 
@@ -147,7 +147,7 @@ export default function DonatePage() {
             publish financial reports and impact assessments to show how your contributions are making a difference. You
             can access these reports on our Resources page.
           </p>
-          <Button variant="outline">View Financial Reports</Button>
+          <Button variant="outline" className="hover:bg-[#469620] hover:text-white border-[#469620]">View Financial Reports</Button>
         </div>
       </div>
     </div>
@@ -268,7 +268,7 @@ function DonationForm({ recurring }: { recurring: boolean }) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
+      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
         {recurring ? "Donate Monthly" : "Donate Now"}
       </Button>
 
