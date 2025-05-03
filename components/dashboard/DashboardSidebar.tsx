@@ -60,8 +60,8 @@ export default function DashboardSidebar() {
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-gray-100",
-        isActive(href) ? "bg-gray-100 text-green-700 font-medium" : "text-gray-600",
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:underline hover:text-green-700",
+        isActive(href) ? "text-[#469620] border border-[#469620] font-medium" : "text-gray-600",
       )}
     >
       <Icon className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function DashboardSidebar() {
             </NavItem>
           </nav>
         </div>
-        <div className="mt-auto border-t p-4">
+        <div className="mt-auto border-t p-1">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-gray-200"></div>
             <div>
