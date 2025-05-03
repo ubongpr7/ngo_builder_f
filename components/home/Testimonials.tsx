@@ -9,7 +9,7 @@ const testimonials = [
       "The leadership training I received from Destiny Builders transformed my approach to community service. I'm now leading initiatives that are making real change.",
     name: "Sarah Okafor",
     role: "Community Leader",
-    image: "/testimonial1.jpg",
+    image: "https://plus.unsplash.com/premium_photo-1705969326472-e5646839d876?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8U2FyYWglMjBPa2Fmb3J8ZW58MHwwfDB8fHww",
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ const testimonials = [
       "Thanks to the digital skills program, I was able to start my own web design business. Now I'm employing other youth in my community.",
     name: "Emmanuel Adeyemi",
     role: "Entrepreneur",
-    image: "/testimonial2.jpg",
+    image: "https://plus.unsplash.com/premium_photo-1680278103253-7e96e8e0da7d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8RW1tYW51ZWx8ZW58MHwwfDB8fHww",
   },
   {
     id: 3,
@@ -25,7 +25,7 @@ const testimonials = [
       "The agricultural training provided by Destiny Builders has helped our cooperative increase crop yields by 40%. This has changed our economic situation completely.",
     name: "Grace Mwangi",
     role: "Farmer",
-    image: "/testimonial3.jpg",
+    image: "https://images.unsplash.com/photo-1530278794942-f0341459d812?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8R3JhY2UlMjBNd2FuZ2l8ZW58MHwwfDB8fHww",
   },
 ]
 
