@@ -10,7 +10,7 @@ const projects = [
     id: 1,
     title: "Digital Skills Workshop",
     description: "Training 200 youth in web development and digital marketing skills",
-    image: "/project1.jpg",
+    image: "https://media.istockphoto.com/id/2171171864/photo/hispanic-latin-american-software-engineer-developer-use-laptop-computer-program-coding.webp?a=1&b=1&s=612x612&w=0&k=20&c=4JA3J13JsEh4NPx1mJpaO8yM2DOrXu1XkjlOnNdKaJQ=",
     location: "Lagos, Nigeria",
     date: "June 15, 2023",
     category: "Digital Literacy",
@@ -19,7 +19,7 @@ const projects = [
     id: 2,
     title: "Community Health Outreach",
     description: "Free medical checkups and health education for underserved communities",
-    image: "/project2.jpg",
+    image: "https://images.unsplash.com/photo-1723649388532-358b56dda065?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Q29tbXVuaXR5JTIwSGVhbHRoJTIwT3V0cmVhY2h8ZW58MHx8MHx8fDA%3D",
     location: "Accra, Ghana",
     date: "July 8, 2023",
     category: "Health",
@@ -28,7 +28,7 @@ const projects = [
     id: 3,
     title: "Women Entrepreneurship Program",
     description: "Business training and microloans for women-owned small businesses",
-    image: "/project3.jpg",
+    image: "https://plus.unsplash.com/premium_photo-1726704124426-c220031548b2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8V29tZW4lMjBFbnRyZXByZW5ldXJzaGlwJTIwUHJvZ3JhbXxlbnwwfHwwfHx8MA%3D%3D",
     location: "Nairobi, Kenya",
     date: "August 22, 2023",
     category: "Women Empowerment",
@@ -55,7 +55,7 @@ export default function LatestProjects() {
               <div className="relative h-48">
                 <Image src={project.image || "/placeholder.svg"} alt={project.title} fill className="object-cover" />
                 <div className="absolute top-4 left-4">
-                  <Badge className="bg-green-600 hover:bg-green-700">{project.category}</Badge>
+                  <Badge className="bg-green-600 hover:bg-green-700 text-white">{project.category}</Badge>
                 </div>
               </div>
               <CardHeader>
