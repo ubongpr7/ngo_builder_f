@@ -24,7 +24,7 @@ export function DashboardCard({ title, value, description, icon, trend, footer, 
           <CardTitle className="text-sm font-medium text-gray-700">{title}</CardTitle>
           {description && <CardDescription className="text-gray-500">{description}</CardDescription>}
         </div>
-        {icon && <div className="h-9 w-9 rounded-md flex items-center justify-center bg-gray-100">{icon}</div>}
+        {icon && <div className="h-9 w-9 rounded-md flex items-center justify-center bg-[#FDD65B]">{icon}</div>}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-gray-900">{value}</div>
