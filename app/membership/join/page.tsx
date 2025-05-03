@@ -71,7 +71,7 @@ export default function JoinMembershipPage() {
                 hesitate to contact us.
               </p>
               <Button asChild variant="outline">
-                <Link href="/contact" className="text-green-600 hover:underline">Contact Us</Link>
+                <Link href="/contact" className="text-green-600 hover:bg-[#469620] hover:text-white">Contact Us</Link>
               </Button>
             </div>
           </div>
