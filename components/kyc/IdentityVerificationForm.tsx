@@ -198,7 +198,7 @@ export default function IdentityVerificationForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
+          <div className="space-y-2 ">
             <Label>ID Document (Front)</Label>
             <div
               className={`border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 ${
