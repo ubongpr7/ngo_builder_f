@@ -188,13 +188,11 @@ export default function PrivacyPolicyPage() {
           </div>
           <div className="pl-8">
             <p className="text-gray-700 leading-relaxed">If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
-            <p className="text-blue-700 mb-6">
-              Email: privacy@destinybuilders.africa
-              <br />
-              Phone: +234 123 456 7890
-              <br />
-              Address: 123 Main Street, Lagos, Nigeria
-            </p>
+            <div className="text-gray-700 mb-6">
+              <p className="text-blue-700">Email: legal@destinybuilders.africa</p>
+              <p className="text-gray-700">Phone: +234 123 456 7890</p>
+              <p className="text-gray-700">Address: 123 Main Street, Lagos, Nigeria</p>
+            </div>
           </div>
         </div>
       </div>
