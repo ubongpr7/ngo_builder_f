@@ -21,9 +21,10 @@ export default function AboutPage() {
           </p>
 
           <div className="my-8 relative h-80 rounded-xl overflow-hidden">
-            <Image src="/about-image.jpg" alt="Destiny Builders team members" fill className="object-cover" />
+            <Image src="https://plus.unsplash.com/premium_photo-1681823622383-52d4656940e6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fEFib3V0JTIwRGVzdGlueSUyMEJ1aWxkZXJzfGVufDB8fDB8fHww" alt="Destiny Builders team members" fill className="object-cover" />
           </div>
 
+          <hr className="border-t-2 border-green-500 my-8" />
           <h2 className="text-2xl font-bold mt-8 mb-4">Our Story</h2>
           <p className="mb-4">
             Destiny Builders Empowerment Foundation was founded with a clear purpose: to empower individuals and
@@ -36,6 +37,7 @@ export default function AboutPage() {
             initiatives to women empowerment, our work spans multiple domains to ensure holistic development.
           </p>
 
+          <hr className="border-t-2 border-green-500 my-8" />
           <h2 className="text-2xl font-bold mt-8 mb-4">Our Approach</h2>
           <p className="mb-4">
             At Destiny Builders, we believe in a community-centered approach to development. We work closely with local
@@ -48,6 +50,7 @@ export default function AboutPage() {
             communities across Africa.
           </p>
 
+          <hr className="border-t-2 border-green-500 my-8" />
           <h2 className="text-2xl font-bold mt-8 mb-4">Our Impact</h2>
           <p className="mb-4">Since our inception, Destiny Builders has:</p>
           <ul className="list-disc pl-6 mb-6">
