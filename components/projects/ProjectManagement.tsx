@@ -22,7 +22,7 @@ const projects = [
     status: "Active",
     progress: 65,
     team: 8,
-    image: "/project1.jpg",
+    image: "https://media.istockphoto.com/id/2156390491/photo/hispanic-latin-american-software-engineer-developer-use-laptop-computer-program-coding.webp?a=1&b=1&s=612x612&w=0&k=20&c=HgKo9kfGjRf5dNL1Eiu0cBgcc-cGERomT_Y43eRsKyk=",
   },
   {
     id: 2,
@@ -34,7 +34,7 @@ const projects = [
     status: "Upcoming",
     progress: 0,
     team: 15,
-    image: "/project2.jpg",
+    image: "https://images.unsplash.com/photo-1694402284177-5d3eed3e87e1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fENvbW11bml0eSUyMEhlYWx0aCUyME91dHJlYWNofGVufDB8fDB8fHww",
   },
   {
     id: 3,
@@ -46,7 +46,7 @@ const projects = [
     status: "Active",
     progress: 40,
     team: 6,
-    image: "/project3.jpg",
+    image: "https://plus.unsplash.com/premium_photo-1681493281336-3cb2914a3236?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8V29tZW4lMjBFbnRyZXByZW5ldXJzaGlwJTIwUHJvZ3JhbXxlbnwwfHwwfHx8MA%3D%3D",
   },
   {
     id: 4,
@@ -58,7 +58,7 @@ const projects = [
     status: "Completed",
     progress: 100,
     team: 12,
-    image: "/project4.jpg",
+    image: "https://images.unsplash.com/photo-1562910859-be83f1df7b56?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8RGV2ZWxvcGluZyUyMGxlYWRlcnNoaXAlMjBza2lsbHMlMjBpbiUyMHlvdW5nJTIwcGVvcGxlJTIwYWNyb3NzJTIwQWZyaWNhfGVufDB8fDB8fHww",
   },
   {
     id: 5,
@@ -70,7 +70,7 @@ const projects = [
     status: "Completed",
     progress: 100,
     team: 10,
-    image: "/project5.jpg",
+    image: "https://images.unsplash.com/photo-1709634500517-9ed519597134?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8VGVhY2hpbmclMjBzdXN0YWluYWJsZSUyMGZhcm1pbmclMjB0ZWNobmlxdWVzJTIwdG8lMjBydXJhbCUyMGNvbW11bml0aWVzfGVufDB8fDB8fHww",
   },
 ]
 
@@ -148,9 +148,9 @@ function ProjectCard({ project }: { project: any }) {
         <div className="absolute top-4 right-4">
           <Badge
             className={`
-              ${project.status === "Active" ? "bg-green-600" : ""}
-              ${project.status === "Upcoming" ? "bg-blue-600" : ""}
-              ${project.status === "Completed" ? "bg-gray-600" : ""}
+              ${project.status === "Active" ? "bg-green-600 text-white" : ""}
+              ${project.status === "Upcoming" ? "bg-blue-600 text-white" : ""}
+              ${project.status === "Completed" ? "bg-gray-600 text-white" : ""}
             `}
           >
             {project.status}
