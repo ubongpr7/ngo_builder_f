@@ -110,7 +110,7 @@ export default function ContactInfoForm({ formData, updateFormData, onComplete, 
                 {formData.date_of_birth ? format(new Date(formData.date_of_birth), "PPP") : "Select your date of birth"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 ">
               <Calendar
                 mode="single"
                 selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
@@ -142,7 +142,7 @@ export default function ContactInfoForm({ formData, updateFormData, onComplete, 
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isLoading}>
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
           {isLoading ? "Saving..." : "Save & Continue"}
         </Button>
       </div>

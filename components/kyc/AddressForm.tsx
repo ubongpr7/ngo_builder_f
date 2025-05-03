@@ -229,6 +229,7 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
             value={formData.street_number?.toString() || ""}
             onChange={(e) => updateFormData({ street_number: e.target.value ? Number.parseInt(e.target.value) : null })}
             placeholder="Enter street number (optional)"
+            min="0"
           />
         </div>
 
@@ -240,6 +241,7 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
             value={formData.apt_number?.toString() || ""}
             onChange={(e) => updateFormData({ apt_number: e.target.value ? Number.parseInt(e.target.value) : null })}
             placeholder="Enter apartment number (optional)"
+            min="0"
           />
         </div>
 
@@ -267,7 +269,7 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isUpdating}>
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isUpdating}>
           {isUpdating ? "Saving..." : "Save & Continue"}
         </Button>
       </div>
