@@ -1,6 +1,6 @@
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
         <p className="text-gray-500 mb-8">Last updated: August 1, 2023</p>
@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
           </div>
           <div className="pl-8">
             <p className="text-gray-700 leading-relaxed">If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
-            <p className="text-gray-700 mb-6">
+            <p className="text-blue-700 mb-6">
               Email: privacy@destinybuilders.africa
               <br />
               Phone: +234 123 456 7890

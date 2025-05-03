@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useDispatch } from "react-redux"
 import { useLogoutMutation } from '../../redux/features/authApiSlice';
+import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -55,11 +56,12 @@ export default function AuthenticatedHeader() {
 
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm border border-b-grey-400">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
-          <Link href="/dashboard" className="-m-1.5 p-1.5">
-            <span className="text-xl font-bold text-green-700">destinybuilders</span>
+          <Link href="/dashboard" className="-m-1.5 p-1.5 flex items-center">
+          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto " />
+            <span className="text-xl font-bold text-green-700 ml-3">destinybuilders</span>
           </Link>
         </div>
 
@@ -92,7 +94,7 @@ export default function AuthenticatedHeader() {
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
           <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
+            <Bell className="h-10 w-10" />
             <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
           </Button>
 
