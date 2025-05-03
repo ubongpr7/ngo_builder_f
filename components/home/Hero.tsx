@@ -23,7 +23,7 @@ export default function Hero() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Button asChild size="lg" className="bg-green-600 hover:bg-green-700">
-                <Link href="/membership/join" className="text-gray-900">Join Our Community</Link>
+                <Link href="/membership/join" className="text-white">Join Our Community</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link href="/about">Learn More</Link>
@@ -32,7 +32,7 @@ export default function Hero() {
           </div>
 
           <div className="relative h-[400px] lg:h-[500px] rounded-xl overflow-hidden shadow-xl">
-            <Image src="/hero-image.jpg" alt="African community development" fill className="object-cover" priority />
+            <Image src="https://images.unsplash.com/photo-1630068846062-3ffe78aa5049?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8RW1wb3dlcmluZyUyMGluZGl2aWR1YWxzJTIwYW5kJTIwY29tbXVuaXRpZXMlMjB0byUyMHVubG9jayUyMHRoZWlyJTIwZnVsbCUyMHBvdGVudGlhbHxlbnwwfHwwfHx8MA%3D%3D" alt="African community development" fill className="object-cover" priority />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             <div className="absolute bottom-0 left-0 p-6">
               <div className="bg-white/90 backdrop-blur-sm p-4 rounded-lg max-w-md">

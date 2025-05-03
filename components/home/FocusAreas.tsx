@@ -15,7 +15,7 @@ export default function FocusAreas() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           <FocusArea
-            icon={<Users className="h-8 w-8" />}
+            icon={<Users className="h-8 w-8 " />}
             title="Leadership Development"
             description="Cultivating effective leaders at all levels of society"
           />
@@ -80,7 +80,7 @@ function FocusArea({
   description: string
 }) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col items-center text-center">
+    <div className=" border border-[#469620] bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col items-center text-center">
       <div className="bg-green-50 p-3 rounded-full mb-4 text-green-700">{icon}</div>
       <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-600">{description}</p>

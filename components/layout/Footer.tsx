@@ -5,14 +5,14 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "luc
 
 export default function Footer() {
   return (
-    <footer className="bg-green-600  text-white">
+    <footer className="bg-[#040b13]  text-white mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo and About */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
               <Image
-                src="/logo.svg"
+                src="/logo.jpg"
                 alt="Destiny Builders Logo"
                 width={50}
                 height={50}
@@ -24,7 +24,7 @@ export default function Footer() {
               Building African Destinies, Transforming Lives. Providing resources, support, and guidance to individuals
               and communities seeking control over their personal, professional, and community development.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 ">
               <SocialLink href="https://facebook.com" icon={<Facebook size={18} />} />
               <SocialLink href="https://twitter.com" icon={<Twitter size={18} />} />
               <SocialLink href="https://instagram.com" icon={<Instagram size={18} />} />
@@ -90,7 +90,7 @@ function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
   return (
     <Link
       href={href}
-      className="bg-green-800 p-2 rounded-full hover:bg-green-700 transition-colors"
+      className="bg-white p-2 rounded-full hover:bg-white transition-colors"
       target="_blank"
       rel="noopener noreferrer"
     >
@@ -102,7 +102,7 @@ function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
 function FooterLink({ href, text }: { href: string; text: string }) {
   return (
     <li>
-      <Link href={href} className="text-green-100 hover:text-white hover:underline transition-colors">
+      <Link href={href} className="text-green-100 hover:text-[#469620] hover:underline transition-colors">
         {text}
       </Link>
     </li>

@@ -47,10 +47,10 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-gray-100/95 backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.svg" alt="Destiny Builders Logo" width={50} height={50} className="h-10 w-auto" />
+          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto ml-10" />
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
 
@@ -60,31 +60,31 @@ export default function Header() {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Who We Are</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620]">Who We Are</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {whoWeAreLinks.map((link) => (
-                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
+                      <ListItem className=" text-gray-900 hover:underline hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Resources</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620]">Resources</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {resourcesLinks.map((link) => (
-                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="hover:underline text-gray-900 hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Membership</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620]">Membership</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {membershipLinks.map((link) => (
-                      <ListItem className="hover:text-gray-50 text-gray-900 hover:bg-green-400" key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="hover:underline text-gray-900 hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
@@ -104,7 +104,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button asChild variant="default" className="hidden md:inline-flex border border-green-700 hover:bg-green-700">
+          <Button asChild variant="default" className="hidden md:inline-flex border border-green-700 hover:bg-[#469620] hover:text-white">
             <Link href="/membership/portal">Membership Portal</Link>
           </Button>
 
@@ -125,7 +125,7 @@ export default function Header() {
             <MobileNavLink href="/donate" title="Donate" />
             <MobileNavLink href="/contact" title="Contact Us" />
             <div className="pt-4">
-              <Button asChild className="w-full border border-green-700   hover:bg-green-700">
+              <Button asChild className="w-full border border-green-700   hover:bg-[#469620]">
                 <Link href="/membership/portal" >Membership Portal</Link>
               </Button>
             </div>
@@ -164,7 +164,7 @@ function MobileNavLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
-      className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:bg-gray-400 hover:text-accent-foreground"
+      className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:underline hover:text-accent-foreground text-center"
     >
       {title}
     </Link>
