@@ -3,10 +3,14 @@ import { Button } from "@/components/ui/button"
 
 export default function CallToAction() {
   return (
-    <section className="py-16 bg-green-700 text-white">
+    <section className="py-20 bg-[#469620] text-white">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Us in Building African Destinies</h2>
-        <p className="text-green-100 max-w-2xl mx-auto mb-8">
+        <h2 className="text-[28px] lg:text-[56px] lg:leading-[64px] font-bold mb-6">
+          Join Us <br className="hidden lg:inline" />
+          in Building African Destinies
+        </h2>
+        <div className="border-t-[12px] border-[#fdd65b] h-0 w-[55px] mx-auto my-4"></div>
+        <p className="text-white max-w-2xl mx-auto mb-8">
           Whether you want to become a member, volunteer your time, or support our work financially, there are many ways
           to get involved with Destiny Builders.
         </p>
