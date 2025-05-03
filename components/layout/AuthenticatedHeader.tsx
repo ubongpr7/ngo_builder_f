@@ -102,7 +102,7 @@ export default function AuthenticatedHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarImage src="/user-icon.svg" alt="User" />
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
                 <span className="hidden md:inline">My Account</span>

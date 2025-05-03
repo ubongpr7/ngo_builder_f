@@ -202,7 +202,10 @@ export default function DashboardSidebar() {
         </div>
         <div className="mt-auto border-t p-1">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="h-8 w-8 rounded-full bg-gray-200"></div>
+            <div className="h-8 w-8 rounded-full bg-gray-200">
+            <Image src="/user-icon.svg" alt="Destiny Builders Logo" width={50} height={50}/>
+              
+            </div>
             <div>
               <div className="text-sm font-medium">John Doe</div>
               <div className="text-xs text-gray-500">Project Manager</div>
