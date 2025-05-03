@@ -142,7 +142,7 @@ export default function VerificationLoginForm() {
   }
 
   return (
-    <div className="max-w-md w-full space-y-6">
+    <div className="max-w-md w-full space-y-6 mx-auto">
       <div className="text-center">
         <h1 className="text-3xl font-bold">Secure Login</h1>
         <p className="mt-2 text-muted-foreground">
@@ -227,7 +227,7 @@ export default function VerificationLoginForm() {
 
         <Button 
           type="submit" 
-          className="w-full gap-2 bg-green-400 hover:bg-green-500 texy-gray-900"
+          className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
           disabled={isLoading}
         >
           {isLoading && <RotateCw className="h-4 w-4 animate-spin" />}

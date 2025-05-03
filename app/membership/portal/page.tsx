@@ -6,7 +6,7 @@ import MembershipRegister from "@/components/membership/MembershipRegister"
 
 export default function MembershipPortalPage() {
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 ">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Membership Portal</h1>
@@ -15,8 +15,18 @@ export default function MembershipPortalPage() {
 
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsTrigger
+              value="login"
+              className="py-2 px-4 text-center text-sm font-medium transition-colors border-b-2 border-transparent data-[state=active]:border-green-600 data-[state=active]:text-green-600"
+            >
+              Login
+            </TabsTrigger>
+            <TabsTrigger
+              value="register"
+              className="py-2 px-4 text-center text-sm font-medium transition-colors border-b-2 border-transparent data-[state=active]:border-green-600 data-[state=active]:text-green-600"
+            >
+              Register
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="login">
             <Card>

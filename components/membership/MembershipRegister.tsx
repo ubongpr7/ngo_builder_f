@@ -89,7 +89,7 @@ export default function MembershipRegister() {
         </div>
       </div>
 
-      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
+      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
         {isLoading ? "Registering..." : "Register"}
       </Button>
 
