@@ -88,7 +88,7 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={isLoading}>
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
           {isLoading ? "Saving..." : "Save & Continue"}
         </Button>
       </div>

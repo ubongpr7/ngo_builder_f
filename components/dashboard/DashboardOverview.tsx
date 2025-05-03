@@ -13,10 +13,10 @@ export default function DashboardOverview() {
           <p className="text-gray-500">Welcome back, John Doe</p>
         </div>
         <div className="mt-4 md:mt-0 flex items-center space-x-2">
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="bg-[#469620] text-white border-green-200 p-2">
             General Member
           </Badge>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="bg-white text-[#469620] border-[#469620] p-2">
             Lagos Chapter
           </Badge>
         </div>

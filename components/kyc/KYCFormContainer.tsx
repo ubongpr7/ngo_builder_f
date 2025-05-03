@@ -355,7 +355,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
           </Tabs>
 
           <div className="flex justify-between mt-8">
-            <Button
+            <Button className="border border-green-700 hover:bg-green-700 hover:text-white"
               variant="outline"
               onClick={() => {
                 const prevStep = formState.currentStep - 1
@@ -433,7 +433,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
                 }
               }}
               disabled={formState.currentStep >= TOTAL_STEPS && formState.completedSteps.length < TOTAL_STEPS}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               {formState.currentStep < TOTAL_STEPS
                 ? "Next"
