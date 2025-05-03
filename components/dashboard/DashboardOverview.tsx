@@ -143,8 +143,8 @@ function ActivityItem({
 }) {
   return (
     <div className="flex items-start space-x-4">
-      <div className="bg-green-100 rounded-full p-2">
-        <FileText className="h-4 w-4 text-green-700" />
+      <div className="bg-[#FDD65B] rounded-full p-2">
+        <FileText className="h-4 w-4 text-black " />
       </div>
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium">{title}</p>
@@ -166,8 +166,8 @@ function EventItem({
 }) {
   return (
     <div className="flex items-start space-x-4">
-      <div className="bg-blue-100 rounded-full p-2">
-        <Calendar className="h-4 w-4 text-blue-700" />
+      <div className="bg-[#469620] rounded-full p-2">
+        <Calendar className="h-4 w-4 text-white" />
       </div>
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium">{title}</p>
