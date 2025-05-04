@@ -48,10 +48,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-screen-2xl mx-auto flex h-20 items-center justify-between px-6 md:px-12">
+      <div className="max-w-screen-2xl mx-auto flex h-[100px] items-center justify-between px-6 md:px-12">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-12 w-auto" />
+          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={100} className="h-[100px] w-auto" />
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
         {/* Desktop Navigation */}
