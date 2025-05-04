@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, RotateCw, ArrowLeft } from 'lucide-react'
+import Link from "next/link"
 import { useLoginMutation, useVerifyCodeMutation, useResendCodeMutation } from "@/redux/features/authApiSlice"
 import { toast } from "react-toastify"
 
@@ -342,9 +343,9 @@ export default function VerificationLoginForm() {
       <div className="text-center text-sm">
         <p className="text-muted-foreground">
           Don't have an account?{" "}
-          <a href="/membership/join" className="text-primary hover:underline">
+          <Link href="/membership/join" className="text-primary hover:underline">
             Create account
-          </a>
+          </Link>
         </p>
       </div>
     </div>
