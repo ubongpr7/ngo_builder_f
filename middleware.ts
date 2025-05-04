@@ -80,10 +80,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Redirect logged-in users from public paths
-  if (isPublicPath && accessToken && !isAllowedWithToken) {
-    return NextResponse.redirect(new URL("/membership/dashboard", request.url))
-  }
+  // REMOVED: The redirection of logged-in users from public paths
+  // This allows authenticated users to visit public pages
 
   // Protect private paths from unauthenticated users
   if (!isPublicPath && !accessToken && !isAllowedWithToken) {
