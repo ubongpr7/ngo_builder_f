@@ -50,29 +50,31 @@ export default function InventoryDashboard() {
 
       {/* Mobile Tabs Dropdown */}
       <div className="md:hidden">
-        <Button
-          variant="outline"
-          className="w-full flex justify-between items-center"
+        <button
+          className="w-full flex justify-between items-center p-2 border border-gray-300 rounded-md bg-white hover:bg-gray-100 text-sm"
           onClick={() => setShowMobileTabs(!showMobileTabs)}
         >
           <span>{tabs.find(tab => tab.value === activeTab)?.label || "Select Tab"}</span>
           {showMobileTabs ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </Button>
+        </button>
         {showMobileTabs && (
           <div className="mt-2 p-4 border rounded-lg bg-white shadow-sm">
             <div className="grid grid-cols-3 gap-2">
-              {tabs.map((tab, index) => (
-                <Button
+              {tabs.map((tab) => (
+                <div
                   key={tab.value}
-                  variant={activeTab === tab.value ? "default" : "outline"}
-                  className={`text-xs ${activeTab === tab.value ? "bg-green-600 text-white hover:bg-green-700" : ""}`}
+                  className={`text-xs p-2 text-center rounded cursor-pointer ${
+                    activeTab === tab.value
+                      ? "bg-green-600 text-white hover:bg-green-700"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
                   onClick={() => {
                     setActiveTab(tab.value)
                     setShowMobileTabs(false)
                   }}
                 >
                   {tab.label}
-                </Button>
+                </div>
               ))}
             </div>
           </div>
