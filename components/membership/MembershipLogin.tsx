@@ -158,7 +158,6 @@ export default function VerificationLoginForm() {
         title: "Login successful",
         description: "Welcome back!",
       })
-
       router.push(user.profile ? "/dashboard" : "/profile/update")
     } catch (error) {
       handleApiError(error, "Login failed")

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit"
-
+import { setCookie, getCookie, deleteCookie } from "cookies-next"
 interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
@@ -23,6 +23,10 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.isAuthenticated = false
+      deleteCookie("accessToken")
+      deleteCookie("refreshToken")
+      // deleteCookie("user")
+      // deleteCookie("user_id")
     },
     finishedInitialLoad: (state) => {
       state.isLoading = false
