@@ -236,16 +236,41 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
             Please provide your information to complete your membership registration
           </CardDescription>
 
-          {/* Progress steps - mobile version (horizontal scroll) */}
-          <div className="mt-6 overflow-x-auto pb-2 sm:hidden">
-            <div className="flex space-x-4 min-w-max px-2">
-              {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
-                const stepNumber = index + 1
+          {/* Mobile progress steps - 5 steps in first row, 2 in second row */}
+          <div className="sm:hidden mt-6">
+            <div className="flex justify-center gap-8 mb-2 items-start">
+              {[1, 2, 3, 4, 5].map((stepNumber) => {
                 const isCompleted = isStepCompleted(stepNumber)
                 const isCurrent = formState.currentStep === stepNumber
 
                 return (
-                  <div key={stepNumber} className="flex flex-col items-center min-w-[40px]">
+                  <div key={stepNumber} className="flex flex-col items-center">
+                    <div
+                      className={`
+                        flex items-center justify-center w-8 h-8 rounded-full 
+                        ${
+                          isCompleted
+                            ? "bg-green-600 text-white"
+                            : isCurrent
+                              ? "bg-green-100 border-2 border-green-600 text-green-600"
+                              : "bg-gray-100 text-gray-400"
+                        }
+                      `}
+                    >
+                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                    </div>
+                    <span className="text-xs mt-1">Step {stepNumber}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex justify-left gap-5">
+              {[6, 7].map((stepNumber) => {
+                const isCompleted = isStepCompleted(stepNumber)
+                const isCurrent = formState.currentStep === stepNumber
+
+                return (
+                  <div key={stepNumber} className="flex flex-col items-center ml-2">
                     <div
                       className={`
                         flex items-center justify-center w-8 h-8 rounded-full 
@@ -267,7 +292,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
             </div>
           </div>
 
-          {/* Progress steps - desktop version */}
+          {/* Desktop progress steps */}
           <div className="hidden sm:flex justify-between items-center mt-6 px-2">
             {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
               const stepNumber = index + 1
