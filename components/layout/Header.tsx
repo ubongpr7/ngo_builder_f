@@ -60,7 +60,7 @@ export default function Header() {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="hover:text-[#469620]">Who We Are</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Who We Are</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {whoWeAreLinks.map((link) => (
@@ -70,7 +70,7 @@ export default function Header() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="hover:text-[#469620]">Resources</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Resources</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {resourcesLinks.map((link) => (
@@ -80,7 +80,7 @@ export default function Header() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="hover:text-[#469620]">Membership</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Membership</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {membershipLinks.map((link) => (
@@ -95,7 +95,7 @@ export default function Header() {
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/contact" legacyBehavior passHref>
+                <Link href="/contact" legacyBehavior passHref >
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>Contact Us</NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
