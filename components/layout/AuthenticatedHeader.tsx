@@ -40,10 +40,13 @@ export default function AuthenticatedHeader() {
       // await logoutM('').unwrap();
       dispatch(logout());
       toast.success('Logged out successfully');
-      router.push('/');
+      // router.push('/');
+      window.location.href = '/';
     } catch (error) {
       dispatch(logout());
       router.push('/');
+      window.location.href = '/';
+
       toast.error('Logout failed. Please try again.');
     }
   };
