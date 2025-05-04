@@ -70,7 +70,6 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
     },
   })
 
-
   useEffect(() => {
     if (userProfile) {
       // Map user profile data to form state
@@ -156,6 +155,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
       setFormState(updatedFormState)
     }
   }, [userProfile])
+
   const handleStepComplete = (step: number) => {
     setFormState((prev) => {
       const completedSteps = [...prev.completedSteps]
@@ -217,7 +217,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
     return (
       <div className="container mx-auto py-10 px-4">
         <Card className="max-w-4xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             <div className="flex justify-center items-center h-40">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
             </div>
@@ -228,13 +228,47 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="container mx-auto py-6 sm:py-10 px-4">
       <Card className="max-w-4xl mx-auto">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-          <CardDescription>Please provide your information to complete your membership registration</CardDescription>
+        <CardHeader className="text-center px-4 sm:px-6">
+          <CardTitle className="text-xl sm:text-2xl">Complete Your Profile</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
+            Please provide your information to complete your membership registration
+          </CardDescription>
 
-          <div className="flex justify-between items-center mt-6 px-2">
+          {/* Progress steps - mobile version (horizontal scroll) */}
+          <div className="mt-6 overflow-x-auto pb-2 sm:hidden">
+            <div className="flex space-x-4 min-w-max px-2">
+              {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
+                const stepNumber = index + 1
+                const isCompleted = isStepCompleted(stepNumber)
+                const isCurrent = formState.currentStep === stepNumber
+
+                return (
+                  <div key={stepNumber} className="flex flex-col items-center min-w-[40px]">
+                    <div
+                      className={`
+                        flex items-center justify-center w-8 h-8 rounded-full 
+                        ${
+                          isCompleted
+                            ? "bg-green-600 text-white"
+                            : isCurrent
+                              ? "bg-green-100 border-2 border-green-600 text-green-600"
+                              : "bg-gray-100 text-gray-400"
+                        }
+                      `}
+                    >
+                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                    </div>
+                    <span className="text-xs mt-1">Step {stepNumber}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Progress steps - desktop version */}
+          <div className="hidden sm:flex justify-between items-center mt-6 px-2">
             {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
               const stepNumber = index + 1
               const isCompleted = isStepCompleted(stepNumber)
@@ -256,16 +290,46 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
                   >
                     {isCompleted ? <CheckCircle className="h-5 w-5" /> : stepNumber}
                   </div>
-                  <span className="text-xs mt-1 hidden md:inline">Step {stepNumber}</span>
+                  <span className="text-xs mt-1">Step {stepNumber}</span>
                 </div>
               )
             })}
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-8">
+            {/* Mobile tabs - simplified with icons */}
+            <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1} className="text-xs p-2">
+                1. Personal
+              </TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < 2} className="text-xs p-2">
+                2. Address
+              </TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < 3} className="text-xs p-2">
+                3. Contact
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
+              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 4} className="text-xs p-2">
+                4. Identity
+              </TabsTrigger>
+              <TabsTrigger value="professional-info" disabled={formState.currentStep < 5} className="text-xs p-2">
+                5. Professional
+              </TabsTrigger>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < 6} className="text-xs p-2">
+                6. Expertise
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="sm:hidden grid w-full grid-cols-1 gap-2 mb-6">
+              <TabsTrigger value="roles" disabled={formState.currentStep < 7} className="text-xs p-2">
+                7. Roles
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Desktop tabs */}
+            <TabsList className="hidden sm:grid w-full grid-cols-7 mb-8">
               <TabsTrigger value="personal-info" disabled={formState.currentStep < 1}>
                 Personal
               </TabsTrigger>
@@ -346,16 +410,17 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
 
             <TabsContent value="roles">
               <RolesForm
-              profileId={profileId}
-              formData={formState.roles}
+                profileId={profileId}
+                formData={formState.roles}
                 updateFormData={(data) => updateFormData("roles", data)}
                 onComplete={() => handleStepComplete(7)}
               />
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-between mt-8">
-            <Button className="border border-green-700 hover:bg-green-700 hover:text-white"
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6 sm:mt-8">
+            <Button 
+              className="border border-green-700 hover:bg-green-700 hover:text-white"
               variant="outline"
               onClick={() => {
                 const prevStep = formState.currentStep - 1
