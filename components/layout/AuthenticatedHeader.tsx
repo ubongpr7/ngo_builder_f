@@ -26,8 +26,7 @@ import { useAppDispatch } from "@/redux/store"
 const navigation = [
   { name: "Dashboard", href: "/membership/dashboard" },
   { name: "Members", href: "/membership/dashboard/members" },
-  { name: "Events", href: "/memership/dashboard/events" },
-  // { name: "Resource s", href: "/dashboard/resources" },
+  { name: "Events", href: "/membership/dashboard/events" },
 ]
 
 export default function AuthenticatedHeader() {
@@ -39,40 +38,34 @@ export default function AuthenticatedHeader() {
   const handleLogout = async () => {
     try {
       await logoutM('').unwrap();
-      // dispatch();
-      logout()
-      
+      dispatch(logout());
       router.push('/');
-      
       toast.success('Logged out successfully');
     } catch (error) {
-      // dispatch(logout());
-      logout()
+      dispatch(logout());
       router.push('/');
-      
       toast.error('Logout failed. Please try again.');
     }
   };
 
-
   return (
     <header className="bg-white shadow-sm border border-b-grey-400">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-3 sm:p-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
           <Link href="/dashboard" className="-m-1.5 p-1.5 flex items-center">
-          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto " />
-            <span className="text-xl font-bold text-green-700 ml-3">destinybuilders</span>
+            <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
+            <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
           </Link>
         </div>
 
         <div className="flex lg:hidden">
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-green-700"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open main menu</span>
-            <Menu className="h-6 w-6" aria-hidden="true" />
+            <Menu className="h-8 w-8" aria-hidden="true" />
           </button>
         </div>
 
@@ -81,11 +74,10 @@ export default function AuthenticatedHeader() {
             <Link
               key={item.name}
               href={item.href}
-              className={`text-sm font-medium ${
-                pathname === item.href
+              className={`text-sm font-medium ${pathname === item.href
                   ? "text-green-700 border-b-2 border-green-700"
                   : "text-gray-700 hover:text-green-700"
-              }`}
+                }`}
             >
               {item.name}
             </Link>
@@ -93,21 +85,21 @@ export default function AuthenticatedHeader() {
         </div>
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-10 w-10" />
-            <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-          </Button>
+        <button className="relative p-2 rounded-md text-gray-700 hover:text-green-700">
+            <Bell className="h-6 w-6" />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2">
+              <button className="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:text-green-700">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/user-icon.svg" alt="User" />
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
                 <span className="hidden md:inline">My Account</span>
                 <ChevronDown className="h-4 w-4" />
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -143,61 +135,80 @@ export default function AuthenticatedHeader() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden">
-          <div className="fixed inset-0 z-50" />
-          <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="fixed inset-0 z-50 bg-black/50" />
+          <div className="absolute top-0 right-0 z-50 w-full sm:max-w-sm h-auto max-h-screen overflow-y-auto bg-white px-4 py-4">
             <div className="flex items-center justify-between">
-              <Link href="/dashboard" className="-m-1.5 p-1.5">
-                <span className="text-xl font-bold text-green-700">destinybuilders</span>
+              <Link href="/dashboard" className="-m-1.5 p-1.5 flex items-center">
+                <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
+                <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
               </Link>
               <button
                 type="button"
-                className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                className="-m-2.5 rounded-md p-2.5 text-green-700"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <span className="sr-only">Close menu</span>
-                <X className="h-6 w-6" aria-hidden="true" />
+                <X className="h-8 w-8" aria-hidden="true" />
               </button>
             </div>
             <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-gray-500/10">
-                <div className="space-y-2 py-6">
+              <div className="divide-y divide-gray-500/10">
+                <div className="space-y-4 py-3 px-0 flex flex-col items-center">
                   {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 ${
-                        pathname === item.href ? "text-green-700 bg-green-50" : "text-gray-900 hover:bg-gray-50"
-                      }`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
+                    <div key={item.name} className="border-b border-gray-200 last:border-b-0 w-full">
+                      <Link
+                        href={item.href}
+                        className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === item.href ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
+                          }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    </div>
                   ))}
                 </div>
-                <div className="py-6">
-                  <Link
-                    href="/dashboard/profile"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    href="/dashboard/settings"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Settings
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50 w-full text-left"
-                  >
-                    Logout
-                  </button>
+                <div className="space-y-4 py-3 px-0 flex flex-col items-center">
+                  <div className="border-b border-gray-200 last:border-b-0 w-full">
+                    <Link
+                      href="/dashboard/profile"
+                      className={`block rounded-lg px-3 py-2 text-2xl font-bold tracking-tight text-center ${pathname === "/dashboard/profile" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
+                        }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                  </div>
+                  <div className="border-b border-gray-200 last:border-b-0 w-full">
+                    <Link
+                      href="/dashboard/settings"
+                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === "/dashboard/settings" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
+                        }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Settings
+                    </Link>
+                  </div>
+                  <div className="border-b border-gray-200 last:border-b-0 w-full">
+                    <Link
+                      href="/profile/update"
+                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === "/profile/update" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
+                        }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Update Profile
+                    </Link>
+                  </div>
+                  <div className="border-b border-gray-200 last:border-b-0 w-full">
+                    <button
+                      onClick={() => {
+                        handleLogout()
+                        setMobileMenuOpen(false)
+                      }}
+                      className="block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-black hover:underline hover:text-green-700 w-full text-center"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
