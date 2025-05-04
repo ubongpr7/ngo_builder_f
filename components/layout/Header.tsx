@@ -120,11 +120,11 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden">
           <div className="space-y-1 px-4 pb-3 pt-2">
-            <MobileNavLink href="/about" title="Who We Are" />
-            <MobileNavLink href="/resources" title="Resources" />
-            <MobileNavLink href="/membership" title="Membership" />
-            <MobileNavLink href="/donate" title="Donate" />
-            <MobileNavLink href="/contact" title="Contact Us" />
+            <MobileNavLink href="/about" title="Who We Are" onClick={() => setMobileMenuOpen(false)} />
+            <MobileNavLink href="/resources" title="Resources" onClick={() => setMobileMenuOpen(false)} />
+            <MobileNavLink href="/membership" title="Membership" onClick={() => setMobileMenuOpen(false)} />
+            <MobileNavLink href="/donate" title="Donate" onClick={() => setMobileMenuOpen(false)} />
+            <MobileNavLink href="/contact" title="Contact Us" onClick={() => setMobileMenuOpen(false)} />
             <div className="pt-4">
               <Button asChild className="w-full border border-green-700 hover:bg-[#469620]">
                 <Link href="/membership/portal">Membership Portal</Link>
@@ -161,11 +161,20 @@ const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWit
 )
 ListItem.displayName = "ListItem"
 
-function MobileNavLink({ href, title }: { href: string; title: string }) {
+function MobileNavLink({
+  href,
+  title,
+  onClick,
+}: {
+  href: string
+  title: string
+  onClick?: () => void
+}) {
   return (
     <div className="border-b border-gray-200 last:border-b-0">
       <Link
         href={href}
+        onClick={onClick}
         className="block rounded-md px-3 py-2 text-black hover:text-green700 text-base font-medium text-foreground hover:underline hover:text-accent-foreground text-center"
       >
         {title}
