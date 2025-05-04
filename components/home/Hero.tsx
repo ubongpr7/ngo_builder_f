@@ -23,7 +23,7 @@ export default function Hero() {
   }, [])
 
   return (
-    <div className="relative h-screen overflow-hidden">
+    <div className="relative lg:h-screen overflow-hidden">
       {/* Image layers */}
       {images.map((img, index) => (
         <div
