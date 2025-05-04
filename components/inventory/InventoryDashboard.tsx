@@ -16,6 +16,15 @@ export default function InventoryDashboard() {
   const [activeTab, setActiveTab] = useState("overview")
   const [showMobileTabs, setShowMobileTabs] = useState(false)
 
+  const tabs = [
+    { value: "overview", label: "Overview" },
+    { value: "assets", label: "Assets" },
+    { value: "maintenance", label: "Maintenance" },
+    { value: "financial", label: "Financial" },
+    { value: "locations", label: "Locations" },
+    { value: "reports", label: "Reports" },
+  ]
+
   return (
     <div className="space-y-4 md:space-y-6 px-2 md:px-0">
       {/* Header Section */}
@@ -43,22 +52,29 @@ export default function InventoryDashboard() {
       <div className="md:hidden">
         <Button
           variant="outline"
-          className="w-full justify-between"
+          className="w-full flex justify-between items-center"
           onClick={() => setShowMobileTabs(!showMobileTabs)}
         >
-          {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+          <span>{tabs.find(tab => tab.value === activeTab)?.label || "Select Tab"}</span>
           {showMobileTabs ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
         {showMobileTabs && (
-          <div className="mt-2 border rounded-lg shadow-lg">
-            <TabsList className="grid grid-cols-1 w-full">
-              <TabsTrigger value="overview" onClick={() => { setActiveTab("overview"); setShowMobileTabs(false); }}>Overview</TabsTrigger>
-              <TabsTrigger value="assets" onClick={() => { setActiveTab("assets"); setShowMobileTabs(false); }}>Assets</TabsTrigger>
-              <TabsTrigger value="maintenance" onClick={() => { setActiveTab("maintenance"); setShowMobileTabs(false); }}>Maintenance</TabsTrigger>
-              <TabsTrigger value="financial" onClick={() => { setActiveTab("financial"); setShowMobileTabs(false); }}>Financial</TabsTrigger>
-              <TabsTrigger value="locations" onClick={() => { setActiveTab("locations"); setShowMobileTabs(false); }}>Locations</TabsTrigger>
-              <TabsTrigger value="reports" onClick={() => { setActiveTab("reports"); setShowMobileTabs(false); }}>Reports</TabsTrigger>
-            </TabsList>
+          <div className="mt-2 p-4 border rounded-lg bg-white shadow-sm">
+            <div className="grid grid-cols-3 gap-2">
+              {tabs.map((tab, index) => (
+                <Button
+                  key={tab.value}
+                  variant={activeTab === tab.value ? "default" : "outline"}
+                  className={`text-xs ${activeTab === tab.value ? "bg-green-600 text-white hover:bg-green-700" : ""}`}
+                  onClick={() => {
+                    setActiveTab(tab.value)
+                    setShowMobileTabs(false)
+                  }}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -71,12 +87,11 @@ export default function InventoryDashboard() {
       >
         {/* Desktop Tabs */}
         <TabsList className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="assets">Assets</TabsTrigger>
-          <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-          <TabsTrigger value="locations">Locations</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+          {tabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         {/* Tab Contents */}
