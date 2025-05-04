@@ -1,143 +1,192 @@
 "use client"
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, RotateCw } from "lucide-react"
-import { 
-  useLoginMutation, 
-  useVerifyCodeMutation,
-  useResendCodeMutation
-} from '@/redux/features/authApiSlice'
+import { Eye, EyeOff, RotateCw, ArrowLeft } from "lucide-react"
+import { useLoginMutation, useVerifyCodeMutation, useResendCodeMutation } from "@/redux/features/authApiSlice"
 
-interface LoginFormData {
+// Step types for the multi-step form
+type FormStep = "EMAIL" | "VERIFICATION" | "PASSWORD"
+
+// Form data interfaces for each step
+interface EmailFormData {
   email: string
+}
+
+interface VerificationFormData {
+  code: string
+}
+
+interface PasswordFormData {
   password: string
-  code?: string
 }
 
 export default function VerificationLoginForm() {
   const { toast } = useToast()
   const router = useRouter()
+
+  // Form state
+  const [currentStep, setCurrentStep] = useState<FormStep>("EMAIL")
   const [showPassword, setShowPassword] = useState(false)
-  const [showCodeInput, setShowCodeInput] = useState(false)
-  const [resendCooldown, setResendCooldown] = useState(60)
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<LoginFormData>()
-  
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [verifiedEmail, setVerifiedEmail] = useState<string>("")
+
+  // Form handlers for each step
+  const emailForm = useForm<EmailFormData>()
+  const verificationForm = useForm<VerificationFormData>()
+  const passwordForm = useForm<PasswordFormData>()
+
   // API mutations
-  const [sendCode] = useResendCodeMutation()
-  const [verifyCode] = useVerifyCodeMutation()
-  const [login, { isLoading }] = useLoginMutation()
+  const [sendCode, { isLoading: isSendingCode }] = useResendCodeMutation()
+  const [verifyCode, { isLoading: isVerifying }] = useVerifyCodeMutation()
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation()
 
-  const email = watch('email')
-  const password = watch('password')
-
+  // Cooldown timer for resending code
   useEffect(() => {
-    if (resendCooldown > 0 && showCodeInput) {
+    if (resendCooldown > 0) {
       const timer = setInterval(() => {
         setResendCooldown((prev) => prev - 1)
       }, 1000)
       return () => clearInterval(timer)
     }
-  }, [resendCooldown, showCodeInput])
+  }, [resendCooldown])
 
-  const handleSendCode = async () => {
+  // Handle API errors with detailed messages
+  const handleApiError = (error: any, defaultTitle: string) => {
+    const status = error?.status || 0
+    const errorData = error?.data || {}
+
+    // Default error message
+    let errorTitle = defaultTitle
+    let errorDescription = "Please try again later"
+
+    // Handle specific error status codes
+    switch (status) {
+      case 400:
+        errorTitle = "Invalid request"
+        errorDescription = errorData.detail || "Please check your information and try again"
+        break
+      case 401:
+        errorTitle = "Authentication failed"
+        errorDescription = "Your credentials are incorrect"
+        break
+      case 403:
+        errorTitle = "Access denied"
+        errorDescription = "You don't have permission to perform this action"
+        break
+      case 404:
+        errorTitle = "Account not found"
+        errorDescription = "No account exists with this email address"
+        break
+      case 429:
+        errorTitle = "Too many attempts"
+        errorDescription = "Please wait a moment before trying again"
+        break
+      case 500:
+      case 502:
+      case 503:
+        errorTitle = "Server error"
+        errorDescription = "We're experiencing technical difficulties. Please try again later"
+        break
+      default:
+        // Check if there's a network error
+        if (!navigator.onLine) {
+          errorTitle = "Network error"
+          errorDescription = "Please check your internet connection and try again"
+        } else if (errorData.detail) {
+          // Use the error detail from the API if available
+          errorDescription = errorData.detail
+        }
+    }
+
+    toast({
+      variant: "destructive",
+      title: errorTitle,
+      description: errorDescription,
+    })
+
+    console.error(`API Error (${defaultTitle}):`, error)
+  }
+
+  // Step 1: Handle email submission and send verification code
+  const handleEmailSubmit = async (data: EmailFormData) => {
     try {
-      await sendCode({ email: email, password: password }).unwrap()
-      setShowCodeInput(true)
+      await sendCode({ email: data.email }).unwrap()
+      setVerifiedEmail(data.email)
+      setCurrentStep("VERIFICATION")
       setResendCooldown(60)
       toast({
-        title: "Verification sent",
+        title: "Verification code sent",
         description: "Check your email for the 6-digit code",
       })
-    } catch (error: any) {
-      // Extract error details from RTK Query error object
-      const status = error?.status || 0
-      const errorData = error?.data || {}
-      
-      // Default error message
-      let errorTitle = "Failed to send code"
-      let errorDescription = "Please try again later"
-      
-      // Handle specific error status codes
-      switch (status) {
-        case 400:
-          errorTitle = "Invalid request"
-          errorDescription = errorData.detail || "Please check your information and try again"
-          break
-        case 401:
-          errorTitle = "Authentication failed"
-          errorDescription = "Your session may have expired. Please log in again"
-          break
-        case 403:
-          errorTitle = "Access denied"
-          errorDescription = "You don't have permission to perform this action"
-          break
-        case 404:
-          errorTitle = "Invalid credentials"
-          errorDescription = "The email or password you entered is incorrect"
-          break
-        case 429:
-          errorTitle = "Too many attempts"
-          errorDescription = "Please wait a moment before trying again"
-          break
-        case 500:
-        case 502:
-        case 503:
-          errorTitle = "Server error"
-          errorDescription = "We're experiencing technical difficulties. Please try again later"
-          break
-        default:
-          // Check if there's a network error
-          if (!navigator.onLine) {
-            errorTitle = "Network error"
-            errorDescription = "Please check your internet connection and try again"
-          } else if (errorData.detail) {
-            // Use the error detail from the API if available
-            errorDescription = errorData.detail
-          }
-      }
-      
-      // Display the appropriate error message
-      toast({
-        variant: "destructive",
-        title: errorTitle,
-        description: errorDescription,
-      })
-      
-      // Log the error for debugging (consider removing in production)
-      console.error("Send code error:", error)
+    } catch (error) {
+      handleApiError(error, "Failed to send verification code")
     }
   }
-  const handleVerification = async (data: LoginFormData) => {
-    if (!showCodeInput) {
-      await handleSendCode()
-      return
-    }
 
+  // Step 2: Handle verification code submission
+  const handleVerificationSubmit = async (data: VerificationFormData) => {
     try {
-      await verifyCode({ 
-        email: data.email,
-        code: data.code! 
+      await verifyCode({
+        email: verifiedEmail,
+        code: data.code,
       }).unwrap()
 
-      // Complete login after verification
+      setCurrentStep("PASSWORD")
+      toast({
+        title: "Email verified",
+        description: "Please enter your password to continue",
+      })
+    } catch (error) {
+      handleApiError(error, "Verification failed")
+    }
+  }
+
+  // Step 3: Handle password submission and login
+  const handlePasswordSubmit = async (data: PasswordFormData) => {
+    try {
       const user = await login({
-        email: data.email,
-        password: data.password
+        email: verifiedEmail,
+        password: data.password,
       }).unwrap()
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      })
 
       router.push(user.profile ? "/dashboard" : "/profile/update")
-      
     } catch (error) {
+      handleApiError(error, "Login failed")
+    }
+  }
+
+  // Handle resending verification code
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return
+
+    try {
+      await sendCode({ email: verifiedEmail }).unwrap()
+      setResendCooldown(60)
       toast({
-        variant: "destructive",
-        title: "Verification failed",
-        description: "Invalid code or expired. Please try again",
+        title: "Code resent",
+        description: "Check your email for the new verification code",
       })
+    } catch (error) {
+      handleApiError(error, "Failed to resend code")
+    }
+  }
+
+  // Go back to previous step
+  const goBack = () => {
+    if (currentStep === "VERIFICATION") {
+      setCurrentStep("EMAIL")
+    } else if (currentStep === "PASSWORD") {
+      setCurrentStep("VERIFICATION")
     }
   }
 
@@ -146,118 +195,162 @@ export default function VerificationLoginForm() {
       <div className="text-center">
         <h1 className="text-2xl font-bold">Secure Login</h1>
         <p className="mt-2 text-[14px]">
-          {showCodeInput ? 
-            "Enter your verification code" : 
-            "Sign in with your credentials"
-          }
+          {currentStep === "EMAIL" && "Enter your email to begin"}
+          {currentStep === "VERIFICATION" && "Enter the verification code sent to your email"}
+          {currentStep === "PASSWORD" && "Enter your password to complete login"}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(handleVerification)} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            {...register("email", { 
-              required: "Email is required",
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: "Invalid email address"
-              }
-            })}
-            id="email"
-            type="email"
-            placeholder="name@example.com"
-            disabled={showCodeInput}
-          />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <div className="relative">
+      {/* Step 1: Email Form */}
+      {currentStep === "EMAIL" && (
+        <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
             <Input
-              {...register("password", { 
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters"
-                }
+              {...emailForm.register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address",
+                },
               })}
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              disabled={showCodeInput}
+              id="email"
+              type="email"
+              placeholder="name@example.com"
+              defaultValue={verifiedEmail}
             />
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
+            {emailForm.formState.errors.email && (
+              <p className="text-sm text-destructive">{emailForm.formState.errors.email.message}</p>
+            )}
           </div>
-          {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
-          )}
-        </div>
 
-        {showCodeInput && (
-          <div className="space-y-2 animate-in fade-in">
-            <Label htmlFor="code">Verification Code</Label>
+          <Button
+            type="submit"
+            className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
+            disabled={isSendingCode}
+          >
+            {isSendingCode && <RotateCw className="h-4 w-4 animate-spin" />}
+            Continue
+          </Button>
+        </form>
+      )}
+
+      {/* Step 2: Verification Form */}
+      {currentStep === "VERIFICATION" && (
+        <form onSubmit={verificationForm.handleSubmit(handleVerificationSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="code">Verification Code</Label>
+              <span className="text-sm text-muted-foreground">{verifiedEmail}</span>
+            </div>
             <Input
-              {...register("code", {
+              {...verificationForm.register("code", {
                 required: "Code is required",
                 pattern: {
                   value: /^\d{6}$/,
-                  message: "Must be 6 digits"
-                }
+                  message: "Must be 6 digits",
+                },
               })}
               id="code"
               type="text"
               placeholder="123456"
               inputMode="numeric"
+              autoFocus
             />
-            {errors.code && (
-              <p className="text-sm text-destructive">{errors.code.message}</p>
+            {verificationForm.formState.errors.code && (
+              <p className="text-sm text-destructive">{verificationForm.formState.errors.code.message}</p>
             )}
           </div>
-        )}
 
-        <Button 
-          type="submit" 
-          className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
-          disabled={isLoading}
-        >
-          {isLoading && <RotateCw className="h-4 w-4 animate-spin" />}
-          {showCodeInput ? "Verify Code" : "Login"}
-        </Button>
+          <Button
+            type="submit"
+            className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
+            disabled={isVerifying}
+          >
+            {isVerifying && <RotateCw className="h-4 w-4 animate-spin" />}
+            Verify Code
+          </Button>
 
-        {showCodeInput && (
-          <div className="text-center text-sm">
-            <p className="text-muted-foreground">
-              Didn't receive code?{" "}
+          <div className="flex justify-between items-center text-sm">
+            <button
+              type="button"
+              onClick={goBack}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              Change email
+            </button>
+            <button
+              type="button"
+              onClick={handleResendCode}
+              disabled={resendCooldown > 0 || isSendingCode}
+              className="text-primary hover:underline disabled:opacity-50"
+            >
+              Resend code {resendCooldown > 0 && `(${resendCooldown}s)`}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Step 3: Password Form */}
+      {currentStep === "PASSWORD" && (
+        <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <span className="text-sm text-muted-foreground">{verifiedEmail}</span>
+            </div>
+            <div className="relative">
+              <Input
+                {...passwordForm.register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters",
+                  },
+                })}
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                autoFocus
+              />
               <button
                 type="button"
-                onClick={handleSendCode}
-                disabled={resendCooldown > 0}
-                className="text-primary hover:underline disabled:opacity-50"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                Resend {resendCooldown > 0 && `(${resendCooldown})`}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
-            </p>
+            </div>
+            {passwordForm.formState.errors.password && (
+              <p className="text-sm text-destructive">{passwordForm.formState.errors.password.message}</p>
+            )}
           </div>
-        )}
-      </form>
+
+          <Button
+            type="submit"
+            className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white"
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn && <RotateCw className="h-4 w-4 animate-spin" />}
+            Login
+          </Button>
+
+          <button
+            type="button"
+            onClick={goBack}
+            className="w-full text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Back to verification
+          </button>
+        </form>
+      )}
 
       <div className="text-center text-sm">
         <p className="text-muted-foreground">
           Don't have an account?{" "}
-          <a 
-            href="/register" 
-            className="text-primary hover:underline"
-          >
+          <a href="/register" className="text-primary hover:underline">
             Create account
           </a>
         </p>
