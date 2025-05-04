@@ -5,12 +5,12 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "luc
 
 export default function Footer() {
   return (
-    <footer className="bg-[#040b13]  text-white mt-16">
+    <footer className="bg-[#040b13] text-white mt-16">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo and About */}
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center space-x-2">
+          <div className="space-y-4 text-center sm:text-left">
+            <Link href="/" className="flex items-center justify-center sm:justify-start space-x-2">
               <Image
                 src="/logo.jpg"
                 alt="Destiny Builders Logo"
@@ -24,7 +24,7 @@ export default function Footer() {
               Building African Destinies, Transforming Lives. Providing resources, support, and guidance to individuals
               and communities seeking control over their personal, professional, and community development.
             </p>
-            <div className="flex space-x-4 ">
+            <div className="flex justify-center sm:justify-start space-x-4">
               <SocialLink href="https://facebook.com" icon={<Facebook size={18} />} />
               <SocialLink href="https://twitter.com" icon={<Twitter size={18} />} />
               <SocialLink href="https://instagram.com" icon={<Instagram size={18} />} />
@@ -33,7 +33,7 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="text-center sm:text-left">
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <FooterLink href="/about" text="About Us" />
@@ -46,7 +46,7 @@ export default function Footer() {
           </div>
 
           {/* Focus Areas */}
-          <div>
+          <div className="text-center sm:text-left">
             <h3 className="text-lg font-semibold mb-4">Focus Areas</h3>
             <ul className="space-y-2">
               <FooterLink href="/focus/leadership" text="Leadership Development" />
@@ -59,18 +59,18 @@ export default function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div>
+          <div className="text-center sm:text-left">
             <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
             <ul className="space-y-4">
-              <li className="flex items-start">
+              <li className="flex items-start justify-center sm:justify-start">
                 <MapPin className="mr-2 h-5 w-5 text-green-300 flex-shrink-0 mt-0.5" />
                 <span>123 Main Street, Lagos, Nigeria</span>
               </li>
-              <li className="flex items-center">
+              <li className="flex items-center justify-center sm:justify-start">
                 <Phone className="mr-2 h-5 w-5 text-green-300 flex-shrink-0" />
                 <span>+234 123 456 7890</span>
               </li>
-              <li className="flex items-center">
+              <li className="flex items-center justify-center sm:justify-start">
                 <Mail className="mr-2 h-5 w-5 text-green-300 flex-shrink-0" />
                 <span>info@destinybuilders.africa</span>
               </li>
