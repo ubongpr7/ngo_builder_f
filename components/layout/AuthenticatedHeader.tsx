@@ -55,7 +55,7 @@ export default function AuthenticatedHeader() {
     <header className="bg-white shadow-sm border border-b-grey-400">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-3 sm:p-4 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1">
-          <Link href="/dashboard" className="-m-1.5 p-1.5 flex items-center">
+          <Link href="/" className="-m-1.5 p-1.5 flex items-center">
             <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
             <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
           </Link>
