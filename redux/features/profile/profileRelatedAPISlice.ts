@@ -22,3 +22,57 @@ export const {
      useGetExpertiseAreasQuery,
 
  } = profileRelatedApiSlice;
+
+
+ const profileAddressApiSlice = apiSlice.injectEndpoints({
+  endpoints: builder => ({
+    getAddresses: builder.query({
+      query: (userProfileId) => `${management_api}/profiles/${userProfileId}/addresses/`,
+      
+    }),
+ 
+    getAddressById: builder.query({
+      query: ({ userProfileId, addressId }) => 
+        `${management_api}/profiles/${userProfileId}/addresses/${addressId}/`,
+      
+    }),
+    addAddress: builder.mutation({
+      query: ({ userProfileId, address }) => ({
+        url: `${management_api}/profiles/${userProfileId}/addresses/`,
+        method: 'POST',
+        body: address,
+      }),
+    }),
+    updateAddress: builder.mutation({
+      query: ({ userProfileId, addressId, ...address }) => ({ 
+        url: `${management_api}/profiles/${userProfileId}/addresses/${addressId}/`,
+        method: 'PUT',
+        body: address,
+      }),
+    }),
+    patchAddress: builder.mutation({
+      query: ({ userProfileId, addressId, ...address }) => ({ 
+        url: `${management_api}/profiles/${userProfileId}/addresses/${addressId}/`,
+        method: 'PATCH',
+        body: address,
+      }),
+      
+    }),
+    deleteAddress: builder.mutation({
+      query: ({ userProfileId, addressId }) => ({
+        url: `${management_api}/profiles/${userProfileId}/addresses/${addressId}/`,
+        method: 'DELETE',
+      }),
+      
+    }),
+  }),
+});
+
+export const {
+  useGetAddressesQuery,
+  useGetAddressByIdQuery,
+  useAddAddressMutation,
+  useUpdateAddressMutation,
+  usePatchAddressMutation,
+  useDeleteAddressMutation,
+} = profileAddressApiSlice;

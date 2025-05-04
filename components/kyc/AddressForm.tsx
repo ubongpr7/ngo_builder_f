@@ -15,19 +15,18 @@ import {
   useGetCitiesQuery,
 } from "@/redux/features/common/typeOF"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
-
+import {useAddAddressMutation} from "@/redux/features/profile/profileRelatedAPISlice"
 interface AddressFormProps {
   formData: AddressFormData
   updateFormData: (data: Partial<AddressFormData>) => void
   onComplete: () => void
-  userId:string,
+  addressId:string,
   profileId:string
 }
 
-export default function AddressForm({ formData, updateFormData, onComplete,userId,profileId }: AddressFormProps) {
-  const [updateUserProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
+export default function AddressForm({ formData, updateFormData, onComplete,addressId,profileId }: AddressFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
-
+  const [addAddress, { isLoading }] = useAddAddressMutation()
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
 
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
@@ -114,9 +113,9 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
     }
 
     try {
-      await updateUserProfile({
-        id:profileId,
-        data:{address: {
+      await addAddress({
+        userProfileId:profileId,
+        address:{ 
           country: formData.country,
           region: formData.region,
           subregion: formData.subregion,
@@ -125,7 +124,7 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
           street_number: formData.street_number,
           apt_number: formData.apt_number,
           postal_code: formData.postal_code,
-        }},
+        },
       }).unwrap()
 
       onComplete()
@@ -269,8 +268,8 @@ export default function AddressForm({ formData, updateFormData, onComplete,userI
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isUpdating}>
-          {isUpdating ? "Saving..." : "Save & Continue"}
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
+          {isLoading ? "Saving..." : "Save & Continue"}
         </Button>
       </div>
     </form>
