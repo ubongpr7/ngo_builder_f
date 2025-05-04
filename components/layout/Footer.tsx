@@ -42,6 +42,9 @@ export default function Footer() {
               <FooterLink href="/donate" text="Donate" />
               <FooterLink href="/blog" text="Blog" />
               <FooterLink href="/contact" text="Contact Us" />
+              <FooterLink href="/contact" text="Contact Us" />
+              <FooterLink href="/dashboard/terms" text="Terms & Conditions" />
+              <FooterLink href="/dashboard/policy" text="Privacy & Policies" />
             </ul>
           </div>
 
