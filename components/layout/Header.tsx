@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -48,10 +47,10 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-screen-2xl mx-auto flex h-[100px] items-center justify-between px-6 md:px-12">
+      <div className="max-w-screen-2xl mx-auto flex h-20 lg:h-24 items-center justify-between px-6 md:px-12">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={100} className="h-[100px] w-auto" />
+          <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={80} className="h-20 lg:h-24 w-auto" />
           <span className="hidden font-bold text-xl text-green-700 md:inline-block">destinybuilders</span>
         </Link>
         {/* Desktop Navigation */}
@@ -63,7 +62,7 @@ export default function Header() {
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {whoWeAreLinks.map((link) => (
-                      <ListItem className=" text-gray-900 hover:underline hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
+                      <ListItem className="text-gray-900 hover:underline hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
                 </NavigationMenuContent>
@@ -107,11 +106,13 @@ export default function Header() {
             <Link href="/membership/portal">Membership Portal</Link>
           </Button>
 
-
           {/* Mobile menu button */}
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button
+            className="md:hidden p-2 rounded-md hover:bg-gray-100 text-gray-900 hover:text-[#469620] transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -125,8 +126,8 @@ export default function Header() {
             <MobileNavLink href="/donate" title="Donate" />
             <MobileNavLink href="/contact" title="Contact Us" />
             <div className="pt-4">
-              <Button asChild className="w-full border border-green-700   hover:bg-[#469620]">
-                <Link href="/membership/portal" >Membership Portal</Link>
+              <Button asChild className="w-full border border-green-700 hover:bg-[#469620]">
+                <Link href="/membership/portal">Membership Portal</Link>
               </Button>
             </div>
           </div>
@@ -162,11 +163,13 @@ ListItem.displayName = "ListItem"
 
 function MobileNavLink({ href, title }: { href: string; title: string }) {
   return (
-    <Link
-      href={href}
-      className="block rounded-md px-3 py-2 text-base font-medium text-foreground hover:underline hover:text-accent-foreground text-center"
-    >
-      {title}
-    </Link>
+    <div className="border-b border-gray-200 last:border-b-0">
+      <Link
+        href={href}
+        className="block rounded-md px-3 py-2 text-black hover:text-green700 text-base font-medium text-foreground hover:underline hover:text-accent-foreground text-center"
+      >
+        {title}
+      </Link>
+    </div>
   )
 }
