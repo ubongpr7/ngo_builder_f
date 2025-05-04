@@ -25,7 +25,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       deleteCookie("accessToken")
       deleteCookie("refreshToken")
-      // deleteCookie("user")
+      deleteCookie("userID")
       // deleteCookie("user_id")
     },
     finishedInitialLoad: (state) => {
