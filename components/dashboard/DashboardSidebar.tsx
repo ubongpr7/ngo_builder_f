@@ -24,6 +24,7 @@ import {
   Heart,
   Building,
   ChevronDown,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -63,6 +64,13 @@ export default function DashboardSidebar() {
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:underline hover:text-green-700",
         isActive(href) ? "text-[#469620] border border-[#469620] font-medium" : "text-gray-600",
       )}
+      onClick={() => {
+        // Close sidebar on mobile when a link is clicked
+        if (window.innerWidth < 768) {
+          const sidebar = document.getElementById('dashboard-sidebar');
+          sidebar?.classList.add('hidden');
+        }
+      }}
     >
       <Icon className="h-4 w-4" />
       <span>{children}</span>
@@ -97,20 +105,31 @@ export default function DashboardSidebar() {
   )
 
   return (
-    <div className="hidden border-r bg-white lg:block lg:w-64">
+    <div 
+      id="dashboard-sidebar"
+      className="fixed md:relative z-50 h-screen w-64 border-r bg-white hidden md:block lg:w-64"
+    >
       <div className="flex h-full flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4">
+        <div className="flex h-14 items-center justify-between border-b px-4">
           <Link href="/membership/dashboard" className="flex items-center gap-2 font-semibold">
             <LayoutDashboard className="h-5 w-5 text-green-600" />
             <span>Destiny Builders</span>
           </Link>
+          <button 
+            className="md:hidden text-gray-500 hover:text-gray-700"
+            onClick={() => {
+              const sidebar = document.getElementById('dashboard-sidebar');
+              sidebar?.classList.add('hidden');
+            }}
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
         <div className="flex-1 overflow-auto py-2 px-4">
           <nav className="grid gap-1">
             <NavItem href="/membership/dashboard" icon={Home}>
               Overview
             </NavItem>
-
             <NavSection title="Projects" name="projects" icon={FolderOpen}>
               <NavItem href="/membership/dashboard/projects" icon={ClipboardList}>
                 All Projects
@@ -203,8 +222,7 @@ export default function DashboardSidebar() {
         <div className="mt-auto border-t p-1">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-gray-200">
-            <Image src="/user-icon.svg" alt="Destiny Builders Logo" width={50} height={50}/>
-              
+              <Image src="/user-icon.svg" alt="Destiny Builders Logo" width={50} height={50}/>
             </div>
             <div>
               <div className="text-sm font-medium">John Doe</div>
