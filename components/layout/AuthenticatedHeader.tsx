@@ -37,7 +37,7 @@ export default function AuthenticatedHeader() {
   const router = useRouter()
   const handleLogout = async () => {
     try {
-      // await logoutM('').unwrap();
+      await logoutM('').unwrap();
       dispatch(logout());
       toast.success('Logged out successfully');
       router.push('/');
