@@ -90,12 +90,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Redirect logged-in users from auth pages (login/register) to dashboard
   if (isAuthPage && accessToken) {
-    return NextResponse.redirect(new URL("/membership/dashboard", request.url))
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
-  // Protect private paths from unauthenticated users
   if (!isPublicPath && !accessToken && !isAllowedWithToken) {
     return NextResponse.redirect(new URL("/membership/portal", request.url))
   }
