@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Menu, X } from "lucide-react"
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "@/redux/features/users/useAuth"
 
 const whoWeAreLinks = [
   { title: "About Us", href: "/about" },
@@ -44,6 +45,7 @@ const membershipLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isLoading, isAuthenticated, isPublic } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white backdrop-blur text-gray-900 supports-[backdrop-filter]:bg-background/60">
@@ -127,7 +129,7 @@ export default function Header() {
             <MobileNavLink href="/contact" title="Contact Us" onClick={() => setMobileMenuOpen(false)} />
             <div className="pt-4">
               <Button asChild className="w-full border border-green-700 hover:bg-[#469620]">
-                <Link href="/membership/portal">Membership Portal</Link>
+                <Link href={ isAuthenticated ? `/dashboard` : `/membership/portal`}>Membership Portal</Link>
               </Button>
             </div>
           </div>

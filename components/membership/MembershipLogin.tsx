@@ -182,8 +182,10 @@ export default function VerificationLoginForm() {
 
   return (
     <div className="max-w-md w-full space-y-6 mx-auto">
-      <div className="text-center">
+    <div className="text-center">
+        {/* Title and subtitle 
         <h1 className="text-2xl font-bold">Secure Login</h1>
+        */}
         <p className="mt-2 text-[14px]">
           {currentStep === "EMAIL" && "Enter your email to begin"}
           {currentStep === "VERIFICATION" && "Enter the verification code sent to your email"}
