@@ -342,7 +342,7 @@ export default function VerificationLoginForm() {
       <div className="text-center text-sm">
         <p className="text-muted-foreground">
           Don't have an account?{" "}
-          <a href="/register" className="text-primary hover:underline">
+          <a href="/membership/join" className="text-primary hover:underline">
             Create account
           </a>
         </p>
