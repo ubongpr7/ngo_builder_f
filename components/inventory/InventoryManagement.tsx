@@ -23,6 +23,8 @@ import {
   Calendar,
   MapPin,
   Tag,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -143,6 +145,7 @@ export default function InventoryManagement() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("all-assets")
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+  const [showMobileTabs, setShowMobileTabs] = useState(false)
 
   // Filter inventory items based on search term and filters
   const filteredItems = inventoryItems.filter((item) => {
@@ -176,11 +179,22 @@ export default function InventoryManagement() {
     }
   }
 
+  // Tabs configuration
+  const tabs = [
+    { value: "all-assets", label: "All Assets" },
+    { value: "electronics", label: "Electronics" },
+    { value: "furniture", label: "Furniture" },
+    { value: "vehicles", label: "Vehicles" },
+    { value: "office", label: "Office Equipment" },
+    { value: "event", label: "Event Supplies" },
+  ]
+
   // Handle escape key press to close dropdown
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpenDropdownId(null)
+        setShowMobileTabs(false)
       }
     }
 
@@ -191,20 +205,20 @@ export default function InventoryManagement() {
   }, [])
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+    <div className="space-y-6 px-4 md:px-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Inventory Management</h1>
-          <p className="text-gray-500">Track and manage organizational assets</p>
+          <p className="text-gray-500 text-sm md:text-base">Track and manage organizational assets</p>
         </div>
-        <div className="mt-4 md:mt-0 flex flex-wrap gap-2 ">
-          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out w-full sm:w-auto">
             <QrCode className="mr-2 h-4 w-4" /> Scan Asset
           </Button>
-          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out">
+          <Button variant="outline" className="flex items-center text-green-500 border-green-500 hover:bg-green-600 hover:text-white transition-all duration-[300ms] ease-in-out w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" /> Export
           </Button>
-          <Button asChild className="bg-green-600 hover:bg-green-700 text-white hover:text-white">
+          <Button asChild className="bg-green-600 hover:bg-green-700 text-white hover:text-white w-full sm:w-auto">
             <Link href="/membership/dashboard/inventory/assets/new">
               <Plus className="mr-2 h-4 w-4" /> Add Asset
             </Link>
@@ -212,23 +226,56 @@ export default function InventoryManagement() {
         </div>
       </div>
 
-      <Tabs defaultValue="all-assets" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 w-full">
-          <TabsTrigger value="all-assets">All Assets</TabsTrigger>
-          <TabsTrigger value="electronics">Electronics</TabsTrigger>
-          <TabsTrigger value="furniture">Furniture</TabsTrigger>
-          <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
-          <TabsTrigger value="office">Office Equipment</TabsTrigger>
-          <TabsTrigger value="event">Event Supplies</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className=" lg:w-full md:w-[365px] overflow-scroll">
+        {/* Mobile Tabs Dropdown */}
+        <div className="md:hidden">
+          <button
+            className="w-full flex justify-between items-center p-2 border border-gray-300 rounded-md bg-white hover:bg-gray-100 text-sm"
+            onClick={() => setShowMobileTabs(!showMobileTabs)}
+          >
+            <span>{tabs.find(tab => tab.value === activeTab)?.label || "Select Category"}</span>
+            {showMobileTabs ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+          {showMobileTabs && (
+            <div className="mt-2 p-4 border rounded-lg bg-white shadow-sm">
+              <div className="grid grid-cols-3 gap-2">
+                {tabs.map((tab) => (
+                  <div
+                    key={tab.value}
+                    className={`text-xs p-2 text-center rounded cursor-pointer ${
+                      activeTab === tab.value
+                        ? "bg-green-600 text-white hover:bg-green-700"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                    onClick={() => {
+                      setActiveTab(tab.value)
+                      setShowMobileTabs(false)
+                    }}
+                  >
+                    {tab.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Tabs */}
+        <TabsList className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 w-full">
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="all-assets" className="mt-6">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 placeholder="Search assets by name, tag, serial number..."
-                className="pl-8"
+                className="pl-8 text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -236,8 +283,8 @@ export default function InventoryManagement() {
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-gray-500" />
-                <Select onValueChange={(value) => setSelectedCategory(value)}>
-                  <SelectTrigger className="w-[180px]">
+                <Select onValueChange={(value) => setSelectedCategory(value === "all" ? null : value)}>
+                  <SelectTrigger className="w-full sm:w-[180px] text-sm">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -250,8 +297,8 @@ export default function InventoryManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <Select onValueChange={(value) => setSelectedStatus(value)}>
-                <SelectTrigger className="w-[180px]">
+              <Select onValueChange={(value) => setSelectedStatus(value === "all-statuses" ? null : value)}>
+                <SelectTrigger className="w-full sm:w-[180px] text-sm">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -266,34 +313,34 @@ export default function InventoryManagement() {
             </div>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
+          <div className="w-[355px] md:w-full rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Asset</TableHead>
-                  <TableHead>Asset Tag</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-xs md:text-sm">Asset</TableHead>
+                  <TableHead className="text-xs md:text-sm">Asset Tag</TableHead>
+                  <TableHead className="text-xs md:text-sm">Category</TableHead>
+                  <TableHead className="text-xs md:text-sm">Location</TableHead>
+                  <TableHead className="text-xs md:text-sm">Status</TableHead>
+                  <TableHead className="text-xs md:text-sm">Quantity</TableHead>
+                  <TableHead className="text-xs md:text-sm">Last Updated</TableHead>
+                  <TableHead className="text-right text-xs md:text-sm">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.length > 0 ? (
                   filteredItems.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-xs md:text-sm">
                         <div className="flex items-center">
                           <div className="mr-2 bg-gray-100 p-1 rounded-md">{getCategoryIcon(item.category)}</div>
                           {item.name}
                         </div>
                       </TableCell>
-                      <TableCell>{item.assetTag}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell>{item.location}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs md:text-sm">{item.assetTag}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{item.category}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{item.location}</TableCell>
+                      <TableCell className="text-xs md:text-sm">
                         <Badge
                           variant="outline"
                           className={`
@@ -301,13 +348,14 @@ export default function InventoryManagement() {
                             ${item.status === "In Use" ? "bg-blue-50 text-blue-700 border-blue-200" : ""}
                             ${item.status === "Maintenance" ? "bg-amber-50 text-amber-700 border-amber-200" : ""}
                             ${item.status === "Disposed" ? "bg-red-50 text-red-700 border-red-200" : ""}
+                            text-xs md:text-sm
                           `}
                         >
                           {item.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.lastUpdated}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{item.quantity}</TableCell>
+                      <TableCell className="text-xs md:text-sm">{item.lastUpdated}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu
                           open={openDropdownId === item.id}
@@ -353,7 +401,7 @@ export default function InventoryManagement() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-4 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-4 text-gray-500 text-xs md:text-sm">
                       No assets found matching your search criteria
                     </TableCell>
                   </TableRow>
@@ -363,33 +411,33 @@ export default function InventoryManagement() {
           </div>
         </TabsContent>
 
-        {/* Other tabs would have similar content but filtered by category */}
+        {/* Other tabs with placeholder content */}
         <TabsContent value="electronics" className="mt-6">
-          <p className="text-center text-gray-500 py-12">
+          <p className="text-center text-gray-500 py-12 text-sm md:text-base">
             Electronics category view would appear here, filtered automatically.
           </p>
         </TabsContent>
 
         <TabsContent value="furniture" className="mt-6">
-          <p className="text-center text-gray-500 py-12">
+          <p className="text-center text-gray-500 py-12 text-sm md:text-base">
             Furniture category view would appear here, filtered automatically.
           </p>
         </TabsContent>
 
         <TabsContent value="vehicles" className="mt-6">
-          <p className="text-center text-gray-500 py-12">
+          <p className="text-center text-gray-500 py-12 text-sm md:text-base">
             Vehicles category view would appear here, filtered automatically.
           </p>
         </TabsContent>
 
         <TabsContent value="office" className="mt-6">
-          <p className="text-center text-gray-500 py-12">
+          <p className="text-center text-gray-500 py-12 text-sm md:text-base">
             Office Equipment category view would appear here, filtered automatically.
           </p>
         </TabsContent>
 
         <TabsContent value="event" className="mt-6">
-          <p className="text-center text-gray-500 py-12">
+          <p className="text-center text-gray-500 py-12 text-sm md:text-base">
             Event Supplies category view would appear here, filtered automatically.
           </p>
         </TabsContent>
