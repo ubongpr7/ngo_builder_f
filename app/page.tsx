@@ -5,15 +5,20 @@ import LatestProjects from "@/components/home/LatestProjects"
 import Testimonials from "@/components/home/Testimonials"
 import CallToAction from "@/components/home/CallToAction"
 import Belief from "@/components/home/Belief"
+import Commitment from "@/components/home/Commitment"
+import Mockup from "@/components/home/ Mockup"
+
 
 export default function Home() {
   return (
     <div className="flex flex-col w-full">
       <Hero />
       <MissionVision />
+      <Mockup/>
       <FocusAreas />
       <LatestProjects />
       <Belief/>
+      <Commitment/>
       <Testimonials />
       <CallToAction />
     </div>
