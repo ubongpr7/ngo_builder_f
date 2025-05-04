@@ -42,6 +42,12 @@ export function middleware(request: NextRequest) {
     "/membership/verification",
   ]
 
+  // Auth pages that should redirect to dashboard for logged-in users
+  const authPages = [
+    "/membership/portal",
+    "/membership/register"
+  ]
+
   // Paths accessible even with valid token
   const allowedWithTokenPaths = [
     "/activate",
@@ -53,6 +59,10 @@ export function middleware(request: NextRequest) {
   // Check path types
   const isPublicPath = publicPaths.some(publicPath => 
     path === publicPath || path.startsWith(`${publicPath}/`)
+  )
+
+  const isAuthPage = authPages.some(authPage => 
+    path === authPage || path.startsWith(`${authPage}/`)
   )
 
   const isAllowedWithToken = allowedWithTokenPaths.some(allowedPath =>
@@ -80,8 +90,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // REMOVED: The redirection of logged-in users from public paths
-  // This allows authenticated users to visit public pages
+  // Redirect logged-in users from auth pages (login/register) to dashboard
+  if (isAuthPage && accessToken) {
+    return NextResponse.redirect(new URL("/membership/dashboard", request.url))
+  }
 
   // Protect private paths from unauthenticated users
   if (!isPublicPath && !accessToken && !isAllowedWithToken) {

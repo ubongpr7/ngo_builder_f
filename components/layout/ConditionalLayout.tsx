@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useAppSelector } from "@/redux/hooks"
 import { usePathname } from "next/navigation"
 import Header from "@/components/layout/Header"
