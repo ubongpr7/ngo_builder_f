@@ -5,9 +5,19 @@ import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff, RotateCw, ArrowLeft } from "lucide-react"
+import { Eye, EyeOff, RotateCw, ArrowLeft } from 'lucide-react'
 import { useLoginMutation, useVerifyCodeMutation, useResendCodeMutation } from "@/redux/features/authApiSlice"
+import { toast } from "react-toastify"
+
+export interface LoginErrorResponse {
+  data?: {
+    detail?: string;
+    non_field_errors?: string[];
+    email?: string[];
+    password?: string[];
+  };
+  status?: number;
+}
 
 // Step types for the multi-step form
 type FormStep = "EMAIL" | "VERIFICATION" | "PASSWORD"
@@ -26,7 +36,6 @@ interface PasswordFormData {
 }
 
 export default function VerificationLoginForm() {
-  const { toast } = useToast()
   const router = useRouter()
 
   // Form state
@@ -102,14 +111,7 @@ export default function VerificationLoginForm() {
           errorDescription = errorData.detail
         }
     }
-
-    toast({
-      variant: "destructive",
-      title: errorTitle,
-      description: errorDescription,
-    })
-
-    console.error(`API Error (${defaultTitle}):`, error)
+    toast.error(`${errorTitle}: ${errorDescription}`)
   }
 
   // Step 1: Handle email submission and send verification code
@@ -119,13 +121,23 @@ export default function VerificationLoginForm() {
       setVerifiedEmail(data.email)
       setCurrentStep("VERIFICATION")
       setResendCooldown(60)
-      toast({
-        title: "Verification code sent",
-        description: "Check your email for the 6-digit code",
-      })
-    } catch (error) {
-      handleApiError(error, "Failed to send verification code")
-    }
+      toast.success("Verification code sent. Check your email.")
+    } catch (err) {
+      const error = err as LoginErrorResponse;
+      
+      if (error.status === 400) {
+        const errorMessage = error.data?.non_field_errors?.[0] || 
+                           error.data?.detail || 
+                           "Invalid email or password";
+        toast.error(errorMessage);
+      } else if (error.status === 401) {
+        toast.error("Unauthorized - Please check your credentials");
+      } else if (error.status === 500) {
+        toast.error("Server error - Please try again later");
+      } else {
+        toast.error("Login failed - Please check your network connection");
+      }
+    } // This closing brace was missing
   }
 
   // Step 2: Handle verification code submission
@@ -137,10 +149,7 @@ export default function VerificationLoginForm() {
       }).unwrap()
 
       setCurrentStep("PASSWORD")
-      toast({
-        title: "Email verified",
-        description: "Please enter your password to continue",
-      })
+      toast.success("Email verified. Please enter your password to continue.")
     } catch (error) {
       handleApiError(error, "Verification failed")
     }
@@ -154,10 +163,7 @@ export default function VerificationLoginForm() {
         password: data.password,
       }).unwrap()
 
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      })
+      toast.success("Login successful. Welcome back!")
       router.push(user.profile ? "/dashboard" : "/profile/update")
     } catch (error) {
       handleApiError(error, "Login failed")
@@ -171,10 +177,7 @@ export default function VerificationLoginForm() {
     try {
       await sendCode({ email: verifiedEmail }).unwrap()
       setResendCooldown(60)
-      toast({
-        title: "Code resent",
-        description: "Check your email for the new verification code",
-      })
+      toast.success("Code resent. Check your email for the new verification code");
     } catch (error) {
       handleApiError(error, "Failed to resend code")
     }
