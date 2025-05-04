@@ -23,6 +23,8 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.isAuthenticated = false
+      state.isLoading = false
+
       deleteCookie("accessToken")
       deleteCookie("refreshToken")
       deleteCookie("userID")
