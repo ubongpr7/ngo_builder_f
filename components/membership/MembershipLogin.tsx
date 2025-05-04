@@ -15,6 +15,7 @@ export interface LoginErrorResponse {
     non_field_errors?: string[];
     email?: string[];
     password?: string[];
+    code?: string[];
   };
   status?: number;
 }
@@ -64,54 +65,50 @@ export default function VerificationLoginForm() {
     }
   }, [resendCooldown])
 
-  // Handle API errors with detailed messages
-  const handleApiError = (error: any, defaultTitle: string) => {
-    const status = error?.status || 0
-    const errorData = error?.data || {}
-
-    // Default error message
-    let errorTitle = defaultTitle
-    let errorDescription = "Please try again later"
-
-    // Handle specific error status codes
-    switch (status) {
-      case 400:
-        errorTitle = "Invalid request"
-        errorDescription = errorData.detail || "Please check your information and try again"
-        break
-      case 401:
-        errorTitle = "Authentication failed"
-        errorDescription = "Your credentials are incorrect"
-        break
-      case 403:
-        errorTitle = "Access denied"
-        errorDescription = "You don't have permission to perform this action"
-        break
-      case 404:
-        errorTitle = "Account not found"
-        errorDescription = "No account exists with this email address"
-        break
-      case 429:
-        errorTitle = "Too many attempts"
-        errorDescription = "Please wait a moment before trying again"
-        break
+  // Extract error message from API response
+  const extractErrorMessage = (error: any): string => {
+    if (!error) return "An unknown error occurred"
+    
+    const errorData = error.data || {}
+    
+    // Check for specific field errors
+    if (errorData.email && errorData.email.length > 0) {
+      return `Email: ${errorData.email[0]}`
+    }
+    
+    if (errorData.password && errorData.password.length > 0) {
+      return `Password: ${errorData.password[0]}`
+    }
+    
+    if (errorData.code && errorData.code.length > 0) {
+      return `Code: ${errorData.code[0]}`
+    }
+    
+    if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
+      return errorData.non_field_errors[0]
+    }
+    
+    if (errorData.detail) {
+      return errorData.detail
+    }
+    
+    // Handle network errors
+    if (!navigator.onLine) {
+      return "Network error: Please check your internet connection"
+    }
+    
+    // Default error messages based on status code
+    switch (error.status) {
+      case 400: return "Invalid request: Please check your information"
+      case 401: return "Authentication failed: Your credentials are incorrect"
+      case 403: return "Access denied: You don't have permission for this action"
+      case 404: return "Account not found: No account exists with this email"
+      case 429: return "Too many attempts: Please wait a moment before trying again"
       case 500:
       case 502:
-      case 503:
-        errorTitle = "Server error"
-        errorDescription = "We're experiencing technical difficulties. Please try again later"
-        break
-      default:
-        // Check if there's a network error
-        if (!navigator.onLine) {
-          errorTitle = "Network error"
-          errorDescription = "Please check your internet connection and try again"
-        } else if (errorData.detail) {
-          // Use the error detail from the API if available
-          errorDescription = errorData.detail
-        }
+      case 503: return "Server error: We're experiencing technical difficulties"
+      default: return "An error occurred. Please try again"
     }
-    toast.error(`${errorTitle}: ${errorDescription}`)
   }
 
   // Step 1: Handle email submission and send verification code
@@ -123,21 +120,9 @@ export default function VerificationLoginForm() {
       setResendCooldown(60)
       toast.success("Verification code sent. Check your email.")
     } catch (err) {
-      const error = err as LoginErrorResponse;
-      
-      if (error.status === 400) {
-        const errorMessage = error.data?.non_field_errors?.[0] || 
-                           error.data?.detail || 
-                           "Invalid email or password";
-        toast.error(errorMessage);
-      } else if (error.status === 401) {
-        toast.error("Unauthorized - Please check your credentials");
-      } else if (error.status === 500) {
-        toast.error("Server error - Please try again later");
-      } else {
-        toast.error("Login failed - Please check your network connection");
-      }
-    } // This closing brace was missing
+      const errorMessage = extractErrorMessage(err)
+      toast.error(errorMessage)
+    }
   }
 
   // Step 2: Handle verification code submission
@@ -150,8 +135,9 @@ export default function VerificationLoginForm() {
 
       setCurrentStep("PASSWORD")
       toast.success("Email verified. Please enter your password to continue.")
-    } catch (error) {
-      handleApiError(error, "Verification failed")
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err)
+      toast.error(errorMessage)
     }
   }
 
@@ -165,8 +151,9 @@ export default function VerificationLoginForm() {
 
       toast.success("Login successful. Welcome back!")
       router.push(user.profile ? "/dashboard" : "/profile/update")
-    } catch (error) {
-      handleApiError(error, "Login failed")
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err)
+      toast.error(errorMessage)
     }
   }
 
@@ -177,9 +164,10 @@ export default function VerificationLoginForm() {
     try {
       await sendCode({ email: verifiedEmail }).unwrap()
       setResendCooldown(60)
-      toast.success("Code resent. Check your email for the new verification code");
-    } catch (error) {
-      handleApiError(error, "Failed to resend code")
+      toast.success("Code resent. Check your email for the new verification code")
+    } catch (err) {
+      const errorMessage = extractErrorMessage(err)
+      toast.error(errorMessage)
     }
   }
 

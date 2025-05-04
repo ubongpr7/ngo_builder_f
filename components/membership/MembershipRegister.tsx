@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "react-toastify"
 import { setCookie } from "cookies-next"
 import { useState, useMemo } from "react"
-import { Eye, EyeOff, Check, X } from "lucide-react"
+import { Eye, EyeOff, Check, X } from 'lucide-react'
 import { useRegisterMutation } from "@/redux/features/authApiSlice"
 import type { ErrorResponse, RegisterResponse } from "../interfaces/authResponse"
 import { Progress } from "@/components/ui/progress"
@@ -65,7 +65,16 @@ export default function MembershipRegister() {
     e.preventDefault()
 
     if (!isFormValid) {
-      toast.error("Please fix the errors in the form before submitting")
+      toast.error("Please fix the errors in the form before submitting", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      })
       return
     }
 
@@ -77,7 +86,16 @@ export default function MembershipRegister() {
 
     try {
       const userData = (await registerUser(formData).unwrap()) as RegisterResponse
-      toast.success("Registration successful! Redirecting...")
+      toast.success("Registration successful! Redirecting...", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      })
       setCookie("userID", userData.id)
       router.push("/accounts/verify")
     } catch (error) {
@@ -89,18 +107,54 @@ export default function MembershipRegister() {
         const fieldErrors = apiError.data || {}
 
         if (fieldErrors.email) {
-          toast.error(`Email: ${fieldErrors.email}`)
+          toast.error(`Email: ${fieldErrors.email}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          })
         }
         if (fieldErrors.password) {
-          toast.error(`Password: ${fieldErrors.password}`)
+          toast.error(`Password: ${fieldErrors.password}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          })
         }
         if (fieldErrors.non_field_errors) {
-          toast.error(fieldErrors.non_field_errors)
+          toast.error(fieldErrors.non_field_errors, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          })
         }
       } else {
         // General error
         const errorMessage = apiError.data?.detail || "Registration failed"
-        toast.error(errorMessage)
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        })
       }
     }
   }
