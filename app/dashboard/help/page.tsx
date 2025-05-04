@@ -27,7 +27,7 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Send us an email and we'll respond within 24 hours.</p>
-            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+            <Button className="w-full bg-green-600 text-white hover:bg-[#FDD65B] hover:text-black">
               <Mail className="mr-2 h-4 w-4 text-white" /> Email Us
             </Button>
           </CardContent>
@@ -43,7 +43,7 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Available Monday-Friday, 9am-5pm WAT.</p>
-            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+            <Button className="w-full bg-green-600 text-white hover:bg-[#FDD65B] hover:text-black">
               <Phone className="mr-2 h-4 w-4 text-white" /> Call Us
             </Button>
           </CardContent>
@@ -59,7 +59,7 @@ export default function HelpPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm mb-4">Get instant help from our support team.</p>
-            <Button className="w-full bg-green-600 text-white hover:bg-green-700">
+            <Button className="w-full bg-green-600 text-white hover:bg-[#FDD65B] hover:text-black">
               <MessageSquare className="mr-2 h-4 w-4 text-white" /> Start Chat
             </Button>
           </CardContent>
