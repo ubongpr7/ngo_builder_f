@@ -84,7 +84,7 @@ export default function Belief() {
                   </h2>
                   <ul className={`list-disc pl-5 space-y-2 ${belief.textColor}`}>
                     {belief.listItems.map((item, index) => (
-                      <li key={index} className="text-left text-[#5c5c5c]">
+                      <li key={index} className="text-left text-[#5c5c5c] text-[17px]">
                         <span className="font-semibold text-[#5c5c5c]">{item.split(":")[0]}:</span>
                         {item.split(":")[1]}
                       </li>
