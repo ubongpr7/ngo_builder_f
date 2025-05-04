@@ -72,7 +72,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center justify-center sm:justify-start">
                 <Mail className="mr-2 h-5 w-5 text-green-300 flex-shrink-0" />
-                <span>info@destinybuilders.africa</span>
+                <span className="text-blue-500">info@destinybuilders.africa</span>
               </li>
             </ul>
           </div>
