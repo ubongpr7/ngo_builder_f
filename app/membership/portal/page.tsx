@@ -32,12 +32,12 @@ export default function MembershipPortalPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Member Login</CardTitle>
-                <CardDescription>Enter your credentials to access your membership account</CardDescription>
+                <CardDescription className="text-center">Enter your credentials to access your membership account</CardDescription>
               </CardHeader>
               <CardContent>
                 <MembershipLogin />
               </CardContent>
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-evenly">
                 <Button variant="link" className="px-0">
                   Forgot password?
                 </Button>
@@ -51,12 +51,12 @@ export default function MembershipPortalPage() {
             <Card>
               <CardHeader>
                 <CardTitle>New Member Registration</CardTitle>
-                <CardDescription>Join our community and access exclusive resources and opportunities</CardDescription>
+                <CardDescription className="text-center" >Join our community and access exclusive resources and opportunities</CardDescription>
               </CardHeader>
               <CardContent>
                 <MembershipRegister />
               </CardContent>
-              <CardFooter>
+              {/* <CardFooter>
                 <p className="text-sm text-gray-500">
                   By registering, you agree to our{" "}
                   <a href="/terms" className="text-green-600 hover:underline">
@@ -67,7 +67,7 @@ export default function MembershipPortalPage() {
                     Privacy Policy
                   </a>
                 </p>
-              </CardFooter>
+              </CardFooter> */}
             </Card>
           </TabsContent>
         </Tabs>

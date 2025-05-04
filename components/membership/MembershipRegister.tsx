@@ -51,18 +51,15 @@ export default function MembershipRegister() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      
+    <form onSubmit={handleSubmit} className="max-w-md w-full space-y-6 mx-auto">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" type="email" placeholder="name@example.com" required />
       </div>
-
-
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <div className="relative">
-          <Input id="password" type={showPassword ? "text" : "password"} required />
+          <Input id="password" type={showPassword ? "text" : "password"} required placeholder="Enter Your Password"/>
           <button
             type="button"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
@@ -77,7 +74,7 @@ export default function MembershipRegister() {
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirm Password</Label>
         <div className="relative">
-          <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} required />
+          <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} required placeholder="Enter Confirm Password" />
           <button
             type="button"
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"

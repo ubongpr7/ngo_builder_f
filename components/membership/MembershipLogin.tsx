@@ -144,8 +144,8 @@ export default function VerificationLoginForm() {
   return (
     <div className="max-w-md w-full space-y-6 mx-auto">
       <div className="text-center">
-        <h1 className="text-3xl font-bold">Secure Login</h1>
-        <p className="mt-2 text-muted-foreground">
+        <h1 className="text-2xl font-bold">Secure Login</h1>
+        <p className="mt-2 text-[14px]">
           {showCodeInput ? 
             "Enter your verification code" : 
             "Sign in with your credentials"
