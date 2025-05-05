@@ -52,7 +52,7 @@ const beliefs = [
 
 export default function Belief() {
   return (
-    <section className="py-[120px] bg-[#469620] mb-10">
+    <section className="py-[120px] bg-[#469620]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center text-center mb-10 px-4 gap-5">
           <h1 className="text-white text-3xl md:text-5xl font-bold mb-4">Our Core Beliefs</h1>

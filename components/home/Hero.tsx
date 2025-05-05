@@ -47,7 +47,7 @@ export default function Hero() {
           <div className="inline-block bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-medium">
             DESTINY BUILDERS EMPOWERMENT FOUNDATION
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
             Building African Destinies, Transforming Lives
           </h1>
           <p className="text-xl max-w-2xl">
