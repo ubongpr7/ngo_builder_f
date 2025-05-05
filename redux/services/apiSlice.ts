@@ -24,6 +24,8 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", `Bearer ${token}`)
     }
     headers.set("Content-Type", "application/json")
+    // Add explicit CORS headers for all requests
+    headers.set("X-Requested-With", "XMLHttpRequest")
     return headers
   },
 })
@@ -38,6 +40,9 @@ const fileUploadBaseQuery = fetchBaseQuery({
       headers.set("Authorization", `Bearer ${token}`)
     }
     // Don't set Content-Type - browser will set it automatically with boundary for FormData
+    
+    // Add explicit CORS headers for file uploads
+    headers.set("X-Requested-With", "XMLHttpRequest")
     return headers
   },
 })
@@ -60,63 +65,82 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 ) => {
   await mutex.waitForUnlock()
   
-  // Choose the appropriate base query based on whether it's a file upload
-  const appropriateBaseQuery = isFileUpload(args) ? fileUploadBaseQuery : baseQuery
+  // Convert string args to object format for consistency
+  const argsObj = typeof args === 'string' ? { url: args } : args
   
-  let result = await appropriateBaseQuery(args, api, extraOptions)
+  // Add mode: 'cors' explicitly to ensure proper CORS handling
+  const enhancedArgs = {
+    ...argsObj,
+    mode: 'cors' as RequestMode
+  }
+  
+  // Choose the appropriate base query based on whether it's a file upload
+  const appropriateBaseQuery = isFileUpload(enhancedArgs) ? fileUploadBaseQuery : baseQuery
+  
+  let result = await appropriateBaseQuery(enhancedArgs, api, extraOptions)
 
-  if (result?.data && ((args as FetchArgs).url === "/jwt/create/" || (args as FetchArgs).url === "/jwt/refresh/")) {
+  if (result?.data && ((enhancedArgs as FetchArgs).url === "/jwt/create/" || (enhancedArgs as FetchArgs).url === "/jwt/refresh/")) {
     const response = result.data as { access: string; refresh: string; access_token: string; id: string }
     setCookie("accessToken", response.access, { maxAge: 72 * 60 * 60, path: "/" })
     setCookie("refreshToken", response.refresh, { maxAge: 60 * 60 * 24 * 7, path: "/" })
     setCookie("userID", response.id, { maxAge: 60 * 60 * 24 * 7, path: "/" })
 
     api.dispatch(setAuth())
-  } else if (result?.data && (args as FetchArgs).url === "/api/v1/accounts/logout/") {
+  } else if (result?.data && (enhancedArgs as FetchArgs).url === "/api/v1/accounts/logout/") {
     deleteCookie("accessToken")
     deleteCookie("refreshToken")
     deleteCookie("userID")
     console.log("refreshToken deleted")
   }
 
-  if (result.error && result.error.status === 401) {
-    if (!mutex.isLocked()) {
-      const release = await mutex.acquire()
-      try {
-        const refreshToken = getCookie("refreshToken")
-        if (refreshToken) {
-          const refreshResult = await baseQuery(
-            {
-              url: "/jwt/refresh/",
-              method: "POST",
-              body: { refresh: refreshToken },
-            },
-            api,
-            extraOptions,
-          )
+  // Handle CORS errors specifically
+  if (result.error) {
+    if (result.error.status === 'FETCH_ERROR' && result.error.error?.includes('CORS')) {
+      console.error('CORS error detected:', result.error)
+      // You could implement custom handling here
+    }
+    
+    // Handle 401 errors as before
+    if (result.error.status === 401) {
+      if (!mutex.isLocked()) {
+        const release = await mutex.acquire()
+        try {
+          const refreshToken = getCookie("refreshToken")
+          if (refreshToken) {
+            const refreshResult = await baseQuery(
+              {
+                url: "/jwt/refresh/",
+                method: "POST",
+                body: { refresh: refreshToken },
+                mode: 'cors'
+              },
+              api,
+              extraOptions,
+            )
 
-          if (refreshResult.data) {
-            const newAccessToken = (refreshResult.data as { access: string }).access
-            setCookie("accessToken", newAccessToken, { maxAge: 72 * 60 * 60, path: "/" })
+            if (refreshResult.data) {
+              const newAccessToken = (refreshResult.data as { access: string }).access
+              setCookie("accessToken", newAccessToken, { maxAge: 72 * 60 * 60, path: "/" })
 
-            api.dispatch(setAuth())
-            // Use the appropriate base query for the retry as well
-            result = await appropriateBaseQuery(args, api, extraOptions)
+              api.dispatch(setAuth())
+              // Use the appropriate base query for the retry as well
+              result = await appropriateBaseQuery(enhancedArgs, api, extraOptions)
+            } else {
+              deleteCookie("accessToken")
+              deleteCookie("refreshToken")
+              api.dispatch(logout())
+            }
           } else {
-            deleteCookie("accessToken")
-            deleteCookie("refreshToken")
             api.dispatch(logout())
           }
-        } else {
-          api.dispatch(logout())
+        } finally {
+          release()
         }
-      } finally {
-        release()
+      } else {
+        await mutex.waitForUnlock()
+        // Use the appropriate base query here too
+        result = await appropriateBaseQuery(enhancedArgs, api, extraOptions)
       }
-    } else {
-      await mutex.waitForUnlock()
-      // Use the appropriate base query here too
-      result = await appropriateBaseQuery(args, api, extraOptions)
     }
   }
 
@@ -138,6 +162,7 @@ export const createFileUploadRequest = (
     url,
     method,
     body: formData,
-    meta: { isFileUpload: true }
+    meta: { isFileUpload: true },
+    mode: 'cors'
   }
 }

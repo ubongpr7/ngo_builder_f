@@ -15,7 +15,7 @@ import {
   useGetCitiesQuery,
 } from "@/redux/features/common/typeOF"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
-import {useAddAddressMutation} from "@/redux/features/profile/profileRelatedAPISlice"
+import {useAddAddressMutation,useUpdateAddressMutation} from "@/redux/features/profile/profileRelatedAPISlice"
 interface AddressFormProps {
   formData: AddressFormData
   updateFormData: (data: Partial<AddressFormData>) => void
@@ -26,14 +26,14 @@ interface AddressFormProps {
 
 export default function AddressForm({ formData, updateFormData, onComplete,addressId,profileId }: AddressFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [addAddress, { isLoading }] = useAddAddressMutation()
+  const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
-
+  const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
   })
+  const isLoading=isLoadingAddAddress || isLoadingUpdateProfile
 
-  // Fetch subregions based on selected region
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
   })
@@ -113,19 +113,40 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
     }
 
     try {
-      await addAddress({
-        userProfileId:profileId,
-        address:{ 
-          country: formData.country,
-          region: formData.region,
-          subregion: formData.subregion,
-          city: formData.city,
-          street: formData.street,
-          street_number: formData.street_number,
-          apt_number: formData.apt_number,
-          postal_code: formData.postal_code,
-        },
-      }).unwrap()
+      if (addressId) {
+        await updateProfile({
+          userProfileId:profileId,
+          addressId:addressId,
+          address:{ 
+            country: formData.country,
+            region: formData.region,
+            subregion: formData.subregion,
+            city: formData.city,
+            street: formData.street,
+            street_number: formData.street_number,
+            apt_number: formData.apt_number,
+            postal_code: formData.postal_code,
+          },
+  
+        }).unwrap()
+      }
+      else{
+
+        await addAddress({
+          userProfileId:profileId,
+          address:{ 
+            country: formData.country,
+            region: formData.region,
+            subregion: formData.subregion,
+            city: formData.city,
+            street: formData.street,
+            street_number: formData.street_number,
+            apt_number: formData.apt_number,
+            postal_code: formData.postal_code,
+          },
+  
+        }).unwrap()
+      }
 
       onComplete()
     } catch (error) {
