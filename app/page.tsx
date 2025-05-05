@@ -17,7 +17,6 @@ export default function Home() {
     <div className="flex flex-col w-full">
       <Hero />
       <MissionVision />
-      <Mockup/>
       <FocusAreas />
       <LatestProjects />
       <Belief/>
