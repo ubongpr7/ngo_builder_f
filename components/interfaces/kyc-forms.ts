@@ -8,6 +8,8 @@ export interface DropdownOption {
     first_name: string
     last_name: string
     sex:string
+    disabled: boolean
+    disability: string 
 
   }
   

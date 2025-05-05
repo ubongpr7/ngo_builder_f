@@ -18,7 +18,12 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 
 const TOTAL_STEPS = 7
 
-export default function KYCFormContainer({profileId,userId,first_name,last_name,sex}: {profileId:string,userId:string,first_name:string,last_name:string,sex:string}) {
+export default function KYCFormContainer({profileId,userId,first_name,last_name,sex,userDisabled,userDisability}: 
+  {
+    profileId:string,
+    userId:string,first_name:string,
+    last_name:string,sex:string,userDisabled:boolean,userDisability:string
+  }) {
   const router = useRouter()
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
   const addressId = userProfile?.address?.id || null
@@ -30,6 +35,8 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
       first_name:first_name,
       last_name: last_name,
       sex: sex,
+      disabled: false,
+      disability: '',
     },
     address: {
       country: null,
@@ -77,6 +84,8 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
       updatedFormState.personalInfo.sex = sex
+      updatedFormState.personalInfo.disabled = userDisabled
+      updatedFormState.personalInfo.disability = userDisability
   
       if (userProfile.address) {
         updatedFormState.address = {
@@ -116,7 +125,6 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
         updatedFormState.identityVerification = {
           id_document_type: userProfile.id_document_type,
           id_document_number: userProfile.id_document_number,
-          // Pass the image URLs from the API response
           id_document_image_front: userProfile.id_document_image_front || null,
           id_document_image_back: userProfile.id_document_image_back || null,
           selfie_image: userProfile.selfie_image || null,

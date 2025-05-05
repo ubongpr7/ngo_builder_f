@@ -12,6 +12,9 @@ export const profileRelatedApiSlice = apiSlice.injectEndpoints({
     getExpertiseAreas: builder.query({
       query: () => `${management_api}/expertise/`,
     }),
+    getDisabilities: builder.query({
+      query: () => `${management_api}/disabilities/`,
+    }),
     
   }),
 });
@@ -20,7 +23,7 @@ export const {
      useGetIndustryQuery,
      useGetMembershipQuery,
      useGetExpertiseAreasQuery,
-
+    useGetDisabilitiesQuery
  } = profileRelatedApiSlice;
 
 
