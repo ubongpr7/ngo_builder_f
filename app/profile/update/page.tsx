@@ -9,6 +9,7 @@ export default function KYCPage() {
       <KYCFormContainer 
       userId={loggedInUser?.id} 
       profileId={loggedInUser?.profile} 
+      sex={loggedInUser?.sex}
       first_name={loggedInUser?.first_name} 
       last_name={loggedInUser?.last_name} />
     </div>

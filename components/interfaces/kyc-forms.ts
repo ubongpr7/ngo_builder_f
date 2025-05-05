@@ -7,6 +7,8 @@ export interface DropdownOption {
   export interface PersonalInfoFormData {
     first_name: string
     last_name: string
+    sex:string
+
   }
   
   export interface AddressFormData {

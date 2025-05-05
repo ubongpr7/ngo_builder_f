@@ -18,7 +18,7 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 
 const TOTAL_STEPS = 7
 
-export default function KYCFormContainer({profileId,userId,first_name,last_name}: {profileId:string,userId:string,first_name:string,last_name:string}) {
+export default function KYCFormContainer({profileId,userId,first_name,last_name,sex}: {profileId:string,userId:string,first_name:string,last_name:string,sex:string}) {
   const router = useRouter()
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
   const addressId = userProfile?.address?.id || null
@@ -29,6 +29,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name}
     personalInfo: {
       first_name:first_name,
       last_name: last_name,
+      sex: sex,
     },
     address: {
       country: null,
