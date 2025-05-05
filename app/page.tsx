@@ -9,6 +9,7 @@ import Commitment from "@/components/home/Commitment"
 import Mockup from "@/components/home/ Mockup"
 import Sdei from "@/components/home/Sdei"
 import MeetOurTeam from "@/components/home/MeetOurTeam"
+import Partners from "@/components/home/Partners"
 
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
       <Testimonials />
       <Sdei/>
       <MeetOurTeam/>
+      <Partners/>
       <CallToAction />
     </div>
   )
