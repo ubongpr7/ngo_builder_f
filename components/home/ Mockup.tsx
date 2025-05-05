@@ -11,8 +11,8 @@ export default function MembershipRegistration() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto py-4">
-      <div className="bg-white rounded shadow-lg flex flex-col md:flex-row w-full max-w-[780px] min-h-[400px] md:h-auto max-h-[90vh] overflow-y-auto">
-        <div className="w-full md:w-1/3 bg-gray-800">
+<div className="bg-white rounded shadow-lg flex flex-col md:flex-row w-full max-w-[400px] md:max-w-[780px] min-h-[400px] md:h-auto max-h-[90vh] overflow-y-auto">
+<div className="w-full md:w-1/3 bg-gray-800">
           <Image
             src="/mockup.jpg"
             alt="Hands"
