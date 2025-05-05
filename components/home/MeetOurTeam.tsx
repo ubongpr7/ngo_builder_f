@@ -146,7 +146,7 @@ export default function MeetOurTeam() {
                     </div>
                 </div>
             </div>
-            <button className="bg-[#FDD65B] text-black font-bold text-2xl px-6 py-2 rounded w-[90%] h-[77px] hover:bg-[#469620] hover:text-white transition-all duration-200 ease-in mx-auto mt-8">SEE FULL PROFILE</button>
+            <button className="bg-[#FDD65B] text-black font-bold text-2xl lg:ml-[5%] px-6 py-2 rounded w-[90%] h-[77px] hover:bg-[#469620] hover:text-white transition-all duration-200 ease-in mx-auto mt-8">SEE FULL PROFILE</button>
         </div>
     );
 }
