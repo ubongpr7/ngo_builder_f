@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 
 export default function CallToAction() {
   return (
-    <section className="py-20 bg-[#469620] text-white">
+    <section className="py-20 bg-[#469620] text-white mt-[5rem]">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-[28px] lg:text-[56px] lg:leading-[64px] font-bold mb-6">
           Join Us <br className="hidden lg:inline" />
