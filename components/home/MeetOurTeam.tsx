@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 export default function MeetOurTeam() {
     return (
-        <div className="bg-[#171717] py-12">
+        <div className="bg-[#171717] py-12 pb-0">
             <h1 className="text-4xl md:text-5xl font-extrabold text-white text-center mb-8">Meet Our Team</h1>
             <div className="h-2 w-16 bg-[#FDD65B] mb-12 mx-auto"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
@@ -152,8 +152,7 @@ export default function MeetOurTeam() {
                     </div>
                 </div>
             </div>
-            <button className="bg-[#FDD65B] text-black font-bold px-6 py-2 rounded w-full">SEE FULL PROFILE</button>
-
+            <button className="bg-[#FDD65B] text-black font-bold text-2xl px-6 py-2 rounded w-[90%] h-[77px] hover:bg-[#469620] hover:text-white transition-all duration-200 ease-in">SEE FULL PROFILE</button>
         </div>
     );
 }
