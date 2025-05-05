@@ -73,11 +73,10 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
 
   useEffect(() => {
     if (userProfile) {
-      // Map user profile data to form state
       const updatedFormState = { ...formState }
-  
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
+      updatedFormState.personalInfo.sex = sex
   
       if (userProfile.address) {
         updatedFormState.address = {
