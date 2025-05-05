@@ -30,12 +30,13 @@ interface FormErrors {
 interface Disability {
   id: string
   name: string
+  description?: string
 }
 
 export default function PersonalInfoForm({ formData, updateFormData, onComplete, profileId, userId }: PersonalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateUserMutation()
   const [errors, setErrors] = useState<FormErrors>({})
-  const { data: disabilities } = useGetDisabilitiesQuery('')
+  const { data: disabilities, isLoading: disabilitiesLoading } = useGetDisabilitiesQuery('')
 
   // Initialize disabled based on whether disability exists
   useEffect(() => {
@@ -190,7 +191,7 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
               ) : disabilities.length > 0 ? (
                 disabilities.map((disability: Disability) => (
                   <SelectItem key={disability.id} value={disability.id}>
-                    {disability.name}
+                    {disability.name}{disability.description && ` (${disability.description})`}
                   </SelectItem>
                 ))
               ) : (
