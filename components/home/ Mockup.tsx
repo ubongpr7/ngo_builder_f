@@ -10,10 +10,16 @@ export default function MembershipRegistration() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-lg flex flex-col md:flex-row w-full max-w-[780px] h-[400px] md:h-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto py-4">
+      <div className="bg-white rounded shadow-lg flex flex-col md:flex-row w-full max-w-[780px] min-h-[400px] md:h-auto max-h-[90vh] overflow-y-auto">
         <div className="w-full md:w-1/3 bg-gray-800">
-          <Image src="/mockup.jpg" alt="Hands" className="w-full h-full object-cover md:object-cover" width={500} height={900} />
+          <Image
+            src="/mockup.jpg"
+            alt="Hands"
+            className="w-full h-full object-cover"
+            width={500}
+            height={900}
+          />
         </div>
         <div className="w-full md:w-2/3 p-4 text-center bg-green-100">
           <div className="flex justify-end">
