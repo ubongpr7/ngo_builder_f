@@ -47,7 +47,7 @@ export const {
       }),
     }),
     updateAddress: builder.mutation({
-      query: ({ userProfileId, addressId, ...address }) => ({ 
+      query: ({ userProfileId, addressId, address }) => ({ 
         url: `${management_api}/profiles/${userProfileId}/addresses/${addressId}/`,
         method: 'PUT',
         body: address,
