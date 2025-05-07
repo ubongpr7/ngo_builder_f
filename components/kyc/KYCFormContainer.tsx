@@ -238,13 +238,13 @@ export default function KYCFormContainer({
   }
 
   const updateFormData = (section: keyof KYCFormState, data: any) => {
-    setFormState((prev) => ({
+    setFormState(prev => ({
       ...prev,
       [section]: {
-        ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}),
-        ...data,
-      },
-    }))
+        ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}), // Preserve existing data in the section if it's an object
+        ...data,         // Merge new changes
+      }
+    }));
   }
 
   const isStepCompleted = (step: number) => formState.completedSteps.includes(step)
