@@ -18,10 +18,10 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 
 const TOTAL_STEPS = 7
 
-export default function KYCFormContainer({profileId,userId,first_name,last_name,sex,userDisabled,userDisability}: 
+export default function KYCFormContainer({profileId,userId,date_of_birth,first_name,last_name,sex,userDisabled,userDisability}: 
   {
     profileId:string,
-    userId:string,first_name:string,
+    userId:string,date_of_birth:string,first_name:string,
     last_name:string,sex:string,userDisabled:boolean,userDisability:string
   }) {
   const router = useRouter()
@@ -34,6 +34,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
     personalInfo: {
       first_name:first_name,
       last_name: last_name,
+      date_of_birth: date_of_birth,
       sex: sex,
       disabled: false,
       disability: '',
@@ -83,6 +84,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
+      updatedFormState.personalInfo.date_of_birth = date_of_birth
       updatedFormState.personalInfo.sex = sex
       updatedFormState.personalInfo.disabled = userDisabled
       updatedFormState.personalInfo.disability = userDisability
@@ -108,7 +110,7 @@ export default function KYCFormContainer({profileId,userId,first_name,last_name,
   
       // Set completed steps based on data presence
       const completedSteps: number[] = []
-      if (updatedFormState.personalInfo.first_name && updatedFormState.personalInfo.last_name) {
+      if (updatedFormState.personalInfo.first_name && updatedFormState.personalInfo.last_name && updatedFormState.personalInfo.date_of_birth) {
         completedSteps.push(1)
       }
   

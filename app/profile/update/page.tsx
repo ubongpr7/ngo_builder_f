@@ -7,6 +7,7 @@ export default function KYCPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <KYCFormContainer 
+      date_of_birth={loggedInUser?.date_of_birth}
       userId={loggedInUser?.id} 
       userDisabled={loggedInUser?.disabled} 
       userDisability={loggedInUser?.disability}

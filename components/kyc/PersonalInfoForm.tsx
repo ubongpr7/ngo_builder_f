@@ -8,6 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
 import { useGetDisabilitiesQuery } from "@/redux/features/profile/profileRelatedAPISlice"
@@ -23,6 +28,7 @@ interface PersonalInfoFormProps {
 interface FormErrors {
   first_name?: string
   last_name?: string
+  date_of_birth?: string
   sex?: string
   disability?: string
 }
@@ -33,10 +39,16 @@ interface Disability {
   description?: string
 }
 
-export default function PersonalInfoForm({ formData, updateFormData, onComplete, profileId, userId }: PersonalInfoFormProps) {
+export default function PersonalInfoForm({
+  formData,
+  updateFormData,
+  onComplete,
+  profileId,
+  userId,
+}: PersonalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateUserMutation()
   const [errors, setErrors] = useState<FormErrors>({})
-  const { data: disabilities, isLoading: disabilitiesLoading } = useGetDisabilitiesQuery('')
+  const { data: disabilities, isLoading: disabilitiesLoading } = useGetDisabilitiesQuery("")
 
   // Initialize disabled based on whether disability exists
   useEffect(() => {
@@ -54,6 +66,10 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
 
     if (!formData.last_name?.trim()) {
       newErrors.last_name = "Last name is required"
+    }
+
+    if (!formData.date_of_birth) {
+      newErrors.date_of_birth = "Date of birth is required"
     }
 
     if (!formData.sex) {
@@ -76,17 +92,17 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
     }
 
     try {
-      await updateUserProfile(
-        {
-          id: userId,
-          data: {
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            sex: formData.sex,
-            disabled: formData.disabled,
-            disability: formData.disabled ? formData.disability : null,
-          }
-        }).unwrap()
+      await updateUserProfile({
+        id: userId,
+        data: {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          date_of_birth: formData.date_of_birth ? format(new Date(formData.date_of_birth), "yyyy-MM-dd") : null,
+          sex: formData.sex,
+          disabled: formData.disabled,
+          disability: formData.disabled ? formData.disability : null,
+        },
+      }).unwrap()
 
       onComplete()
     } catch (error) {
@@ -122,6 +138,41 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
         </div>
       </div>
 
+      {/* Date of Birth Field */}
+      <div className="space-y-2">
+        <Label htmlFor="date_of_birth">Date of Birth</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              id="date_of_birth"
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !formData.date_of_birth && "text-muted-foreground",
+                errors.date_of_birth && "border-red-500",
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {formData.date_of_birth ? (
+                format(new Date(formData.date_of_birth), "PPP")
+              ) : (
+                <span>Select your date of birth</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+              onSelect={(date) => updateFormData({ date_of_birth: date })}
+              disabled={(date) => date > new Date() || date < new Date(1900, 0, 1)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+        {errors.date_of_birth && <p className="text-red-500 text-sm">{errors.date_of_birth}</p>}
+      </div>
+
       {/* Sex Selection */}
       <div className="space-y-3">
         <Label htmlFor="sex">Gender</Label>
@@ -132,15 +183,21 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="male" id="male" />
-            <Label htmlFor="male" className="cursor-pointer">Male</Label>
+            <Label htmlFor="male" className="cursor-pointer">
+              Male
+            </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="female" id="female" />
-            <Label htmlFor="female" className="cursor-pointer">Female</Label>
+            <Label htmlFor="female" className="cursor-pointer">
+              Female
+            </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="not_to_mention" id="not_to_mention" />
-            <Label htmlFor="not_to_mention" className="cursor-pointer">Prefer not to say</Label>
+            <Label htmlFor="not_to_mention" className="cursor-pointer">
+              Prefer not to say
+            </Label>
           </div>
         </RadioGroup>
         {errors.sex && <p className="text-red-500 text-sm">{errors.sex}</p>}
@@ -163,11 +220,15 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="disabled-yes" />
-            <Label htmlFor="disabled-yes" className="cursor-pointer">Yes</Label>
+            <Label htmlFor="disabled-yes" className="cursor-pointer">
+              Yes
+            </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="no" id="disabled-no" />
-            <Label htmlFor="disabled-no" className="cursor-pointer">No</Label>
+            <Label htmlFor="disabled-no" className="cursor-pointer">
+              No
+            </Label>
           </div>
         </RadioGroup>
       </div>
@@ -177,7 +238,7 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
         <div className="space-y-3">
           <Label htmlFor="disability">Select Disability</Label>
           <Select
-            value={formData.disability || ''}
+            value={formData.disability || ""}
             onValueChange={(value: string) => updateFormData({ disability: value })}
           >
             <SelectTrigger className={errors.disability ? "border-red-500" : ""}>
@@ -191,7 +252,8 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
               ) : disabilities.length > 0 ? (
                 disabilities.map((disability: Disability) => (
                   <SelectItem key={disability.id} value={disability.id}>
-                    {disability.name}{disability.description && ` (${disability.description})`}
+                    {disability.name}
+                    {disability.description && ` (${disability.description})`}
                   </SelectItem>
                 ))
               ) : (
