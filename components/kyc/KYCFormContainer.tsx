@@ -18,6 +18,28 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 
 const TOTAL_STEPS = 7
 
+// Define the step order mapping
+const STEP_ORDER: Record<number, string> = {
+  1: "personal-info",
+  2: "expertise",
+  3: "professional-info",
+  4: "address",
+  5: "contact-info",
+  6: "identity-verification",
+  7: "roles",
+}
+
+// Reverse mapping for getting step number from tab value
+const TAB_TO_STEP = {
+  "personal-info": 1,
+  expertise: 2,
+  "professional-info": 3,
+  address: 4,
+  "contact-info": 5,
+  "identity-verification": 6,
+  roles: 7,
+}
+
 export default function KYCFormContainer({
   profileId,
   userId,
@@ -44,8 +66,8 @@ export default function KYCFormContainer({
   const router = useRouter()
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, { skip: !profileId })
   const addressId = userProfile?.address?.id || null
-  const [activeTab, setActiveTab] = useState("personal-info")
-  
+  const [activeTab, setActiveTab] = useState(STEP_ORDER[1]) // Start with first step
+
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],
@@ -125,11 +147,12 @@ export default function KYCFormContainer({
       updatedFormState.contactInfo = {
         phone_number: userProfile.phone_number || "",
         bio: userProfile.bio || null,
-
       }
 
       // Set completed steps based on data presence
       const completedSteps: number[] = []
+
+      // Step 1: Personal Info
       if (
         updatedFormState.personalInfo.first_name &&
         updatedFormState.personalInfo.last_name &&
@@ -138,16 +161,35 @@ export default function KYCFormContainer({
         completedSteps.push(1)
       }
 
-      if (updatedFormState.address.country && updatedFormState.address.city) {
+      // Step 2: Expertise
+      if (userProfile.expertise && userProfile.expertise.length > 0) {
         completedSteps.push(2)
+        updatedFormState.expertise.expertise = userProfile.expertise
       }
 
-      if (updatedFormState.contactInfo.phone_number) {
+      // Step 3: Professional Info
+      if (userProfile.industry) {
         completedSteps.push(3)
+        updatedFormState.professionalInfo = {
+          organization: userProfile.organization || null,
+          position: userProfile.position || null,
+          industry: userProfile.industry || null,
+        }
       }
 
-      if (userProfile.id_document_type && userProfile.id_document_number) {
+      // Step 4: Address
+      if (updatedFormState.address.country && updatedFormState.address.city) {
         completedSteps.push(4)
+      }
+
+      // Step 5: Contact Info
+      if (updatedFormState.contactInfo.phone_number) {
+        completedSteps.push(5)
+      }
+
+      // Step 6: Identity Verification
+      if (userProfile.id_document_type && userProfile.id_document_number) {
+        completedSteps.push(6)
         updatedFormState.identityVerification = {
           id_document_type: userProfile.id_document_type,
           id_document_number: userProfile.id_document_number,
@@ -157,20 +199,7 @@ export default function KYCFormContainer({
         }
       }
 
-      if ( userProfile.industry) {
-        completedSteps.push(5)
-        updatedFormState.professionalInfo = {
-          organization: userProfile.organization || null,
-          position: userProfile.position || null,
-          industry: userProfile.industry || null,
-        }
-      }
-
-      if (userProfile.expertise && userProfile.expertise.length > 0) {
-        completedSteps.push(6)
-        updatedFormState.expertise.expertise = userProfile.expertise
-      }
-
+      // Step 7: Roles
       if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(7)
         updatedFormState.roles = {
@@ -186,6 +215,7 @@ export default function KYCFormContainer({
       updatedFormState.currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
 
       setFormState(updatedFormState)
+      setActiveTab(STEP_ORDER[updatedFormState.currentStep])
     }
   }, [userProfile])
 
@@ -200,31 +230,7 @@ export default function KYCFormContainer({
       const nextStep = step < TOTAL_STEPS ? step + 1 : step
 
       // Set the appropriate tab based on the next step
-      switch (nextStep) {
-        case 1:
-          setActiveTab("personal-info")
-          break
-        case 2:
-          setActiveTab("address")
-          break
-        case 3:
-          setActiveTab("contact-info")
-          break
-        case 4:
-          setActiveTab("identity-verification")
-          break
-        case 5:
-          setActiveTab("professional-info")
-          break
-        case 6:
-          setActiveTab("expertise")
-          break
-        case 7:
-          setActiveTab("roles")
-          break
-        default:
-          break
-      }
+      setActiveTab(STEP_ORDER[nextStep])
 
       return {
         ...prev,
@@ -235,13 +241,13 @@ export default function KYCFormContainer({
   }
 
   const updateFormData = (section: keyof KYCFormState, data: any) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       [section]: {
         ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}), // Preserve existing data in the section if it's an object
-        ...data,         // Merge new changes
-      }
-    }));
+        ...data, // Merge new changes
+      },
+    }))
   }
 
   const isStepCompleted = (step: number) => formState.completedSteps.includes(step)
@@ -359,54 +365,88 @@ export default function KYCFormContainer({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Mobile tabs - simplified with icons */}
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1} className="text-xs p-2">
+              <TabsTrigger
+                value="personal-info"
+                disabled={formState.currentStep < TAB_TO_STEP["personal-info"]}
+                className="text-xs p-2"
+              >
                 1. Personal
               </TabsTrigger>
-              <TabsTrigger value="address" disabled={formState.currentStep < 2} className="text-xs p-2">
-                2. Address
+              <TabsTrigger
+                value="expertise"
+                disabled={formState.currentStep < TAB_TO_STEP["expertise"]}
+                className="text-xs p-2"
+              >
+                2. Expertise
               </TabsTrigger>
-              <TabsTrigger value="contact-info" disabled={formState.currentStep < 3} className="text-xs p-2">
-                3. Contact
+              <TabsTrigger
+                value="professional-info"
+                disabled={formState.currentStep < TAB_TO_STEP["professional-info"]}
+                className="text-xs p-2"
+              >
+                3. Professional
               </TabsTrigger>
             </TabsList>
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 4} className="text-xs p-2">
-                4. Identity
+              <TabsTrigger
+                value="address"
+                disabled={formState.currentStep < TAB_TO_STEP["address"]}
+                className="text-xs p-2"
+              >
+                4. Address
               </TabsTrigger>
-              <TabsTrigger value="professional-info" disabled={formState.currentStep < 5} className="text-xs p-2">
-                5. Professional
+              <TabsTrigger
+                value="contact-info"
+                disabled={formState.currentStep < TAB_TO_STEP["contact-info"]}
+                className="text-xs p-2"
+              >
+                5. Contact
               </TabsTrigger>
-              <TabsTrigger value="expertise" disabled={formState.currentStep < 6} className="text-xs p-2">
-                6. Expertise
+              <TabsTrigger
+                value="identity-verification"
+                disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
+                className="text-xs p-2"
+              >
+                6. Identity
               </TabsTrigger>
             </TabsList>
             <TabsList className="sm:hidden grid w-full grid-cols-1 gap-2 mb-6">
-              <TabsTrigger value="roles" disabled={formState.currentStep < 7} className="text-xs p-2">
+              <TabsTrigger
+                value="roles"
+                disabled={formState.currentStep < TAB_TO_STEP["roles"]}
+                className="text-xs p-2"
+              >
                 7. Roles
               </TabsTrigger>
             </TabsList>
 
             {/* Desktop tabs */}
             <TabsList className="hidden sm:grid w-full grid-cols-7 mb-8">
-              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1}>
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < TAB_TO_STEP["personal-info"]}>
                 Personal
               </TabsTrigger>
-              <TabsTrigger value="address" disabled={formState.currentStep < 2}>
-                Address
-              </TabsTrigger>
-              <TabsTrigger value="contact-info" disabled={formState.currentStep < 3}>
-                Contact
-              </TabsTrigger>
-              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 4}>
-                Identity
-              </TabsTrigger>
-              <TabsTrigger value="professional-info" disabled={formState.currentStep < 5}>
-                Professional
-              </TabsTrigger>
-              <TabsTrigger value="expertise" disabled={formState.currentStep < 6}>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < TAB_TO_STEP["expertise"]}>
                 Expertise
               </TabsTrigger>
-              <TabsTrigger value="roles" disabled={formState.currentStep < 7}>
+              <TabsTrigger
+                value="professional-info"
+                disabled={formState.currentStep < TAB_TO_STEP["professional-info"]}
+              >
+                Professional
+              </TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < TAB_TO_STEP["address"]}>
+                Address
+              </TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < TAB_TO_STEP["contact-info"]}>
+                Contact
+              </TabsTrigger>
+              <TabsTrigger
+                value="identity-verification"
+                disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
+              >
+                Identity
+              </TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < TAB_TO_STEP["roles"]}>
                 Roles
               </TabsTrigger>
             </TabsList>
@@ -417,47 +457,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.personalInfo}
                 updateFormData={(data) => updateFormData("personalInfo", data)}
-                onComplete={() => handleStepComplete(1)}
-              />
-            </TabsContent>
-
-            <TabsContent value="address">
-              <AddressForm
-                profileId={profileId}
-                addressId={addressId}
-                formData={formState.address}
-                updateFormData={(data) => updateFormData("address", data)}
-                onComplete={() => handleStepComplete(2)}
-              />
-            </TabsContent>
-
-            <TabsContent value="contact-info">
-              <ContactInfoForm
-                profileId={profileId}
-                userId={userId}
-                formData={formState.contactInfo}
-                updateFormData={(data) => updateFormData("contactInfo", data)}
-                onComplete={() => handleStepComplete(3)}
-              />
-            </TabsContent>
-
-            <TabsContent value="identity-verification">
-              <IdentityVerificationForm
-                profileId={profileId}
-                userId={userId}
-                formData={formState.identityVerification}
-                updateFormData={(data) => updateFormData("identityVerification", data)}
-                onComplete={() => handleStepComplete(4)}
-              />
-            </TabsContent>
-
-            <TabsContent value="professional-info">
-              <ProfessionalInfoForm
-                profileId={profileId}
-                userId={userId}
-                formData={formState.professionalInfo}
-                updateFormData={(data) => updateFormData("professionalInfo", data)}
-                onComplete={() => handleStepComplete(5)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["personal-info"])}
               />
             </TabsContent>
 
@@ -467,7 +467,47 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.expertise}
                 updateFormData={(data) => updateFormData("expertise", data)}
-                onComplete={() => handleStepComplete(6)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["expertise"])}
+              />
+            </TabsContent>
+
+            <TabsContent value="professional-info">
+              <ProfessionalInfoForm
+                profileId={profileId}
+                userId={userId}
+                formData={formState.professionalInfo}
+                updateFormData={(data) => updateFormData("professionalInfo", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["professional-info"])}
+              />
+            </TabsContent>
+
+            <TabsContent value="address">
+              <AddressForm
+                profileId={profileId}
+                addressId={addressId}
+                formData={formState.address}
+                updateFormData={(data) => updateFormData("address", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["address"])}
+              />
+            </TabsContent>
+
+            <TabsContent value="contact-info">
+              <ContactInfoForm
+                profileId={profileId}
+                userId={userId}
+                formData={formState.contactInfo}
+                updateFormData={(data) => updateFormData("contactInfo", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["contact-info"])}
+              />
+            </TabsContent>
+
+            <TabsContent value="identity-verification">
+              <IdentityVerificationForm
+                profileId={profileId}
+                userId={userId}
+                formData={formState.identityVerification}
+                updateFormData={(data) => updateFormData("identityVerification", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["identity-verification"])}
               />
             </TabsContent>
 
@@ -477,7 +517,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.roles}
                 updateFormData={(data) => updateFormData("roles", data)}
-                onComplete={() => handleStepComplete(7)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["roles"])}
               />
             </TabsContent>
           </Tabs>
@@ -490,33 +530,7 @@ export default function KYCFormContainer({
                 const prevStep = formState.currentStep - 1
                 if (prevStep >= 1) {
                   setFormState((prev) => ({ ...prev, currentStep: prevStep }))
-
-                  // Set the appropriate tab based on the previous step
-                  switch (prevStep) {
-                    case 1:
-                      setActiveTab("personal-info")
-                      break
-                    case 2:
-                      setActiveTab("address")
-                      break
-                    case 3:
-                      setActiveTab("contact-info")
-                      break
-                    case 4:
-                      setActiveTab("identity-verification")
-                      break
-                    case 5:
-                      setActiveTab("professional-info")
-                      break
-                    case 6:
-                      setActiveTab("expertise")
-                      break
-                    case 7:
-                      setActiveTab("roles")
-                      break
-                    default:
-                      break
-                  }
+                  setActiveTab(STEP_ORDER[prevStep as keyof typeof STEP_ORDER])
                 }
               }}
               disabled={formState.currentStep <= 1}
@@ -529,33 +543,7 @@ export default function KYCFormContainer({
                 const nextStep = formState.currentStep + 1
                 if (nextStep <= TOTAL_STEPS) {
                   setFormState((prev) => ({ ...prev, currentStep: nextStep }))
-
-                  // Set the appropriate tab based on the next step
-                  switch (nextStep) {
-                    case 1:
-                      setActiveTab("personal-info")
-                      break
-                    case 2:
-                      setActiveTab("address")
-                      break
-                    case 3:
-                      setActiveTab("contact-info")
-                      break
-                    case 4:
-                      setActiveTab("identity-verification")
-                      break
-                    case 5:
-                      setActiveTab("professional-info")
-                      break
-                    case 6:
-                      setActiveTab("expertise")
-                      break
-                    case 7:
-                      setActiveTab("roles")
-                      break
-                    default:
-                      break
-                  }
+                  setActiveTab(STEP_ORDER[nextStep])
                 } else if (formState.completedSteps.length === TOTAL_STEPS) {
                   // All steps completed, redirect to dashboard
                   router.push("/dashboard")
