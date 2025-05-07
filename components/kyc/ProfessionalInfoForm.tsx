@@ -167,7 +167,7 @@ export default function ProfessionalInfoForm({
             </SelectTrigger>
             <SelectContent>
               {industries && industries.length > 0 ? (
-                industries.map((industry: DropdownOption) => (
+                industries.map((industry:{id:number,name:string}) => (
                   <SelectItem key={industry.id} value={industry.id.toString()}>
                     {industry.name}
                   </SelectItem>
