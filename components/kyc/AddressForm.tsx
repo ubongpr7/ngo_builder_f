@@ -17,7 +17,6 @@ import {
 import {
   useAddAddressMutation,
   useUpdateAddressMutation,
-  useGetAddressByIdQuery,
 } from "@/redux/features/profile/profileRelatedAPISlice"
 
 interface AddressFormProps {
@@ -26,9 +25,10 @@ interface AddressFormProps {
   onComplete: () => void
   addressId: string
   profileId: string
+  address: AddressFormData
 }
 
-export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId }: AddressFormProps) {
+export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId,address }: AddressFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
@@ -48,17 +48,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     city: false,
   })
 
-  // Fetch address data if addressId exists
-  const {
-    data: address,
-    isLoading: isLoadingAddress,
-    refetch,
-  } = useGetAddressByIdQuery(
-    { userProfileId:profileId, addressId: addressId },
-    {
-      skip: !addressId,
-    },
-  )
+  
 
   // Fetch countries
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
@@ -80,7 +70,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
   // Populate form with existing address data when it loads
   useEffect(() => {
-    if (address && !isLoadingAddress) {
+    if (address ) {
       updateFormData({
         country: address.country,
         street: address.street || "",
@@ -89,7 +79,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         postal_code: address.postal_code,
       })
     }
-  }, [address, isLoadingAddress, updateFormData])
+  }, [address,  updateFormData])
 
   // Set region after regions are loaded
   useEffect(() => {
@@ -249,15 +239,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     }
   }
 
-  // Show loading state while fetching address data
-  if (addressId && isLoadingAddress) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    )
-  }
-
+ 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

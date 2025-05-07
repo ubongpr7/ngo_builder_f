@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -430,6 +430,7 @@ export default function KYCFormContainer({
                 profileId={profileId}
                 addressId={addressId}
                 formData={formState.address}
+                address={userProfile?.address}
                 updateFormData={(data) => updateFormData("address", data)}
                 onComplete={() => handleStepComplete(2)}
               />
