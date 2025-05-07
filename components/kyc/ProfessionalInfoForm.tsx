@@ -31,6 +31,7 @@ export default function ProfessionalInfoForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isInitialized, setIsInitialized] = useState(false)
   const [selectedIndustry, setSelectedIndustry] = useState<number | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
 
   // Initialize form data when industries are loaded
   useEffect(() => {
@@ -83,34 +84,47 @@ export default function ProfessionalInfoForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setApiError(null)
 
     if (!validateForm()) {
       return
     }
 
-    try {
-      console.log("Submitting professional info:", {
-        organization: formData.organization,
-        position: formData.position,
-        industry: formData.industry,
-        company_size: formData.company_size,
-        company_website: formData.company_website,
-      })
+    // Ensure industry is a number
+    const industryId =
+      typeof formData.industry === "string" ? Number.parseInt(formData.industry, 10) : formData.industry
 
-      await updateUserProfile({
+    const dataToSubmit = {
+      organization: formData.organization,
+      position: formData.position,
+      industry: industryId,
+      company_size: formData.company_size,
+      company_website: formData.company_website,
+    }
+
+    console.log("Submitting professional info:", dataToSubmit)
+    console.log("Profile ID:", profileId)
+
+    try {
+      const response = await updateUserProfile({
         id: profileId,
-        data: {
-          organization: formData.organization,
-          position: formData.position,
-          industry: formData.industry,
-          company_size: formData.company_size,
-          company_website: formData.company_website,
-        },
+        data: dataToSubmit,
       }).unwrap()
 
+      console.log("API response:", response)
       onComplete()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update professional information:", error)
+
+      // Extract error message for display
+      let errorMessage = "Failed to save data. Please try again."
+      if (error.data?.detail) {
+        errorMessage = error.data.detail
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      setApiError(errorMessage)
     }
   }
 
@@ -135,8 +149,19 @@ export default function ProfessionalInfoForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Debug info - can be removed in production */}
       <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded">
-        Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
+        <div>
+          Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
+        </div>
+        <div>Form Industry: {formData.industry}</div>
+        <div>Profile ID: {profileId}</div>
       </div>
+
+      {apiError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <p className="font-medium">Error saving data</p>
+          <p className="text-sm">{apiError}</p>
+        </div>
+      )}
 
       <div className="space-y-6">
         <div className="space-y-2">
@@ -160,14 +185,16 @@ export default function ProfessionalInfoForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
+          <Label htmlFor="industry">
+            Industry <span className="text-red-500">*</span>
+          </Label>
           <Select value={selectedIndustry?.toString() || ""} onValueChange={handleIndustryChange}>
             <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
             <SelectContent>
               {industries && industries.length > 0 ? (
-                industries.map((industry:{id:number,name:string}) => (
+                industries.map((industry: { id: number; name: string }) => (
                   <SelectItem key={industry.id} value={industry.id.toString()}>
                     {industry.name}
                   </SelectItem>
