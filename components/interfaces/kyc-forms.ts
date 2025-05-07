@@ -11,6 +11,9 @@ export interface DropdownOption {
     disabled: boolean
     disability: string 
     date_of_birth: Date 
+    linkedin_profile: string | null
+    profile_link: string | null
+    
   }
   
   export interface AddressFormData {

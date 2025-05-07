@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, subYears, isAfter } from "date-fns"
-import { CalendarIcon, Info, ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarIcon, Info, ChevronLeft, ChevronRight, Linkedin, Link2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
@@ -31,6 +31,8 @@ interface FormErrors {
   date_of_birth?: string
   sex?: string
   disability?: string
+  linkedin_profile?: string
+  profile_link?: string
 }
 
 interface Disability {
@@ -266,6 +268,17 @@ export default function PersonalInfoForm({
     }
   }, [formData.disability, formData.disabled, updateFormData])
 
+  // URL validation function
+  const isValidUrl = (url: string): boolean => {
+    if (!url) return true // Empty is valid (optional field)
+    try {
+      new URL(url)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
 
@@ -295,6 +308,16 @@ export default function PersonalInfoForm({
       newErrors.disability = "Please select a disability"
     }
 
+    // Validate LinkedIn profile URL if provided
+    if (formData.linkedin_profile && !isValidUrl(formData.linkedin_profile)) {
+      newErrors.linkedin_profile = "Please enter a valid URL"
+    }
+
+    // Validate profile link URL if provided
+    if (formData.profile_link && !isValidUrl(formData.profile_link)) {
+      newErrors.profile_link = "Please enter a valid URL"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -316,6 +339,8 @@ export default function PersonalInfoForm({
           sex: formData.sex,
           disabled: formData.disabled,
           disability: formData.disabled ? formData.disability : null,
+          linkedin_profile: formData.linkedin_profile || null,
+          profile_link: formData.profile_link || null,
         },
       }).unwrap()
 
@@ -400,6 +425,52 @@ export default function PersonalInfoForm({
           </div>
         </RadioGroup>
         {errors.sex && <p className="text-red-500 text-sm">{errors.sex}</p>}
+      </div>
+
+      {/* Social Profiles Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-medium">Social Profiles</h3>
+          <div className="text-sm text-muted-foreground">
+            <span>(Optional)</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label htmlFor="linkedin_profile" className="flex items-center gap-2">
+              <Linkedin className="h-4 w-4" />
+              LinkedIn Profile
+            </Label>
+            <Input
+              id="linkedin_profile"
+              type="url"
+              value={formData.linkedin_profile || ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                updateFormData({ linkedin_profile: e.target.value })
+              }
+              placeholder="https://linkedin.com/in/yourprofile"
+              className={errors.linkedin_profile ? "border-red-500" : ""}
+            />
+            {errors.linkedin_profile && <p className="text-red-500 text-sm">{errors.linkedin_profile}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="profile_link" className="flex items-center gap-2">
+              <Link2 className="h-4 w-4" />
+              Other Profile Link
+            </Label>
+            <Input
+              id="profile_link"
+              type="url"
+              value={formData.profile_link || ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormData({ profile_link: e.target.value })}
+              placeholder="https://example.com/yourprofile"
+              className={errors.profile_link ? "border-red-500" : ""}
+            />
+            {errors.profile_link && <p className="text-red-500 text-sm">{errors.profile_link}</p>}
+          </div>
+        </div>
       </div>
 
       {/* Disability Section */}
