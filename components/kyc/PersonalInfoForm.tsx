@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, subYears, isAfter } from "date-fns"
-import { CalendarIcon, Info } from "lucide-react"
+import { CalendarIcon, Info, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
@@ -37,6 +37,214 @@ interface Disability {
   id: string
   name: string
   description?: string
+}
+
+// Custom date picker component with year navigation
+function BirthDatePicker({
+  value,
+  onChange,
+  error,
+}: {
+  value: Date | undefined
+  onChange: (date: Date | undefined) => void
+  error?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const [year, setYear] = useState<number>(() => {
+    // Default to 20 years ago
+    return subYears(new Date(), 20).getFullYear()
+  })
+  const [month, setMonth] = useState<number>(() => {
+    // Default to current month
+    return new Date().getMonth()
+  })
+
+  // Calculate the date 20 years ago from today
+  const twentyYearsAgo = subYears(new Date(), 20)
+
+  // Generate array of years from 1900 to 20 years ago
+  const years = Array.from({ length: twentyYearsAgo.getFullYear() - 1899 }, (_, i) => 1900 + i)
+
+  // Generate array of month names
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ]
+
+  // Handle year change
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setYear(Number.parseInt(e.target.value))
+  }
+
+  // Handle month change
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setMonth(Number.parseInt(e.target.value))
+  }
+
+  // Handle previous year
+  const handlePrevYear = () => {
+    if (year > 1900) {
+      setYear(year - 1)
+    }
+  }
+
+  // Handle next year
+  const handleNextYear = () => {
+    if (year < twentyYearsAgo.getFullYear()) {
+      setYear(year + 1)
+    }
+  }
+
+  // Handle previous month
+  const handlePrevMonth = () => {
+    if (month === 0) {
+      if (year > 1900) {
+        setMonth(11)
+        setYear(year - 1)
+      }
+    } else {
+      setMonth(month - 1)
+    }
+  }
+
+  // Handle next month
+  const handleNextMonth = () => {
+    if (month === 11) {
+      if (year < twentyYearsAgo.getFullYear()) {
+        setMonth(0)
+        setYear(year + 1)
+      }
+    } else {
+      setMonth(month + 1)
+    }
+  }
+
+  // Set default date when opening the picker
+  useEffect(() => {
+    if (open && !value) {
+      // Default to January 1st, 20 years ago
+      const defaultDate = new Date(subYears(new Date(), 20).getFullYear(), 0, 1)
+      setYear(defaultDate.getFullYear())
+      setMonth(defaultDate.getMonth())
+    }
+  }, [open, value])
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !value && "text-muted-foreground",
+            error && "border-red-500",
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {value ? format(value, "PPP") : <span>Select your date of birth</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <div className="p-3 border-b">
+          <div className="flex justify-between items-center mb-2">
+            <button
+              type="button"
+              onClick={handlePrevYear}
+              className="p-1 rounded-full hover:bg-gray-100"
+              disabled={year <= 1900}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <Select value={year.toString()} onValueChange={(value) => setYear(Number.parseInt(value))}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder={year.toString()} />
+              </SelectTrigger>
+              <SelectContent className="max-h-[200px]">
+                {years.reverse().map((y) => (
+                  <SelectItem key={y} value={y.toString()}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              onClick={handleNextYear}
+              className="p-1 rounded-full hover:bg-gray-100"
+              disabled={year >= twentyYearsAgo.getFullYear()}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={handlePrevMonth}
+              className="p-1 rounded-full hover:bg-gray-100"
+              disabled={year === 1900 && month === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <Select value={month.toString()} onValueChange={(value) => setMonth(Number.parseInt(value))}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder={months[month]} />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((m, i) => (
+                  <SelectItem key={m} value={i.toString()}>
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              onClick={handleNextMonth}
+              className="p-1 rounded-full hover:bg-gray-100"
+              disabled={year === twentyYearsAgo.getFullYear() && month >= twentyYearsAgo.getMonth()}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={onChange}
+          month={new Date(year, month)}
+          onMonthChange={(date) => {
+            setMonth(date.getMonth())
+            setYear(date.getFullYear())
+          }}
+          disabled={(date) => {
+            // Disable future dates
+            if (isAfter(date, new Date())) return true
+
+            // Disable dates less than 20 years ago (too young)
+            if (isAfter(date, twentyYearsAgo)) return true
+
+            // Disable dates before 1900
+            if (date < new Date(1900, 0, 1)) return true
+
+            return false
+          }}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  )
 }
 
 export default function PersonalInfoForm({
@@ -147,7 +355,7 @@ export default function PersonalInfoForm({
         </div>
       </div>
 
-      {/* Date of Birth Field */}
+      {/* Date of Birth Field with Custom Picker */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="date_of_birth">Date of Birth</Label>
@@ -156,46 +364,13 @@ export default function PersonalInfoForm({
             <span>Must be at least 20 years old</span>
           </div>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              id="date_of_birth"
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.date_of_birth && "text-muted-foreground",
-                errors.date_of_birth && "border-red-500",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.date_of_birth ? (
-                format(new Date(formData.date_of_birth), "PPP")
-              ) : (
-                <span>Select your date of birth</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
-              onSelect={(date) => updateFormData({ date_of_birth: date })}
-              disabled={(date) => {
-                // Disable future dates
-                if (isAfter(date, new Date())) return true
 
-                // Disable dates less than 20 years ago (too young)
-                if (isAfter(date, twentyYearsAgo)) return true
+        <BirthDatePicker
+          value={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
+          onChange={(date) => updateFormData({ date_of_birth: date })}
+          error={errors.date_of_birth}
+        />
 
-                // Disable dates before 1900
-                if (date < new Date(1900, 0, 1)) return true
-
-                return false
-              }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
         {errors.date_of_birth && <p className="text-red-500 text-sm">{errors.date_of_birth}</p>}
       </div>
 
