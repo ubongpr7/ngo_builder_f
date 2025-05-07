@@ -10,8 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { format, subYears, isAfter } from "date-fns"
+import { CalendarIcon, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
@@ -50,6 +50,9 @@ export default function PersonalInfoForm({
   const [errors, setErrors] = useState<FormErrors>({})
   const { data: disabilities, isLoading: disabilitiesLoading } = useGetDisabilitiesQuery("")
 
+  // Calculate the date 20 years ago from today
+  const twentyYearsAgo = subYears(new Date(), 20)
+
   // Initialize disabled based on whether disability exists
   useEffect(() => {
     if (formData.disability && !formData.disabled) {
@@ -70,6 +73,12 @@ export default function PersonalInfoForm({
 
     if (!formData.date_of_birth) {
       newErrors.date_of_birth = "Date of birth is required"
+    } else {
+      // Check if the selected date is after the minimum age date (too young)
+      const birthDate = new Date(formData.date_of_birth)
+      if (isAfter(birthDate, twentyYearsAgo)) {
+        newErrors.date_of_birth = "You must be at least 20 years old"
+      }
     }
 
     if (!formData.sex) {
@@ -140,7 +149,13 @@ export default function PersonalInfoForm({
 
       {/* Date of Birth Field */}
       <div className="space-y-2">
-        <Label htmlFor="date_of_birth">Date of Birth</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="date_of_birth">Date of Birth</Label>
+          <div className="text-sm text-muted-foreground flex items-center">
+            <Info className="h-3 w-3 mr-1" />
+            <span>Must be at least 20 years old</span>
+          </div>
+        </div>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -165,7 +180,18 @@ export default function PersonalInfoForm({
               mode="single"
               selected={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
               onSelect={(date) => updateFormData({ date_of_birth: date })}
-              disabled={(date) => date > new Date() || date < new Date(1900, 0, 1)}
+              disabled={(date) => {
+                // Disable future dates
+                if (isAfter(date, new Date())) return true
+
+                // Disable dates less than 20 years ago (too young)
+                if (isAfter(date, twentyYearsAgo)) return true
+
+                // Disable dates before 1900
+                if (date < new Date(1900, 0, 1)) return true
+
+                return false
+              }}
               initialFocus
             />
           </PopoverContent>

@@ -11,7 +11,6 @@ export interface DropdownOption {
     disabled: boolean
     disability: string 
     date_of_birth: Date 
-
   }
   
   export interface AddressFormData {
