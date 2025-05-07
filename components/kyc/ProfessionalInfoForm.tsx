@@ -142,8 +142,8 @@ export default function ProfessionalInfoForm({
         <div className="space-y-2">
           <Label htmlFor="company_size">Company Size</Label>
           <Select
-            value={formData.company_size ? String(formData.company_size) : ""}
-            onValueChange={(value) => updateFormData({ company_size: Number(value) })}
+            value={formData.company_size || ""}
+            onValueChange={(value) => updateFormData({ company_size: value })}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select company size" />

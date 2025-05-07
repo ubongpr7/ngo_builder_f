@@ -44,7 +44,7 @@ export interface DropdownOption {
     organization: string | null
     position: string | null
     industry: number | null
-    company_size: number | null
+    company_size: string | null
     company_website: string | null
     
   }
