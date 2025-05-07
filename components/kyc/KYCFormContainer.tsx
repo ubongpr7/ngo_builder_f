@@ -22,22 +22,22 @@ const TOTAL_STEPS = 7
 const STEP_ORDER: Record<number, string> = {
   1: "personal-info",
   2: "expertise",
-  3: "professional-info",
-  4: "address",
-  5: "contact-info",
-  6: "identity-verification",
-  7: "roles",
+  3: "roles",
+  4: "professional-info",
+  5: "address",
+  6: "contact-info",
+  7: "identity-verification",
 }
 
 // Reverse mapping for getting step number from tab value
 const TAB_TO_STEP = {
   "personal-info": 1,
   expertise: 2,
-  "professional-info": 3,
-  address: 4,
-  "contact-info": 5,
-  "identity-verification": 6,
-  roles: 7,
+  roles: 3,
+  "professional-info": 4,
+  address: 5,
+  "contact-info": 6,
+  "identity-verification": 7,
 }
 
 export default function KYCFormContainer({
@@ -167,9 +167,21 @@ export default function KYCFormContainer({
         updatedFormState.expertise.expertise = userProfile.expertise
       }
 
-      // Step 3: Professional Info
-      if (userProfile.industry) {
+      // Step 3: Roles
+      if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(3)
+        updatedFormState.roles = {
+          is_project_manager: userProfile.is_project_manager || false,
+          is_donor: userProfile.is_donor || false,
+          is_volunteer: userProfile.is_volunteer || false,
+          is_partner: userProfile.is_partner || false,
+          is_mentor: false, // Assuming this is not in your model
+        }
+      }
+
+      // Step 4: Professional Info
+      if (userProfile.industry) {
+        completedSteps.push(4)
         updatedFormState.professionalInfo = {
           organization: userProfile.organization || null,
           position: userProfile.position || null,
@@ -177,37 +189,25 @@ export default function KYCFormContainer({
         }
       }
 
-      // Step 4: Address
+      // Step 5: Address
       if (updatedFormState.address.country && updatedFormState.address.city) {
-        completedSteps.push(4)
-      }
-
-      // Step 5: Contact Info
-      if (updatedFormState.contactInfo.phone_number) {
         completedSteps.push(5)
       }
 
-      // Step 6: Identity Verification
-      if (userProfile.id_document_type && userProfile.id_document_number) {
+      // Step 6: Contact Info
+      if (updatedFormState.contactInfo.phone_number) {
         completedSteps.push(6)
+      }
+
+      // Step 7: Identity Verification
+      if (userProfile.id_document_type && userProfile.id_document_number) {
+        completedSteps.push(7)
         updatedFormState.identityVerification = {
           id_document_type: userProfile.id_document_type,
           id_document_number: userProfile.id_document_number,
           id_document_image_front: userProfile.id_document_image_front || null,
           id_document_image_back: userProfile.id_document_image_back || null,
           selfie_image: userProfile.selfie_image || null,
-        }
-      }
-
-      // Step 7: Roles
-      if (userProfile.is_project_manager !== undefined) {
-        completedSteps.push(7)
-        updatedFormState.roles = {
-          is_project_manager: userProfile.is_project_manager || false,
-          is_donor: userProfile.is_donor || false,
-          is_volunteer: userProfile.is_volunteer || false,
-          is_partner: userProfile.is_partner || false,
-          is_mentor: false, // Assuming this is not in your model
         }
       }
 
@@ -380,43 +380,43 @@ export default function KYCFormContainer({
                 2. Expertise
               </TabsTrigger>
               <TabsTrigger
+                value="roles"
+                disabled={formState.currentStep < TAB_TO_STEP["roles"]}
+                className="text-xs p-2"
+              >
+                3. Roles
+              </TabsTrigger>
+            </TabsList>
+            <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
+              <TabsTrigger
                 value="professional-info"
                 disabled={formState.currentStep < TAB_TO_STEP["professional-info"]}
                 className="text-xs p-2"
               >
-                3. Professional
+                4. Professional
               </TabsTrigger>
-            </TabsList>
-            <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
               <TabsTrigger
                 value="address"
                 disabled={formState.currentStep < TAB_TO_STEP["address"]}
                 className="text-xs p-2"
               >
-                4. Address
+                5. Address
               </TabsTrigger>
               <TabsTrigger
                 value="contact-info"
                 disabled={formState.currentStep < TAB_TO_STEP["contact-info"]}
                 className="text-xs p-2"
               >
-                5. Contact
+                6. Contact
               </TabsTrigger>
+            </TabsList>
+            <TabsList className="sm:hidden grid w-full grid-cols-1 gap-2 mb-6">
               <TabsTrigger
                 value="identity-verification"
                 disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
                 className="text-xs p-2"
               >
-                6. Identity
-              </TabsTrigger>
-            </TabsList>
-            <TabsList className="sm:hidden grid w-full grid-cols-1 gap-2 mb-6">
-              <TabsTrigger
-                value="roles"
-                disabled={formState.currentStep < TAB_TO_STEP["roles"]}
-                className="text-xs p-2"
-              >
-                7. Roles
+                7. Identity
               </TabsTrigger>
             </TabsList>
 
@@ -427,6 +427,9 @@ export default function KYCFormContainer({
               </TabsTrigger>
               <TabsTrigger value="expertise" disabled={formState.currentStep < TAB_TO_STEP["expertise"]}>
                 Expertise
+              </TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < TAB_TO_STEP["roles"]}>
+                Roles
               </TabsTrigger>
               <TabsTrigger
                 value="professional-info"
@@ -445,9 +448,6 @@ export default function KYCFormContainer({
                 disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
               >
                 Identity
-              </TabsTrigger>
-              <TabsTrigger value="roles" disabled={formState.currentStep < TAB_TO_STEP["roles"]}>
-                Roles
               </TabsTrigger>
             </TabsList>
 
@@ -468,6 +468,16 @@ export default function KYCFormContainer({
                 formData={formState.expertise}
                 updateFormData={(data) => updateFormData("expertise", data)}
                 onComplete={() => handleStepComplete(TAB_TO_STEP["expertise"])}
+              />
+            </TabsContent>
+
+            <TabsContent value="roles">
+              <RolesForm
+                profileId={profileId}
+                userId={userId}
+                formData={formState.roles}
+                updateFormData={(data) => updateFormData("roles", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["roles"])}
               />
             </TabsContent>
 
@@ -510,16 +520,6 @@ export default function KYCFormContainer({
                 onComplete={() => handleStepComplete(TAB_TO_STEP["identity-verification"])}
               />
             </TabsContent>
-
-            <TabsContent value="roles">
-              <RolesForm
-                profileId={profileId}
-                userId={userId}
-                formData={formState.roles}
-                updateFormData={(data) => updateFormData("roles", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["roles"])}
-              />
-            </TabsContent>
           </Tabs>
 
           <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6 sm:mt-8">
@@ -530,7 +530,7 @@ export default function KYCFormContainer({
                 const prevStep = formState.currentStep - 1
                 if (prevStep >= 1) {
                   setFormState((prev) => ({ ...prev, currentStep: prevStep }))
-                  setActiveTab(STEP_ORDER[prevStep as keyof typeof STEP_ORDER])
+                  setActiveTab(STEP_ORDER[prevStep])
                 }
               }}
               disabled={formState.currentStep <= 1}
