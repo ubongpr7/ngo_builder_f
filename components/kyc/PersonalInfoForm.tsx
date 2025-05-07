@@ -51,19 +51,17 @@ function BirthDatePicker({
 }) {
   const [open, setOpen] = useState(false)
   const [year, setYear] = useState<number>(() => {
-    // Default to 20 years ago
-    return subYears(new Date(), 20).getFullYear()
+    // Default to 17 years ago
+    return subYears(new Date(), 17).getFullYear()
   })
   const [month, setMonth] = useState<number>(() => {
     // Default to current month
     return new Date().getMonth()
   })
 
-  // Calculate the date 20 years ago from today
-  const twentyYearsAgo = subYears(new Date(), 20)
+  const seventeenYearsAgo = subYears(new Date(), 17)
 
-  // Generate array of years from 1900 to 20 years ago
-  const years = Array.from({ length: twentyYearsAgo.getFullYear() - 1899 }, (_, i) => 1900 + i)
+  const years = Array.from({ length: seventeenYearsAgo.getFullYear() - 1899 }, (_, i) => 1900 + i)
 
   // Generate array of month names
   const months = [
@@ -100,7 +98,7 @@ function BirthDatePicker({
 
   // Handle next year
   const handleNextYear = () => {
-    if (year < twentyYearsAgo.getFullYear()) {
+    if (year < seventeenYearsAgo.getFullYear()) {
       setYear(year + 1)
     }
   }
@@ -120,7 +118,7 @@ function BirthDatePicker({
   // Handle next month
   const handleNextMonth = () => {
     if (month === 11) {
-      if (year < twentyYearsAgo.getFullYear()) {
+      if (year < seventeenYearsAgo.getFullYear()) {
         setMonth(0)
         setYear(year + 1)
       }
@@ -132,8 +130,8 @@ function BirthDatePicker({
   // Set default date when opening the picker
   useEffect(() => {
     if (open && !value) {
-      // Default to January 1st, 20 years ago
-      const defaultDate = new Date(subYears(new Date(), 20).getFullYear(), 0, 1)
+      // Default to January 1st, 17 years ago
+      const defaultDate = new Date(subYears(new Date(), 17).getFullYear(), 0, 1)
       setYear(defaultDate.getFullYear())
       setMonth(defaultDate.getMonth())
     }
@@ -181,7 +179,7 @@ function BirthDatePicker({
               type="button"
               onClick={handleNextYear}
               className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year >= twentyYearsAgo.getFullYear()}
+              disabled={year >= seventeenYearsAgo.getFullYear()}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -212,7 +210,7 @@ function BirthDatePicker({
               type="button"
               onClick={handleNextMonth}
               className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year === twentyYearsAgo.getFullYear() && month >= twentyYearsAgo.getMonth()}
+              disabled={year === seventeenYearsAgo.getFullYear() && month >= seventeenYearsAgo.getMonth()}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -232,8 +230,8 @@ function BirthDatePicker({
             // Disable future dates
             if (isAfter(date, new Date())) return true
 
-            // Disable dates less than 20 years ago (too young)
-            if (isAfter(date, twentyYearsAgo)) return true
+            // Disable dates less than 17 years ago (too young)
+            if (isAfter(date, seventeenYearsAgo)) return true
 
             // Disable dates before 1900
             if (date < new Date(1900, 0, 1)) return true
@@ -258,8 +256,8 @@ export default function PersonalInfoForm({
   const [errors, setErrors] = useState<FormErrors>({})
   const { data: disabilities, isLoading: disabilitiesLoading } = useGetDisabilitiesQuery("")
 
-  // Calculate the date 20 years ago from today
-  const twentyYearsAgo = subYears(new Date(), 20)
+  // Calculate the date 17 years ago from today
+  const seventeenYearsAgo = subYears(new Date(), 17)
 
   // Initialize disabled based on whether disability exists
   useEffect(() => {
@@ -284,8 +282,8 @@ export default function PersonalInfoForm({
     } else {
       // Check if the selected date is after the minimum age date (too young)
       const birthDate = new Date(formData.date_of_birth)
-      if (isAfter(birthDate, twentyYearsAgo)) {
-        newErrors.date_of_birth = "You must be at least 20 years old"
+      if (isAfter(birthDate, seventeenYearsAgo)) {
+        newErrors.date_of_birth = "You must be at least 17 years old"
       }
     }
 
@@ -361,7 +359,7 @@ export default function PersonalInfoForm({
           <Label htmlFor="date_of_birth">Date of Birth</Label>
           <div className="text-sm text-muted-foreground flex items-center">
             <Info className="h-3 w-3 mr-1" />
-            <span>Must be at least 20 years old</span>
+            <span>Must be at least 17 years old</span>
           </div>
         </div>
 
