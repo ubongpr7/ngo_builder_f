@@ -19,48 +19,65 @@ import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedA
 
 const TOTAL_STEPS = 7
 
-export default function KYCFormContainer({profileId,userId,date_of_birth,linkedin_profile,profile_link, first_name,last_name,sex,userDisabled,userDisability}: 
-  {
-    profileId:string,
-    userId:string,date_of_birth:Date,profile_link:string,linkedin_profile:string,first_name:string,
-    last_name:string,sex:string,userDisabled:boolean,userDisability:string
-  }) {
+export default function KYCFormContainer({
+  profileId,
+  userId,
+  date_of_birth,
+  linkedin_profile,
+  profile_link,
+  first_name,
+  last_name,
+  sex,
+  userDisabled,
+  userDisability,
+}: {
+  profileId: string
+  userId: string
+  date_of_birth: Date
+  profile_link: string
+  linkedin_profile: string
+  first_name: string
+  last_name: string
+  sex: string
+  userDisabled: boolean
+  userDisability: string
+}) {
   const router = useRouter()
-  const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
+  const { data: userProfile, isLoading } = useGetProfileQuery(profileId, { skip: !profileId })
   const addressId = userProfile?.address?.id || null
   const [activeTab, setActiveTab] = useState("personal-info")
   const {
-      data: address,
-      isLoading: isLoadingAddress,
-      refetch,
-    } = useGetAddressByIdQuery(
-      { userProfileId:profileId,addressId: addressId },
-      {
-        skip: !addressId,
-      },
-    )
+    data: address,
+    isLoading: isLoadingAddress,
+    refetch,
+  } = useGetAddressByIdQuery(
+    { userProfileId: profileId, addressId: addressId },
+    {
+      skip: !addressId,
+    },
+  )
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],
     personalInfo: {
-      first_name:first_name,
+      first_name: first_name,
       last_name: last_name,
       date_of_birth: date_of_birth,
       profile_link: profile_link,
       linkedin_profile: linkedin_profile,
       sex: sex,
       disabled: false,
-      disability: '',
+      disability: "",
     },
     address: {
-      country: userProfile.address?.country || null,
-      region: userProfile.address?.region || null,
-      subregion: userProfile.address?.subregion || null,
-      city: userProfile.address?.city || null,
-      street: userProfile.address?.street || "",
-      street_number: userProfile.address?.street_number || null,
-      apt_number: userProfile.address?.apt_number || null,
-      postal_code: userProfile.address?.postal_code || null,
+      country: null,
+      region: null,
+      subregion: null,
+      city: null,
+      street: "",
+      street_number: null,
+      apt_number: null,
+      postal_code: null,
     },
     contactInfo: {
       phone_number: "",
@@ -97,46 +114,50 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
-      updatedFormState.personalInfo.date_of_birth =  date_of_birth
+      updatedFormState.personalInfo.date_of_birth = date_of_birth
       updatedFormState.personalInfo.profile_link = profile_link
       updatedFormState.personalInfo.linkedin_profile = linkedin_profile
       updatedFormState.personalInfo.sex = sex
       updatedFormState.personalInfo.disabled = userDisabled
       updatedFormState.personalInfo.disability = userDisability
-  
+
       if (userProfile.address) {
         updatedFormState.address = {
-          country: userProfile.address?.country || null,
-          region: userProfile.address?.region || null,
-          subregion: userProfile.address?.subregion || null,
-          city: userProfile.address?.city || null,
-          street: userProfile.address?.street || "",
-          street_number: userProfile.address?.street_number || null,
-          apt_number: userProfile.address?.apt_number || null,
-          postal_code: userProfile.address?.postal_code || null,
+          country: userProfile.address.country || null,
+          region: userProfile.address.region || null,
+          subregion: userProfile.address.subregion || null,
+          city: userProfile.address.city || null,
+          street: userProfile.address.street || "",
+          street_number: userProfile.address.street_number || null,
+          apt_number: userProfile.address.apt_number || null,
+          postal_code: userProfile.address.postal_code || null,
         }
       }
-  
+
       updatedFormState.contactInfo = {
         phone_number: userProfile.phone_number || "",
         date_of_birth: userProfile.date_of_birth || null,
         bio: userProfile.bio || null,
       }
-  
+
       // Set completed steps based on data presence
       const completedSteps: number[] = []
-      if (updatedFormState.personalInfo.first_name && updatedFormState.personalInfo.last_name && updatedFormState.personalInfo.date_of_birth) {
+      if (
+        updatedFormState.personalInfo.first_name &&
+        updatedFormState.personalInfo.last_name &&
+        updatedFormState.personalInfo.date_of_birth
+      ) {
         completedSteps.push(1)
       }
-  
+
       if (updatedFormState.address.country && updatedFormState.address.city) {
         completedSteps.push(2)
       }
-  
+
       if (updatedFormState.contactInfo.phone_number) {
         completedSteps.push(3)
       }
-  
+
       if (userProfile.id_document_type && userProfile.id_document_number) {
         completedSteps.push(4)
         updatedFormState.identityVerification = {
@@ -147,7 +168,7 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
           selfie_image: userProfile.selfie_image || null,
         }
       }
-  
+
       if (userProfile.membership_type || userProfile.industry) {
         completedSteps.push(5)
         updatedFormState.professionalInfo = {
@@ -157,12 +178,12 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
           industry: userProfile.industry || null,
         }
       }
-  
+
       if (userProfile.expertise && userProfile.expertise.length > 0) {
         completedSteps.push(6)
         updatedFormState.expertise.expertise = userProfile.expertise
       }
-  
+
       if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(7)
         updatedFormState.roles = {
@@ -173,10 +194,10 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
           is_mentor: false, // Assuming this is not in your model
         }
       }
-  
+
       updatedFormState.completedSteps = completedSteps
       updatedFormState.currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
-  
+
       setFormState(updatedFormState)
     }
   }, [userProfile])
@@ -404,7 +425,7 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
             </TabsList>
 
             <TabsContent value="personal-info">
-              <PersonalInfoForm 
+              <PersonalInfoForm
                 profileId={profileId}
                 userId={userId}
                 formData={formState.personalInfo}
@@ -445,7 +466,6 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
 
             <TabsContent value="professional-info">
               <ProfessionalInfoForm
-
                 profileId={profileId}
                 userId={userId}
                 formData={formState.professionalInfo}
@@ -476,7 +496,7 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
           </Tabs>
 
           <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6 sm:mt-8">
-            <Button 
+            <Button
               className="border border-green-700 hover:bg-green-700 hover:text-white"
               variant="outline"
               onClick={() => {
