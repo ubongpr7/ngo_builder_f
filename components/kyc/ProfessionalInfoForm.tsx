@@ -30,19 +30,38 @@ export default function ProfessionalInfoForm({
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isInitialized, setIsInitialized] = useState(false)
+  const [selectedIndustry, setSelectedIndustry] = useState<number | null>(null)
 
-  // Initialize form data when component mounts or when userProfile changes
+  // Initialize form data when industries are loaded
   useEffect(() => {
-    if (!isInitialized && industries && industries.length > 0 && formData) {
-      console.log("Initializing professional info form with data:", formData)
+    if (!isInitialized && industries && industries.length > 0) {
+      console.log("Industries loaded:", industries)
+      console.log("Current form data:", formData)
 
-      // Check if the industry exists in the available options
-      if (formData.industry && industries.some((industry: DropdownOption) => industry.id === formData.industry)) {
-        // Data is valid, mark as initialized
-        setIsInitialized(true)
+      if (formData.industry) {
+        // Check if the industry exists in the available options
+        const industryExists = industries.some((industry: DropdownOption) => industry.id === formData.industry)
+
+        if (industryExists) {
+          console.log(`Industry ${formData.industry} found in options`)
+          setSelectedIndustry(formData.industry)
+        } else {
+          console.log(`Industry ${formData.industry} NOT found in options`)
+          // If the industry doesn't exist in options, clear it to avoid invalid selection
+          updateFormData({ industry: null })
+        }
       }
+
+      setIsInitialized(true)
     }
-  }, [formData, industries, isInitialized])
+  }, [industries, formData, isInitialized, updateFormData])
+
+  // Update the selected industry when formData changes (after initialization)
+  useEffect(() => {
+    if (isInitialized && formData.industry !== selectedIndustry) {
+      setSelectedIndustry(formData.industry)
+    }
+  }, [formData.industry, isInitialized, selectedIndustry])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -55,6 +74,13 @@ export default function ProfessionalInfoForm({
     return Object.keys(newErrors).length === 0
   }
 
+  const handleIndustryChange = (value: string) => {
+    const industryId = Number.parseInt(value)
+    console.log(`Setting industry to: ${industryId}`)
+    setSelectedIndustry(industryId)
+    updateFormData({ industry: industryId })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -63,6 +89,14 @@ export default function ProfessionalInfoForm({
     }
 
     try {
+      console.log("Submitting professional info:", {
+        organization: formData.organization,
+        position: formData.position,
+        industry: formData.industry,
+        company_size: formData.company_size,
+        company_website: formData.company_website,
+      })
+
       await updateUserProfile({
         id: profileId,
         data: {
@@ -85,13 +119,25 @@ export default function ProfessionalInfoForm({
     return (
       <div className="flex justify-center items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-        <span className="ml-2">Loading form data...</span>
+        <span className="ml-2">Loading industry data...</span>
       </div>
     )
   }
 
+  // Get the industry name for debugging
+  const getIndustryName = (id: number | null) => {
+    if (!id || !industries) return "None"
+    const industry = industries.find((ind: DropdownOption) => ind.id === id)
+    return industry ? industry.name : "Unknown"
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Debug info - can be removed in production */}
+      <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded">
+        Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
+      </div>
+
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="organization">Organization/Company</Label>
@@ -115,10 +161,7 @@ export default function ProfessionalInfoForm({
 
         <div className="space-y-2">
           <Label htmlFor="industry">Industry</Label>
-          <Select
-            value={formData.industry?.toString() || ""}
-            onValueChange={(value) => updateFormData({ industry: Number.parseInt(value) })}
-          >
+          <Select value={selectedIndustry?.toString() || ""} onValueChange={handleIndustryChange}>
             <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
