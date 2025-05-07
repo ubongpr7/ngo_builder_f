@@ -106,6 +106,8 @@ export default function KYCFormContainer({
       organization: null,
       position: null,
       industry: null,
+      company_size: null,
+      company_website: null,
     },
     expertise: {
       expertise: [],
@@ -156,6 +158,8 @@ export default function KYCFormContainer({
         organization: userProfile.organization || null,
         position: userProfile.position || null,
         industry: userProfile.industry || null,
+        company_size: userProfile.company_size || null,
+        company_website: userProfile.company_website || null,
       }
 
       console.log("Setting professional info:", updatedFormState.professionalInfo)

@@ -1,4 +1,5 @@
 "use client"
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -68,6 +69,8 @@ export default function ProfessionalInfoForm({
           organization: formData.organization,
           position: formData.position,
           industry: formData.industry,
+          company_size: formData.company_size,
+          company_website: formData.company_website,
         },
       }).unwrap()
 
@@ -134,6 +137,36 @@ export default function ProfessionalInfoForm({
             </SelectContent>
           </Select>
           {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company_size">Company Size</Label>
+          <Select
+            value={formData.company_size ? String(formData.company_size) : ""}
+            onValueChange={(value) => updateFormData({ company_size: Number(value) })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select company size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1-10">1-10 employees</SelectItem>
+              <SelectItem value="11-50">11-50 employees</SelectItem>
+              <SelectItem value="51-200">51-200 employees</SelectItem>
+              <SelectItem value="201-500">201-500 employees</SelectItem>
+              <SelectItem value="501-1000">501-1000 employees</SelectItem>
+              <SelectItem value="1001+">1001+ employees</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company_website">Company Website</Label>
+          <Input
+            id="company_website"
+            value={formData.company_website || ""}
+            onChange={(e) => updateFormData({ company_website: e.target.value })}
+            placeholder="https://example.com"
+          />
         </div>
       </div>
 
