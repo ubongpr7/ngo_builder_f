@@ -157,7 +157,7 @@ export default function KYCFormContainer({
       updatedFormState.professionalInfo = {
         organization: userProfile.organization || null,
         position: userProfile.position || null,
-        industry:  null,
+        industry: userProfile.industry?.toString() || null,
         company_size: userProfile.company_size || null,
         company_website: userProfile.company_website || null,
       }
@@ -491,12 +491,12 @@ export default function KYCFormContainer({
             </TabsContent>
 
             <TabsContent value="professional-info">
-            <ProfessionalInfoForm
-            profileId={profileId}
-            formData={formState.professionalInfo}
-            updateFormData={(data) => updateFormData("professionalInfo", data)}
-            onComplete={() => handleStepComplete(TAB_TO_STEP["professional-info"])}
-          />
+              <ProfessionalInfoForm
+                profileId={profileId}
+                formData={formState.professionalInfo}
+                updateFormData={(data) => updateFormData("professionalInfo", data)}
+                onComplete={() => handleStepComplete(TAB_TO_STEP["professional-info"])}
+              />
             </TabsContent>
 
             <TabsContent value="address">
