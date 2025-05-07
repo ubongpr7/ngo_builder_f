@@ -10,7 +10,7 @@ export interface DropdownOption {
     sex:string
     disabled: boolean
     disability: string 
-    date_of_birth: string | null
+    date_of_birth: Date 
 
   }
   
