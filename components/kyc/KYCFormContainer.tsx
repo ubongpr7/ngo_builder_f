@@ -46,16 +46,7 @@ export default function KYCFormContainer({
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, { skip: !profileId })
   const addressId = userProfile?.address?.id || null
   const [activeTab, setActiveTab] = useState("personal-info")
-  const {
-    data: address,
-    isLoading: isLoadingAddress,
-    refetch,
-  } = useGetAddressByIdQuery(
-    { userProfileId: profileId, addressId: addressId },
-    {
-      skip: !addressId,
-    },
-  )
+  
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],

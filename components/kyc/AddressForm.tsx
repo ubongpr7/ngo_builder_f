@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,26 +14,61 @@ import {
   useGetSubregionsQuery,
   useGetCitiesQuery,
 } from "@/redux/features/common/typeOF"
-import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
-import {useAddAddressMutation,useUpdateAddressMutation} from "@/redux/features/profile/profileRelatedAPISlice"
+import {
+  useAddAddressMutation,
+  useUpdateAddressMutation,
+  useGetAddressByIdQuery,
+} from "@/redux/features/profile/profileRelatedAPISlice"
+
 interface AddressFormProps {
   formData: AddressFormData
   updateFormData: (data: Partial<AddressFormData>) => void
   onComplete: () => void
-  addressId:string,
-  profileId:string
+  addressId: string
+  profileId: string
 }
 
-export default function AddressForm({ formData, updateFormData, onComplete,addressId,profileId }: AddressFormProps) {
+export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId }: AddressFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
-  const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
+  const isLoading = isLoadingAddAddress || isLoadingUpdateProfile
+
+  // Track if each dropdown's data has been loaded
+  const [dataLoaded, setDataLoaded] = useState({
+    regions: false,
+    subregions: false,
+    cities: false,
+  })
+
+  // Refs to track if we've already set the initial values
+  const initialValuesSet = useRef({
+    region: false,
+    subregion: false,
+    city: false,
+  })
+
+  // Fetch address data if addressId exists
+  const {
+    data: address,
+    isLoading: isLoadingAddress,
+    refetch,
+  } = useGetAddressByIdQuery(
+    { profileId, addressId },
+    {
+      skip: !addressId,
+    },
+  )
+
+  // Fetch countries
+  const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
+
+  // Fetch regions based on selected country
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
   })
-  const isLoading=isLoadingAddAddress || isLoadingUpdateProfile
 
+  // Fetch subregions based on selected region
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
   })
@@ -42,6 +77,64 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
   const { data: cities, isLoading: isLoadingCities } = useGetCitiesQuery(formData.subregion || 0, {
     skip: !formData.subregion,
   })
+
+  // Populate form with existing address data when it loads
+  useEffect(() => {
+    if (address && !isLoadingAddress) {
+      updateFormData({
+        country: address.country,
+        street: address.street || "",
+        street_number: address.street_number,
+        apt_number: address.apt_number,
+        postal_code: address.postal_code,
+      })
+    }
+  }, [address, isLoadingAddress, updateFormData])
+
+  // Set region after regions are loaded
+  useEffect(() => {
+    if (regions && regions.length > 0 && formData.country && address?.region && !initialValuesSet.current.region) {
+      // Check if the region from address exists in the loaded regions
+      const regionExists = regions.some((r) => r.id === address.region)
+      if (regionExists) {
+        updateFormData({ region: address.region })
+        initialValuesSet.current.region = true
+      }
+      setDataLoaded((prev) => ({ ...prev, regions: true }))
+    }
+  }, [regions, formData.country, address, updateFormData])
+
+  // Set subregion after subregions are loaded
+  useEffect(() => {
+    if (
+      subregions &&
+      subregions.length > 0 &&
+      formData.region &&
+      address?.subregion &&
+      !initialValuesSet.current.subregion
+    ) {
+      // Check if the subregion from address exists in the loaded subregions
+      const subregionExists = subregions.some((sr) => sr.id === address.subregion)
+      if (subregionExists) {
+        updateFormData({ subregion: address.subregion })
+        initialValuesSet.current.subregion = true
+      }
+      setDataLoaded((prev) => ({ ...prev, subregions: true }))
+    }
+  }, [subregions, formData.region, address, updateFormData])
+
+  // Set city after cities are loaded
+  useEffect(() => {
+    if (cities && cities.length > 0 && formData.subregion && address?.city && !initialValuesSet.current.city) {
+      // Check if the city from address exists in the loaded cities
+      const cityExists = cities.some((c) => c.id === address.city)
+      if (cityExists) {
+        updateFormData({ city: address.city })
+        initialValuesSet.current.city = true
+      }
+      setDataLoaded((prev) => ({ ...prev, cities: true }))
+    }
+  }, [cities, formData.subregion, address, updateFormData])
 
   // Reset dependent fields when parent field changes
   useEffect(() => {
@@ -53,9 +146,12 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
           subregion: null,
           city: null,
         })
+        initialValuesSet.current.region = false
+        initialValuesSet.current.subregion = false
+        initialValuesSet.current.city = false
       }
     }
-  }, [formData.country, regions])
+  }, [formData.country, regions, updateFormData])
 
   useEffect(() => {
     if (formData.region) {
@@ -65,18 +161,21 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
           subregion: null,
           city: null,
         })
+        initialValuesSet.current.subregion = false
+        initialValuesSet.current.city = false
       }
     }
-  }, [formData.region, subregions])
+  }, [formData.region, subregions, updateFormData])
 
   useEffect(() => {
     if (formData.subregion) {
       // If subregion changes, reset city
       if (!formData.city || !cities?.some((c) => c.id === formData.city)) {
         updateFormData({ city: null })
+        initialValuesSet.current.city = false
       }
     }
-  }, [formData.subregion, cities])
+  }, [formData.subregion, cities, updateFormData])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -115,9 +214,9 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
     try {
       if (addressId) {
         await updateProfile({
-          userProfileId:profileId,
-          addressId:addressId,
-          address:{ 
+          userProfileId: profileId,
+          addressId: addressId,
+          address: {
             country: formData.country,
             region: formData.region,
             subregion: formData.subregion,
@@ -127,14 +226,11 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
             apt_number: formData.apt_number,
             postal_code: formData.postal_code,
           },
-  
         }).unwrap()
-      }
-      else{
-
+      } else {
         await addAddress({
-          userProfileId:profileId,
-          address:{ 
+          userProfileId: profileId,
+          address: {
             country: formData.country,
             region: formData.region,
             subregion: formData.subregion,
@@ -144,7 +240,6 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
             apt_number: formData.apt_number,
             postal_code: formData.postal_code,
           },
-  
         }).unwrap()
       }
 
@@ -152,6 +247,15 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
     } catch (error) {
       console.error("Failed to update address:", error)
     }
+  }
+
+  // Show loading state while fetching address data
+  if (addressId && isLoadingAddress) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    )
   }
 
   return (
@@ -189,11 +293,17 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
               <SelectValue placeholder={formData.country ? "Select your region" : "Select country first"} />
             </SelectTrigger>
             <SelectContent>
-              {regions?.map((region) => (
-                <SelectItem key={region.id} value={region.id.toString()}>
-                  {region.name}
+              {isLoadingRegions ? (
+                <SelectItem value="loading" disabled>
+                  Loading regions...
                 </SelectItem>
-              ))}
+              ) : (
+                regions?.map((region) => (
+                  <SelectItem key={region.id} value={region.id.toString()}>
+                    {region.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           {errors.region && <p className="text-red-500 text-sm">{errors.region}</p>}
@@ -210,11 +320,17 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
               <SelectValue placeholder={formData.region ? "Select your subregion" : "Select region first"} />
             </SelectTrigger>
             <SelectContent>
-              {subregions?.map((subregion) => (
-                <SelectItem key={subregion.id} value={subregion.id.toString()}>
-                  {subregion.name}
+              {isLoadingSubregions ? (
+                <SelectItem value="loading" disabled>
+                  Loading subregions...
                 </SelectItem>
-              ))}
+              ) : (
+                subregions?.map((subregion) => (
+                  <SelectItem key={subregion.id} value={subregion.id.toString()}>
+                    {subregion.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           {errors.subregion && <p className="text-red-500 text-sm">{errors.subregion}</p>}
@@ -231,11 +347,17 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
               <SelectValue placeholder={formData.subregion ? "Select your city" : "Select subregion first"} />
             </SelectTrigger>
             <SelectContent>
-              {cities?.map((city) => (
-                <SelectItem key={city.id} value={city.id.toString()}>
-                  {city.name}
+              {isLoadingCities ? (
+                <SelectItem value="loading" disabled>
+                  Loading cities...
                 </SelectItem>
-              ))}
+              ) : (
+                cities?.map((city) => (
+                  <SelectItem key={city.id} value={city.id.toString()}>
+                    {city.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
@@ -269,7 +391,7 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
           <Label htmlFor="street">Street Name</Label>
           <Input
             id="street"
-            value={formData.street}
+            value={formData.street || ""}
             onChange={(e) => updateFormData({ street: e.target.value })}
             placeholder="Enter street name"
             className={errors.street ? "border-red-500" : ""}
