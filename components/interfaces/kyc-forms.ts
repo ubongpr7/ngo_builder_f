@@ -43,7 +43,7 @@ export interface DropdownOption {
   export interface ProfessionalInfoFormData {
     organization: string | null
     position: string | null
-    industry: number | null
+    industry: string | null
     company_size: string | null
     company_website: string | null
     

@@ -492,7 +492,6 @@ export default function KYCFormContainer({
 
             <TabsContent value="professional-info">
               <ProfessionalInfoForm
-
                 profileId={profileId}
                 formData={formState.professionalInfo}
                 updateFormData={(data) => updateFormData("professionalInfo", data)}
