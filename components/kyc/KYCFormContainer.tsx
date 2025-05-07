@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,7 +15,6 @@ import ProfessionalInfoForm from "./ProfessionalInfoForm"
 import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
-import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 
 const TOTAL_STEPS = 7
 
@@ -430,7 +429,6 @@ export default function KYCFormContainer({
                 profileId={profileId}
                 addressId={addressId}
                 formData={formState.address}
-                address={userProfile?.address}
                 updateFormData={(data) => updateFormData("address", data)}
                 onComplete={() => handleStepComplete(2)}
               />
