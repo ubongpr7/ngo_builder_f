@@ -15,6 +15,7 @@ import ProfessionalInfoForm from "./ProfessionalInfoForm"
 import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
+import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 
 const TOTAL_STEPS = 7
 
@@ -28,6 +29,16 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
   const addressId = userProfile?.address?.id || null
   const [activeTab, setActiveTab] = useState("personal-info")
+  const {
+      data: address,
+      isLoading: isLoadingAddress,
+      refetch,
+    } = useGetAddressByIdQuery(
+      { userProfileId:profileId,addressId: addressId },
+      {
+        skip: !addressId,
+      },
+    )
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],
@@ -42,14 +53,14 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
       disability: '',
     },
     address: {
-      country: null,
-      region: null,
-      subregion: null,
-      city: null,
-      street: "",
-      street_number: null,
-      apt_number: null,
-      postal_code: null,
+      country: address.country || null,
+      region: address.region || null,
+      subregion: address.subregion || null,
+      city: address.city || null,
+      street: address.street || "",
+      street_number: address.street_number || null,
+      apt_number: address.apt_number || null,
+      postal_code: address.postal_code || null,
     },
     contactInfo: {
       phone_number: "",
@@ -95,14 +106,14 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
   
       if (userProfile.address) {
         updatedFormState.address = {
-          country: userProfile.address.country || null,
-          region: userProfile.address.region || null,
-          subregion: userProfile.address.subregion || null,
-          city: userProfile.address.city || null,
-          street: userProfile.address.street || "",
-          street_number: userProfile.address.street_number || null,
-          apt_number: userProfile.address.apt_number || null,
-          postal_code: userProfile.address.postal_code || null,
+          country: address.country || null,
+          region: address.region || null,
+          subregion: address.subregion || null,
+          city: address.city || null,
+          street: address.street || "",
+          street_number: address.street_number || null,
+          apt_number: address.apt_number || null,
+          postal_code: address.postal_code || null,
         }
       }
   
