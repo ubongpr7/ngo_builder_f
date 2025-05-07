@@ -157,7 +157,7 @@ export default function KYCFormContainer({
       updatedFormState.professionalInfo = {
         organization: userProfile.organization || null,
         position: userProfile.position || null,
-        industry: userProfile.industry?.id || null,
+        industry: userProfile.industry || null,
         company_size: userProfile.company_size || null,
         company_website: userProfile.company_website || null,
       }
@@ -188,7 +188,7 @@ export default function KYCFormContainer({
           is_donor: userProfile.is_donor || false,
           is_volunteer: userProfile.is_volunteer || false,
           is_partner: userProfile.is_partner || false,
-          is_mentor: false, // Assuming this is not in your model
+          is_mentor: false, 
         }
       }
 
@@ -492,6 +492,7 @@ export default function KYCFormContainer({
 
             <TabsContent value="professional-info">
               <ProfessionalInfoForm
+              
                 profileId={profileId}
                 userId={userId}
                 formData={formState.professionalInfo}

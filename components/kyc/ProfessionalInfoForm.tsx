@@ -148,14 +148,7 @@ export default function ProfessionalInfoForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Debug info - can be removed in production */}
-      <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded">
-        <div>
-          Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
-        </div>
-        <div>Form Industry: {formData.industry}</div>
-        <div>Profile ID: {profileId}</div>
-      </div>
-
+      
       {apiError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           <p className="font-medium">Error saving data</p>
