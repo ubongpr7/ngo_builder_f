@@ -27,7 +27,7 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
   }) {
   const router = useRouter()
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, {skip: !profileId})
-  const addressId = userProfile?.address?.id || null
+  const addressId = userProfile?.address
   const [activeTab, setActiveTab] = useState("personal-info")
   const {
       data: address,
@@ -53,14 +53,14 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
       disability: '',
     },
     address: {
-      country: address.country || null,
-      region: address.region || null,
-      subregion: address.subregion || null,
-      city: address.city || null,
-      street: address.street || "",
-      street_number: address.street_number || null,
-      apt_number: address.apt_number || null,
-      postal_code: address.postal_code || null,
+      country: address?.country || null,
+      region: address?.region || null,
+      subregion: address?.subregion || null,
+      city: address?.city || null,
+      street: address?.street || "",
+      street_number: address?.street_number || null,
+      apt_number: address?.apt_number || null,
+      postal_code: address?.postal_code || null,
     },
     contactInfo: {
       phone_number: "",
@@ -106,14 +106,14 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
   
       if (userProfile.address) {
         updatedFormState.address = {
-          country: address.country || null,
-          region: address.region || null,
-          subregion: address.subregion || null,
-          city: address.city || null,
+          country: address?.country || null,
+          region: address?.region || null,
+          subregion: address?.subregion || null,
+          city: address?.city || null,
           street: address.street || "",
-          street_number: address.street_number || null,
-          apt_number: address.apt_number || null,
-          postal_code: address.postal_code || null,
+          street_number: address?.street_number || null,
+          apt_number: address?.apt_number || null,
+          postal_code: address?.postal_code || null,
         }
       }
   
