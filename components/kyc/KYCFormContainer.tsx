@@ -162,7 +162,6 @@ export default function KYCFormContainer({
         company_website: userProfile.company_website || null,
       }
 
-      console.log("Setting professional info:", updatedFormState.professionalInfo)
 
       const completedSteps: number[] = []
 
