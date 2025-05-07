@@ -110,7 +110,7 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
           region: address?.region || null,
           subregion: address?.subregion || null,
           city: address?.city || null,
-          street: address.street || "",
+          street: address?.street || "",
           street_number: address?.street_number || null,
           apt_number: address?.apt_number || null,
           postal_code: address?.postal_code || null,
