@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "react-toastify"
 import { setCookie } from "cookies-next"
 import { useState, useMemo } from "react"
-import { Eye, EyeOff, Check, X } from 'lucide-react'
+import { Eye, EyeOff, Check, X, AlertCircle } from "lucide-react"
 import { useRegisterMutation } from "@/redux/features/authApiSlice"
 import type { ErrorResponse, RegisterResponse } from "../interfaces/authResponse"
 import { Progress } from "@/components/ui/progress"
@@ -17,6 +17,8 @@ import { Progress } from "@/components/ui/progress"
 export default function MembershipRegister() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [email, setEmail] = useState("")
@@ -32,20 +34,85 @@ export default function MembershipRegister() {
   const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)
   const passwordsMatch = password === confirmPassword && password !== ""
 
+  // Additional password validation per policy
+  const hasNoNameOrEmail = useMemo(() => {
+    if (!password) return true
+
+    const lowerPassword = password.toLowerCase()
+    const lowerFirstName = firstName.toLowerCase()
+    const lowerLastName = lastName.toLowerCase()
+    const lowerEmail = email.toLowerCase().split("@")[0]
+
+    return (
+      !lowerPassword.includes(lowerFirstName) &&
+      !lowerPassword.includes(lowerLastName) &&
+      (lowerEmail.length <= 3 || !lowerPassword.includes(lowerEmail))
+    )
+  }, [password, firstName, lastName, email])
+
+  const hasNoRepeatedPatterns = useMemo(() => {
+    if (!password) return true
+
+    // Check for repeated characters (more than 3 of the same character)
+    const repeatedChars = /(.)\1{3,}/.test(password)
+
+    // Check for simple sequences
+    const simpleSequences = [
+      "12345",
+      "23456",
+      "34567",
+      "45678",
+      "56789",
+      "67890",
+      "abcde",
+      "bcdef",
+      "cdefg",
+      "defgh",
+      "efghi",
+      "fghij",
+      "qwert",
+      "asdfg",
+      "zxcvb",
+    ]
+
+    const hasSimpleSequence = simpleSequences.some((seq) => password.toLowerCase().includes(seq))
+
+    // Check for common passwords
+    const commonPasswords = [
+      "password",
+      "admin",
+      "123456",
+      "qwerty",
+      "welcome",
+      "letmein",
+      "football",
+      "iloveyou",
+      "monkey",
+      "abc123",
+    ]
+
+    const isCommonPassword = commonPasswords.some((common) => password.toLowerCase() === common)
+
+    return !repeatedChars && !hasSimpleSequence && !isCommonPassword
+  }, [password])
+
   // Calculate password strength
   const passwordStrength = useMemo(() => {
     let strength = 0
-    if (hasMinLength) strength += 20
-    if (hasUppercase) strength += 20
-    if (hasLowercase) strength += 20
-    if (hasNumber) strength += 20
-    if (hasSpecialChar) strength += 20
+    if (hasMinLength) strength += 15
+    if (hasUppercase) strength += 15
+    if (hasLowercase) strength += 15
+    if (hasNumber) strength += 15
+    if (hasSpecialChar) strength += 15
+    if (hasNoNameOrEmail) strength += 10
+    if (hasNoRepeatedPatterns) strength += 15
+
     return strength
-  }, [hasMinLength, hasUppercase, hasLowercase, hasNumber, hasSpecialChar])
+  }, [hasMinLength, hasUppercase, hasLowercase, hasNumber, hasSpecialChar, hasNoNameOrEmail, hasNoRepeatedPatterns])
 
   // Get strength label and color
   const getStrengthLabel = () => {
-    if (passwordStrength < 40) return { label: "Weak", color: "bg-red-500" }
+    if (passwordStrength < 50) return { label: "Weak", color: "bg-red-500" }
     if (passwordStrength < 80) return { label: "Moderate", color: "bg-yellow-500" }
     return { label: "Strong", color: "bg-green-500" }
   }
@@ -55,11 +122,13 @@ export default function MembershipRegister() {
   // Form validation
   const isFormValid = useMemo(() => {
     return (
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
       email.trim() !== "" &&
-      passwordStrength >= 60 && // Require at least moderate strength
+      passwordStrength >= 70 && // Require at least moderate-to-strong strength
       passwordsMatch
     )
-  }, [email, passwordStrength, passwordsMatch])
+  }, [firstName, lastName, email, passwordStrength, passwordsMatch])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -79,6 +148,8 @@ export default function MembershipRegister() {
     }
 
     const formData = {
+      first_name: firstName,
+      last_name: lastName,
       email,
       password,
       re_password: confirmPassword,
@@ -130,6 +201,30 @@ export default function MembershipRegister() {
             theme: "light",
           })
         }
+        if (fieldErrors.first_name) {
+          toast.error(`First Name: ${fieldErrors.first_name}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          })
+        }
+        if (fieldErrors.last_name) {
+          toast.error(`Last Name: ${fieldErrors.last_name}`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          })
+        }
         if (fieldErrors.non_field_errors) {
           toast.error(fieldErrors.non_field_errors, {
             position: "top-right",
@@ -169,6 +264,32 @@ export default function MembershipRegister() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-md w-full space-y-6 mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
+            id="firstName"
+            type="text"
+            placeholder="John"
+            required
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
+            id="lastName"
+            type="text"
+            placeholder="Doe"
+            required
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -193,7 +314,7 @@ export default function MembershipRegister() {
             onChange={(e) => setPassword(e.target.value)}
             onFocus={() => setPasswordFocused(true)}
             onBlur={() => setPasswordFocused(false)}
-            className={password && passwordStrength < 60 ? "border-red-300 focus:border-red-500" : ""}
+            className={password && passwordStrength < 70 ? "border-red-300 focus:border-red-500" : ""}
           />
           <button
             type="button"
@@ -258,6 +379,26 @@ export default function MembershipRegister() {
                     At least one special character (!@#$%^&*)
                   </span>
                 </li>
+                <li className="flex items-center gap-2">
+                  {hasNoNameOrEmail ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-500" />
+                  )}
+                  <span className={hasNoNameOrEmail ? "text-gray-700" : "text-red-500"}>
+                    Must not contain your name or email
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  {hasNoRepeatedPatterns ? (
+                    <Check className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-500" />
+                  )}
+                  <span className={hasNoRepeatedPatterns ? "text-gray-700" : "text-red-500"}>
+                    No repeated patterns or common passwords
+                  </span>
+                </li>
               </ul>
             </div>
           </div>
@@ -304,6 +445,19 @@ export default function MembershipRegister() {
       >
         {isLoading ? "Registering..." : "Register"}
       </Button>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
+        <div className="flex items-start">
+          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium">Password Security Notice</p>
+            <p className="mt-1">
+              Your password must meet all the requirements listed above to comply with Destiny Builders Empowerment
+              Foundation's security policy.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <p className="text-sm text-muted-foreground">
         By clicking "Register", you agree to our{" "}
