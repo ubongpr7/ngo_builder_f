@@ -32,7 +32,7 @@ export default function KYCFormContainer({
 }: {
   profileId: string
   userId: string
-  date_of_birth: Date
+  date_of_birth: string
   profile_link: string
   linkedin_profile: string
   first_name: string
@@ -71,7 +71,6 @@ export default function KYCFormContainer({
     },
     contactInfo: {
       phone_number: "",
-      date_of_birth: null,
       bio: null,
     },
     identityVerification: {
@@ -82,7 +81,6 @@ export default function KYCFormContainer({
       selfie_image: null,
     },
     professionalInfo: {
-      membership_type: null,
       organization: null,
       position: null,
       industry: null,
@@ -126,8 +124,8 @@ export default function KYCFormContainer({
 
       updatedFormState.contactInfo = {
         phone_number: userProfile.phone_number || "",
-        date_of_birth: userProfile.date_of_birth || null,
         bio: userProfile.bio || null,
+
       }
 
       // Set completed steps based on data presence
@@ -159,10 +157,9 @@ export default function KYCFormContainer({
         }
       }
 
-      if (userProfile.membership_type || userProfile.industry) {
+      if ( userProfile.industry) {
         completedSteps.push(5)
         updatedFormState.professionalInfo = {
-          membership_type: userProfile.membership_type || null,
           organization: userProfile.organization || null,
           position: userProfile.position || null,
           industry: userProfile.industry || null,

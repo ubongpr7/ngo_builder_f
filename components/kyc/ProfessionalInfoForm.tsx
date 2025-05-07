@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { ProfessionalInfoFormData } from "../interfaces/kyc-forms"
+import type { DropdownOption, ProfessionalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useGetIndustryQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-import { useGetMembershipQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from "lucide-react"
 
 interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
@@ -19,18 +18,19 @@ interface ProfessionalInfoFormProps {
   userId: string
 }
 
-export default function ProfessionalInfoForm({ formData, updateFormData, onComplete, profileId, userId }: ProfessionalInfoFormProps) {
+export default function ProfessionalInfoForm({
+  formData,
+  updateFormData,
+  onComplete,
+  profileId,
+  userId,
+}: ProfessionalInfoFormProps) {
   const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
-  const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery('')
+  const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const { data: membershipTypes, isLoading: isLoadingMembership } = useGetMembershipQuery('')
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-
-    if (!formData.membership_type) {
-      newErrors.membership_type = "Membership type is required"
-    }
 
     if (!formData.industry) {
       newErrors.industry = "Industry is required"
@@ -51,11 +51,10 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
       await updateUserProfile({
         id: profileId,
         data: {
-          membership_type: formData.membership_type,
           organization: formData.organization,
           position: formData.position,
           industry: formData.industry,
-        }
+        },
       }).unwrap()
 
       onComplete()
@@ -65,7 +64,7 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
   }
 
   // Show loading state while data is being fetched
-  if (isLoadingIndustries || isLoadingMembership) {
+  if (isLoadingIndustries) {
     return (
       <div className="flex justify-center items-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-green-600" />
@@ -77,32 +76,6 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label>Membership Type</Label>
-          <Select
-            value={formData.membership_type?.toString() || ""}
-            onValueChange={(value) => updateFormData({ membership_type: Number.parseInt(value) })}
-          >
-            <SelectTrigger className={errors.membership_type ? "border-red-500" : ""}>
-              <SelectValue placeholder="Select your membership type" />
-            </SelectTrigger>
-            <SelectContent>
-              {membershipTypes && membershipTypes.length > 0 ? (
-                membershipTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id.toString()}>
-                    {type.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="no-options" disabled>
-                  No membership types available
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
-          {errors.membership_type && <p className="text-red-500 text-sm">{errors.membership_type}</p>}
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="organization">Organization/Company</Label>
           <Input
@@ -134,7 +107,7 @@ export default function ProfessionalInfoForm({ formData, updateFormData, onCompl
             </SelectTrigger>
             <SelectContent>
               {industries && industries.length > 0 ? (
-                industries.map((industry) => (
+                industries.map((industry:DropdownOption) => (
                   <SelectItem key={industry.id} value={industry.id.toString()}>
                     {industry.name}
                   </SelectItem>

@@ -29,7 +29,6 @@ export interface DropdownOption {
   
   export interface ContactInfoFormData {
     phone_number: string
-    date_of_birth: string | null
     bio: string | null
   }
   
@@ -42,7 +41,6 @@ export interface DropdownOption {
   }
   
   export interface ProfessionalInfoFormData {
-    membership_type: number | null
     organization: string | null
     position: string | null
     industry: number | null
