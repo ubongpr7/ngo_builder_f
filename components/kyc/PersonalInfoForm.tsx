@@ -124,7 +124,7 @@ export default function PersonalInfoForm({ formData, updateFormData, onComplete,
 
       {/* Sex Selection */}
       <div className="space-y-3">
-        <Label htmlFor="sex">Sex</Label>
+        <Label htmlFor="sex">Gender</Label>
         <RadioGroup
           value={formData.sex || ""}
           onValueChange={(value: string) => updateFormData({ sex: value })}
