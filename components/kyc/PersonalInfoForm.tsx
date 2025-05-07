@@ -390,7 +390,7 @@ export default function PersonalInfoForm({
 
         <BirthDatePicker
           value={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
-          onChange={(date) => updateFormData({ date_of_birth: date })}
+          onChange={(date) => updateFormData({ date_of_birth: date ? date.toISOString() : undefined })}
           error={errors.date_of_birth}
         />
 

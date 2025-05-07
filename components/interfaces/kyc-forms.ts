@@ -10,10 +10,10 @@ export interface DropdownOption {
     sex:string
     disabled: boolean
     disability: string 
-    date_of_birth: Date 
+    date_of_birth: string 
     linkedin_profile: string | null
     profile_link: string | null
-    
+
   }
   
   export interface AddressFormData {

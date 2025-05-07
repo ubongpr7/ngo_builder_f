@@ -21,7 +21,7 @@ const TOTAL_STEPS = 7
 export default function KYCFormContainer({profileId,userId,date_of_birth,linkedin_profile,profile_link, first_name,last_name,sex,userDisabled,userDisability}: 
   {
     profileId:string,
-    userId:string,date_of_birth:string,profile_link:string,linkedin_profile:string,first_name:string,
+    userId:string,date_of_birth:Date,profile_link:string,linkedin_profile:string,first_name:string,
     last_name:string,sex:string,userDisabled:boolean,userDisability:string
   }) {
   const router = useRouter()
