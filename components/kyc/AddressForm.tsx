@@ -54,7 +54,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     isLoading: isLoadingAddress,
     refetch,
   } = useGetAddressByIdQuery(
-    { profileId, addressId },
+    { userProfileId:profileId, addressId: addressId },
     {
       skip: !addressId,
     },
