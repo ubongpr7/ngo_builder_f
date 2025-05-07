@@ -86,7 +86,9 @@ export default function KYCFormContainer({profileId,userId,date_of_birth,linkedi
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
-      updatedFormState.personalInfo.date_of_birth = date_of_birth
+      updatedFormState.personalInfo.date_of_birth = new Date(date_of_birth)
+      updatedFormState.personalInfo.profile_link = profile_link
+      updatedFormState.personalInfo.linkedin_profile = linkedin_profile
       updatedFormState.personalInfo.sex = sex
       updatedFormState.personalInfo.disabled = userDisabled
       updatedFormState.personalInfo.disability = userDisability
