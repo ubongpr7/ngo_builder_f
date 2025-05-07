@@ -37,10 +37,10 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     isLoading: isLoadingAddress,
     refetch,
   } = useGetAddressByIdQuery(
-    { profileId, addressId },
-    {
-      skip: !addressId,
-    },
+    { userProfileId:profileId,addressId: addressId },
+    // {
+    //   skip: !addressId,
+    // },
   )
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
