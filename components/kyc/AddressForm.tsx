@@ -14,25 +14,38 @@ import {
   useGetSubregionsQuery,
   useGetCitiesQuery,
 } from "@/redux/features/common/typeOF"
-import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
-import {useAddAddressMutation,useUpdateAddressMutation} from "@/redux/features/profile/profileRelatedAPISlice"
+import {
+  useAddAddressMutation,
+  useUpdateAddressMutation,
+  useGetAddressByIdQuery,
+} from "@/redux/features/profile/profileRelatedAPISlice"
 interface AddressFormProps {
   formData: AddressFormData
   updateFormData: (data: Partial<AddressFormData>) => void
   onComplete: () => void
-  addressId:string,
-  profileId:string
+  addressId: string
+  profileId: string
 }
 
-export default function AddressForm({ formData, updateFormData, onComplete,addressId,profileId }: AddressFormProps) {
+export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId }: AddressFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
+  const {
+    data: address,
+    isLoading: isLoadingAddress,
+    refetch,
+  } = useGetAddressByIdQuery(
+    { profileId, addressId },
+    {
+      skip: !addressId,
+    },
+  )
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
   })
-  const isLoading=isLoadingAddAddress || isLoadingUpdateProfile
+  const isLoading = isLoadingAddAddress || isLoadingUpdateProfile
 
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
@@ -78,6 +91,22 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
     }
   }, [formData.subregion, cities])
 
+  // Add this useEffect to populate form with existing address data
+  useEffect(() => {
+    if (address && !isLoadingAddress) {
+      updateFormData({
+        country: address.country,
+        region: address.region,
+        subregion: address.subregion,
+        city: address.city,
+        street: address.street,
+        street_number: address.street_number,
+        apt_number: address.apt_number,
+        postal_code: address.postal_code,
+      })
+    }
+  }, [address, isLoadingAddress, updateFormData])
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
@@ -115,9 +144,9 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
     try {
       if (addressId) {
         await updateProfile({
-          userProfileId:profileId,
-          addressId:addressId,
-          address:{ 
+          userProfileId: profileId,
+          addressId: addressId,
+          address: {
             country: formData.country,
             region: formData.region,
             subregion: formData.subregion,
@@ -127,14 +156,11 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
             apt_number: formData.apt_number,
             postal_code: formData.postal_code,
           },
-  
         }).unwrap()
-      }
-      else{
-
+      } else {
         await addAddress({
-          userProfileId:profileId,
-          address:{ 
+          userProfileId: profileId,
+          address: {
             country: formData.country,
             region: formData.region,
             subregion: formData.subregion,
@@ -144,7 +170,6 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
             apt_number: formData.apt_number,
             postal_code: formData.postal_code,
           },
-  
         }).unwrap()
       }
 
@@ -156,6 +181,12 @@ export default function AddressForm({ formData, updateFormData, onComplete,addre
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {isLoadingAddress && (
+        <div className="flex justify-center items-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+          <span className="ml-2">Loading address data...</span>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
