@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,7 +16,6 @@ interface ProfessionalInfoFormProps {
   updateFormData: (data: Partial<ProfessionalInfoFormData>) => void
   onComplete: () => void
   profileId: string
-  userId: string
 }
 
 export default function ProfessionalInfoForm({
@@ -24,7 +23,6 @@ export default function ProfessionalInfoForm({
   updateFormData,
   onComplete,
   profileId,
-  userId,
 }: ProfessionalInfoFormProps) {
   const [updateUserProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
@@ -32,34 +30,38 @@ export default function ProfessionalInfoForm({
   const [isInitialized, setIsInitialized] = useState(false)
   const [selectedIndustry, setSelectedIndustry] = useState<number | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)
+  const initialIndustryRef = useRef<number | null>(formData.industry || null)
 
-  // Initialize form data when industries are loaded
+  // Wait for industries to load before setting the initial industry value
   useEffect(() => {
-    if (!isInitialized && industries && industries.length > 0) {
+    if (industries && industries.length > 0 && !isInitialized) {
       console.log("Industries loaded:", industries)
-      console.log("Current form data:", formData)
+      console.log("Initial industry from formData:", initialIndustryRef.current)
 
-      if (formData.industry) {
+      // Only try to set the industry if we have an initial value
+      if (initialIndustryRef.current !== null) {
         // Check if the industry exists in the available options
-        const industryExists = industries.some((industry: DropdownOption) => industry.id === formData.industry)
+        const industryExists = industries.some((industry: DropdownOption) => industry.id === initialIndustryRef.current)
 
         if (industryExists) {
-          console.log(`Industry ${formData.industry} found in options`)
-          setSelectedIndustry(formData.industry)
+          console.log(`Industry ${initialIndustryRef.current} found in options, setting selected value`)
+          setSelectedIndustry(initialIndustryRef.current)
         } else {
-          console.log(`Industry ${formData.industry} NOT found in options`)
+          console.log(`Industry ${initialIndustryRef.current} NOT found in options`)
           // If the industry doesn't exist in options, clear it to avoid invalid selection
+          setSelectedIndustry(null)
           updateFormData({ industry: null })
         }
       }
 
       setIsInitialized(true)
     }
-  }, [industries, formData, isInitialized, updateFormData])
+  }, [industries, isInitialized, updateFormData])
 
   // Update the selected industry when formData changes (after initialization)
   useEffect(() => {
     if (isInitialized && formData.industry !== selectedIndustry) {
+      console.log(`Form data industry changed to ${formData.industry}, updating selected industry`)
       setSelectedIndustry(formData.industry)
     }
   }, [formData.industry, isInitialized, selectedIndustry])
@@ -102,8 +104,7 @@ export default function ProfessionalInfoForm({
       company_website: formData.company_website,
     }
 
-    console.log("Submitting professional info:", dataToSubmit)
-    console.log("Profile ID:", profileId)
+    console.log("Submitting data:", dataToSubmit)
 
     try {
       const response = await updateUserProfile({
@@ -148,7 +149,15 @@ export default function ProfessionalInfoForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Debug info - can be removed in production */}
-      
+      <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded hidden">
+        <div>
+          Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
+        </div>
+        <div>Form Industry: {formData.industry}</div>
+        <div>Initial Industry: {initialIndustryRef.current}</div>
+        <div>Initialized: {isInitialized ? "Yes" : "No"}</div>
+      </div>
+
       {apiError && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           <p className="font-medium">Error saving data</p>
@@ -181,7 +190,11 @@ export default function ProfessionalInfoForm({
           <Label htmlFor="industry">
             Industry <span className="text-red-500">*</span>
           </Label>
-          <Select value={selectedIndustry?.toString() || ""} onValueChange={handleIndustryChange}>
+          <Select
+            value={isInitialized ? selectedIndustry?.toString() || "" : ""}
+            onValueChange={handleIndustryChange}
+            disabled={!isInitialized}
+          >
             <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
               <SelectValue placeholder="Select your industry" />
             </SelectTrigger>
