@@ -121,6 +121,8 @@ export default function KYCFormContainer({
 
   useEffect(() => {
     if (userProfile) {
+      console.log("User profile data:", userProfile)
+
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
@@ -149,10 +151,17 @@ export default function KYCFormContainer({
         bio: userProfile.bio || null,
       }
 
-      // Set completed steps based on data presence
+      // Explicitly set professional info
+      updatedFormState.professionalInfo = {
+        organization: userProfile.organization || null,
+        position: userProfile.position || null,
+        industry: userProfile.industry || null,
+      }
+
+      console.log("Setting professional info:", updatedFormState.professionalInfo)
+
       const completedSteps: number[] = []
 
-      // Step 1: Personal Info
       if (
         updatedFormState.personalInfo.first_name &&
         updatedFormState.personalInfo.last_name &&
@@ -182,11 +191,6 @@ export default function KYCFormContainer({
       // Step 4: Professional Info
       if (userProfile.industry) {
         completedSteps.push(4)
-        updatedFormState.professionalInfo = {
-          organization: userProfile.organization || null,
-          position: userProfile.position || null,
-          industry: userProfile.industry || null,
-        }
       }
 
       // Step 5: Address
@@ -241,6 +245,7 @@ export default function KYCFormContainer({
   }
 
   const updateFormData = (section: keyof KYCFormState, data: any) => {
+    console.log(`Updating ${section} with:`, data)
     setFormState((prev) => ({
       ...prev,
       [section]: {

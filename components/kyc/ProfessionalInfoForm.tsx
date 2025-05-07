@@ -1,6 +1,6 @@
 "use client"
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,9 +25,23 @@ export default function ProfessionalInfoForm({
   profileId,
   userId,
 }: ProfessionalInfoFormProps) {
-  const [updateUserProfile, { isLoading }] = useUpdateProfileMutation()
+  const [updateUserProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Initialize form data when component mounts or when userProfile changes
+  useEffect(() => {
+    if (!isInitialized && industries && industries.length > 0 && formData) {
+      console.log("Initializing professional info form with data:", formData)
+
+      // Check if the industry exists in the available options
+      if (formData.industry && industries.some((industry: DropdownOption) => industry.id === formData.industry)) {
+        // Data is valid, mark as initialized
+        setIsInitialized(true)
+      }
+    }
+  }, [formData, industries, isInitialized])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -107,7 +121,7 @@ export default function ProfessionalInfoForm({
             </SelectTrigger>
             <SelectContent>
               {industries && industries.length > 0 ? (
-                industries.map((industry:DropdownOption) => (
+                industries.map((industry: DropdownOption) => (
                   <SelectItem key={industry.id} value={industry.id.toString()}>
                     {industry.name}
                   </SelectItem>
@@ -124,8 +138,8 @@ export default function ProfessionalInfoForm({
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save & Continue"}
+        <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isUpdating}>
+          {isUpdating ? "Saving..." : "Save & Continue"}
         </Button>
       </div>
     </form>
