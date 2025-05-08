@@ -14,6 +14,8 @@ import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2
 import type { UserProfile } from "@/components/interfaces/profile"
 import type { AddressFormData } from "@/components/interfaces/kyc-forms"
 import Link from "next/link"
+import { ProfileImageUploaderButton } from "@/components/kyc/ProfileImageUploaderButton"
+
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery("")
@@ -196,11 +198,9 @@ export default function ProfilePage() {
                   {getInitials(profileData)}
                 </AvatarFallback>
               </Avatar>
-              {isEditing && (
                 <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                  <Camera className="h-4 w-4 text-white" />
+                  <ProfileImageUploaderButton />
                 </div>
-              )}
             </div>
 
             <CardTitle className="text-xl sm:text-2xl font-bold">
