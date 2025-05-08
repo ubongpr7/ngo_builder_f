@@ -16,7 +16,7 @@ import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-import {ProfileImageUploaderButton} from "./ProfileImageUploaderButton"
+import {ProfileImageUploader} from "./ProfileImageUploader"
 
 const TOTAL_STEPS = 8
 
@@ -429,16 +429,15 @@ export default function KYCFormContainer({
             <TabsContent value="profile-image">
               <div className="p-4 border relative rounded-md bg-gray-50">
                 <h3 className="text-sm  font-medium text-gray-700 mb-4">Profile Photo</h3>
-                <ProfileImageUploaderButton
-                  onSuccess={() => {
-                    refetch()
-                    handleStepComplete(8)
-                  }}
-                  profileId={profileId}
-                  userId={userId}
-                  currentImage={userProfile?.profile_image}
-                />
-                <p className="text-sm text-gray-500 mt-2">
+                <ProfileImageUploader
+                userId={userId}
+                profileId={profileId}
+                currentImage={userProfile?.profile_image}
+                userName={first_name + " " + last_name}
+                onSuccess={refetch}
+                size="lg"
+              />
+                      <p className="text-sm text-gray-500 mt-2">
                   Upload a clear headshot for your member profile
                 </p>
               </div>
