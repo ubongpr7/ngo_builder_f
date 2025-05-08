@@ -152,7 +152,6 @@ export default function KYCFormContainer({
         bio: userProfile.bio || null,
       }
 
-      // Explicitly set professional info
       updatedFormState.professionalInfo = {
         organization: userProfile.organization || null,
         position: userProfile.position || null,

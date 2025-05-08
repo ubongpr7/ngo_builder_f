@@ -37,15 +37,15 @@ export default function ProfessionalInfoForm({
     if (industries && industries.length > 0 && !isInitialized) {
 
       // Only try to set the industry if we have an initial value
-      if (initialIndustryRef.current !== null) {
+      if (initialIndustryRef.current !== '') {
         // Check if the industry exists in the available options
         const industryExists = industries.some((industry: { id: string; name: string }) => industry.id === initialIndustryRef.current)
 
         if (industryExists) {
           setSelectedIndustry(initialIndustryRef.current)
         } else {
-          setSelectedIndustry(null)
-          updateFormData({ industry: null })
+          setSelectedIndustry('')
+          updateFormData({ industry: '' })
         }
       }
 

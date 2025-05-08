@@ -129,7 +129,7 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
           {errors.maxLimit && <p className="text-red-500 text-sm">{errors.maxLimit}</p>}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-            {expertiseAreas?.map((expertise) => {
+            {expertiseAreas?.map((expertise: { id: number; name: string }) => {
               const isChecked = formData.expertise.includes(expertise.id)
               const isDisabled = maxReached && !isChecked
               
