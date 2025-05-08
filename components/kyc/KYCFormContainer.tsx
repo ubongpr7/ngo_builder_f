@@ -16,9 +16,10 @@ import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-const TOTAL_STEPS = 7
+import ProfileImageUploaderButton from "./ProfileImageUploaderButton"
 
-// Define the step order mapping
+const TOTAL_STEPS = 8
+
 const STEP_ORDER: Record<number, string> = {
   1: "personal-info",
   2: "expertise",
@@ -27,9 +28,9 @@ const STEP_ORDER: Record<number, string> = {
   5: "address",
   6: "contact-info",
   7: "identity-verification",
+  8: "profile-image",
 }
 
-// Reverse mapping for getting step number from tab value
 const TAB_TO_STEP = {
   "personal-info": 1,
   expertise: 2,
@@ -38,6 +39,7 @@ const TAB_TO_STEP = {
   address: 5,
   "contact-info": 6,
   "identity-verification": 7,
+  "profile-image": 8,
 }
 
 export default function KYCFormContainer({
@@ -64,10 +66,10 @@ export default function KYCFormContainer({
   userDisability: string
 }) {
   const router = useRouter()
-  const { data: userProfile, isLoading } = useGetProfileQuery(profileId, { skip: !profileId })
+  const { data: userProfile, isLoading, refetch } = useGetProfileQuery(profileId, { skip: !profileId })
   const addressId = userProfile?.address || null
-  const [activeTab, setActiveTab] = useState(STEP_ORDER[1]) // Start with first step
-  const { data: address } = useGetAddressByIdQuery({userProfileId:profileId, addressId:addressId}, { skip: !addressId })
+  const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
+  const { data: address } = useGetAddressByIdQuery({ userProfileId: profileId, addressId: addressId }, { skip: !addressId })
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],
@@ -113,7 +115,6 @@ export default function KYCFormContainer({
       expertise: [],
     },
     roles: {
-
       is_donor: false,
       is_volunteer: false,
       is_partner: false,
@@ -123,13 +124,11 @@ export default function KYCFormContainer({
       is_DB_staff: false,
       is_benefactor: false,
       is_DB_admin: false,
-      
     },
   })
 
   useEffect(() => {
     if (userProfile) {
-
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
       updatedFormState.personalInfo.last_name = last_name
@@ -166,7 +165,6 @@ export default function KYCFormContainer({
         company_website: userProfile.company_website || null,
       }
 
-
       const completedSteps: number[] = []
 
       if (
@@ -177,44 +175,38 @@ export default function KYCFormContainer({
         completedSteps.push(1)
       }
 
-      // Step 2: Expertise
       if (userProfile.expertise && userProfile.expertise.length > 0) {
         completedSteps.push(2)
         updatedFormState.expertise.expertise = userProfile.expertise
       }
 
-      // Step 3: Roles
       if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(3)
         updatedFormState.roles = {
           is_donor: userProfile.is_donor || false,
           is_volunteer: userProfile.is_volunteer || false,
           is_partner: userProfile.is_partner || false,
-          is_ceo:userProfile.is_ceo || false,
-          is_standard_member:userProfile.is_standard_member || false,
+          is_ceo: userProfile.is_ceo || false,
+          is_standard_member: userProfile.is_standard_member || false,
           is_DB_executive: userProfile.is_executive || false,
-          is_DB_staff:userProfile.is_DB_staff || false,
-          is_benefactor:userProfile.is_benefactor || false,
-          is_DB_admin:userProfile.is_DB_admin || false,
+          is_DB_staff: userProfile.is_DB_staff || false,
+          is_benefactor: userProfile.is_benefactor || false,
+          is_DB_admin: userProfile.is_DB_admin || false,
         }
       }
 
-      // Step 4: Professional Info
       if (userProfile.industry) {
         completedSteps.push(4)
       }
 
-      // Step 5: Address
       if (updatedFormState.address.country && updatedFormState.address.city) {
         completedSteps.push(5)
       }
 
-      // Step 6: Contact Info
       if (updatedFormState.contactInfo.phone_number) {
         completedSteps.push(6)
       }
 
-      // Step 7: Identity Verification
       if (userProfile.id_document_type && userProfile.id_document_number) {
         completedSteps.push(7)
         updatedFormState.identityVerification = {
@@ -226,13 +218,17 @@ export default function KYCFormContainer({
         }
       }
 
+      if (userProfile.profile_image) {
+        completedSteps.push(8)
+      }
+
       updatedFormState.completedSteps = completedSteps
       updatedFormState.currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
 
       setFormState(updatedFormState)
       setActiveTab(STEP_ORDER[updatedFormState.currentStep])
     }
-  }, [userProfile,address])
+  }, [userProfile, address])
 
   const handleStepComplete = (step: number) => {
     setFormState((prev) => {
@@ -240,13 +236,8 @@ export default function KYCFormContainer({
       if (!completedSteps.includes(step)) {
         completedSteps.push(step)
       }
-
-      // Move to next step if current step was completed
       const nextStep = step < TOTAL_STEPS ? step + 1 : step
-
-      // Set the appropriate tab based on the next step
       setActiveTab(STEP_ORDER[nextStep])
-
       return {
         ...prev,
         currentStep: nextStep,
@@ -259,8 +250,8 @@ export default function KYCFormContainer({
     setFormState((prev) => ({
       ...prev,
       [section]: {
-        ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}), // Preserve existing data in the section if it's an object
-        ...data, // Merge new changes
+        ...(typeof prev[section] === "object" && prev[section] !== null ? prev[section] : {}),
+        ...data,
       },
     }))
   }
@@ -290,84 +281,45 @@ export default function KYCFormContainer({
             Please provide your information to complete your membership registration
           </CardDescription>
 
-          {/* Mobile progress steps - 5 steps in first row, 2 in second row */}
           <div className="sm:hidden mt-6">
             <div className="flex justify-center gap-8 mb-2 items-start">
-              {[1, 2, 3, 4, 5].map((stepNumber) => {
-                const isCompleted = isStepCompleted(stepNumber)
-                const isCurrent = formState.currentStep === stepNumber
-
-                return (
-                  <div key={stepNumber} className="flex flex-col items-center">
-                    <div
-                      className={`
-                        flex items-center justify-center w-8 h-8 rounded-full 
-                        ${
-                          isCompleted
-                            ? "bg-green-600 text-white"
-                            : isCurrent
-                              ? "bg-green-100 border-2 border-green-600 text-green-600"
-                              : "bg-gray-100 text-gray-400"
-                        }
-                      `}
-                    >
-                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
-                    </div>
-                    <span className="text-xs mt-1">Step {stepNumber}</span>
+              {[1, 2, 3, 4, 5].map((stepNumber) => (
+                <div key={stepNumber} className="flex flex-col items-center">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full 
+                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
+                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
+                        "bg-gray-100 text-gray-400"}`}>
+                    {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
                   </div>
-                )
-              })}
+                  <span className="text-xs mt-1">Step {stepNumber}</span>
+                </div>
+              ))}
             </div>
             <div className="flex justify-left gap-5">
-              {[6, 7].map((stepNumber) => {
-                const isCompleted = isStepCompleted(stepNumber)
-                const isCurrent = formState.currentStep === stepNumber
-
-                return (
-                  <div key={stepNumber} className="flex flex-col items-center ml-2">
-                    <div
-                      className={`
-                        flex items-center justify-center w-8 h-8 rounded-full 
-                        ${
-                          isCompleted
-                            ? "bg-green-600 text-white"
-                            : isCurrent
-                              ? "bg-green-100 border-2 border-green-600 text-green-600"
-                              : "bg-gray-100 text-gray-400"
-                        }
-                      `}
-                    >
-                      {isCompleted ? <CheckCircle className="h-4 w-4" /> : stepNumber}
-                    </div>
-                    <span className="text-xs mt-1">Step {stepNumber}</span>
+              {[6, 7, 8].map((stepNumber) => (
+                <div key={stepNumber} className="flex flex-col items-center ml-2">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full 
+                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
+                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
+                        "bg-gray-100 text-gray-400"}`}>
+                    {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
                   </div>
-                )
-              })}
+                  <span className="text-xs mt-1">Step {stepNumber}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Desktop progress steps */}
           <div className="hidden sm:flex justify-between items-center mt-6 px-2">
             {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
               const stepNumber = index + 1
-              const isCompleted = isStepCompleted(stepNumber)
-              const isCurrent = formState.currentStep === stepNumber
-
               return (
                 <div key={stepNumber} className="flex flex-col items-center">
-                  <div
-                    className={`
-                      flex items-center justify-center w-10 h-10 rounded-full 
-                      ${
-                        isCompleted
-                          ? "bg-green-600 text-white"
-                          : isCurrent
-                            ? "bg-green-100 border-2 border-green-600 text-green-600"
-                            : "bg-gray-100 text-gray-400"
-                      }
-                    `}
-                  >
-                    {isCompleted ? <CheckCircle className="h-5 w-5" /> : stepNumber}
+                  <div className={`flex items-center justify-center w-10 h-10 rounded-full 
+                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
+                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
+                        "bg-gray-100 text-gray-400"}`}>
+                    {isStepCompleted(stepNumber) ? <CheckCircle className="h-5 w-5" /> : stepNumber}
                   </div>
                   <span className="text-xs mt-1">Step {stepNumber}</span>
                 </div>
@@ -378,92 +330,30 @@ export default function KYCFormContainer({
 
         <CardContent className="p-4 sm:p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Mobile tabs - simplified with icons */}
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger
-                value="personal-info"
-                disabled={formState.currentStep < TAB_TO_STEP["personal-info"]}
-                className="text-xs p-2"
-              >
-                1. Personal
-              </TabsTrigger>
-              <TabsTrigger
-                value="expertise"
-                disabled={formState.currentStep < TAB_TO_STEP["expertise"]}
-                className="text-xs p-2"
-              >
-                2. Expertise
-              </TabsTrigger>
-              <TabsTrigger
-                value="roles"
-                disabled={formState.currentStep < TAB_TO_STEP["roles"]}
-                className="text-xs p-2"
-              >
-                3. Roles
-              </TabsTrigger>
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1} className="text-xs p-2">1. Personal</TabsTrigger>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < 2} className="text-xs p-2">2. Expertise</TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < 3} className="text-xs p-2">3. Roles</TabsTrigger>
             </TabsList>
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger
-                value="professional-info"
-                disabled={formState.currentStep < TAB_TO_STEP["professional-info"]}
-                className="text-xs p-2"
-              >
-                4. Professional
-              </TabsTrigger>
-              <TabsTrigger
-                value="address"
-                disabled={formState.currentStep < TAB_TO_STEP["address"]}
-                className="text-xs p-2"
-              >
-                5. Address
-              </TabsTrigger>
-              <TabsTrigger
-                value="contact-info"
-                disabled={formState.currentStep < TAB_TO_STEP["contact-info"]}
-                className="text-xs p-2"
-              >
-                6. Contact
-              </TabsTrigger>
+              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4} className="text-xs p-2">4. Professional</TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < 5} className="text-xs p-2">5. Address</TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6} className="text-xs p-2">6. Contact</TabsTrigger>
             </TabsList>
-            <TabsList className="sm:hidden grid w-full grid-cols-1 gap-2 mb-6">
-              <TabsTrigger
-                value="identity-verification"
-                disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
-                className="text-xs p-2"
-              >
-                7. Identity
-              </TabsTrigger>
+            <TabsList className="sm:hidden grid w-full grid-cols-2 gap-2 mb-6">
+              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7} className="text-xs p-2">7. Identity</TabsTrigger>
+              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8} className="text-xs p-2">8. Photo</TabsTrigger>
             </TabsList>
 
-            {/* Desktop tabs */}
-            <TabsList className="hidden sm:grid w-full grid-cols-7 mb-8">
-              <TabsTrigger value="personal-info" disabled={formState.currentStep < TAB_TO_STEP["personal-info"]}>
-                Personal
-              </TabsTrigger>
-              <TabsTrigger value="expertise" disabled={formState.currentStep < TAB_TO_STEP["expertise"]}>
-                Expertise
-              </TabsTrigger>
-              <TabsTrigger value="roles" disabled={formState.currentStep < TAB_TO_STEP["roles"]}>
-                Roles
-              </TabsTrigger>
-              <TabsTrigger
-                value="professional-info"
-                disabled={formState.currentStep < TAB_TO_STEP["professional-info"]}
-              >
-                Professional
-              </TabsTrigger>
-              <TabsTrigger value="address" disabled={formState.currentStep < TAB_TO_STEP["address"]}>
-                Address
-              </TabsTrigger>
-              <TabsTrigger value="contact-info" disabled={formState.currentStep < TAB_TO_STEP["contact-info"]}>
-                Contact
-              </TabsTrigger>
-              <TabsTrigger
-                value="identity-verification"
-                disabled={formState.currentStep < TAB_TO_STEP["identity-verification"]}
-              >
-                Identity
-              </TabsTrigger>
+            <TabsList className="hidden sm:grid w-full grid-cols-8 mb-8">
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1}>Personal</TabsTrigger>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < 2}>Expertise</TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < 3}>Roles</TabsTrigger>
+              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4}>Professional</TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < 5}>Address</TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6}>Contact</TabsTrigger>
+              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7}>Identity</TabsTrigger>
+              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8}>Photo</TabsTrigger>
             </TabsList>
 
             <TabsContent value="personal-info">
@@ -472,7 +362,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.personalInfo}
                 updateFormData={(data) => updateFormData("personalInfo", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["personal-info"])}
+                onComplete={() => handleStepComplete(1)}
               />
             </TabsContent>
 
@@ -482,7 +372,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.expertise}
                 updateFormData={(data) => updateFormData("expertise", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["expertise"])}
+                onComplete={() => handleStepComplete(2)}
               />
             </TabsContent>
 
@@ -492,7 +382,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.roles}
                 updateFormData={(data) => updateFormData("roles", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["roles"])}
+                onComplete={() => handleStepComplete(3)}
               />
             </TabsContent>
 
@@ -502,7 +392,7 @@ export default function KYCFormContainer({
                 industry_id={userProfile?.industry}
                 formData={formState.professionalInfo}
                 updateFormData={(data) => updateFormData("professionalInfo", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["professional-info"])}
+                onComplete={() => handleStepComplete(4)}
               />
             </TabsContent>
 
@@ -512,7 +402,7 @@ export default function KYCFormContainer({
                 addressId={addressId}
                 formData={formState.address}
                 updateFormData={(data) => updateFormData("address", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["address"])}
+                onComplete={() => handleStepComplete(5)}
               />
             </TabsContent>
 
@@ -522,7 +412,7 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.contactInfo}
                 updateFormData={(data) => updateFormData("contactInfo", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["contact-info"])}
+                onComplete={() => handleStepComplete(6)}
               />
             </TabsContent>
 
@@ -532,8 +422,26 @@ export default function KYCFormContainer({
                 userId={userId}
                 formData={formState.identityVerification}
                 updateFormData={(data) => updateFormData("identityVerification", data)}
-                onComplete={() => handleStepComplete(TAB_TO_STEP["identity-verification"])}
+                onComplete={() => handleStepComplete(7)}
               />
+            </TabsContent>
+
+            <TabsContent value="profile-image">
+              <div className="p-4 border rounded-md bg-gray-50">
+                <h3 className="text-sm font-medium text-gray-700 mb-4">Profile Photo</h3>
+                <ProfileImageUploaderButton
+                  onSuccess={() => {
+                    refetch()
+                    handleStepComplete(8)
+                  }}
+                  profileId={profileId}
+                  userId={userId}
+                  currentImage={userProfile?.profile_image}
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Upload a clear headshot for your member profile
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
 
@@ -560,7 +468,6 @@ export default function KYCFormContainer({
                   setFormState((prev) => ({ ...prev, currentStep: nextStep }))
                   setActiveTab(STEP_ORDER[nextStep])
                 } else if (formState.completedSteps.length === TOTAL_STEPS) {
-                  // All steps completed, redirect to dashboard
                   router.push("/dashboard")
                 }
               }}
