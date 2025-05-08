@@ -427,8 +427,8 @@ export default function KYCFormContainer({
             </TabsContent>
 
             <TabsContent value="profile-image">
-              <div className="p-4 border rounded-md bg-gray-50">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Profile Photo</h3>
+              <div className="p-4 border relative rounded-md bg-gray-50">
+                <h3 className="text-sm  font-medium text-gray-700 mb-4">Profile Photo</h3>
                 <ProfileImageUploaderButton
                   onSuccess={() => {
                     refetch()
