@@ -16,7 +16,7 @@ import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-import ProfileImageUploaderButton from "./ProfileImageUploaderButton"
+import {ProfileImageUploaderButton} from "./ProfileImageUploaderButton"
 
 const TOTAL_STEPS = 8
 
