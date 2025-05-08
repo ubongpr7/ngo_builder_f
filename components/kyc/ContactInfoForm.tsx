@@ -69,7 +69,6 @@ export default function ContactInfoForm({
 
       onComplete()
     } catch (error) {
-      console.error("Failed to update contact information:", error)
     }
   }
 

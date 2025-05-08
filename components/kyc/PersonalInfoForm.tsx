@@ -346,7 +346,6 @@ export default function PersonalInfoForm({
 
       onComplete()
     } catch (error) {
-      console.error("Failed to update personal information:", error)
     }
   }
 

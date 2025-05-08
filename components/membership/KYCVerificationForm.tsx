@@ -224,7 +224,6 @@ export default function KYCVerificationForm() {
       }
 
       // Simulate API call
-      console.log("Submitting KYC data:", formattedData)
 
       setTimeout(() => {
         setIsSubmitting(false)

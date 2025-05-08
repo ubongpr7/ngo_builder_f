@@ -73,7 +73,6 @@ export default function ProfessionalInfoForm({
 
   const handleIndustryChange = (value: string) => {
     const industryId = Number.parseInt(value)
-    console.log(`Setting industry to: ${industryId}`)
     setSelectedIndustry(industryId)
     updateFormData({ industry: industryId.toString() })
   }
@@ -98,7 +97,6 @@ export default function ProfessionalInfoForm({
       company_website: formData.company_website,
     }
 
-    console.log("Submitting data:", dataToSubmit)
 
     try {
       const response = await updateUserProfile({
@@ -106,10 +104,8 @@ export default function ProfessionalInfoForm({
         data: dataToSubmit,
       }).unwrap()
 
-      console.log("API response:", response)
       onComplete()
     } catch (error: any) {
-      console.error("Failed to update professional information:", error)
 
       // Extract error message for display
       let errorMessage = "Failed to save data. Please try again."

@@ -99,7 +99,6 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
 
       onComplete()
     } catch (error) {
-      console.error("Failed to update expertise:", error)
     }
   }
 

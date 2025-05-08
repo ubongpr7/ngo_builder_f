@@ -123,7 +123,6 @@ export default function KYCFormContainer({
 
   useEffect(() => {
     if (userProfile) {
-      console.log("User profile data:", userProfile)
 
       const updatedFormState = { ...formState }
       updatedFormState.personalInfo.first_name = first_name
@@ -248,7 +247,6 @@ export default function KYCFormContainer({
   }
 
   const updateFormData = (section: keyof KYCFormState, data: any) => {
-    console.log(`Updating ${section} with:`, data)
     setFormState((prev) => ({
       ...prev,
       [section]: {

@@ -23,7 +23,6 @@ const loadInitialState = () => {
       return JSON.parse(savedState)
     }
   } catch (error) {
-    console.error("Failed to load state from localStorage:", error)
   }
 
   // Fallback to system theme
@@ -52,7 +51,6 @@ export const globalSlice = createSlice({
         try {
           localStorage.setItem("globalSettings", JSON.stringify(state))
         } catch (error) {
-          console.error("Failed to save state to localStorage:", error)
         }
       }
     },
@@ -64,7 +62,6 @@ export const globalSlice = createSlice({
         try {
           localStorage.setItem("globalSettings", JSON.stringify(state))
         } catch (error) {
-          console.error("Failed to save state to localStorage:", error)
         }
       }
     },
@@ -76,7 +73,6 @@ export const globalSlice = createSlice({
         try {
           localStorage.setItem("globalSettings", JSON.stringify(state))
         } catch (error) {
-          console.error("Failed to save state to localStorage:", error)
         }
       }
     },

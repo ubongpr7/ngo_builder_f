@@ -90,13 +90,11 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     deleteCookie("accessToken")
     deleteCookie("refreshToken")
     deleteCookie("userID")
-    console.log("refreshToken deleted")
   }
 
   // Handle CORS errors specifically
   if (result.error) {
     if (result.error.status === 'FETCH_ERROR' && result.error.error?.includes('CORS')) {
-      console.error('CORS error detected:', result.error)
       // You could implement custom handling here
     }
     

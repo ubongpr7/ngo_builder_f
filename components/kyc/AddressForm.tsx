@@ -110,7 +110,6 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
       onComplete()
     } catch (error) {
-      console.error("Failed to update address:", error)
     }
   }
 
