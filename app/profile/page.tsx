@@ -182,12 +182,10 @@ export default function ProfilePage() {
       <Card className="overflow-hidden">
         <CardHeader className="relative pb-0">
           <div className="absolute right-4 top-4 z-10">
-          <Link href="/profile/update" className="text-sm flex align-center text-gray-500 hover:text-gray-700">
-        
-            <Edit className="h-3.5 w-3.5 mr-1" /><span> Edit Profile</span>
-          
-        
-      </Link>
+          <Link href="/profile/update" className="text-sm flex items-center text-gray-500 hover:text-gray-700">
+            <Edit className="h-3.5 w-3.5 mr-1" />
+            <span>Edit Profile</span>
+          </Link>
           </div>
 
           <div className="flex flex-col items-center text-center">

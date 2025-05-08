@@ -141,7 +141,7 @@ export default function AuthenticatedHeader() {
           <div className="fixed inset-0 z-50 bg-black/50" />
           <div className="absolute top-0 right-0 z-50 w-full sm:max-w-sm h-auto max-h-screen overflow-y-auto bg-white px-4 py-4">
             <div className="flex items-center justify-between">
-              <Link href="/dashboard" className="-m-1.5 p-1.5 flex items-center">
+              <Link href="/" className="-m-1.5 p-1.5 flex items-center">
                 <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
                 <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
               </Link>
