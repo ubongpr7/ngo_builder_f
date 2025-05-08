@@ -108,7 +108,7 @@ export default function AuthenticatedHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile" className="flex items-center gap-2 cursor-pointer">
+                <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
                   <User className="h-4 w-4" />
                   <span>Profile</span>
                 </Link>
@@ -173,7 +173,7 @@ export default function AuthenticatedHeader() {
                 <div className="space-y-4 py-3 px-0 flex flex-col items-center">
                   <div className="border-b border-gray-200 last:border-b-0 w-full">
                     <Link
-                      href="/dashboard/profile"
+                      href="/profile"
                       className={`block rounded-lg px-3 py-2 text-2xl font-bold tracking-tight text-center ${pathname === "/dashboard/profile" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
                         }`}
                       onClick={() => setMobileMenuOpen(false)}
