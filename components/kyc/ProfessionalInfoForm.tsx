@@ -35,8 +35,6 @@ export default function ProfessionalInfoForm({
   // Wait for industries to load before setting the initial industry value
   useEffect(() => {
     if (industries && industries.length > 0 && !isInitialized) {
-      console.log("Industries loaded:", industries)
-      console.log("Initial industry from formData:", initialIndustryRef.current)
 
       // Only try to set the industry if we have an initial value
       if (initialIndustryRef.current !== null) {
@@ -44,11 +42,8 @@ export default function ProfessionalInfoForm({
         const industryExists = industries.some((industry: DropdownOption) => industry.id === initialIndustryRef.current)
 
         if (industryExists) {
-          console.log(`Industry ${initialIndustryRef.current} found in options, setting selected value`)
           setSelectedIndustry(initialIndustryRef.current)
         } else {
-          console.log(`Industry ${initialIndustryRef.current} NOT found in options`)
-          // If the industry doesn't exist in options, clear it to avoid invalid selection
           setSelectedIndustry(null)
           updateFormData({ industry: null })
         }
@@ -61,8 +56,7 @@ export default function ProfessionalInfoForm({
   // Update the selected industry when formData changes (after initialization)
   useEffect(() => {
     if (isInitialized && formData.industry !== selectedIndustry) {
-      console.log(`Form data industry changed to ${formData.industry}, updating selected industry`)
-      setSelectedIndustry(formData.industry)
+      setSelectedIndustry(formData.industry ? Number(formData.industry) : null)
     }
   }, [formData.industry, isInitialized, selectedIndustry])
 
@@ -81,7 +75,7 @@ export default function ProfessionalInfoForm({
     const industryId = Number.parseInt(value)
     console.log(`Setting industry to: ${industryId}`)
     setSelectedIndustry(industryId)
-    updateFormData({ industry: industryId })
+    updateFormData({ industry: industryId.toString() })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
