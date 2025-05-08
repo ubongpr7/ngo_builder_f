@@ -67,88 +67,109 @@ export interface ContactPersonInterface {
 }
 
 
-
 export interface UserProfile {
-  // Personal Information
+  // Basic User Information
   id?: number
+  email: string
   first_name: string
   last_name: string
-  email: string
+  username?: string
+  is_verified?: boolean
+  is_staff?: boolean
+  is_worker?: boolean
+
+  // Personal Information
   date_of_birth?: string
+  user_date_of_birth?: string
+  disabled?: boolean
   sex?: string
   bio?: string
-  disabled?: boolean
-  disability?: {
-    id: number
-    name: string
-    description?: string
-  }
   profile_image?: string
+
+  // Social Links
+  linkedin_profile?: string
+  profile_link?: string
 
   // Professional Information
   organization?: string
   position?: string
-  industry?: {
-    id: number
-    name: string
-    description?: string
-  }
+  industry?: number | { id: number; name: string; description?: string }
+  industry_details?: { id: number; name: string; description?: string }
   company_size?: string
   company_website?: string
-  expertise?: Array<{
-    id: number
-    name: string
-    description?: string
-  }>
 
-  // Contact & Address Information
+  // Contact Information
   phone_number?: string
-  address?: {
-    street_number?: string
+
+  // Address Information
+  address?: any
+  address_details?: {
+    id?: number
     street?: string
-    city?: {
-      id: number
-      name: string
-    }
-    subregion?: {
-      id: number
-      name: string
-    }
-    region?: {
-      id: number
-      name: string
-    }
-    country?: {
-      id: number
-      name: string
-    }
+    street_number?: number | string
+    apt_number?: number | string
     postal_code?: string
+    country?: string | { id: number; name: string }
+    region?: string | { id: number; name: string }
+    subregion?: string | { id: number; name: string }
+    city?: string | { id: number; name: string }
   }
-  linkedin_profile?: string
-  profile_link?: string
+
+  // Disability Information
+  disability?: { id: number; name: string; description?: string }
+
+  // Expertise
+  expertise?: Array<{ id: number; name: string; description?: string }>
+  expertise_details?: Array<{ id: number; name: string; description?: string }>
 
   // Membership & Verification
-  membership_type?: {
-    id: number
-    name: string
-    description?: string
-  }
+  membership_type?: { id: number; name: string; description?: string } | string | null
   is_kyc_verified?: boolean
 
+  // KYC Information
+  id_document_type?: string
+  id_document_number?: string
+  id_document_image_front?: string
+  id_document_image_back?: string
+  selfie_image?: string
+  kyc_submission_date?: string
+  kyc_verification_date?: string | null
+  kyc_rejection_reason?: string | null
+  kyc_status?: { status: string; submitted_date: string }
+
   // Roles
-  is_standard_member?: boolean
-  is_DB_executive?: boolean
+  is_executive?: boolean
   is_ceo?: boolean
+  is_project_manager?: boolean
   is_donor?: boolean
   is_volunteer?: boolean
   is_partner?: boolean
   is_DB_staff?: boolean
+  is_standard_member?: boolean
+  is_DB_executive?: boolean
   is_DB_admin?: boolean
+  is_country_director?: boolean
+  is_regional_head?: boolean
   is_benefactor?: boolean
+
+  // Partnership Information
+  partnership_type?: any
+  partnership_level?: any
+  partnership_type_details?: any
+  partnership_level_details?: any
+  assigned_region?: any
+  partnership_start_date?: string | null
+
+  // Summary Information
+  role_summary?: string[]
+  full_name?: string
 
   // Timestamps
   created_at: string
   updated_at?: string
+
+  // Nested Profile Data
+  profile_data?: UserProfile
 }
 
 // Helper type for profile completeness calculation

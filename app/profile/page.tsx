@@ -11,28 +11,48 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2 } from "lucide-react"
-import { formatDate } from "@/lib/utils"
-import type { UserProfile } from "@/components/interfaces/profile"
-
+import { UserProfile } from "@/components/interfaces/profile"
+import { Address } from "@/components/models/user-profile"
+import { AddressFormData } from "@/components/interfaces/kyc-forms"
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery('')
 
+  // Format date
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "Not available"
+
+    try {
+      const date = new Date(dateString)
+      return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }).format(date)
+    } catch (error) {
+      console.error("Error formatting date:", error)
+      return dateString
+    }
+  }
+
   // Calculate profile completeness
-  const calculateProfileCompleteness = (profile: UserProfile | undefined) => {
+  const calculateProfileCompleteness = (profile:UserProfile) => {
     if (!profile) return 0
 
+    // Use profile_data for completeness calculation
+    const profileData = profile.profile_data || profile
+
     const requiredFields = [
-      profile.first_name,
-      profile.last_name,
-      profile.email,
-      profile.date_of_birth,
-      profile.phone_number,
-      profile.bio,
-      profile.address,
-      profile.organization,
-      profile.position,
-      profile.industry,
+      profileData.first_name,
+      profileData.last_name,
+      profileData.email,
+      profileData.user_date_of_birth || profileData.date_of_birth,
+      profileData.phone_number,
+      profileData.bio,
+      profileData.address_details,
+      profileData.organization,
+      profileData.position,
+      profileData.industry_details || (profileData.industry && typeof profileData.industry !== "number"),
     ]
 
     const completedFields = requiredFields.filter(
@@ -42,25 +62,36 @@ export default function ProfilePage() {
   }
 
   // Get role badges
-  const getRoleBadges = (profile: UserProfile | undefined) => {
+  const getRoleBadges = (profile:UserProfile) => {
     if (!profile) return []
 
+    // Use profile_data for roles
+    const profileData = profile.profile_data || profile
+
     const roles = []
-    if (profile.is_standard_member) roles.push("Standard Member")
-    if (profile.is_DB_executive) roles.push("DBEF Executive")
-    if (profile.is_ceo) roles.push("CEO")
-    if (profile.is_donor) roles.push("Donor")
-    if (profile.is_volunteer) roles.push("Volunteer")
-    if (profile.is_partner) roles.push("Partner")
-    if (profile.is_DB_staff) roles.push("DBEF Staff")
-    if (profile.is_DB_admin) roles.push("DBEF Admin")
-    if (profile.is_benefactor) roles.push("Benefactor")
+    if (profileData.is_standard_member) roles.push("Standard Member")
+    if (profileData.is_DB_executive) roles.push("DBEF Executive")
+    if (profileData.is_ceo) roles.push("CEO")
+    if (profileData.is_donor) roles.push("Donor")
+    if (profileData.is_volunteer) roles.push("Volunteer")
+    if (profileData.is_partner) roles.push("Partner")
+    if (profileData.is_DB_staff) roles.push("DBEF Staff")
+    if (profileData.is_DB_admin) roles.push("DBEF Admin")
+    if (profileData.is_benefactor) roles.push("Benefactor")
+    if (profileData.is_country_director) roles.push("Country Director")
+    if (profileData.is_regional_head) roles.push("Regional Head")
+    if (profileData.is_project_manager) roles.push("Project Manager")
+
+    // If role_summary exists, use it instead
+    if (profileData.role_summary && profileData.role_summary.length > 0) {
+      return profileData.role_summary
+    }
 
     return roles
   }
 
   // Format address
-  const formatAddress = (address: UserProfile["address"]) => {
+  const formatAddress = (address:AddressFormData) => {
     if (!address) return "No address provided"
 
     const parts = []
@@ -69,17 +100,18 @@ export default function ProfilePage() {
       parts.push(`${streetNumber}${address.street}`)
     }
 
-    if (address.city?.name) parts.push(address.city.name)
-    if (address.subregion?.name) parts.push(address.subregion.name)
-    if (address.region?.name) parts.push(address.region.name)
-    if (address.country?.name) parts.push(address.country.name)
+    if (address.city) parts.push(typeof address.city === "object" ? address.city.name : address.city)
+    if (address.subregion)
+      parts.push(typeof address.subregion === "object" ? address.subregion.name : address.subregion)
+    if (address.region) parts.push(typeof address.region === "object" ? address.region.name : address.region)
+    if (address.country) parts.push(typeof address.country === "object" ? address.country.name : address.country)
     if (address.postal_code) parts.push(address.postal_code)
 
     return parts.join(", ")
   }
 
   // Get initials for avatar fallback
-  const getInitials = (profile: UserProfile | undefined) => {
+  const getInitials = (profile:UserProfile) => {
     if (!profile) return "U"
 
     const firstName = profile.first_name || ""
@@ -146,7 +178,9 @@ export default function ProfilePage() {
     )
   }
 
-  const profile: UserProfile = userProfile || ({} as UserProfile)
+  // Extract profile data, handling both direct and nested structures
+  const profile = userProfile
+  const profileData = profile.profile_data || profile
   const completeness = calculateProfileCompleteness(profile)
   const roleBadges = getRoleBadges(profile)
 
@@ -168,8 +202,8 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={profile.profile_image || "/placeholder.svg"} alt={profile.first_name} />
-                <AvatarFallback>{getInitials(profile)}</AvatarFallback>
+                <AvatarImage src={profileData.profile_image || "/placeholder.svg"} alt={profileData.first_name} />
+                <AvatarFallback>{getInitials(profileData)}</AvatarFallback>
               </Avatar>
               {isEditing && (
                 <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1 cursor-pointer">
@@ -179,18 +213,20 @@ export default function ProfilePage() {
             </div>
             <div>
               <CardTitle className="text-2xl text-center md:text-left">
-                {profile.first_name} {profile.last_name}
+                {profileData.first_name} {profileData.last_name}
               </CardTitle>
               <CardDescription className="text-lg text-center md:text-left">
-                {profile.position} {profile.organization ? `at ${profile.organization}` : ""}
+                {profileData.position} {profileData.organization ? `at ${profileData.organization}` : ""}
               </CardDescription>
               <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                {profile.membership_type && (
+                {profileData.membership_type && (
                   <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
-                    {profile.membership_type.name}
+                    {typeof profileData.membership_type === "object"
+                      ? profileData.membership_type.name
+                      : profileData.membership_type}
                   </Badge>
                 )}
-                {profile.is_kyc_verified && (
+                {profileData.is_kyc_verified && (
                   <Badge className="bg-green-600">
                     <CheckCircle className="h-3 w-3 mr-1" /> Verified
                   </Badge>
@@ -202,7 +238,7 @@ export default function ProfilePage() {
                 ))}
               </div>
               <p className="text-sm text-gray-500 mt-2 text-center md:text-left">
-                Member since {formatDate(profile.created_at)}
+                Member since {formatDate(profileData.created_at)}
               </p>
             </div>
           </div>
@@ -230,35 +266,43 @@ export default function ProfilePage() {
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Full Name</h3>
                   <p>
-                    {profile.first_name} {profile.last_name}
+                    {profileData.first_name} {profileData.last_name}
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Email Address</h3>
-                  <p>{profile.email}</p>
+                  <p>{profileData.email}</p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Date of Birth</h3>
-                  <p>{profile.date_of_birth ? formatDate(profile.date_of_birth) : "Not provided"}</p>
+                  <p>
+                    {profileData.user_date_of_birth || profileData.date_of_birth
+                      ? formatDate(profileData.user_date_of_birth || profileData.date_of_birth)
+                      : "Not provided"}
+                  </p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Gender</h3>
-                  <p>{profile.sex || "Not provided"}</p>
+                  <p>{profileData.sex || "Not provided"}</p>
                 </div>
 
-                {profile.disability && (
+                {profileData.disability && (
                   <div className="md:col-span-2">
                     <h3 className="font-medium text-gray-500 mb-1">Disability</h3>
-                    <p>{profile.disability.name}</p>
+                    <p>
+                      {typeof profileData.disability === "object"
+                        ? profileData.disability.name
+                        : profileData.disability}
+                    </p>
                   </div>
                 )}
 
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-gray-500 mb-1">Bio</h3>
-                  <p className="whitespace-pre-wrap">{profile.bio || "No bio provided"}</p>
+                  <p className="whitespace-pre-wrap">{profileData.bio || "No bio provided"}</p>
                 </div>
               </div>
             </TabsContent>
@@ -267,34 +311,40 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Organization/Company</h3>
-                  <p>{profile.organization || "Not provided"}</p>
+                  <p>{profileData.organization || "Not provided"}</p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Position/Title</h3>
-                  <p>{profile.position || "Not provided"}</p>
+                  <p>{profileData.position || "Not provided"}</p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Industry</h3>
-                  <p>{profile.industry?.name || "Not provided"}</p>
+                  <p>
+                    {profileData.industry_details
+                      ? profileData.industry_details.name
+                      : typeof profileData.industry === "object"
+                        ? profileData.industry.name
+                        : "Not provided"}
+                  </p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Company Size</h3>
-                  <p>{profile.company_size || "Not provided"}</p>
+                  <p>{profileData.company_size || "Not provided"}</p>
                 </div>
 
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-gray-500 mb-1">Company Website</h3>
-                  {profile.company_website ? (
+                  {profileData.company_website ? (
                     <a
-                      href={profile.company_website}
+                      href={profileData.company_website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline flex items-center"
                     >
-                      {profile.company_website}
+                      {profileData.company_website}
                       <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
                   ) : (
@@ -304,9 +354,9 @@ export default function ProfilePage() {
 
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-gray-500 mb-1">Areas of Expertise</h3>
-                  {profile.expertise && profile.expertise.length > 0 ? (
+                  {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {profile.expertise.map((item) => (
+                      {profileData.expertise_details.map((item) => (
                         <Badge key={item.id} variant="outline">
                           {item.name}
                         </Badge>
@@ -323,24 +373,26 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Phone Number</h3>
-                  <p>{profile.phone_number || "Not provided"}</p>
+                  <p>{profileData.phone_number || "Not provided"}</p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Email Address</h3>
-                  <p>{profile.email}</p>
+                  <p>{profileData.email}</p>
                 </div>
 
                 <div className="md:col-span-2">
                   <h3 className="font-medium text-gray-500 mb-1">Address</h3>
-                  <p>{profile.address ? formatAddress(profile.address) : "No address provided"}</p>
+                  <p>
+                    {profileData.address_details ? formatAddress(profileData.address_details) : "No address provided"}
+                  </p>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">LinkedIn Profile</h3>
-                  {profile.linkedin_profile ? (
+                  {profileData.linkedin_profile ? (
                     <a
-                      href={profile.linkedin_profile}
+                      href={profileData.linkedin_profile}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline flex items-center"
@@ -356,9 +408,9 @@ export default function ProfilePage() {
 
                 <div>
                   <h3 className="font-medium text-gray-500 mb-1">Profile Link</h3>
-                  {profile.profile_link ? (
+                  {profileData.profile_link ? (
                     <a
-                      href={profile.profile_link}
+                      href={profileData.profile_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline flex items-center"
