@@ -45,7 +45,7 @@ export function VerificationBadge({
     if (showTooltip) {
       return (
         <TooltipProvider>
-          <Tooltip className="bg-gray-50">
+          <Tooltip className="bg-gray-50 -z-30">
             <TooltipTrigger asChild>{badge}</TooltipTrigger>
             <TooltipContent>
               <p>This user's identity has been verified</p>
@@ -100,7 +100,7 @@ export function VerificationBadge({
   if (showTooltip) {
     return (
       <TooltipProvider>
-        <Tooltip>
+        <Tooltip className="bg-gray-50 -z-30">
           <TooltipTrigger asChild>{badge}</TooltipTrigger>
           <TooltipContent>
             <p>{tooltipContent}</p>
