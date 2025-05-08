@@ -307,7 +307,7 @@ export default function IdentityVerificationForm({
 
       <div className="flex justify-end">
         <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
-          {isLoading ? "Submitting..." : "Submit & Continue"}
+          {isLoading ? "Submitting..." : "Save"}
         </Button>
       </div>
     </form>

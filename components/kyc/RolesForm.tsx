@@ -186,7 +186,8 @@ export default function RolesForm({
             {renderCheckbox("is_benefactor")}
           </div>
         </div>
-
+      
+        {/* Final Note 
         <div className="p-4 bg-green-50 rounded-md mt-6">
           <h3 className="font-medium text-green-800 mb-2">Almost Done!</h3>
           <p className="text-green-700 text-sm">
@@ -194,11 +195,12 @@ export default function RolesForm({
             and your membership registration will be processed.
           </p>
         </div>
+        */}
       </div>
 
       <div className="flex justify-end">
         <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Complete Registration"}
+          {isLoading ? "Saving..." : "Save & Continue"}
         </Button>
       </div>
     </form>
