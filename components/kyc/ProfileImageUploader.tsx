@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Camera, X } from "lucide-react"
+import { Camera, X, Save, Upload } from "lucide-react"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "@/components/ui/use-toast"
@@ -32,6 +32,8 @@ export function ProfileImageUploader({
   const [updateProfile, { isLoading }] = useUpdateProfileMutation()
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [hasChanges, setHasChanges] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Size mappings
@@ -83,11 +85,11 @@ export function ProfileImageUploader({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     if (file) {
-      handleFileUpload(file)
+      validateAndPreviewFile(file)
     }
   }
 
-  const handleFileUpload = async (file: File) => {
+  const validateAndPreviewFile = (file: File) => {
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     if (!validTypes.includes(file.type)) {
@@ -113,17 +115,24 @@ export function ProfileImageUploader({
     // Create preview URL
     const previewUrl = URL.createObjectURL(file)
     setImagePreview(previewUrl)
+    setSelectedFile(file)
+    setHasChanges(true)
+  }
 
-    // Upload the file
+  const handleSaveImage = async () => {
+    if (!selectedFile) return
+
     try {
       const formDataObj = new FormData()
-      formDataObj.append("profile_image", file)
+      formDataObj.append("profile_image", selectedFile)
 
       const result = await updateProfile({ id: profileId, data: formDataObj }).unwrap()
 
       // Call onSuccess callback with the new image URL if available
-      const newImageUrl = getImageUrl(result?.profile_image) || previewUrl
-      if (onSuccess) onSuccess(newImageUrl)
+      const newImageUrl = getImageUrl(result?.profile_image) || imagePreview
+      if (onSuccess && newImageUrl) onSuccess(newImageUrl)
+
+      setHasChanges(false)
 
       toast({
         title: "Profile image updated",
@@ -154,17 +163,26 @@ export function ProfileImageUploader({
 
     const file = e.dataTransfer.files?.[0]
     if (file) {
-      handleFileUpload(file)
+      validateAndPreviewFile(file)
     }
   }
 
   const handleRemoveImage = async () => {
+    // If we have unsaved changes, just clear the preview
+    if (hasChanges) {
+      setImagePreview(getImageUrl(currentImage))
+      setSelectedFile(null)
+      setHasChanges(false)
+      return
+    }
+
     try {
       const formDataObj = new FormData()
       formDataObj.append("profile_image", "")
 
       await updateProfile({ id: profileId, data: formDataObj }).unwrap()
       setImagePreview(null)
+      setSelectedFile(null)
 
       if (onSuccess) onSuccess("")
 
@@ -182,57 +200,87 @@ export function ProfileImageUploader({
   }
 
   return (
-    <div className={`relative ${className}`}>
-      <div
-        className={`relative ${sizeClasses[size]} cursor-pointer group`}
-        onClick={() => fileInputRef.current?.click()}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <Avatar
-          className={`${sizeClasses[size]} border-2 border-white shadow-sm ${isDragging ? "ring-2 ring-green-500" : ""}`}
+    <div className={`${className}`}>
+      <div className="flex flex-col items-center">
+        <div
+          className={`relative ${sizeClasses[size]} cursor-pointer group mb-3`}
+          onClick={() => fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
-          <AvatarImage src={imagePreview || "/placeholder.svg"} alt="Profile" />
-          <AvatarFallback className="bg-green-100 text-green-800 text-xl font-semibold">{getInitials()}</AvatarFallback>
-        </Avatar>
+          <Avatar
+            className={`${sizeClasses[size]} border-2 border-white shadow-sm ${
+              isDragging ? "ring-2 ring-green-500" : ""
+            }`}
+          >
+            <AvatarImage src={imagePreview || "/placeholder.svg"} alt="Profile" />
+            <AvatarFallback className="bg-green-100 text-green-800 text-xl font-semibold">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Camera className="h-6 w-6 text-white" />
+          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Camera className="h-6 w-6 text-white" />
+          </div>
+
+          <Input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleFileChange}
+            disabled={isLoading}
+          />
+
+          {imagePreview && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleRemoveImage()
+              }}
+              disabled={isLoading}
+            >
+              <X className="h-3 w-3" />
+              <span className="sr-only">Remove image</span>
+            </Button>
+          )}
+
+          {isLoading && (
+            <div className="absolute inset-0 bg-white bg-opacity-60 rounded-full flex items-center justify-center">
+              <div className="h-5 w-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
         </div>
 
-        <Input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          accept="image/jpeg,image/png,image/gif,image/webp"
-          onChange={handleFileChange}
-          disabled={isLoading}
-        />
+        <div className="flex gap-2 mt-1">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="text-xs h-8 px-3"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-3.5 w-3.5 mr-1" /> Select
+          </Button>
+
+          {hasChanges && (
+            <Button
+              type="button"
+              size="sm"
+              className="text-xs h-8 px-3 bg-green-600 hover:bg-green-700"
+              onClick={handleSaveImage}
+              disabled={isLoading || !selectedFile}
+            >
+              <Save className="h-3.5 w-3.5 mr-1" /> Save
+            </Button>
+          )}
+        </div>
       </div>
-
-      {imagePreview && (
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-100"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleRemoveImage()
-          }}
-          disabled={isLoading}
-        >
-          <X className="h-3 w-3" />
-          <span className="sr-only">Remove image</span>
-        </Button>
-      )}
-
-      {isLoading && (
-        <div className="absolute inset-0 bg-white bg-opacity-60 rounded-full flex items-center justify-center">
-          <div className="h-5 w-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
     </div>
   )
 }

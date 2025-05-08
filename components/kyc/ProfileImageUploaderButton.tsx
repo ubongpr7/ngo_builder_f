@@ -35,9 +35,9 @@ export function ProfileImageUploaderButton({
 
   return (
     <>
-      <Button variant={buttonVariant} onClick={() => setIsOpen(true)} className="flex items-center gap-2">
-        <Camera className="h-1 w-1" />
-      </Button>
+    <div onClick={() => setIsOpen(true)} className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
+        <Camera className="h-4 w-4 text-white" />
+    </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md bg-gray-50">
