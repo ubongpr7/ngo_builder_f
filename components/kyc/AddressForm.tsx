@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { AddressFormData } from "../interfaces/kyc-forms"
+import { InstantSearchSelect } from "@/components/ui/instant-search-select"
+
 import {
   useGetCountriesQuery,
   useGetRegionsQuery,
@@ -28,22 +30,22 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
   const isMounted = useRef(false)
-  
+
   // Country query
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
-  
+
   // Region query with forced refetch
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
     refetchOnMountOrArgChange: true,
   })
-  
+
   // Subregion query with forced refetch
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
     refetchOnMountOrArgChange: true,
   })
-  
+
   // City query with forced refetch
   const { data: cities, isLoading: isLoadingCities } = useGetCitiesQuery(formData.subregion || 0, {
     skip: !formData.subregion,
@@ -114,7 +116,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   }
 
   // Helper function to find entity name
-  const getEntityName = (id: number | null, data: Array<{ id: number; name: string }> | undefined) => 
+  const getEntityName = (id: number | null, data: Array<{ id: number; name: string }> | undefined) =>
     data?.find(entity => entity.id === id)?.name
 
   return (
@@ -123,112 +125,79 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Country Select */}
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
-          <Select
+          <InstantSearchSelect
             value={formData.country?.toString() || ""}
-            onValueChange={value => updateFormData({ country: Number(value) })}
+            onChange={(value) => updateFormData({ country: Number(value) })}
+            placeholder="Search country..."
+            options={countries?.map(country => ({
+              value: country.id.toString(),
+              label: country.name
+            })) || []}
             disabled={isLoadingCountries}
-          >
-            <SelectTrigger id="country" className={errors.country ? "border-red-500" : ""}>
-              <SelectValue placeholder="Select your country" />
-            </SelectTrigger>
-            <SelectContent>
-              {countries?.map(country => (
-                <SelectItem key={country.id} value={country.id.toString()}>
-                  {country.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
           {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
         </div>
 
         {/* Region Select */}
         <div className="space-y-2">
           <Label htmlFor="region">Region/State</Label>
-          <Select
+          <InstantSearchSelect
             value={formData.region?.toString() || ""}
-            onValueChange={value => updateFormData({ region: Number(value) })}
+            onChange={(value) => updateFormData({ region: Number(value) })}
+            placeholder={
+              isLoadingRegions && formData.region
+                ? "Loading saved region..."
+                : "Search region..."
+            }
+            options={regions?.map(region => ({
+              value: region.id.toString(),
+              label: region.name
+            })) || []}
             disabled={isLoadingRegions || !formData.country}
-          >
-            <SelectTrigger id="region" className={errors.region ? "border-red-500" : ""}>
-              <SelectValue 
-                placeholder={
-                  isLoadingRegions && formData.region 
-                    ? "Loading saved region..." 
-                    : formData.region
-                      ? getEntityName(formData.region, regions) || "Invalid region"
-                      : "Select region"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {regions?.map(region => (
-                <SelectItem key={region.id} value={region.id.toString()}>
-                  {region.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className={errors.region ? "border-red-500" : ""}
+          />
           {errors.region && <p className="text-red-500 text-sm">{errors.region}</p>}
         </div>
 
         {/* Subregion Select */}
         <div className="space-y-2">
           <Label htmlFor="subregion">Subregion/LGA</Label>
-          <Select
+          <InstantSearchSelect
             value={formData.subregion?.toString() || ""}
-            onValueChange={value => updateFormData({ subregion: Number(value) })}
+            onChange={(value) => updateFormData({ subregion: Number(value) })}
+            placeholder={
+              isLoadingSubregions && formData.subregion
+                ? "Loading saved subregion..."
+                : "Search subregion..."
+            }
+            options={subregions?.map(subregion => ({
+              value: subregion.id.toString(),
+              label: subregion.name
+            })) || []}
             disabled={isLoadingSubregions || !formData.region}
-          >
-            <SelectTrigger id="subregion" className={errors.subregion ? "border-red-500" : ""}>
-              <SelectValue 
-                placeholder={
-                  isLoadingSubregions && formData.subregion 
-                    ? "Loading saved subregion..." 
-                    : formData.subregion
-                      ? getEntityName(formData.subregion, subregions) || "Invalid subregion"
-                      : "Select subregion"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {subregions?.map(subregion => (
-                <SelectItem key={subregion.id} value={subregion.id.toString()}>
-                  {subregion.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className={errors.subregion ? "border-red-500" : ""}
+          />
           {errors.subregion && <p className="text-red-500 text-sm">{errors.subregion}</p>}
         </div>
 
         {/* City Select */}
         <div className="space-y-2">
           <Label htmlFor="city">City/Town</Label>
-          <Select
+          <InstantSearchSelect
             value={formData.city?.toString() || ""}
-            onValueChange={value => updateFormData({ city: Number(value) })}
+            onChange={(value) => updateFormData({ city: Number(value) })}
+            placeholder={
+              isLoadingCities && formData.city
+                ? "Loading saved city..."
+                : "Search city..."
+            }
+            options={cities?.map(city => ({
+              value: city.id.toString(),
+              label: city.name
+            })) || []}
             disabled={isLoadingCities || !formData.subregion}
-          >
-            <SelectTrigger id="city" className={errors.city ? "border-red-500" : ""}>
-              <SelectValue 
-                placeholder={
-                  isLoadingCities && formData.city 
-                    ? "Loading saved city..." 
-                    : formData.city
-                      ? getEntityName(formData.city, cities) || "Invalid city"
-                      : "Select city"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {cities?.map(city => (
-                <SelectItem key={city.id} value={city.id.toString()}>
-                  {city.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className={errors.city ? "border-red-500" : ""}
+          />
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
         </div>
 
