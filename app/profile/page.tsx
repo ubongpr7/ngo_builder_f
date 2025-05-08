@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail } from "lucide-react"
 import type { UserProfile } from "@/components/interfaces/profile"
 import type { AddressFormData } from "@/components/interfaces/kyc-forms"
-
+import Link from "next/link"
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery("")
@@ -182,15 +182,12 @@ export default function ProfilePage() {
       <Card className="overflow-hidden">
         <CardHeader className="relative pb-0">
           <div className="absolute right-4 top-4 z-10">
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)} className="h-8 px-3 text-xs">
-              {isEditing ? (
-                "Cancel"
-              ) : (
-                <>
-                  <Edit className="h-3.5 w-3.5 mr-1" /> Edit Profile
-                </>
-              )}
-            </Button>
+          <Link href="/profile/update" className="text-sm text-gray-500 hover:text-gray-700">
+          <>
+            <Edit className="h-3.5 w-3.5 mr-1" /> Edit Profile
+          </>
+        
+      </Link>
           </div>
 
           <div className="flex flex-col items-center text-center">

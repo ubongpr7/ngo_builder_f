@@ -16,7 +16,7 @@ import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2
 import type { UserProfile } from "@/components/interfaces/profile"
 import type { AddressFormData } from "@/components/interfaces/kyc-forms"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-
+import Link from "next/link"
 interface ProfileDialogProps {
   trigger?: React.ReactNode
   defaultOpen?: boolean
@@ -187,15 +187,12 @@ export function ProfileDialog({ trigger, defaultOpen = false }: ProfileDialogPro
       <Card className="overflow-hidden border-0 shadow-none">
         <CardHeader className="relative pb-0">
           <div className="absolute right-4 top-4 z-10">
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)} className="h-8 px-3 text-xs">
-              {isEditing ? (
-                "Cancel"
-              ) : (
+            <Link href="/profile/update" className="text-sm text-gray-500 hover:text-gray-700">
                 <>
                   <Edit className="h-3.5 w-3.5 mr-1" /> Edit Profile
                 </>
-              )}
-            </Button>
+              
+            </Link>
           </div>
 
           <div className="flex flex-col items-center text-center">
