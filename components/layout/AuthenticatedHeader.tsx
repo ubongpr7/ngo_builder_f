@@ -25,8 +25,8 @@ import { useAppDispatch } from "@/redux/store"
 
 const navigation = [
   { name: "Dashboard", href: "/membership/dashboard" },
-  { name: "Members", href: "/membership/dashboard/members" },
-  { name: "Events", href: "/membership/dashboard/events" },
+  { name: "Members", href: "/membership/dashboard/" },
+  { name: "Events", href: "/membership/dashboard/" },
 ]
 
 export default function AuthenticatedHeader() {
