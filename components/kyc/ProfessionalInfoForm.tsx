@@ -10,7 +10,6 @@ import type { DropdownOption, ProfessionalInfoFormData } from "../interfaces/kyc
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useGetIndustryQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import { Loader2 } from "lucide-react"
-import { InstantSearchSelect } from "@/components/ui/instant-search-select"
 
 interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
@@ -33,16 +32,13 @@ export default function ProfessionalInfoForm({
   const [isInitialized, setIsInitialized] = useState(false)
   const [selectedIndustry, setSelectedIndustry] = useState<string | ''>('')
   const [apiError, setApiError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
   const initialIndustryRef = useRef<string | null>(formData.industry || '')
 
   useEffect(() => {
     if (industries && industries.length > 0 && !isInitialized) {
-
-      // Only try to set the industry if we have an initial value
       if (initialIndustryRef.current !== '') {
-        // Check if the industry exists in the available options
         const industryExists = industries.some((industry: { id: string; name: string }) => industry.id === initialIndustryRef.current)
-
         if (industryExists) {
           setSelectedIndustry(initialIndustryRef.current)
         } else {
@@ -50,25 +46,32 @@ export default function ProfessionalInfoForm({
           updateFormData({ industry: '' })
         }
       }
-
       setIsInitialized(true)
     }
   }, [industries, isInitialized, updateFormData])
 
-  // Update the selected industry when formData changes (after initialization)
   useEffect(() => {
     if (isInitialized && formData.industry !== selectedIndustry) {
       setSelectedIndustry(formData.industry ? formData.industry : '')
     }
   }, [formData.industry, isInitialized, selectedIndustry])
 
+  useEffect(() => {
+    if (industry_id) {
+      setSelectedIndustry(industry_id.toString())
+      updateFormData({ industry: industry_id.toString() })
+    }
+  }, [industry_id, !isInitialized])
+
+  const filteredIndustries = industries?.filter((industry: { name: string }) =>
+    industry.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-
     if (!formData.industry) {
       newErrors.industry = "Industry is required"
     }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -77,6 +80,7 @@ export default function ProfessionalInfoForm({
     const industryId = Number.parseInt(value)
     setSelectedIndustry(industryId.toString())
     updateFormData({ industry: industryId.toString() })
+    setSearchTerm("")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +91,6 @@ export default function ProfessionalInfoForm({
       return
     }
 
-    // Ensure industry is a number
     const industryId =
       typeof formData.industry === "string" ? Number.parseInt(formData.industry, 10) : formData.industry
 
@@ -99,34 +102,23 @@ export default function ProfessionalInfoForm({
       company_website: formData.company_website,
     }
 
-
     try {
       const response = await updateUserProfile({
         id: profileId,
         data: dataToSubmit,
       }).unwrap()
-
       onComplete()
     } catch (error: any) {
-
-      // Extract error message for display
       let errorMessage = "Failed to save data. Please try again."
       if (error.data?.detail) {
         errorMessage = error.data.detail
       } else if (error.message) {
         errorMessage = error.message
       }
-
       setApiError(errorMessage)
     }
   }
-  useEffect(() => {
-    if (industry_id) {
-      setSelectedIndustry(industry_id.toString())
-      updateFormData({ industry: industry_id.toString() })
-    }
-  }, [industry_id, !isInitialized])
-  // Show loading state while data is being fetched
+
   if (isLoadingIndustries) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -136,7 +128,6 @@ export default function ProfessionalInfoForm({
     )
   }
 
-  // Get the industry name for debugging
   const getIndustryName = (id: number | null) => {
     if (!id || !industries) return "None"
     const industry = industries.find((ind: DropdownOption) => ind.id === id)
@@ -145,7 +136,6 @@ export default function ProfessionalInfoForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Debug info - can be removed in production */}
       <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded hidden">
         <div>
           Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
@@ -183,22 +173,34 @@ export default function ProfessionalInfoForm({
           />
         </div>
 
-        {/* Industry Select with Instant Search */}
         <div className="space-y-2">
           <Label htmlFor="industry">
             Industry <span className="text-red-500">*</span>
           </Label>
-          <InstantSearchSelect
+          <Select
             value={formData.industry?.toString() || ""}
-            onChange={(value) => updateFormData({ industry: value })}
-            placeholder="Search industry..."
-            options={industries?.map((industry: { id: number; name: string }) => ({
-              value: industry.id.toString(),
-              label: industry.name
-            })) || []}
+            onValueChange={handleIndustryChange}
             disabled={!isInitialized}
-            className={errors.industry ? "border-red-500" : ""}
-          />
+          >
+            <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
+              <SelectValue placeholder="Select industry" />
+            </SelectTrigger>
+            <SelectContent>
+              <div className="p-2">
+                <Input
+                  placeholder="Search industries..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="mb-2"
+                />
+              </div>
+              {filteredIndustries.map((industry: { id: number; name: string }) => (
+                <SelectItem key={industry.id} value={industry.id.toString()}>
+                  {industry.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
         </div>
 

@@ -6,8 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { AddressFormData } from "../interfaces/kyc-forms"
-import { InstantSearchSelect } from "@/components/ui/instant-search-select"
-
 import {
   useGetCountriesQuery,
   useGetRegionsQuery,
@@ -16,6 +14,81 @@ import {
 } from "@/redux/features/common/typeOF"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useAddAddressMutation, useUpdateAddressMutation } from "@/redux/features/profile/profileRelatedAPISlice"
+
+const SearchableSelect = ({
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  disabled,
+  error,
+  loading,
+  className = ""
+}: {
+  value: string
+  onValueChange: (value: string) => void
+  options: Array<{ value: string; label: string }>
+  placeholder?: string
+  disabled?: boolean
+  error?: boolean
+  loading?: boolean
+  className?: string
+}) => {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isOpen, setIsOpen] = useState(false)
+  
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const selectedLabel = options.find(o => o.value === value)?.label || ""
+
+  return (
+    <Select
+      value={value}
+      onValueChange={onValueChange}
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      disabled={disabled}
+    >
+      <SelectTrigger 
+        className={`${className} ${error ? "border-red-500" : ""}`}
+        onClick={(e) => {
+          if (!disabled) {
+            setIsOpen(true)
+            setSearchTerm("")
+          }
+        }}
+      >
+        <SelectValue placeholder={loading ? "Loading..." : placeholder}>
+          {selectedLabel}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <div className="p-2 sticky top-0 bg-white z-10">
+          <Input
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="mb-2"
+            autoFocus
+            onKeyDown={(e) => {
+              // Prevent scrolling when using arrow keys
+              if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
+                e.preventDefault()
+              }
+            }}
+          />
+        </div>
+        {filteredOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
 
 interface AddressFormProps {
   formData: AddressFormData
@@ -31,22 +104,18 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
   const isMounted = useRef(false)
 
-  // Country query
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
-
-  // Region query with forced refetch
+  
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
     refetchOnMountOrArgChange: true,
   })
-
-  // Subregion query with forced refetch
+  
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
     refetchOnMountOrArgChange: true,
   })
-
-  // City query with forced refetch
+  
   const { data: cities, isLoading: isLoadingCities } = useGetCitiesQuery(formData.subregion || 0, {
     skip: !formData.subregion,
     refetchOnMountOrArgChange: true,
@@ -54,7 +123,6 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
   const isLoading = isLoadingAddAddress || isLoadingUpdateProfile
 
-  // Reset logic for dependent fields
   useEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true
@@ -112,11 +180,11 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
       onComplete()
     } catch (error) {
+      console.error("Error saving address:", error)
     }
   }
 
-  // Helper function to find entity name
-  const getEntityName = (id: number | null, data: Array<{ id: number; name: string }> | undefined) =>
+  const getEntityName = (id: number | null, data: Array<{ id: number; name: string }> | undefined) => 
     data?.find(entity => entity.id === id)?.name
 
   return (
@@ -125,15 +193,17 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Country Select */}
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
-          <InstantSearchSelect
+          <SearchableSelect
             value={formData.country?.toString() || ""}
-            onChange={(value) => updateFormData({ country: Number(value) })}
-            placeholder="Search country..."
+            onValueChange={value => updateFormData({ country: Number(value) })}
+            placeholder="Select your country"
             options={countries?.map(country => ({
               value: country.id.toString(),
               label: country.name
             })) || []}
             disabled={isLoadingCountries}
+            error={!!errors.country}
+            loading={isLoadingCountries}
           />
           {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
         </div>
@@ -141,20 +211,23 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Region Select */}
         <div className="space-y-2">
           <Label htmlFor="region">Region/State</Label>
-          <InstantSearchSelect
+          <SearchableSelect
             value={formData.region?.toString() || ""}
-            onChange={(value) => updateFormData({ region: Number(value) })}
+            onValueChange={value => updateFormData({ region: Number(value) })}
             placeholder={
-              isLoadingRegions && formData.region
-                ? "Loading saved region..."
-                : "Search region..."
+              isLoadingRegions && formData.region 
+                ? "Loading saved region..." 
+                : formData.region
+                  ? getEntityName(formData.region, regions) || "Invalid region"
+                  : "Select region"
             }
             options={regions?.map(region => ({
               value: region.id.toString(),
               label: region.name
             })) || []}
             disabled={isLoadingRegions || !formData.country}
-            className={errors.region ? "border-red-500" : ""}
+            error={!!errors.region}
+            loading={isLoadingRegions}
           />
           {errors.region && <p className="text-red-500 text-sm">{errors.region}</p>}
         </div>
@@ -162,20 +235,23 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Subregion Select */}
         <div className="space-y-2">
           <Label htmlFor="subregion">Subregion/LGA</Label>
-          <InstantSearchSelect
+          <SearchableSelect
             value={formData.subregion?.toString() || ""}
-            onChange={(value) => updateFormData({ subregion: Number(value) })}
+            onValueChange={value => updateFormData({ subregion: Number(value) })}
             placeholder={
-              isLoadingSubregions && formData.subregion
-                ? "Loading saved subregion..."
-                : "Search subregion..."
+              isLoadingSubregions && formData.subregion 
+                ? "Loading saved subregion..." 
+                : formData.subregion
+                  ? getEntityName(formData.subregion, subregions) || "Invalid subregion"
+                  : "Select subregion"
             }
             options={subregions?.map(subregion => ({
               value: subregion.id.toString(),
               label: subregion.name
             })) || []}
             disabled={isLoadingSubregions || !formData.region}
-            className={errors.subregion ? "border-red-500" : ""}
+            error={!!errors.subregion}
+            loading={isLoadingSubregions}
           />
           {errors.subregion && <p className="text-red-500 text-sm">{errors.subregion}</p>}
         </div>
@@ -183,20 +259,23 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* City Select */}
         <div className="space-y-2">
           <Label htmlFor="city">City/Town</Label>
-          <InstantSearchSelect
+          <SearchableSelect
             value={formData.city?.toString() || ""}
-            onChange={(value) => updateFormData({ city: Number(value) })}
+            onValueChange={value => updateFormData({ city: Number(value) })}
             placeholder={
-              isLoadingCities && formData.city
-                ? "Loading saved city..."
-                : "Search city..."
+              isLoadingCities && formData.city 
+                ? "Loading saved city..." 
+                : formData.city
+                  ? getEntityName(formData.city, cities) || "Invalid city"
+                  : "Select city"
             }
             options={cities?.map(city => ({
               value: city.id.toString(),
               label: city.name
             })) || []}
             disabled={isLoadingCities || !formData.subregion}
-            className={errors.city ? "border-red-500" : ""}
+            error={!!errors.city}
+            loading={isLoadingCities}
           />
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
         </div>

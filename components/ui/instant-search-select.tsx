@@ -1,33 +1,34 @@
-// components/ui/instant-search-select.tsx
+// components/ui/searchable-select.tsx
 "use client"
 
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface InstantSearchSelectProps {
+const SearchableSelect = ({
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  disabled,
+  error,
+  loading,
+  className = ""
+}: {
   value: string
-  onChange: (value: string) => void
+  onValueChange: (value: string) => void
   options: Array<{ value: string; label: string }>
   placeholder?: string
   disabled?: boolean
+  error?: boolean
+  loading?: boolean
   className?: string
-  maxHeight?: number
-}
-
-export function InstantSearchSelect({
-  value,
-  onChange,
-  options,
-  placeholder = "Search...",
-  disabled,
-  className,
-  maxHeight = 200,
-}: InstantSearchSelectProps) {
+}) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return options
@@ -36,64 +37,80 @@ export function InstantSearchSelect({
     )
   }, [options, searchTerm])
 
-  const dynamicHeight = useMemo(() => {
-    const itemHeight = 36 
-    const visibleItems = Math.min(filteredOptions.length, 6)
-    return Math.min(visibleItems * itemHeight, maxHeight)
-  }, [filteredOptions.length, maxHeight])
+  const selectedLabel = options.find(o => o.value === value)?.label || ""
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 0)
     }
+  }, [isOpen])
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  const handleSelect = (val: string) => {
-    onChange(val)
-    setIsOpen(false)
-    setSearchTerm(options.find(o => o.value === val)?.label || "")
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
+      e.preventDefault()
+    }
   }
 
   return (
-    <div className={`relative w-full ${className}`} ref={wrapperRef}>
-      <Input
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value)
-          setIsOpen(true)
+    <Select
+      value={value}
+      onValueChange={onValueChange}
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) {
+          setSearchTerm("")
+          setHoveredIndex(null)
+        }
+      }}
+      disabled={disabled}
+    >
+      <SelectTrigger 
+        className={`${className} ${error ? "border-red-500" : ""}`}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen(true)
+            setSearchTerm("")
+          }
         }}
-        onFocus={() => setIsOpen(true)}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="w-full"
-      />
-
-      {isOpen && filteredOptions.length > 0 && (
-        <div
-          ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg overflow-hidden"
-          style={{ height: `${dynamicHeight}px` }}
-        >
-          <ScrollArea className="h-full">
-            {filteredOptions.map((option) => (
-              <div
-                key={option.value}
-                className={`h-9 px-4 flex items-center cursor-pointer transition-colors hover:bg-blue-600 hover:text-white box-border ${value === option.value ? "bg-gray-100 font-medium" : ""
-                  }`}
-
-                onClick={() => handleSelect(option.value)}
+      >
+        <SelectValue placeholder={loading ? "Loading..." : placeholder}>
+          {selectedLabel}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <div className="p-2 sticky top-0 bg-white z-10 border-b">
+          <Input
+            ref={inputRef}
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        </div>
+        <div className="max-h-[300px] overflow-y-auto">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((option, index) => (
+              <SelectItem 
+                key={option.value} 
+                value={option.value}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                className={hoveredIndex === index ? "bg-gray-100" : ""}
               >
                 {option.label}
-              </div>
-            ))}
-          </ScrollArea>
+              </SelectItem>
+            ))
+          ) : (
+            <div className="py-2 px-4 text-sm text-muted-foreground text-center">
+              No results found
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </SelectContent>
+    </Select>
   )
 }
+
+export default SearchableSelect
