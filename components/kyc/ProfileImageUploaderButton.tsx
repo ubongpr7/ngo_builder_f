@@ -14,6 +14,7 @@ interface ProfileImageUploaderButtonProps {
   onSuccess?: () => void
   buttonText?: string
   buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
+    absolute?: boolean
 }
 
 export function ProfileImageUploaderButton({
@@ -24,6 +25,7 @@ export function ProfileImageUploaderButton({
   onSuccess,
   buttonText = "Update Profile Picture",
   buttonVariant = "outline",
+    absolute = true,
 }: ProfileImageUploaderButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [localImage, setLocalImage] = useState<string | null>(currentImage || null)
@@ -35,8 +37,8 @@ export function ProfileImageUploaderButton({
 
   return (
     <>
-    <div onClick={() => setIsOpen(true)} className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-        <Camera className="h-4 w-4 text-white" />
+    <div onClick={() => setIsOpen(true)} className={` ${absolute?"absolute":""} bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md`}>
+        <Camera className={`${absolute?"h-4 w-4": "h-10 w-10"} text-white`} />
     </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
