@@ -37,7 +37,7 @@ export function ProfileImageUploaderButton({
 
   return (
     <>
-    <div onClick={() => setIsOpen(true)} className={` ${absolute?"absolute":""} bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md`}>
+    <div onClick={() => setIsOpen(true)} className={ `absolute ${absolute?"bottom-0 right-0":"bottom-50 right-50"}  bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md`}>
         <Camera className={`${absolute?"h-4 w-4": "h-10 w-10"} text-white`} />
     </div>
 
