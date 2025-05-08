@@ -190,8 +190,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Country Select */}
-        <div className="space-y-2">
+      <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
           <SearchableSelect
             value={formData.country?.toString() || ""}
@@ -279,7 +278,6 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           />
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
         </div>
-
         {/* Street Number */}
         <div className="space-y-2">
           <Label htmlFor="street_number">Street Number</Label>

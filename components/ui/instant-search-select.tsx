@@ -1,116 +1,90 @@
 // components/ui/searchable-select.tsx
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const SearchableSelect = ({
+export function SearchableSelect({
   value,
   onValueChange,
   options,
-  placeholder,
+  placeholder = "Select...",
   disabled,
+  className,
   error,
   loading,
-  className = ""
 }: {
   value: string
   onValueChange: (value: string) => void
   options: Array<{ value: string; label: string }>
   placeholder?: string
   disabled?: boolean
+  className?: string
   error?: boolean
   loading?: boolean
-  className?: string
-}) => {
+}) {
   const [searchTerm, setSearchTerm] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const filteredOptions = useMemo(() => {
-    if (!searchTerm) return options
-    return options.filter(option =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [options, searchTerm])
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const selectedLabel = options.find(o => o.value === value)?.label || ""
 
+  // Keep dropdown open when input is focused (mobile fix)
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 0)
+      const handleFocus = () => setIsOpen(true)
+      inputRef.current.addEventListener('focus', handleFocus)
+      return () => inputRef.current?.removeEventListener('focus', handleFocus)
     }
   }, [isOpen])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
-      e.preventDefault()
-    }
-  }
-
   return (
     <Select
-      value={value}
-      onValueChange={onValueChange}
       open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open)
-        if (!open) {
-          setSearchTerm("")
-          setHoveredIndex(null)
-        }
+      onOpenChange={setIsOpen}
+      value={value}
+      onValueChange={(val) => {
+        onValueChange(val)
+        setIsOpen(false)
+        setSearchTerm("")
       }}
-      disabled={disabled}
     >
       <SelectTrigger 
         className={`${className} ${error ? "border-red-500" : ""}`}
-        onClick={() => {
-          if (!disabled) {
-            setIsOpen(true)
-            setSearchTerm("")
-          }
-        }}
+        onClick={() => !disabled && setIsOpen(true)}
       >
         <SelectValue placeholder={loading ? "Loading..." : placeholder}>
           {selectedLabel}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
-        <div className="p-2 sticky top-0 bg-white z-10 border-b">
+      <SelectContent className="p-0">
+        <div className="sticky top-0 z-10 bg-white p-2">
           <Input
             ref={inputRef}
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
+            className="w-full"
+            onKeyDown={(e) => e.stopPropagation()} // Prevent select from handling keys
           />
         </div>
         <div className="max-h-[300px] overflow-y-auto">
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((option, index) => (
-              <SelectItem 
-                key={option.value} 
-                value={option.value}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className={hoveredIndex === index ? "bg-gray-100" : ""}
-              >
-                {option.label}
-              </SelectItem>
-            ))
-          ) : (
-            <div className="py-2 px-4 text-sm text-muted-foreground text-center">
-              No results found
-            </div>
-          )}
+          {filteredOptions.map((option) => (
+            <SelectItem 
+              key={option.value} 
+              value={option.value}
+              onPointerDown={(e) => e.preventDefault()} // Mobile touch fix
+            >
+              {option.label}
+            </SelectItem>
+          ))}
         </div>
       </SelectContent>
     </Select>
   )
 }
-
-export default SearchableSelect
