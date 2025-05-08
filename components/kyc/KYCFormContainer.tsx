@@ -135,7 +135,7 @@ export default function KYCFormContainer({
       updatedFormState.personalInfo.disabled = userDisabled
       updatedFormState.personalInfo.disability = userDisability
 
-      if (userProfile.address) {
+      if (userProfile.address && address) {
         updatedFormState.address = {
           country: address.country || null,
           region: address.region || null,
