@@ -18,7 +18,7 @@ import { ProfileImageUploaderButton } from "@/components/kyc/ProfileImageUploade
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
-  const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery("")
+  const { data: userProfile, isLoading, error, refetch } = useGetUserLoggedInProfileDetailsQuery("")
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
                 <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                  <ProfileImageUploaderButton profileId={profileData.id} userId={userProfile.id} currentImage={profileData.profile_image} />
+                  <ProfileImageUploaderButton onSuccess={() => refetch()} profileId={profileData.id} userId={userProfile.id} currentImage={profileData.profile_image} />
                 </div>
             </div>
 

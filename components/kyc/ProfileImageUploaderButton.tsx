@@ -11,7 +11,7 @@ interface ProfileImageUploaderButtonProps {
   profileId: string
   currentImage?: string | null
   userName?: string
-  onSuccess?: (imageUrl: string) => void
+  onSuccess?: () => void
   buttonText?: string
   buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
 }
@@ -30,7 +30,7 @@ export function ProfileImageUploaderButton({
 
   const handleSuccess = (imageUrl: string) => {
     setLocalImage(imageUrl)
-    if (onSuccess) onSuccess(imageUrl)
+    if (onSuccess) onSuccess()
   }
 
   return (
