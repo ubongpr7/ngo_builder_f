@@ -65,7 +65,7 @@ export default function KYCFormContainer({
 }) {
   const router = useRouter()
   const { data: userProfile, isLoading } = useGetProfileQuery(profileId, { skip: !profileId })
-  const addressId = userProfile?.address?.id || null
+  const addressId = userProfile?.address || null
   const [activeTab, setActiveTab] = useState(STEP_ORDER[1]) // Start with first step
   const { data: address } = useGetAddressByIdQuery({userProfileId:profileId, addressId:addressId}, { skip: !addressId })
   const [formState, setFormState] = useState<KYCFormState>({
