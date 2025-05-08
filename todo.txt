@@ -1,0 +1,2 @@
+please dont change my main code, ok
+you are going to change what is a page in the code provided into a component that can easily popup in a 

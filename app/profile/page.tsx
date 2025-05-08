@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2 } from "lucide-react"
-import { UserProfile } from "@/components/interfaces/profile"
-import { Address } from "@/components/models/user-profile"
-import { AddressFormData } from "@/components/interfaces/kyc-forms"
+import { Camera, CheckCircle, Edit, AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail } from "lucide-react"
+import type { UserProfile } from "@/components/interfaces/profile"
+import type { AddressFormData } from "@/components/interfaces/kyc-forms"
+
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
-  const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery('')
+  const { data: userProfile, isLoading, error } = useGetUserLoggedInProfileDetailsQuery("")
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -36,7 +36,7 @@ export default function ProfilePage() {
   }
 
   // Calculate profile completeness
-  const calculateProfileCompleteness = (profile:UserProfile) => {
+  const calculateProfileCompleteness = (profile: UserProfile) => {
     if (!profile) return 0
 
     // Use profile_data for completeness calculation
@@ -62,7 +62,7 @@ export default function ProfilePage() {
   }
 
   // Get role badges
-  const getRoleBadges = (profile:UserProfile) => {
+  const getRoleBadges = (profile: UserProfile) => {
     if (!profile) return []
 
     // Use profile_data for roles
@@ -91,7 +91,7 @@ export default function ProfilePage() {
   }
 
   // Format address
-  const formatAddress = (address:AddressFormData) => {
+  const formatAddress = (address: AddressFormData) => {
     if (!address) return "No address provided"
 
     const parts = []
@@ -111,7 +111,7 @@ export default function ProfilePage() {
   }
 
   // Get initials for avatar fallback
-  const getInitials = (profile:UserProfile) => {
+  const getInitials = (profile: UserProfile) => {
     if (!profile) return "U"
 
     const firstName = profile.first_name || ""
@@ -122,41 +122,34 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10 px-4">
-        <Card>
-          <CardHeader className="relative">
-            <div className="absolute right-6 top-6">
-              <Skeleton className="h-9 w-28" />
-            </div>
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <Skeleton className="h-24 w-24 rounded-full" />
-              <div>
-                <Skeleton className="h-8 w-48 mb-2" />
-                <Skeleton className="h-5 w-64 mb-2" />
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-                <Skeleton className="h-4 w-36 mt-2" />
+      <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-0">
+            <div className="flex flex-col items-center text-center">
+              <Skeleton className="h-24 w-24 rounded-full mb-4" />
+              <Skeleton className="h-7 w-48 mb-2" />
+              <Skeleton className="h-5 w-40 mb-3" />
+              <div className="flex flex-wrap justify-center gap-2 mb-3">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-20" />
               </div>
+              <Skeleton className="h-4 w-36 mb-4" />
+            </div>
+            <div className="mt-2">
+              <Skeleton className="h-6 w-full mb-2" />
+              <Skeleton className="h-2 w-full" />
             </div>
           </CardHeader>
 
-          <CardContent>
-            <Skeleton className="h-10 w-full mb-8" />
+          <CardContent className="pt-6">
+            <Skeleton className="h-10 w-full mb-6" />
             <div className="space-y-6">
-              {Array(6)
+              {Array(3)
                 .fill(0)
                 .map((_, i) => (
-                  <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Array(2)
-                      .fill(0)
-                      .map((_, j) => (
-                        <div key={j}>
-                          <Skeleton className="h-4 w-24 mb-1" />
-                          <Skeleton className="h-5 w-full" />
-                        </div>
-                      ))}
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-6 w-full" />
                   </div>
                 ))}
             </div>
@@ -168,7 +161,7 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-10 px-4">
+      <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -185,114 +178,117 @@ export default function ProfilePage() {
   const roleBadges = getRoleBadges(profile)
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <Card>
-        <CardHeader className="relative">
-          <div className="absolute right-6 top-6">
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
+    <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
+      <Card className="overflow-hidden">
+        <CardHeader className="relative pb-0">
+          <div className="absolute right-4 top-4 z-10">
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)} className="h-8 px-3 text-xs">
               {isEditing ? (
                 "Cancel"
               ) : (
                 <>
-                  <Edit className="h-4 w-4 mr-1" /> Edit Profile
+                  <Edit className="h-3.5 w-3.5 mr-1" /> Edit Profile
                 </>
               )}
             </Button>
           </div>
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <div className="relative">
-              <Avatar className="h-24 w-24">
+
+          <div className="flex flex-col items-center text-center">
+            <div className="relative mb-3">
+              <Avatar className="h-24 w-24 border-2 border-white shadow-sm">
                 <AvatarImage src={profileData.profile_image || "/placeholder.svg"} alt={profileData.first_name} />
-                <AvatarFallback>{getInitials(profileData)}</AvatarFallback>
+                <AvatarFallback className="bg-green-100 text-green-800 text-xl font-semibold">
+                  {getInitials(profileData)}
+                </AvatarFallback>
               </Avatar>
               {isEditing && (
-                <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1 cursor-pointer">
+                <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
                   <Camera className="h-4 w-4 text-white" />
                 </div>
               )}
             </div>
-            <div>
-              <CardTitle className="text-2xl text-center md:text-left">
-                {profileData.first_name} {profileData.last_name}
-              </CardTitle>
-              <CardDescription className="text-lg text-center md:text-left">
-                {profileData.position} {profileData.organization ? `at ${profileData.organization}` : ""}
-              </CardDescription>
-              <div className="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                {profileData.membership_type && (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100">
-                    {typeof profileData.membership_type === "object"
-                      ? profileData.membership_type.name
-                      : profileData.membership_type}
-                  </Badge>
-                )}
-                {profileData.is_kyc_verified && (
-                  <Badge className="bg-green-600">
-                    <CheckCircle className="h-3 w-3 mr-1" /> Verified
-                  </Badge>
-                )}
-                {roleBadges.map((role) => (
-                  <Badge key={role} variant="secondary">
-                    {role}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 mt-2 text-center md:text-left">
-                Member since {formatDate(profileData.created_at)}
-              </p>
+
+            <CardTitle className="text-xl sm:text-2xl font-bold">
+              {profileData.first_name} {profileData.last_name}
+            </CardTitle>
+
+            <CardDescription className="text-base mt-1">
+              {profileData.position} {profileData.organization ? `at ${profileData.organization}` : ""}
+            </CardDescription>
+
+            <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+              {roleBadges.map((role) => (
+                <Badge key={role} variant="secondary" className="font-medium text-xs px-2 py-0.5">
+                  {role}
+                </Badge>
+              ))}
+
+              {profileData.is_kyc_verified && (
+                <Badge className="bg-green-600 text-white font-medium text-xs px-2 py-0.5">
+                  <CheckCircle className="h-3 w-3 mr-1" /> Verified
+                </Badge>
+              )}
             </div>
+
+            <p className="text-xs text-gray-500 mt-2">Member since {formatDate(profileData.created_at)}</p>
           </div>
 
           {/* Profile Completeness */}
-          <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Profile Completeness</span>
-              <span className="text-sm font-medium">{completeness}%</span>
+          <div className="mt-6 bg-gray-50 p-3 rounded-md">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium">Profile Completeness</span>
+              <span className="text-xs font-medium">{completeness}%</span>
             </div>
-            <Progress value={completeness} className="h-2" />
+            <Progress value={completeness} className="h-1.5" />
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="pt-6">
           <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="personal">Personal Information</TabsTrigger>
-              <TabsTrigger value="professional">Professional Details</TabsTrigger>
-              <TabsTrigger value="contact">Contact & Address</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+              <TabsTrigger value="personal" className="text-xs py-1.5 px-1 sm:text-sm">
+                Personal Info
+              </TabsTrigger>
+              <TabsTrigger value="professional" className="text-xs py-1.5 px-1 sm:text-sm">
+                Professional
+              </TabsTrigger>
+              <TabsTrigger value="contact" className="text-xs py-1.5 px-1 sm:text-sm">
+                Contact
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="personal" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Full Name</h3>
-                  <p>
+            <TabsContent value="personal" className="mt-4 space-y-4">
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Full Name</h3>
+                  <p className="text-sm">
                     {profileData.first_name} {profileData.last_name}
                   </p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Email Address</h3>
-                  <p>{profileData.email}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Email Address</h3>
+                  <p className="text-sm">{profileData.email}</p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Date of Birth</h3>
-                  <p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Date of Birth</h3>
+                  <p className="text-sm">
                     {profileData.user_date_of_birth || profileData.date_of_birth
                       ? formatDate(profileData.user_date_of_birth || profileData.date_of_birth)
                       : "Not provided"}
                   </p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Gender</h3>
-                  <p>{profileData.sex || "Not provided"}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Gender</h3>
+                  <p className="text-sm capitalize">{profileData.sex || "Not provided"}</p>
                 </div>
 
                 {profileData.disability && (
-                  <div className="md:col-span-2">
-                    <h3 className="font-medium text-gray-500 mb-1">Disability</h3>
-                    <p>
+                  <div className="bg-gray-50 rounded-md p-3">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Disability</h3>
+                    <p className="text-sm">
                       {typeof profileData.disability === "object"
                         ? profileData.disability.name
                         : profileData.disability}
@@ -300,28 +296,28 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                <div className="md:col-span-2">
-                  <h3 className="font-medium text-gray-500 mb-1">Bio</h3>
-                  <p className="whitespace-pre-wrap">{profileData.bio || "No bio provided"}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Bio</h3>
+                  <p className="text-sm whitespace-pre-wrap">{profileData.bio || "No bio provided"}</p>
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="professional" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Organization/Company</h3>
-                  <p>{profileData.organization || "Not provided"}</p>
+            <TabsContent value="professional" className="mt-4 space-y-4">
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Organization/Company</h3>
+                  <p className="text-sm">{profileData.organization || "Not provided"}</p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Position/Title</h3>
-                  <p>{profileData.position || "Not provided"}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Position/Title</h3>
+                  <p className="text-sm">{profileData.position || "Not provided"}</p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Industry</h3>
-                  <p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Industry</h3>
+                  <p className="text-sm">
                     {profileData.industry_details
                       ? profileData.industry_details.name
                       : typeof profileData.industry === "object"
@@ -330,97 +326,111 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Company Size</h3>
-                  <p>{profileData.company_size || "Not provided"}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Company Size</h3>
+                  <p className="text-sm">{profileData.company_size || "Not provided"}</p>
                 </div>
 
-                <div className="md:col-span-2">
-                  <h3 className="font-medium text-gray-500 mb-1">Company Website</h3>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Company Website</h3>
                   {profileData.company_website ? (
                     <a
                       href={profileData.company_website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
+                      className="text-sm text-blue-600 hover:underline flex items-center"
                     >
-                      {profileData.company_website}
-                      <ExternalLink className="h-3 w-3 ml-1" />
+                      <span className="truncate">{profileData.company_website}</span>
+                      <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
                     </a>
                   ) : (
-                    <p>Not provided</p>
+                    <p className="text-sm">Not provided</p>
                   )}
                 </div>
 
-                <div className="md:col-span-2">
-                  <h3 className="font-medium text-gray-500 mb-1">Areas of Expertise</h3>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
-                    <div className="flex flex-wrap gap-2 mt-1">
+                    <div className="flex flex-wrap gap-1.5 mt-1">
                       {profileData.expertise_details.map((item) => (
-                        <Badge key={item.id} variant="outline">
+                        <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>
                       ))}
                     </div>
                   ) : (
-                    <p>No expertise areas provided</p>
+                    <p className="text-sm">No expertise areas provided</p>
                   )}
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="contact" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Phone Number</h3>
-                  <p>{profileData.phone_number || "Not provided"}</p>
+            <TabsContent value="contact" className="mt-4 space-y-4">
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Phone Number</h3>
+                  {profileData.phone_number ? (
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 text-gray-500 mr-2" />
+                      <a href={`tel:${profileData.phone_number}`} className="text-sm text-blue-600 hover:underline">
+                        {profileData.phone_number}
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-sm">Not provided</p>
+                  )}
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Email Address</h3>
-                  <p>{profileData.email}</p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Email Address</h3>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 text-gray-500 mr-2" />
+                    <a href={`mailto:${profileData.email}`} className="text-sm text-blue-600 hover:underline">
+                      {profileData.email}
+                    </a>
+                  </div>
                 </div>
 
-                <div className="md:col-span-2">
-                  <h3 className="font-medium text-gray-500 mb-1">Address</h3>
-                  <p>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Address</h3>
+                  <p className="text-sm">
                     {profileData.address_details ? formatAddress(profileData.address_details) : "No address provided"}
                   </p>
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">LinkedIn Profile</h3>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">LinkedIn Profile</h3>
                   {profileData.linkedin_profile ? (
                     <a
                       href={profileData.linkedin_profile}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
+                      className="text-sm text-blue-600 hover:underline flex items-center"
                     >
-                      <Linkedin className="h-4 w-4 mr-1" />
-                      LinkedIn Profile
+                      <Linkedin className="h-4 w-4 mr-2" />
+                      <span>LinkedIn Profile</span>
                       <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
                   ) : (
-                    <p>Not provided</p>
+                    <p className="text-sm">Not provided</p>
                   )}
                 </div>
 
-                <div>
-                  <h3 className="font-medium text-gray-500 mb-1">Profile Link</h3>
+                <div className="bg-gray-50 rounded-md p-3">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Personal Website</h3>
                   {profileData.profile_link ? (
                     <a
                       href={profileData.profile_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
+                      className="text-sm text-blue-600 hover:underline flex items-center"
                     >
-                      <Link2 className="h-4 w-4 mr-1" />
-                      Personal Website
-                      <ExternalLink className="h-3 w-3 ml-1" />
+                      <Link2 className="h-4 w-4 mr-2" />
+                      <span className="truncate">{profileData.profile_link}</span>
+                      <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
                     </a>
                   ) : (
-                    <p>Not provided</p>
+                    <p className="text-sm">Not provided</p>
                   )}
                 </div>
               </div>
@@ -429,11 +439,13 @@ export default function ProfilePage() {
         </CardContent>
 
         {isEditing && (
-          <CardFooter className="flex justify-end space-x-4 border-t p-6">
-            <Button variant="outline" onClick={() => setIsEditing(false)}>
+          <CardFooter className="flex justify-end space-x-3 border-t p-4">
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
               Cancel
             </Button>
-            <Button className="bg-green-600 hover:bg-green-700">Save Changes</Button>
+            <Button size="sm" className="bg-green-600 hover:bg-green-700">
+              Save Changes
+            </Button>
           </CardFooter>
         )}
       </Card>
