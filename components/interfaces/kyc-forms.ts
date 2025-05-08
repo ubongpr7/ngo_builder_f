@@ -52,14 +52,19 @@ export interface DropdownOption {
   export interface ExpertiseFormData {
     expertise: number[]
   }
-  
   export interface RolesFormData {
-    is_project_manager: boolean
     is_donor: boolean
     is_volunteer: boolean
     is_partner: boolean
-    is_mentor: boolean
+    is_DB_executive: boolean
+    is_ceo: boolean
+    is_standard_member: boolean
+    is_DB_staff: boolean
+    is_DB_admin: boolean
+    is_benefactor: boolean
+
   }
+  
   
   export interface KYCFormState {
     currentStep: number

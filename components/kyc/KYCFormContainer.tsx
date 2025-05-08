@@ -113,11 +113,17 @@ export default function KYCFormContainer({
       expertise: [],
     },
     roles: {
-      is_project_manager: false,
+
       is_donor: false,
       is_volunteer: false,
       is_partner: false,
-      is_mentor: false,
+      is_ceo: false,
+      is_standard_member: false,
+      is_DB_executive: false,
+      is_DB_staff: false,
+      is_benefactor: false,
+      is_DB_admin: false,
+      
     },
   })
 
@@ -181,11 +187,15 @@ export default function KYCFormContainer({
       if (userProfile.is_project_manager !== undefined) {
         completedSteps.push(3)
         updatedFormState.roles = {
-          is_project_manager: userProfile.is_project_manager || false,
           is_donor: userProfile.is_donor || false,
           is_volunteer: userProfile.is_volunteer || false,
           is_partner: userProfile.is_partner || false,
-          is_mentor: false, 
+          is_ceo:userProfile.is_ceo || false,
+          is_standard_member:userProfile.is_standard_member || false,
+          is_DB_executive: userProfile.is_executive || false,
+          is_DB_staff:userProfile.is_DB_staff || false,
+          is_benefactor:userProfile.is_benefactor || false,
+          is_DB_admin:userProfile.is_DB_admin || false,
         }
       }
 
