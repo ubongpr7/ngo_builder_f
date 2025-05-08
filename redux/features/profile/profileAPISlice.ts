@@ -55,13 +55,6 @@ export const userAddressApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     
-    updateAddress: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/${management_api}/addresses/${id}/`,
-        method: 'PATCH',
-        body: data
-      }),
-    }),
     
     getAddresses: builder.query({
       query: () => `/${management_api}/addresses/`,
