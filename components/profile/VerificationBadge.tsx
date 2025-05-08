@@ -44,7 +44,6 @@ export function VerificationBadge({
 
     if (showTooltip) {
       return (
-        <div className="bg-gray-50 -z-30">
         <TooltipProvider>
           <Tooltip >
             <TooltipTrigger asChild>{badge}</TooltipTrigger>
@@ -53,7 +52,6 @@ export function VerificationBadge({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        </div>
       )
     }
 
@@ -101,7 +99,6 @@ export function VerificationBadge({
 
   if (showTooltip) {
     return (
-        <div className="bg-gray-50 -z-30">
       <TooltipProvider>
         <Tooltip className="bg-gray-50 -z-30">
           <TooltipTrigger asChild>{badge}</TooltipTrigger>
@@ -110,7 +107,6 @@ export function VerificationBadge({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-        </div>
     )
   }
 
