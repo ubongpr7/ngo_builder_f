@@ -28,9 +28,9 @@ export default function ProfessionalInfoForm({
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isInitialized, setIsInitialized] = useState(false)
-  const [selectedIndustry, setSelectedIndustry] = useState<number | null>(null)
+  const [selectedIndustry, setSelectedIndustry] = useState<string | ''>('')
   const [apiError, setApiError] = useState<string | null>(null)
-  const initialIndustryRef = useRef<number | null>(formData.industry || null)
+  const initialIndustryRef = useRef<string | null>(formData.industry || '')
 
   // Wait for industries to load before setting the initial industry value
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function ProfessionalInfoForm({
       // Only try to set the industry if we have an initial value
       if (initialIndustryRef.current !== null) {
         // Check if the industry exists in the available options
-        const industryExists = industries.some((industry: DropdownOption) => industry.id === initialIndustryRef.current)
+        const industryExists = industries.some((industry: { id: string; name: string }) => industry.id === initialIndustryRef.current)
 
         if (industryExists) {
           setSelectedIndustry(initialIndustryRef.current)
@@ -56,7 +56,7 @@ export default function ProfessionalInfoForm({
   // Update the selected industry when formData changes (after initialization)
   useEffect(() => {
     if (isInitialized && formData.industry !== selectedIndustry) {
-      setSelectedIndustry(formData.industry ? Number(formData.industry) : null)
+      setSelectedIndustry(formData.industry ? formData.industry : '')
     }
   }, [formData.industry, isInitialized, selectedIndustry])
 
@@ -73,7 +73,7 @@ export default function ProfessionalInfoForm({
 
   const handleIndustryChange = (value: string) => {
     const industryId = Number.parseInt(value)
-    setSelectedIndustry(industryId)
+    setSelectedIndustry(industryId.toString())
     updateFormData({ industry: industryId.toString() })
   }
 
