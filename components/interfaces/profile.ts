@@ -167,7 +167,7 @@ export interface UserProfile {
   // Timestamps
   created_at: string
   updated_at?: string
-
+  user_id: number
   // Nested Profile Data
   profile_data?: UserProfile
 }

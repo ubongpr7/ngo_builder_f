@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
                 <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                  <ProfileImageUploaderButton />
+                  <ProfileImageUploaderButton profileId={profileData.id} userId={userProfile.id} currentImage={profileData.profile_image} />
                 </div>
             </div>
 
