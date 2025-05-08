@@ -66,25 +66,34 @@ export default function RolesForm({
   }
 
   const handleRoleChange = (role: keyof RolesFormData, checked: boolean) => {
-    if (role !== "is_standard_member" && checked && selectedCount >= 2) {
+    const isInGroup = Object.values(roleGroups).some((group) => group.includes(role))
+    let newFormData = { ...formData }
+
+    if (isInGroup) {
+      // Get the group this role belongs to
+      const group = Object.values(roleGroups).find((group) => group.includes(role)) || []
+      // Clear the group first and apply the new selection
+      group.forEach((item) => {
+        newFormData[item as keyof RolesFormData] = false
+      })
+      newFormData[role] = checked
+    } else {
+      newFormData[role] = checked
+    }
+
+    // Count selected roles after changes (excluding standard member)
+    const newCount = Object.entries(newFormData).reduce((acc, [key, value]) => {
+      if (key !== "is_standard_member" && value === true) return acc + 1
+      return acc
+    }, 0)
+
+    if (newCount > 2) {
       setErrors({ roles: "You can select at most 2 roles" })
       return
     }
 
-    // Check if this role is in a group, and if so, clear other selections in that group
-    for (const group of Object.values(roleGroups)) {
-      if (group.includes(role)) {
-        const updates: Partial<RolesFormData> = {}
-        group.forEach((item) => {
-          updates[item as keyof RolesFormData] = item === role ? checked : false
-        })
-        updateFormData(updates)
-        return
-      }
-    }
-
-    // Not part of grouped role
-    updateFormData({ [role]: checked })
+    setErrors({})
+    updateFormData(newFormData)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,6 +112,19 @@ export default function RolesForm({
       console.error("Failed to update roles:", error)
     }
   }
+
+  const renderCheckbox = (key: keyof RolesFormData) => (
+    <div key={key} className="flex items-center space-x-2">
+      <Checkbox
+        id={key}
+        checked={formData[key] || false}
+        onCheckedChange={(checked) => handleRoleChange(key, checked as boolean)}
+      />
+      <label htmlFor={key} className="text-sm cursor-pointer capitalize">
+        {key.replace("is_", "").replace(/_/g, " ").replace('DB', 'DBEF').replace('staff', 'Staff')}
+      </label>
+    </div>
+  )
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -143,73 +165,25 @@ export default function RolesForm({
           {/* Leadership Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Leadership Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.leadership.map((key) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof RolesFormData] || false}
-                  onCheckedChange={(checked) =>
-                    handleRoleChange(key as keyof RolesFormData, checked as boolean)
-                  }
-                />
-                <label htmlFor={key} className="text-sm cursor-pointer capitalize">
-                  {key.replace("is_", "").replace("_", " ").replace("DB", "DBEF ")}
-                </label>
-              </div>
-            ))}
+            {roleGroups.leadership.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Staff Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Staff Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.staff.map((key) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof RolesFormData] || false}
-                  onCheckedChange={(checked) =>
-                    handleRoleChange(key as keyof RolesFormData, checked as boolean)
-                  }
-                />
-                <label htmlFor={key} className="text-sm cursor-pointer capitalize">
-                  {key.replace("is_", "").replace("_", " ")}
-                </label>
-              </div>
-            ))}
+            {roleGroups.staff.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Support Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Support Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.support.map((key) => (
-              <div key={key} className="flex items-center space-x-2">
-                <Checkbox
-                  id={key}
-                  checked={formData[key as keyof RolesFormData] || false}
-                  onCheckedChange={(checked) =>
-                    handleRoleChange(key as keyof RolesFormData, checked as boolean)
-                  }
-                />
-                <label htmlFor={key} className="text-sm cursor-pointer capitalize">
-                  {key.replace("is_", "").replace("_", " ")}
-                </label>
-              </div>
-            ))}
+            {roleGroups.support.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Other Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Other Roles</h3>
           <div className="grid grid-cols-1 gap-4 bg-white p-3 rounded-md border">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="is_benefactor"
-                checked={formData.is_benefactor || false}
-                onCheckedChange={(checked) => handleRoleChange("is_benefactor", checked as boolean)}
-              />
-              <label htmlFor="is_benefactor" className="text-sm cursor-pointer">
-                Benefactor
-              </label>
-            </div>
+            {renderCheckbox("is_benefactor")}
           </div>
         </div>
 
