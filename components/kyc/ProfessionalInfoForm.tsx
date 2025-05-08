@@ -10,6 +10,7 @@ import type { DropdownOption, ProfessionalInfoFormData } from "../interfaces/kyc
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useGetIndustryQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import { Loader2 } from "lucide-react"
+import { InstantSearchSelect } from "@/components/ui/instant-search-select"
 
 interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
@@ -182,32 +183,22 @@ export default function ProfessionalInfoForm({
           />
         </div>
 
+        {/* Industry Select with Instant Search */}
         <div className="space-y-2">
           <Label htmlFor="industry">
             Industry <span className="text-red-500">*</span>
           </Label>
-          <Select
-            value={isInitialized ? selectedIndustry?.toString() || "" : ""}
-            onValueChange={handleIndustryChange}
+          <InstantSearchSelect
+            value={formData.industry?.toString() || ""}
+            onChange={(value) => updateFormData({ industry: value })}
+            placeholder="Search industry..."
+            options={industries?.map((industry: { id: number; name: string }) => ({
+              value: industry.id.toString(),
+              label: industry.name
+            })) || []}
             disabled={!isInitialized}
-          >
-            <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
-              <SelectValue placeholder="Select your industry" />
-            </SelectTrigger>
-            <SelectContent>
-              {industries && industries.length > 0 ? (
-                industries.map((industry: { id: number; name: string }) => (
-                  <SelectItem key={industry.id} value={industry.id.toString()}>
-                    {industry.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="no-options" disabled>
-                  No industries available
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+            className={errors.industry ? "border-red-500" : ""}
+          />
           {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
         </div>
 
