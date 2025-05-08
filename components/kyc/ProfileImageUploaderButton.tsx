@@ -36,11 +36,11 @@ export function ProfileImageUploaderButton({
   return (
     <>
       <Button variant={buttonVariant} onClick={() => setIsOpen(true)} className="flex items-center gap-2">
-        <Camera className="h-3 w-3" />
+        <Camera className="h-1 w-1" />
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-gray-50">
           <DialogHeader>
             <DialogTitle>Update Profile Picture</DialogTitle>
             <DialogDescription>Upload a new profile picture or drag and drop an image file.</DialogDescription>
