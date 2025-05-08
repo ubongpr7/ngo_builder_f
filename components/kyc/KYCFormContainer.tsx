@@ -224,7 +224,7 @@ export default function KYCFormContainer({
       setFormState(updatedFormState)
       setActiveTab(STEP_ORDER[updatedFormState.currentStep])
     }
-  }, [userProfile])
+  }, [userProfile,address])
 
   const handleStepComplete = (step: number) => {
     setFormState((prev) => {
