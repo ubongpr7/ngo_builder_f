@@ -16,6 +16,7 @@ interface ProfessionalInfoFormProps {
   updateFormData: (data: Partial<ProfessionalInfoFormData>) => void
   onComplete: () => void
   profileId: string
+  industry_id?: string
 }
 
 export default function ProfessionalInfoForm({
@@ -23,6 +24,7 @@ export default function ProfessionalInfoForm({
   updateFormData,
   onComplete,
   profileId,
+  industry_id = "",
 }: ProfessionalInfoFormProps) {
   const [updateUserProfile, { isLoading: isUpdating }] = useUpdateProfileMutation()
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
@@ -32,7 +34,6 @@ export default function ProfessionalInfoForm({
   const [apiError, setApiError] = useState<string | null>(null)
   const initialIndustryRef = useRef<string | null>(formData.industry || '')
 
-  // Wait for industries to load before setting the initial industry value
   useEffect(() => {
     if (industries && industries.length > 0 && !isInitialized) {
 
@@ -118,7 +119,12 @@ export default function ProfessionalInfoForm({
       setApiError(errorMessage)
     }
   }
-
+  useEffect(() => {
+    if (industry_id) {
+      setSelectedIndustry(industry_id.toString())
+      updateFormData({ industry: industry_id.toString() })
+    }
+  }, [industry_id, !isInitialized])
   // Show loading state while data is being fetched
   if (isLoadingIndustries) {
     return (
