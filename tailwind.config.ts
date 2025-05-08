@@ -66,12 +66,10 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-          "custom-gradient": "linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(196, 113, 255, 0.10) 88%, rgba(148, 0, 255, 0.06) 100%)",
-
       },
-      boxShadow: {
-        custom: '3px 4px 0px 1px rgba(0, 0, 0, 1)',
-      },
+      // boxShadow: {
+      //   custom: '3px 4px 0px 1px rgba(0, 0, 0, 1)',
+      // },
     },
   },
   plugins: [createThemes(themes)],
