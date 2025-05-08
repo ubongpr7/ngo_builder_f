@@ -128,6 +128,7 @@ export default function ProfilePage() {
 
     const profileData = profile.profile_data || profile
 
+    // If the user is verified
     if (profileData.is_kyc_verified) {
       return {
         isVerified: true,
