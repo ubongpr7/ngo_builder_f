@@ -14,6 +14,5 @@ export default function ExamplePage() {
         </div>
 
       </div>
-    </div>
   )
 }
