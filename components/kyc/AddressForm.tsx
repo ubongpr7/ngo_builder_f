@@ -23,6 +23,7 @@ const SearchableSelect = ({
   disabled,
   error,
   loading,
+  className = ""
 }: {
   value: string
   onValueChange: (value: string) => void
@@ -31,38 +32,34 @@ const SearchableSelect = ({
   disabled?: boolean
   error?: boolean
   loading?: boolean
+  className?: string
 }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [isOpen, setIsOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
+  
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const selectedLabel = options.find(o => o.value === value)?.label || ""
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus()
-    }
-  }, [isOpen])
-
-  const handleSelectItem = (val: string) => {
-    onValueChange(val)
-    setIsOpen(false)
-    setSearchTerm("")
-  }
-
   return (
     <Select
+      value={value}
+      onValueChange={onValueChange}
       open={isOpen}
       onOpenChange={setIsOpen}
-      value={value}
-      onValueChange={handleSelectItem}
       disabled={disabled}
     >
-      <SelectTrigger className={error ? "border-red-500" : ""}>
+      <SelectTrigger 
+        className={`${className} ${error ? "border-red-500" : ""}`}
+        onClick={(e) => {
+          if (!disabled) {
+            setIsOpen(true)
+            setSearchTerm("")
+          }
+        }}
+      >
         <SelectValue placeholder={loading ? "Loading..." : placeholder}>
           {selectedLabel}
         </SelectValue>
@@ -70,28 +67,24 @@ const SearchableSelect = ({
       <SelectContent>
         <div className="p-2 sticky top-0 bg-white z-10">
           <Input
-            ref={inputRef}
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+            className="mb-2"
+            autoFocus
+            onKeyDown={(e) => {
+              // Prevent scrolling when using arrow keys
+              if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
+                e.preventDefault()
+              }
+            }}
           />
         </div>
-        <div className="max-h-[300px] overflow-y-auto">
-          {filteredOptions.map((option) => (
-            <SelectItem 
-              key={option.value} 
-              value={option.value}
-              onPointerDown={(e) => {
-                e.preventDefault()
-                handleSelectItem(option.value)
-              }}
-            >
-              {option.label}
-            </SelectItem>
-          ))}
-        </div>
+        {filteredOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   )
@@ -197,7 +190,8 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-2">
+        {/* Country Select */}
+        <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
           <SearchableSelect
             value={formData.country?.toString() || ""}
@@ -285,6 +279,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           />
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
         </div>
+
         {/* Street Number */}
         <div className="space-y-2">
           <Label htmlFor="street_number">Street Number</Label>
