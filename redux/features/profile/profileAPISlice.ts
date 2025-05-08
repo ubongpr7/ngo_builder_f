@@ -74,35 +74,3 @@ export const userAddressApiSlice = apiSlice.injectEndpoints({
 export const {
 
 } = userAddressApiSlice;
-
-// export const ContactPersonApiSlice = apiSlice.injectEndpoints({
-//   endpoints: builder => ({
-//     createContactPerson: builder.mutation({
-//       query: (AddressDataInterface: Partial<ContactPersonInterface>) => ({
-//         url: `/${management_api}/profile-contacts/`,
-//         method: 'POST',
-//         body: AddressDataInterface
-//       }),
-//     }),
-    
-//     updateContactPerson: builder.mutation({
-//       query: ({ id, data }) => ({
-//         url: `/${management_api}/profile-contacts/${id}/`,
-//         method: 'PATCH',
-//         body: data
-//       }),
-//     }),
-    
-//     getContactPerson: builder.query({
-//       query: (profile_id) => `/${management_api}/profile-contacts/?profile_id=${profile_id}`,
-//     }),
-  
-//   }),
-
-// });
-
-// export const {
-//   useCreateContactPersonMutation,
-//   useUpdateContactPersonMutation,
-//   useGetContactPersonQuery
-// } = ContactPersonApiSlice;
