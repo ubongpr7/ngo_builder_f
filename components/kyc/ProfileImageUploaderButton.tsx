@@ -43,7 +43,6 @@ export function ProfileImageUploaderButton({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Update Profile Picture</DialogTitle>
             <DialogDescription>Upload a new profile picture or drag and drop an image file.</DialogDescription>
           </DialogHeader>
 
