@@ -77,7 +77,10 @@ export default function ContactInfoForm({
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="phone_number">Phone Number</Label>
-          <div className={cn(errors.phone_number ? "border-red-500 rounded" : "")}>
+          <div className={cn(
+              "border rounded p-2", 
+              errors.phone_number ? "border-red-500" : "border-gray-300" 
+            )}>
             <PhoneInput
               international
               defaultCountry="NG" // Default to Nigeria, change as needed
