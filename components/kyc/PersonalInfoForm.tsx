@@ -504,7 +504,7 @@ export default function PersonalInfoForm({
 
       {/* Disability Selection - Only shown if user has selected "Yes" for disabilities */}
       {formData.disabled && (
-        <div className="space-y-3">
+        <div className="space-y-3 text-gray-800">
           <Label htmlFor="disability">Select Disability</Label>
           <Select
             value={formData.disability || ""}
