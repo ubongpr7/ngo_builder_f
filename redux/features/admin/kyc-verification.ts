@@ -66,7 +66,6 @@ export interface KYCBulkVerificationResponse {
 
 export const kycApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get KYC statistics
     getKYCStats: builder.query<KYCStats, void>({
       query: () => ({
         url: `/${management_api}/user-profiles/kyc_stats/`,
