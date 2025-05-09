@@ -1,3 +1,4 @@
+import { UserProfile } from "@/components/interfaces/profile"
 import { apiSlice } from "../../services/apiSlice"
 
 const management_api = "profile_api"
@@ -62,6 +63,23 @@ export interface KYCBulkVerificationRequest {
 export interface KYCBulkVerificationResponse {
   message: string
   updated_count: number
+}
+
+export interface RequestEditCodeResponse {
+  success: boolean
+  message: string
+  user_id: number
+}
+
+export interface VerifyEditCodeRequest {
+  profileId: number
+  code: string
+}
+
+export interface VerifyEditCodeResponse {
+  success: boolean
+  message: string
+  profile: UserProfile
 }
 
 export const kycApiSlice = apiSlice.injectEndpoints({
@@ -130,6 +148,19 @@ export const kycApiSlice = apiSlice.injectEndpoints({
           method: "POST",
         }),
     }),
+    requestEditCode: builder.mutation<RequestEditCodeResponse, number>({
+      query: (profileId) => ({
+        url: `/profile_api/profiles/${profileId}/request_edit_code/`,
+        method: "POST",
+      }),
+    }),
+    verifyEditCode: builder.mutation<VerifyEditCodeResponse, VerifyEditCodeRequest>({
+      query: ({ profileId, code }) => ({
+        url: `/profile_api/profiles/${profileId}/verify_edit_code/`,
+        method: "POST",
+        body: { code },
+      }),
+    }),
   }),
 
 })
@@ -143,5 +174,7 @@ export const {
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
   useSendKYCReminderMutation,
+  useRequestEditCodeMutation,
+  useVerifyEditCodeMutation,
 } = kycApiSlice
 
