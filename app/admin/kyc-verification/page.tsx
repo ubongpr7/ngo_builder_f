@@ -1,9 +1,7 @@
 "use client"
 
 import { DialogTrigger } from "@/components/ui/dialog"
-
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -40,6 +38,7 @@ export default function KYCVerificationPage() {
   const [rejectionReason, setRejectionReason] = useState("")
   const [activeTab, setActiveTab] = useState("pending")
   const [selectedProfiles, setSelectedProfiles] = useState<number[]>([])
+  const [selectAll, setSelectAll] = useState(false)
   const [bulkAction, setBulkAction] = useState<"approve" | "reject" | "flag" | "mark_scammer" | "">("")
   const [bulkReason, setBulkReason] = useState("")
   const [showBulkDialog, setShowBulkDialog] = useState(false)
@@ -77,10 +76,14 @@ export default function KYCVerificationPage() {
   const [bulkVerifyKYC, { isLoading: isBulkVerifying }] = useBulkVerifyKYCMutation()
   const [sendKYCReminder, { isLoading: isSendingReminder }] = useSendKYCReminderMutation()
 
-  // Reset selected profiles when tab changes
+  // Get display data based on search or active tab
+  const displayProfiles = searchTerm ? searchResults : profiles
+
+  // Reset selected profiles when tab changes or profiles change
   useEffect(() => {
     setSelectedProfiles([])
-  }, [activeTab])
+    setSelectAll(false)
+  }, [activeTab, profiles])
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -93,12 +96,31 @@ export default function KYCVerificationPage() {
     setSearchTerm(e.target.value)
   }
 
-  // Handle profile selection for bulk actions
+  // Handle select all checkbox
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked)
+    if (checked && displayProfiles) {
+      // Only select profiles that have completed KYC if we're in the pending tab
+      if (activeTab === "pending") {
+        const completedProfileIds = displayProfiles
+          .filter((profile) => hasCompletedKYC(profile))
+          .map((profile) => profile.id)
+        setSelectedProfiles(completedProfileIds)
+      } else {
+        setSelectedProfiles(displayProfiles.map((profile) => profile.id))
+      }
+    } else {
+      setSelectedProfiles([])
+    }
+  }
+
+  // Handle individual profile selection for bulk actions
   const handleProfileSelection = (profileId: number, checked: boolean) => {
     if (checked) {
       setSelectedProfiles([...selectedProfiles, profileId])
     } else {
       setSelectedProfiles(selectedProfiles.filter((id) => id !== profileId))
+      setSelectAll(false)
     }
   }
 
@@ -207,6 +229,7 @@ export default function KYCVerificationPage() {
       })
 
       setSelectedProfiles([])
+      setSelectAll(false)
       setBulkAction("")
       setBulkReason("")
       setShowBulkDialog(false)
@@ -250,9 +273,6 @@ export default function KYCVerificationPage() {
       })
     }
   }
-
-  // Get display data based on search or active tab
-  const displayProfiles = searchTerm ? searchResults : profiles
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -314,6 +334,21 @@ export default function KYCVerificationPage() {
             Rejected {!isLoadingStats && <Badge className="ml-2 bg-red-500">{kycStats?.rejected || 0}</Badge>}
           </TabsTrigger>
         </TabsList>
+
+        {/* Select All Checkbox */}
+        {displayProfiles && displayProfiles.length > 0 && activeTab === "pending" && (
+          <div className="mb-4 flex items-center">
+            <Checkbox
+              id="select-all"
+              checked={selectAll}
+              onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+              className="mr-2"
+            />
+            <label htmlFor="select-all" className="text-sm cursor-pointer">
+              Select all profiles {activeTab === "pending" ? "with complete KYC" : ""}
+            </label>
+          </div>
+        )}
 
         {/* Bulk Actions */}
         {selectedProfiles.length > 0 && (
@@ -447,6 +482,7 @@ export default function KYCVerificationPage() {
                               checked={selectedProfiles.includes(profile.id)}
                               onCheckedChange={(checked) => handleProfileSelection(profile.id, checked as boolean)}
                               className="mr-2"
+                              disabled={!hasKYC} // Disable checkbox for incomplete KYC profiles
                             />
                           )}
                           <Avatar>
@@ -491,14 +527,17 @@ export default function KYCVerificationPage() {
                             }
                           />
 
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-purple-600"
-                            onClick={() => handleEditProfile(profile.id)}
-                          >
-                            <Edit className="h-4 w-4 mr-1" /> Edit Profile
-                          </Button>
+                          {/* Only show Edit Profile button for pending or rejected profiles */}
+                          {activeTab !== "approved" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-purple-600"
+                              onClick={() => handleEditProfile(profile.id)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" /> Edit Profile
+                            </Button>
+                          )}
 
                           {activeTab === "pending" && (
                             <>
