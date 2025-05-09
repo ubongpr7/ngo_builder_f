@@ -105,19 +105,19 @@ export function UserProfileDialog({
     if (!profile) return 0
 
     // Use profile_data for completeness calculation
-    const profileData = profile.profile_data || profile
+    const profileData = profile?.profile_data || profile
 
     const requiredFields = [
-      profileData.first_name,
-      profileData.last_name,
-      profileData.email,
-      profileData.user_date_of_birth || profileData.date_of_birth,
-      profileData.phone_number,
-      profileData.bio,
-      profileData.address_details,
-      profileData.organization,
-      profileData.position,
-      profileData.industry_details || (profileData.industry && typeof profileData.industry !== "number"),
+      profileData?.first_name,
+      profileData?.last_name,
+      profileData?.email,
+      profileData?.user_date_of_birth || profileData?.date_of_birth,
+      profileData?.phone_number,
+      profileData?.bio,
+      profileData?.address_details,
+      profileData?.organization,
+      profileData?.position,
+      profileData?.industry_details || (profileData?.industry && typeof profileData?.industry !== "number"),
     ]
 
     const completedFields = requiredFields.filter(
@@ -134,22 +134,22 @@ export function UserProfileDialog({
     const profileData = profile.profile_data || profile
 
     const roles = []
-    if (profileData.is_standard_member) roles.push("Standard Member")
-    if (profileData.is_DB_executive) roles.push("DBEF Executive")
-    if (profileData.is_ceo) roles.push("CEO")
-    if (profileData.is_donor) roles.push("Donor")
-    if (profileData.is_volunteer) roles.push("Volunteer")
-    if (profileData.is_partner) roles.push("Partner")
-    if (profileData.is_DB_staff) roles.push("DBEF Staff")
-    if (profileData.is_DB_admin) roles.push("DBEF Admin")
-    if (profileData.is_benefactor) roles.push("Benefactor")
-    if (profileData.is_country_director) roles.push("Country Director")
-    if (profileData.is_regional_head) roles.push("Regional Head")
-    if (profileData.is_project_manager) roles.push("Project Manager")
+    if (profileData?.is_standard_member) roles.push("Standard Member")
+    if (profileData?.is_DB_executive) roles.push("DBEF Executive")
+    if (profileData?.is_ceo) roles.push("CEO")
+    if (profileData?.is_donor) roles.push("Donor")
+    if (profileData?.is_volunteer) roles.push("Volunteer")
+    if (profileData?.is_partner) roles.push("Partner")
+    if (profileData?.is_DB_staff) roles.push("DBEF Staff")
+    if (profileData?.is_DB_admin) roles.push("DBEF Admin")
+    if (profileData?.is_benefactor) roles.push("Benefactor")
+    if (profileData?.is_country_director) roles.push("Country Director")
+    if (profileData?.is_regional_head) roles.push("Regional Head")
+    if (profileData?.is_project_manager) roles.push("Project Manager")
 
     // If role_summary exists, use it instead
-    if (profileData.role_summary && profileData.role_summary.length > 0) {
-      return profileData.role_summary
+    if (profileData?.role_summary && profileData?.role_summary.length > 0) {
+      return profileData?.role_summary
     }
 
     return roles
@@ -191,39 +191,39 @@ export function UserProfileDialog({
 
     const profileData = profile.profile_data || profile
 
-    if (profileData.is_kyc_verified) {
+    if (profileData?.is_kyc_verified) {
       return {
         isVerified: true,
         status: "approved",
-        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
+        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
       }
     }
 
     // Check for kyc_status field first (new field)
-    if (profileData.kyc_status) {
+    if (profileData?.kyc_status) {
       return {
-        isVerified: profileData.kyc_status === "approved",
-        status: profileData.kyc_status,
-        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
+        isVerified: profileData?.kyc_status === "approved",
+        status: profileData?.kyc_status,
+        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
       }
     }
 
     // If the user has submitted KYC but not yet verified
     if (
-      profileData.id_document_type &&
-      profileData.id_document_number &&
-      profileData.id_document_image_front &&
-      profileData.selfie_image
+      profileData?.id_document_type &&
+      profileData?.id_document_number &&
+      profileData?.id_document_image_front &&
+      profileData?.selfie_image
     ) {
       return { isVerified: false, status: "pending" }
     }
 
     // If the user's verification was rejected
-    if (profileData.kyc_rejection_reason) {
+    if (profileData?.kyc_rejection_reason) {
       return {
         isVerified: false,
         status: "rejected",
-        reason: profileData.kyc_rejection_reason,
+        reason: profileData?.kyc_rejection_reason,
       }
     }
 
@@ -357,7 +357,7 @@ export function UserProfileDialog({
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-3">
               <Avatar className="h-24 w-24 border-2 border-white shadow-sm">
-                <AvatarImage src={profileData.profile_image || "/placeholder.svg"} alt={profileData.first_name} />
+                <AvatarImage src={profileData?.profile_image || "/placeholder.svg"} alt={profileData?.first_name} />
                 <AvatarFallback className="bg-green-100 text-green-800 text-xl font-semibold">
                   {getInitials(profileData)}
                 </AvatarFallback>
@@ -372,11 +372,11 @@ export function UserProfileDialog({
             </div>
 
             <CardTitle className="text-xl sm:text-2xl font-bold">
-              {profileData.first_name} {profileData.last_name}
+              {profileData?.first_name} {profileData?.last_name}
             </CardTitle>
 
             <CardDescription className="text-base mt-1">
-              {profileData.position} {profileData.organization ? `at ${profileData.organization}` : ""}
+              {profileData?.position} {profileData?.organization ? `at ${profileData?.organization}` : ""}
             </CardDescription>
 
             <div className="flex flex-wrap justify-center gap-1.5 mt-3">
@@ -395,7 +395,7 @@ export function UserProfileDialog({
               />
             </div>
 
-            <p className="text-xs text-gray-500 mt-2">Member since {formatDate(profileData.created_at)}</p>
+            <p className="text-xs text-gray-500 mt-2">Member since {formatDate(profileData?.created_at)}</p>
           </div>
 
           {/* Profile Completeness */}
@@ -430,43 +430,43 @@ export function UserProfileDialog({
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Full Name</h3>
                   <p className="text-sm">
-                    {profileData.first_name} {profileData.last_name}
+                    {profileData?.first_name} {profileData?.last_name}
                   </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Email Address</h3>
-                  <p className="text-sm">{profileData.email}</p>
+                  <p className="text-sm">{profileData?.email}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Date of Birth</h3>
                   <p className="text-sm">
-                    {profileData.user_date_of_birth || profileData.date_of_birth
-                      ? formatDate(profileData.user_date_of_birth || profileData.date_of_birth)
+                    {profileData?.user_date_of_birth || profileData?.date_of_birth
+                      ? formatDate(profileData?.user_date_of_birth || profileData?.date_of_birth)
                       : "Not provided"}
                   </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Gender</h3>
-                  <p className="text-sm capitalize">{profileData.sex || "Not provided"}</p>
+                  <p className="text-sm capitalize">{profileData?.sex || "Not provided"}</p>
                 </div>
 
-                {profileData.disability && (
+                {profileData?.disability && (
                   <div className="bg-gray-50 rounded-md p-3">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">Disability</h3>
                     <p className="text-sm">
-                      {typeof profileData.disability === "object"
-                        ? profileData.disability.name
-                        : profileData.disability}
+                      {typeof profileData?.disability === "object"
+                        ? profileData?.disability.name
+                        : profileData?.disability}
                     </p>
                   </div>
                 )}
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Bio</h3>
-                  <p className="text-sm whitespace-pre-wrap">{profileData.bio || "No bio provided"}</p>
+                  <p className="text-sm whitespace-pre-wrap">{profileData?.bio || "No bio provided"}</p>
                 </div>
 
                 {/* Verification status section */}
@@ -495,40 +495,40 @@ export function UserProfileDialog({
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Organization/Company</h3>
-                  <p className="text-sm">{profileData.organization || "Not provided"}</p>
+                  <p className="text-sm">{profileData?.organization || "Not provided"}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Position/Title</h3>
-                  <p className="text-sm">{profileData.position || "Not provided"}</p>
+                  <p className="text-sm">{profileData?.position || "Not provided"}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Industry</h3>
                   <p className="text-sm">
-                    {profileData.industry_details
-                      ? profileData.industry_details.name
-                      : typeof profileData.industry === "object"
-                        ? profileData.industry.name
+                    {profileData?.industry_details
+                      ? profileData?.industry_details.name
+                      : typeof profileData?.industry === "object"
+                        ? profileData?.industry.name
                         : "Not provided"}
                   </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Company Size</h3>
-                  <p className="text-sm">{profileData.company_size || "Not provided"}</p>
+                  <p className="text-sm">{profileData?.company_size || "Not provided"}</p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Company Website</h3>
-                  {profileData.company_website ? (
+                  {profileData?.company_website ? (
                     <a
-                      href={profileData.company_website}
+                      href={profileData?.company_website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 hover:underline flex items-center"
                     >
-                      <span className="truncate">{profileData.company_website}</span>
+                      <span className="truncate">{profileData?.company_website}</span>
                       <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
                     </a>
                   ) : (
@@ -538,9 +538,9 @@ export function UserProfileDialog({
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
-                  {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
+                  {profileData?.expertise_details && profileData?.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item) => (
+                      {profileData?.expertise_details.map((item) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>
@@ -557,11 +557,11 @@ export function UserProfileDialog({
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Phone Number</h3>
-                  {profileData.phone_number ? (
+                  {profileData?.phone_number ? (
                     <div className="flex items-center">
                       <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                      <a href={`tel:${profileData.phone_number}`} className="text-sm text-blue-600 hover:underline">
-                        {profileData.phone_number}
+                      <a href={`tel:${profileData?.phone_number}`} className="text-sm text-blue-600 hover:underline">
+                        {profileData?.phone_number}
                       </a>
                     </div>
                   ) : (
@@ -573,8 +573,8 @@ export function UserProfileDialog({
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Email Address</h3>
                   <div className="flex items-center">
                     <Mail className="h-4 w-4 text-gray-500 mr-2" />
-                    <a href={`mailto:${profileData.email}`} className="text-sm text-blue-600 hover:underline">
-                      {profileData.email}
+                    <a href={`mailto:${profileData?.email}`} className="text-sm text-blue-600 hover:underline">
+                      {profileData?.email}
                     </a>
                   </div>
                 </div>
@@ -582,15 +582,15 @@ export function UserProfileDialog({
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Address</h3>
                   <p className="text-sm">
-                    {profileData.address_details ? formatAddress(profileData.address_details) : "No address provided"}
+                    {profileData?.address_details ? formatAddress(profileData?.address_details) : "No address provided"}
                   </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">LinkedIn Profile</h3>
-                  {profileData.linkedin_profile ? (
+                  {profileData?.linkedin_profile ? (
                     <a
-                      href={profileData.linkedin_profile}
+                      href={profileData?.linkedin_profile}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 hover:underline flex items-center"
@@ -606,15 +606,15 @@ export function UserProfileDialog({
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Personal Website</h3>
-                  {profileData.profile_link ? (
+                  {profileData?.profile_link ? (
                     <a
-                      href={profileData.profile_link}
+                      href={profileData?.profile_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 hover:underline flex items-center"
                     >
                       <Link2 className="h-4 w-4 mr-2" />
-                      <span className="truncate">{profileData.profile_link}</span>
+                      <span className="truncate">{profileData?.profile_link}</span>
                       <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
                     </a>
                   ) : (
