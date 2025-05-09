@@ -252,7 +252,6 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-
             <CardTitle className="text-xl sm:text-2xl font-bold">
               {profileData.first_name} {profileData.last_name}
             </CardTitle>
