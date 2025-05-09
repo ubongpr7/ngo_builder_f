@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useGetUserProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
-import { useGetKYCDocumentsQuery, useVerifyKYCMutation } from "@/src/services/kycApiSlice"
+import { useGetKYCDocumentsQuery, useVerifyKYCMutation } from "@/redux/features/admin/kyc-verification"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
