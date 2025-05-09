@@ -382,7 +382,7 @@ export default function KYCVerificationPage() {
 
                       <div className="flex space-x-2">
                         <UserProfileDialog
-                          userId={profile.id}
+                          userId={profile.user_id}
                           onVerificationChange={handleVerificationChange}
                           trigger={
                             <Button variant="outline" size="sm">
