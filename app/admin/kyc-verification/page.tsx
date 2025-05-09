@@ -294,6 +294,8 @@ export default function KYCVerificationPage() {
     switch (status) {
       case "pending":
         return <Badge className="bg-yellow-500">Pending</Badge>
+      case "verified":
+        return <Badge className="bg-green-500">Verified</Badge>
       case "approved":
         return <Badge className="bg-green-500">Verified</Badge>
       case "rejected":
