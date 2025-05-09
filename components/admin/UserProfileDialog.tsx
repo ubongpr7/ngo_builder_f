@@ -4,8 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useGetUserProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
-import { useGetKYCDocumentsQuery, useVerifyKYCMutation } from "@/redux/features/admin/kyc-verification"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -13,31 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  ExternalLink,
-  Linkedin,
-  Link2,
-  Phone,
-  Mail,
-  Shield,
-  Flag,
-  X,
-  AlertCircle,
-} from "lucide-react"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail, Shield, X, AlertCircle } from "lucide-react"
 import type { UserProfile } from "@/components/interfaces/profile"
 import type { AddressFormData } from "@/components/interfaces/kyc-forms"
 import { VerificationBadge } from "@/components/profile/VerificationBadge"
@@ -49,7 +25,6 @@ interface UserProfileDialogProps {
   defaultOpen?: boolean
 }
 
-
 export function UserProfileDialog({
   userId,
   trigger,
@@ -58,30 +33,15 @@ export function UserProfileDialog({
 }: UserProfileDialogProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [activeTab, setActiveTab] = useState("personal")
-  const [rejectionReason, setRejectionReason] = useState("")
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
-  const [isFlagDialogOpen, setIsFlagDialogOpen] = useState(false)
-  const [flagReason, setFlagReason] = useState("")
-
-  const { toast } = useToast()
 
   // Fetch user profile data
   const {
     data: userProfile,
     isLoading,
     error,
-    refetch,
   } = useGetUserProfileDetailsQuery(userId, {
     skip: !userId,
   })
-
-  // Fetch KYC documents
-  const { data: kycDocuments, isLoading: isLoadingDocuments } = useGetKYCDocumentsQuery(userId, {
-    skip: !userId ,
-  })
-
-  // Verification mutation
-  const [verifyKYC, { isLoading: isVerifying }] = useVerifyKYCMutation()
 
   // Format date
   const formatDate = (dateString?: string) => {
@@ -165,11 +125,11 @@ export function UserProfileDialog({
       parts.push(`${streetNumber}${address.street}`)
     }
 
-    if (address.city) parts.push(typeof address.city === "object" ? address.city.name : address.city)
+    if (address.city) parts.push(typeof address.city === "object" ? address.city?.name : address.city)
     if (address.subregion)
-      parts.push(typeof address.subregion === "object" ? address.subregion.name : address.subregion)
-    if (address.region) parts.push(typeof address.region === "object" ? address.region.name : address.region)
-    if (address.country) parts.push(typeof address.country === "object" ? address.country.name : address.country)
+      parts.push(typeof address.subregion === "object" ? address.subregion?.name : address.subregion)
+    if (address.region) parts.push(typeof address.region === "object" ? address.region?.name : address.region)
+    if (address.country) parts.push(typeof address.country === "object" ? address.country?.name : address.country)
     if (address.postal_code) parts.push(address.postal_code)
 
     return parts.join(", ")
@@ -202,9 +162,12 @@ export function UserProfileDialog({
     // Check for kyc_status field first (new field)
     if (profileData?.kyc_status) {
       return {
-        isVerified: profileData?.kyc_status === "approved",
-        status: profileData?.kyc_status,
+        isVerified: profileData?.kyc_status?.status === "approved",
+        status: profileData?.kyc_status?.status,
         date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
+        submitted_date: profileData?.kyc_status?.submitted_date
+          ? formatDate(profileData?.kyc_status?.submitted_date)
+          : null,
       }
     }
 
@@ -231,69 +194,10 @@ export function UserProfileDialog({
     return { isVerified: false, status: "unverified" }
   }
 
-  // Handle verification actions
-  const handleVerification = async (action: "approve" | "reject" | "flag" | "mark_scammer", reason?: string) => {
-    if ((action === "reject" || action === "flag") && !reason) {
-      toast({
-        title: "Error",
-        description: `Please provide a reason for ${action === "reject" ? "rejection" : "flagging"}.`,
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      await verifyKYC({
-        profileId: userId,
-        data: {
-          action,
-          reason,
-        },
-      }).unwrap()
-
-      toast({
-        title: "Success",
-        description: `User has been ${
-          action === "approve"
-            ? "verified"
-            : action === "reject"
-              ? "rejected"
-              : action === "flag"
-                ? "flagged"
-                : "marked as scammer"
-        } successfully.`,
-      })
-
-      // Reset states
-      setRejectionReason("")
-      setFlagReason("")
-      setIsRejectDialogOpen(false)
-      setIsFlagDialogOpen(false)
-
-      // Refetch data
-      refetch()
-
-      // Notify parent component
-      if (onVerificationChange) {
-        onVerificationChange()
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.message || "Failed to update verification status.",
-        variant: "destructive",
-      })
-    }
-  }
-
   // Handle dialog close
   const handleClose = () => {
     setIsOpen(false)
     setActiveTab("personal")
-    setRejectionReason("")
-    setFlagReason("")
-    setIsRejectDialogOpen(false)
-    setIsFlagDialogOpen(false)
   }
 
   const profileContent = () => {
@@ -458,7 +362,7 @@ export function UserProfileDialog({
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">Disability</h3>
                     <p className="text-sm">
                       {typeof profileData?.disability === "object"
-                        ? profileData?.disability.name
+                        ? profileData?.disability?.name
                         : profileData?.disability}
                     </p>
                   </div>
@@ -507,9 +411,9 @@ export function UserProfileDialog({
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Industry</h3>
                   <p className="text-sm">
                     {profileData?.industry_details
-                      ? profileData?.industry_details.name
+                      ? profileData?.industry_details?.name
                       : typeof profileData?.industry === "object"
-                        ? profileData?.industry.name
+                        ? profileData?.industry?.name
                         : "Not provided"}
                   </p>
                 </div>
@@ -542,7 +446,7 @@ export function UserProfileDialog({
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {profileData?.expertise_details.map((item) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
-                          {item.name}
+                          {item?.name}
                         </Badge>
                       ))}
                     </div>
@@ -625,7 +529,7 @@ export function UserProfileDialog({
             </TabsContent>
 
             <TabsContent value="kyc" className="mt-4">
-              {isLoadingDocuments ? (
+              {isLoading ? (
                 <div className="space-y-4">
                   <Skeleton className="h-40 w-full" />
                   <div className="grid grid-cols-2 gap-4">
@@ -633,22 +537,24 @@ export function UserProfileDialog({
                     <Skeleton className="h-40 w-full" />
                   </div>
                 </div>
-              ) : kycDocuments ? (
+              ) : profileData?.id_document_type ? (
                 <div className="space-y-6">
                   <div className="bg-gray-50 rounded-md p-4">
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">KYC Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Document Type</p>
-                        <p className="text-sm font-medium">{kycDocuments.id_document_type || "Not provided"}</p>
+                        <p className="text-sm font-medium">{profileData?.id_document_type || "Not provided"}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Document Number</p>
-                        <p className="text-sm font-medium">{kycDocuments.id_document_number || "Not provided"}</p>
+                        <p className="text-sm font-medium">{profileData?.id_document_number || "Not provided"}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Submission Date</p>
-                        <p className="text-sm font-medium">{formatDate(kycDocuments.kyc_submission_date)}</p>
+                        <p className="text-sm font-medium">
+                          {verification.submitted_date || formatDate(profileData?.kyc_submission_date)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Verification Status</p>
@@ -670,10 +576,10 @@ export function UserProfileDialog({
                         <div className="bg-gray-100 p-2">
                           <h4 className="text-xs font-medium text-center">ID Document (Front)</h4>
                         </div>
-                        {kycDocuments.id_document_image_front ? (
+                        {profileData?.id_document_image_front ? (
                           <div className="p-2">
                             <img
-                              src={kycDocuments.id_document_image_front || "/placeholder.svg"}
+                              src={profileData?.id_document_image_front || "/placeholder.svg"}
                               alt="ID Front"
                               className="w-full h-auto object-contain max-h-60"
                             />
@@ -689,10 +595,10 @@ export function UserProfileDialog({
                         <div className="bg-gray-100 p-2">
                           <h4 className="text-xs font-medium text-center">ID Document (Back)</h4>
                         </div>
-                        {kycDocuments.id_document_image_back ? (
+                        {profileData?.id_document_image_back ? (
                           <div className="p-2">
                             <img
-                              src={kycDocuments.id_document_image_back || "/placeholder.svg"}
+                              src={profileData?.id_document_image_back || "/placeholder.svg"}
                               alt="ID Back"
                               className="w-full h-auto object-contain max-h-60"
                             />
@@ -709,10 +615,10 @@ export function UserProfileDialog({
                       <div className="bg-gray-100 p-2">
                         <h4 className="text-xs font-medium text-center">Selfie with ID</h4>
                       </div>
-                      {kycDocuments.selfie_image ? (
+                      {profileData?.selfie_image ? (
                         <div className="p-2">
                           <img
-                            src={kycDocuments.selfie_image || "/placeholder.svg"}
+                            src={profileData?.selfie_image || "/placeholder.svg"}
                             alt="Selfie with ID"
                             className="w-full h-auto object-contain max-h-80"
                           />
@@ -742,38 +648,6 @@ export function UserProfileDialog({
             </TabsContent>
           </Tabs>
         </CardContent>
-
-        {verification.status === "pending" && (
-          <CardFooter className="flex flex-wrap justify-end gap-2 border-t p-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-orange-600"
-              onClick={() => setIsFlagDialogOpen(true)}
-              disabled={isVerifying}
-            >
-              <Flag className="h-4 w-4 mr-1" /> Flag for Review
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-green-600"
-              onClick={() => handleVerification("approve")}
-              disabled={isVerifying}
-            >
-              <CheckCircle className="h-4 w-4 mr-1" /> Approve
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600"
-              onClick={() => setIsRejectDialogOpen(true)}
-              disabled={isVerifying}
-            >
-              <XCircle className="h-4 w-4 mr-1" /> Reject
-            </Button>
-          </CardFooter>
-        )}
       </Card>
     )
   }
@@ -790,63 +664,6 @@ export function UserProfileDialog({
             </Button>
           </div>
           {profileContent()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Reject Dialog */}
-      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reject Verification</DialogTitle>
-            <DialogDescription>Please provide a reason for rejecting this user's verification.</DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Rejection reason..."
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            className="min-h-[100px]"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleVerification("reject", rejectionReason)}
-              disabled={!rejectionReason.trim() || isVerifying}
-            >
-              {isVerifying ? "Processing..." : "Confirm Rejection"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Flag Dialog */}
-      <Dialog open={isFlagDialogOpen} onOpenChange={setIsFlagDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Flag for Review</DialogTitle>
-            <DialogDescription>Please provide a reason for flagging this user for further review.</DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Reason for flagging..."
-            value={flagReason}
-            onChange={(e) => setFlagReason(e.target.value)}
-            className="min-h-[100px]"
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFlagDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              className="bg-orange-600 hover:bg-orange-700"
-              onClick={() => handleVerification("flag", flagReason)}
-              disabled={!flagReason.trim() || isVerifying}
-            >
-              {isVerifying ? "Processing..." : "Flag User"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

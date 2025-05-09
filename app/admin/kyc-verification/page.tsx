@@ -1,5 +1,7 @@
 "use client"
 
+import { DialogTrigger } from "@/components/ui/dialog"
+
 import type React from "react"
 
 import { useState, useEffect } from "react"
@@ -15,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -28,13 +29,11 @@ import {
   useSearchKYCSubmissionsQuery,
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
-  type KYCProfile,
 } from "@/redux/features/admin/kyc-verification"
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
 
 export default function KYCVerificationPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedUser, setSelectedUser] = useState<KYCProfile | null>(null)
   const [rejectionReason, setRejectionReason] = useState("")
   const [activeTab, setActiveTab] = useState("pending")
   const [selectedProfiles, setSelectedProfiles] = useState<number[]>([])
@@ -84,6 +83,11 @@ export default function KYCVerificationPage() {
     }
   }
 
+  // Handle verification change
+  const handleVerificationChange = () => {
+    refetch()
+  }
+
   // Handle bulk action dialog
   const handleBulkActionDialog = (action: "approve" | "reject" | "flag" | "mark_scammer") => {
     if (selectedProfiles.length === 0) {
@@ -128,13 +132,42 @@ export default function KYCVerificationPage() {
       setBulkAction("")
       setBulkReason("")
       setShowBulkDialog(false)
-
-      // Refetch data after bulk action
       refetch()
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.data?.error || "Failed to perform bulk action",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Handle individual verification actions
+  const handleVerification = async (
+    profileId: number,
+    action: "approve" | "reject" | "flag" | "mark_scammer",
+    reason?: string,
+  ) => {
+    try {
+      const response = await verifyKYC({
+        profileId,
+        data: {
+          action,
+          reason,
+        },
+      }).unwrap()
+
+      toast({
+        title: "Success",
+        description: response.message,
+      })
+
+      setRejectionReason("")
+      refetch()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.data?.error || "Failed to update verification status",
         variant: "destructive",
       })
     }
@@ -174,11 +207,6 @@ export default function KYCVerificationPage() {
       default:
         return <Badge className="bg-gray-500">Unknown</Badge>
     }
-  }
-
-  // Handle verification change (refresh data)
-  const handleVerificationChange = () => {
-    refetch()
   }
 
   return (
@@ -353,9 +381,8 @@ export default function KYCVerificationPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        {/* Replace the old dialog with UserProfileDialog */}
                         <UserProfileDialog
-                          userId={profile.user_id}
+                          userId={profile.id}
                           onVerificationChange={handleVerificationChange}
                           trigger={
                             <Button variant="outline" size="sm">
@@ -419,40 +446,7 @@ export default function KYCVerificationPage() {
                                 <DialogFooter>
                                   <Button
                                     variant="destructive"
-                                    onClick={async () => {
-                                      if (!rejectionReason.trim()) {
-                                        toast({
-                                          title: "Error",
-                                          description: "Please provide a reason for rejection.",
-                                          variant: "destructive",
-                                        })
-                                        return
-                                      }
-
-                                      try {
-                                        await verifyKYC({
-                                          profileId: profile.id,
-                                          data: {
-                                            action: "reject",
-                                            reason: rejectionReason,
-                                          },
-                                        }).unwrap()
-
-                                        toast({
-                                          title: "Success",
-                                          description: "User has been rejected successfully.",
-                                        })
-
-                                        setRejectionReason("")
-                                        refetch()
-                                      } catch (error: any) {
-                                        toast({
-                                          title: "Error",
-                                          description: error.data?.error || "Failed to reject user.",
-                                          variant: "destructive",
-                                        })
-                                      }
-                                    }}
+                                    onClick={() => handleVerification(profile.id, "reject", rejectionReason)}
                                     disabled={isVerifying || !rejectionReason}
                                   >
                                     {isVerifying ? "Processing..." : "Confirm Rejection"}
