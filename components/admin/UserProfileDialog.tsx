@@ -72,7 +72,7 @@ export function UserProfileDialog({
     error,
     refetch,
   } = useGetUserProfileDetailsQuery(userId, {
-    skip: !userId || !isOpen,
+    skip: !userId,
   })
 
   // Fetch KYC documents
