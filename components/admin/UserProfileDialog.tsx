@@ -77,7 +77,7 @@ export function UserProfileDialog({
 
   // Fetch KYC documents
   const { data: kycDocuments, isLoading: isLoadingDocuments } = useGetKYCDocumentsQuery(userId, {
-    skip: !userId || !isOpen,
+    skip: !userId ,
   })
 
   // Verification mutation
