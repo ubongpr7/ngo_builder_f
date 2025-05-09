@@ -186,9 +186,9 @@ export default function KYCVerificationPage() {
   const getInitials = (name: string) => {
     return name
       ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
+      ?.map((n) => n[0])
+      ?.join("")
+      ?.toUpperCase()
   }
 
   // Get status badge
