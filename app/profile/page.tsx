@@ -236,7 +236,7 @@ export default function ProfilePage() {
 
               {/* Verification badge on avatar */}
               {verification.isVerified && (
-                <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md">
+                <div className="absolute top-50 right-0 bg-white rounded-full p-0.5 shadow-md">
                   <Shield className="h-5 w-5 text-green-600" />
                 </div>
               )}
