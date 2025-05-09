@@ -34,7 +34,6 @@ export function UserProfileDialog({
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [activeTab, setActiveTab] = useState("personal")
 
-  // Fetch user profile data
   const {
     data: userProfile,
     isLoading,
@@ -200,6 +199,20 @@ export function UserProfileDialog({
     setActiveTab("personal")
   }
 
+  // Check if KYC documents are complete
+  const hasCompletedKYC = (profile: UserProfile) => {
+    if (!profile) return false
+
+    const profileData = profile.profile_data || profile
+
+    return !!(
+      profileData?.id_document_type &&
+      profileData?.id_document_number &&
+      profileData?.id_document_image_front &&
+      profileData?.selfie_image
+    )
+  }
+
   const profileContent = () => {
     if (isLoading) {
       return (
@@ -269,7 +282,7 @@ export function UserProfileDialog({
 
               {/* Verification badge on avatar */}
               {verification.isVerified && (
-                <div className="absolute top-50 right-0 bg-white rounded-full p-0.5 shadow-md">
+                <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-md">
                   <Shield className="h-5 w-5 text-green-600" />
                 </div>
               )}

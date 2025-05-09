@@ -22,15 +22,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag } from "lucide-react"
+import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag, Mail } from "lucide-react"
 import {
   useGetKYCStatsQuery,
   useGetKYCSubmissionsByStatusQuery,
   useSearchKYCSubmissionsQuery,
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
+  useSendKYCReminderMutation,
 } from "@/redux/features/admin/kyc-verification"
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
+import type { UserProfile } from "@/components/interfaces/profile"
 
 export default function KYCVerificationPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -42,6 +44,18 @@ export default function KYCVerificationPage() {
   const [showBulkDialog, setShowBulkDialog] = useState(false)
 
   const { toast } = useToast()
+  const hasCompletedKYC = (profile: UserProfile) => {
+      if (!profile) return false
+  
+      const profileData = profile.profile_data || profile
+  
+      return !!(
+        profileData?.id_document_type &&
+        profileData?.id_document_number &&
+        profileData?.id_document_image_front &&
+        profileData?.selfie_image
+      )
+    }
 
   // Fetch KYC stats
   const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
@@ -57,6 +71,7 @@ export default function KYCVerificationPage() {
   // Mutations for verification actions
   const [verifyKYC, { isLoading: isVerifying }] = useVerifyKYCMutation()
   const [bulkVerifyKYC, { isLoading: isBulkVerifying }] = useBulkVerifyKYCMutation()
+  const [sendKYCReminder, { isLoading: isSendingReminder }] = useSendKYCReminderMutation()
 
   // Reset selected profiles when tab changes
   useEffect(() => {
@@ -88,6 +103,24 @@ export default function KYCVerificationPage() {
     refetch()
   }
 
+  // Handle sending KYC reminder
+  const handleSendReminder = async (userId: number) => {
+    try {
+      const response = await sendKYCReminder(userId).unwrap()
+
+      toast({
+        title: "Success",
+        description: response.message || "Reminder sent successfully.",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.data?.error || "Failed to send reminder.",
+        variant: "destructive",
+      })
+    }
+  }
+
   // Handle bulk action dialog
   const handleBulkActionDialog = (action: "approve" | "reject" | "flag" | "mark_scammer") => {
     if (selectedProfiles.length === 0) {
@@ -97,6 +130,22 @@ export default function KYCVerificationPage() {
         variant: "destructive",
       })
       return
+    }
+
+    // Check if any selected profiles don't have complete KYC for approval
+    if (action === "approve" && profiles) {
+      const incompleteProfiles = selectedProfiles.filter(
+        (id) => !hasCompletedKYC(profiles.find((profile) => profile.id === id)),
+      )
+
+      if (incompleteProfiles.length > 0) {
+        toast({
+          title: "Incomplete KYC Documents",
+          description: `${incompleteProfiles.length} selected profile(s) have incomplete KYC documents and cannot be approved.`,
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     setBulkAction(action)
@@ -343,126 +392,148 @@ export default function KYCVerificationPage() {
         ) : (
           <div className="grid gap-4">
             {displayProfiles && displayProfiles.length > 0 ? (
-              displayProfiles.map((profile) => (
-                <Card key={profile.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        {activeTab === "pending" && (
-                          <Checkbox
-                            checked={selectedProfiles.includes(profile.id)}
-                            onCheckedChange={(checked) => handleProfileSelection(profile.id, checked as boolean)}
-                            className="mr-2"
-                          />
-                        )}
-                        <Avatar>
-                          <AvatarImage src={profile.profile_image || ""} alt={profile.full_name} />
-                          <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-medium">{profile.full_name}</h3>
-                          <p className="text-sm text-gray-500">{profile.email}</p>
-                          <div className="flex items-center mt-1">
-                            <Badge variant="outline" className="mr-2">
-                              {profile.membership_type_name || profile.role_summary?.[0] || "Member"}
-                            </Badge>
-                            <span className="text-xs text-gray-500">
-                              {activeTab === "pending"
-                                ? `Submitted: ${formatDate(profile.kyc_submission_date)}`
-                                : activeTab === "approved"
-                                  ? `Verified: ${formatDate(profile.kyc_verification_date)}`
-                                  : `Rejected: ${formatDate(profile.kyc_verification_date || profile.kyc_submission_date)}`}
-                            </span>
-                          </div>
-                          {profile.kyc_rejection_reason && (
-                            <p className="text-xs text-red-500 mt-1">Reason: {profile.kyc_rejection_reason}</p>
+              displayProfiles.map((profile) => {
+                const hasKYC = hasCompletedKYC(profile)
+
+                return (
+                  <Card key={profile.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          {activeTab === "pending" && (
+                            <Checkbox
+                              checked={selectedProfiles.includes(profile.id)}
+                              onCheckedChange={(checked) => handleProfileSelection(profile.id, checked as boolean)}
+                              className="mr-2"
+                            />
                           )}
+                          <Avatar>
+                            <AvatarImage src={profile.profile_image || ""} alt={profile.full_name} />
+                            <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-medium">{profile.full_name}</h3>
+                            <p className="text-sm text-gray-500">{profile.email}</p>
+                            <div className="flex items-center mt-1">
+                              <Badge variant="outline" className="mr-2">
+                                {profile.membership_type_name || profile.role_summary?.[0] || "Member"}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {activeTab === "pending"
+                                  ? `Submitted: ${formatDate(profile.kyc_submission_date)}`
+                                  : activeTab === "approved"
+                                    ? `Verified: ${formatDate(profile.kyc_verification_date)}`
+                                    : `Rejected: ${formatDate(profile.kyc_verification_date || profile.kyc_submission_date)}`}
+                              </span>
+                            </div>
+                            {profile.kyc_rejection_reason && (
+                              <p className="text-xs text-red-500 mt-1">Reason: {profile.kyc_rejection_reason}</p>
+                            )}
+                            {!hasKYC && activeTab === "pending" && (
+                              <p className="text-xs text-orange-500 mt-1">
+                                <AlertCircle className="h-3 w-3 inline mr-1" />
+                                Incomplete KYC documents
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex space-x-2">
+                          <UserProfileDialog
+                            userId={profile.user_id}
+                            onVerificationChange={handleVerificationChange}
+                            trigger={
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+                            }
+                          />
+
+                          {activeTab === "pending" && (
+                            <>
+                              {hasKYC ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600"
+                                  onClick={async () => {
+                                    try {
+                                      await verifyKYC({
+                                        profileId: profile.id,
+                                        data: {
+                                          action: "approve",
+                                        },
+                                      }).unwrap()
+
+                                      toast({
+                                        title: "Success",
+                                        description: "User has been verified successfully.",
+                                      })
+
+                                      refetch()
+                                    } catch (error: any) {
+                                      toast({
+                                        title: "Error",
+                                        description: error.data?.error || "Failed to verify user.",
+                                        variant: "destructive",
+                                      })
+                                    }
+                                  }}
+                                  disabled={isVerifying}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600"
+                                  onClick={() => handleSendReminder(profile.user_id)}
+                                  disabled={isSendingReminder}
+                                >
+                                  <Mail className="h-4 w-4 mr-1" /> Send Reminder
+                                </Button>
+                              )}
+
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-red-600">
+                                    <XCircle className="h-4 w-4 mr-1" /> Reject
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Reject Verification</DialogTitle>
+                                    <DialogDescription>
+                                      Please provide a reason for rejecting this verification
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <Textarea
+                                    placeholder="Rejection reason..."
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                  />
+                                  <DialogFooter>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => handleVerification(profile.id, "reject", rejectionReason)}
+                                      disabled={isVerifying || !rejectionReason}
+                                    >
+                                      {isVerifying ? "Processing..." : "Confirm Rejection"}
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </>
+                          )}
+
+                          {activeTab !== "pending" && getStatusBadge(profile.kyc_status)}
                         </div>
                       </div>
-
-                      <div className="flex space-x-2">
-                        <UserProfileDialog
-                          userId={profile.user_id}
-                          onVerificationChange={handleVerificationChange}
-                          trigger={
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4 mr-1" /> View
-                            </Button>
-                          }
-                        />
-
-                        {activeTab === "pending" && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600"
-                              onClick={async () => {
-                                try {
-                                  await verifyKYC({
-                                    profileId: profile.id,
-                                    data: {
-                                      action: "approve",
-                                    },
-                                  }).unwrap()
-
-                                  toast({
-                                    title: "Success",
-                                    description: "User has been verified successfully.",
-                                  })
-
-                                  refetch()
-                                } catch (error: any) {
-                                  toast({
-                                    title: "Error",
-                                    description: error.data?.error || "Failed to verify user.",
-                                    variant: "destructive",
-                                  })
-                                }
-                              }}
-                              disabled={isVerifying}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" /> Approve
-                            </Button>
-
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="text-red-600">
-                                  <XCircle className="h-4 w-4 mr-1" /> Reject
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Reject Verification</DialogTitle>
-                                  <DialogDescription>
-                                    Please provide a reason for rejecting this verification
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <Textarea
-                                  placeholder="Rejection reason..."
-                                  value={rejectionReason}
-                                  onChange={(e) => setRejectionReason(e.target.value)}
-                                />
-                                <DialogFooter>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => handleVerification(profile.id, "reject", rejectionReason)}
-                                    disabled={isVerifying || !rejectionReason}
-                                  >
-                                    {isVerifying ? "Processing..." : "Confirm Rejection"}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </>
-                        )}
-
-                        {activeTab !== "pending" && getStatusBadge(profile.kyc_status)}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                )
+              })
             ) : (
               <div className="text-center py-10">
                 <AlertCircle className="h-10 w-10 text-gray-400 mx-auto mb-4" />

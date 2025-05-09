@@ -124,7 +124,14 @@ export const kycApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+      sendKYCReminder: builder.mutation<{ success: boolean; message: string }, number>({
+        query: (userId) => ({
+          url: `/management_api/users/${userId}/send_kyc_reminder/`,
+          method: "POST",
+        }),
+    }),
   }),
+
 })
 
 export const {
@@ -135,4 +142,6 @@ export const {
   useGetKYCDocumentsQuery,
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
+  useSendKYCReminderMutation,
 } = kycApiSlice
+
