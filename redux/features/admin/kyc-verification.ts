@@ -150,13 +150,13 @@ export const kycApiSlice = apiSlice.injectEndpoints({
     }),
     requestEditCode: builder.mutation<RequestEditCodeResponse, number>({
       query: (profileId) => ({
-        url: `/profile_api/profiles/${profileId}/request_edit_code/`,
+        url: `/${management_api}/user-profiles/${profileId}/request_edit_code/`,
         method: "POST",
       }),
     }),
     verifyEditCode: builder.mutation<VerifyEditCodeResponse, VerifyEditCodeRequest>({
       query: ({ profileId, code }) => ({
-        url: `/profile_api/profiles/${profileId}/verify_edit_code/`,
+        url: `/${management_api}/user-profiles/${profileId}/verify_edit_code/`,
         method: "POST",
         body: { code },
       }),
