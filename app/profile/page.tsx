@@ -234,12 +234,13 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
 
-              {/* Verification badge on avatar */}
+              {/* Verification badge on avatar
               {verification.isVerified && (
-                <div className="absolute top-50 right-0 bg-white rounded-full p-0.5 shadow-md">
+                <div className="absolute -top-50 -right-0 bg-white rounded-full p-0.5 shadow-md">
                   <Shield className="h-5 w-5 text-green-600" />
                 </div>
               )}
+               */}
 
               <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
                 <ProfileImageUploaderButton
