@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag, Mail } from "lucide-react"
+import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag, Mail, Edit } from "lucide-react"
 import {
   useGetKYCStatsQuery,
   useGetKYCSubmissionsByStatusQuery,
@@ -32,6 +32,7 @@ import {
   useSendKYCReminderMutation,
 } from "@/redux/features/admin/kyc-verification"
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
+import { VerificationCodeDialog } from "@/components/admin/VerificationCodeDialog"
 import type { UserProfile } from "@/components/interfaces/profile"
 
 export default function KYCVerificationPage() {
@@ -42,20 +43,22 @@ export default function KYCVerificationPage() {
   const [bulkAction, setBulkAction] = useState<"approve" | "reject" | "flag" | "mark_scammer" | "">("")
   const [bulkReason, setBulkReason] = useState("")
   const [showBulkDialog, setShowBulkDialog] = useState(false)
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false)
+  const [selectedProfileForEdit, setSelectedProfileForEdit] = useState<number | null>(null)
 
   const { toast } = useToast()
   const hasCompletedKYC = (profile: UserProfile) => {
-      if (!profile) return false
-  
-      const profileData = profile.profile_data || profile
-  
-      return !!(
-        profileData?.id_document_type &&
-        profileData?.id_document_number &&
-        profileData?.id_document_image_front &&
-        profileData?.selfie_image
-      )
-    }
+    if (!profile) return false
+
+    const profileData = profile.profile_data || profile
+
+    return !!(
+      profileData?.id_document_type &&
+      profileData?.id_document_number &&
+      profileData?.id_document_image_front &&
+      profileData?.selfie_image
+    )
+  }
 
   // Fetch KYC stats
   const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
@@ -119,6 +122,22 @@ export default function KYCVerificationPage() {
         variant: "destructive",
       })
     }
+  }
+
+  // Handle edit profile button click
+  const handleEditProfile = (profileId: number) => {
+    setSelectedProfileForEdit(profileId)
+    setShowVerificationDialog(true)
+  }
+
+  // Handle verification success
+  const handleVerificationSuccess = (profileData: any) => {
+    // This will be implemented in the next step
+    // For now, just show a success message
+    toast({
+      title: "Ready to Edit",
+      description: "You can now edit the user's profile.",
+    })
   }
 
   // Handle bulk action dialog
@@ -364,6 +383,16 @@ export default function KYCVerificationPage() {
           </DialogContent>
         </Dialog>
 
+        {/* Verification Code Dialog */}
+        {selectedProfileForEdit && (
+          <VerificationCodeDialog
+            isOpen={showVerificationDialog}
+            onClose={() => setShowVerificationDialog(false)}
+            profileId={selectedProfileForEdit}
+            onVerificationSuccess={handleVerificationSuccess}
+          />
+        )}
+
         {/* Profile Lists */}
         {isLoadingProfiles || isLoadingSearch ? (
           // Loading state
@@ -448,6 +477,15 @@ export default function KYCVerificationPage() {
                               </Button>
                             }
                           />
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-purple-600"
+                            onClick={() => handleEditProfile(profile.id)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" /> Edit Profile
+                          </Button>
 
                           {activeTab === "pending" && (
                             <>
