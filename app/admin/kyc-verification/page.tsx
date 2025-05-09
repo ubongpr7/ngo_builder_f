@@ -45,6 +45,7 @@ export default function KYCVerificationPage() {
   const [showBulkDialog, setShowBulkDialog] = useState(false)
   const [showVerificationDialog, setShowVerificationDialog] = useState(false)
   const [selectedProfileForEdit, setSelectedProfileForEdit] = useState<number | null>(null)
+  const [editedProfileData, setEditedProfileData] = useState<any>(null)
 
   const { toast } = useToast()
   const hasCompletedKYC = (profile: UserProfile) => {
@@ -132,11 +133,20 @@ export default function KYCVerificationPage() {
 
   // Handle verification success
   const handleVerificationSuccess = (profileData: any) => {
-    // This will be implemented in the next step
-    // For now, just show a success message
+    setEditedProfileData(profileData)
+    // The dialog will automatically switch to the edit view
+  }
+
+  // Handle profile edit completion
+  const handleProfileEditComplete = () => {
+    setShowVerificationDialog(false)
+    setSelectedProfileForEdit(null)
+    setEditedProfileData(null)
+    refetch()
+
     toast({
-      title: "Ready to Edit",
-      description: "You can now edit the user's profile.",
+      title: "Profile Updated",
+      description: "The user profile has been successfully updated.",
     })
   }
 
@@ -387,7 +397,10 @@ export default function KYCVerificationPage() {
         {selectedProfileForEdit && (
           <VerificationCodeDialog
             isOpen={showVerificationDialog}
-            onClose={() => setShowVerificationDialog(false)}
+            onClose={() => {
+              setShowVerificationDialog(false)
+              setSelectedProfileForEdit(null)
+            }}
             profileId={selectedProfileForEdit}
             onVerificationSuccess={handleVerificationSuccess}
           />
