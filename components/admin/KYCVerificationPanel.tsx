@@ -5,7 +5,7 @@ import {
   useGetPendingKYCSubmissionsQuery,
   useVerifyKYCMutation,
   useGetKYCDocumentsQuery,
-} from "@/src/services/kycApiSlice"
+} from "@/redux/features/admin/kyc-verification"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -20,7 +20,7 @@ export default function KYCVerificationPanel() {
   const [rejectionReason, setRejectionReason] = useState("")
   const [showRejectionForm, setShowRejectionForm] = useState(false)
 
-  const { data: pendingSubmissions, isLoading, refetch } = useGetPendingKYCSubmissionsQuery()
+  const { data: pendingSubmissions, isLoading, refetch } = useGetPendingKYCSubmissionsQuery('')
   const { data: kycDocuments } = useGetKYCDocumentsQuery(selectedProfileId || 0, {
     skip: !selectedProfileId,
   })
