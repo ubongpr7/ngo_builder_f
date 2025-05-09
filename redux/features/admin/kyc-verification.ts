@@ -1,8 +1,23 @@
 import { apiSlice } from "../../services/apiSlice"
 
 // Define interfaces for KYC data
+export interface KYCUser {
+  id: number
+  name: string
+  first_name: string
+  last_name: string
+  email: string
+  membershipType: string
+  submissionDate: string
+  documentType: string
+  profile_image?: string
+  kyc_status: 'pending' | 'approved' | 'rejected' | 'flagged' | 'scammer'
+  kyc_rejection_reason?: string
+  kyc_verification_date?: string
+}
+
 export interface KYCVerificationRequest {
-  action: "approve" | "reject"
+  action: "approve" | "reject" | "flag" | "mark_scammer"
   reason?: string
 }
 
@@ -21,29 +36,49 @@ export interface KYCDocumentsResponse {
   is_kyc_verified: boolean
   kyc_verification_date: string | null
   kyc_rejection_reason: string | null
+  kyc_status: string
 }
 
 const management_api = "profile_api"
 
 export const kycApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get pending KYC submissions
-    getPendingKYCSubmissions: builder.query({
-      query: () => ({
-        url: `/${management_api}/user-profiles/`,
-        params: { kyc_status: "pending" },
+    // Get KYC submissions by status
+    getKYCSubmissions: builder.query<{ results: KYCUser[] }, string>({
+      query: (status) => ({
+        url: `/${management_api}/profiles/`,
+        params: { kyc_status: status },
+      }),
+    }),
+    
+    // Get all KYC submissions
+    getAllKYCSubmissions: builder.query<{ 
+      pending: KYCUser[], 
+      approved: KYCUser[], 
+      rejected: KYCUser[],
+      flagged: KYCUser[],
+      scammer: KYCUser[]
+    }, void>({
+      query: () => `/${management_api}/profiles/kyc_all/`,
+    }),
+
+    // Search KYC submissions
+    searchKYCSubmissions: builder.query<{ results: KYCUser[] }, string>({
+      query: (searchTerm) => ({
+        url: `/${management_api}/profiles/`,
+        params: { search: searchTerm },
       }),
     }),
 
     // Get KYC documents for a specific profile
     getKYCDocuments: builder.query<KYCDocumentsResponse, number>({
-      query: (profileId) => `/${management_api}/user-profiles/${profileId}/kyc_documents/`,
+      query: (profileId) => `/${management_api}/profiles/${profileId}/kyc_documents/`,
     }),
 
     // Verify or reject KYC submission
-    verifyKYC: builder.mutation<KYCVerificationResponse, { profileId: number; data: KYCVerificationRequest }>({
+    updateKYCStatus: builder.mutation<KYCVerificationResponse, { profileId: number; data: KYCVerificationRequest }>({
       query: ({ profileId, data }) => ({
-        url: `/${management_api}/user-profiles/${profileId}/verify_kyc/`,
+        url: `/${management_api}/profiles/${profileId}/verify_kyc/`,
         method: "POST",
         body: data,
       }),
@@ -51,4 +86,10 @@ export const kycApiSlice = apiSlice.injectEndpoints({
   }),
 })
 
-export const { useGetPendingKYCSubmissionsQuery, useGetKYCDocumentsQuery, useVerifyKYCMutation } = kycApiSlice
+export const { 
+  useGetKYCSubmissionsQuery,
+  useGetAllKYCSubmissionsQuery,
+  useSearchKYCSubmissionsQuery,
+  useGetKYCDocumentsQuery,
+  useUpdateKYCStatusMutation
+} = kycApiSlice
