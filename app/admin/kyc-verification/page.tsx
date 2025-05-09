@@ -488,7 +488,7 @@ export default function KYCVerificationPage() {
                                   variant="outline"
                                   size="sm"
                                   className="text-blue-600"
-                                  onClick={() => handleSendReminder(profile.user_id)}
+                                  onClick={() => handleSendReminder(profile.id)}
                                   disabled={isSendingReminder}
                                 >
                                   <Mail className="h-4 w-4 mr-1" /> Send Reminder
