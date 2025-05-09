@@ -273,7 +273,7 @@ export default function KYCVerificationPage() {
         )}
 
         {/* Bulk Action Dialog */}
-        <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+        <Dialog className="bg-gray-50" open={showBulkDialog} onOpenChange={setShowBulkDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
