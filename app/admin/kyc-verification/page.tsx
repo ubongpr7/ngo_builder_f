@@ -26,11 +26,11 @@ import {
   useGetKYCStatsQuery,
   useGetKYCSubmissionsByStatusQuery,
   useSearchKYCSubmissionsQuery,
-  useGetKYCDocumentsQuery,
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
   type KYCProfile,
 } from "@/redux/features/admin/kyc-verification"
+import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
 
 export default function KYCVerificationPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -48,16 +48,11 @@ export default function KYCVerificationPage() {
   const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
 
   // Fetch KYC submissions based on active tab
-  const { data: profiles, isLoading: isLoadingProfiles } = useGetKYCSubmissionsByStatusQuery(activeTab)
+  const { data: profiles, isLoading: isLoadingProfiles, refetch } = useGetKYCSubmissionsByStatusQuery(activeTab)
 
   // Search functionality
   const { data: searchResults, isLoading: isLoadingSearch } = useSearchKYCSubmissionsQuery(searchTerm, {
     skip: !searchTerm,
-  })
-
-  // Get KYC documents for selected user
-  const { data: kycDocuments, isLoading: isLoadingDocuments } = useGetKYCDocumentsQuery(selectedUser?.id || 0, {
-    skip: !selectedUser,
   })
 
   // Mutations for verification actions
@@ -133,41 +128,13 @@ export default function KYCVerificationPage() {
       setBulkAction("")
       setBulkReason("")
       setShowBulkDialog(false)
+
+      // Refetch data after bulk action
+      refetch()
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.data?.error || "Failed to perform bulk action",
-        variant: "destructive",
-      })
-    }
-  }
-
-  // Handle individual verification actions
-  const handleVerification = async (
-    profileId: number,
-    action: "approve" | "reject" | "flag" | "mark_scammer",
-    reason?: string,
-  ) => {
-    try {
-      const response = await verifyKYC({
-        profileId,
-        data: {
-          action,
-          reason,
-        },
-      }).unwrap()
-
-      toast({
-        title: "Success",
-        description: response.message,
-      })
-
-      setRejectionReason("")
-      setSelectedUser(null)
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to update verification status",
         variant: "destructive",
       })
     }
@@ -207,6 +174,11 @@ export default function KYCVerificationPage() {
       default:
         return <Badge className="bg-gray-500">Unknown</Badge>
     }
+  }
+
+  // Handle verification change (refresh data)
+  const handleVerificationChange = () => {
+    refetch()
   }
 
   return (
@@ -381,185 +353,16 @@ export default function KYCVerificationPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setSelectedUser(profile)}>
+                        {/* Replace the old dialog with UserProfileDialog */}
+                        <UserProfileDialog
+                          userId={profile.user_id}
+                          onVerificationChange={handleVerificationChange}
+                          trigger={
+                            <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4 mr-1" /> View
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-3xl">
-                            <DialogHeader>
-                              <DialogTitle>Verification Details</DialogTitle>
-                              <DialogDescription>Review the submitted documents and information</DialogDescription>
-                            </DialogHeader>
-
-                            {isLoadingDocuments ? (
-                              <div className="grid gap-4 py-4">
-                                <Skeleton className="h-40 w-full" />
-                                <div className="grid grid-cols-2 gap-4">
-                                  <Skeleton className="h-20 w-full" />
-                                  <Skeleton className="h-20 w-full" />
-                                </div>
-                              </div>
-                            ) : kycDocuments ? (
-                              <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <h4 className="font-medium mb-2">Personal Information</h4>
-                                    <p>
-                                      <span className="text-gray-500">Name:</span> {kycDocuments.user_full_name}
-                                    </p>
-                                    <p>
-                                      <span className="text-gray-500">Email:</span> {kycDocuments.user_email}
-                                    </p>
-                                    <p>
-                                      <span className="text-gray-500">Document Type:</span>{" "}
-                                      {kycDocuments.id_document_type}
-                                    </p>
-                                    <p>
-                                      <span className="text-gray-500">Document Number:</span>{" "}
-                                      {kycDocuments.id_document_number}
-                                    </p>
-                                    <p>
-                                      <span className="text-gray-500">Submitted:</span>{" "}
-                                      {formatDate(kycDocuments.kyc_submission_date)}
-                                    </p>
-                                    <p>
-                                      <span className="text-gray-500">Status:</span>{" "}
-                                      {getStatusBadge(kycDocuments.kyc_status)}
-                                    </p>
-                                  </div>
-
-                                  <div>
-                                    <h4 className="font-medium mb-2">Document Images</h4>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div className="border rounded p-2">
-                                        <p className="text-xs text-center mb-1">ID Front</p>
-                                        {kycDocuments.id_document_image_front ? (
-                                          <img
-                                            src={kycDocuments.id_document_image_front || "/placeholder.svg"}
-                                            alt="ID Front"
-                                            className="w-full h-32 object-cover"
-                                          />
-                                        ) : (
-                                          <div className="bg-gray-100 h-32 flex items-center justify-center">
-                                            <p className="text-xs text-gray-500">No image</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="border rounded p-2">
-                                        <p className="text-xs text-center mb-1">ID Back</p>
-                                        {kycDocuments.id_document_image_back ? (
-                                          <img
-                                            src={kycDocuments.id_document_image_back || "/placeholder.svg"}
-                                            alt="ID Back"
-                                            className="w-full h-32 object-cover"
-                                          />
-                                        ) : (
-                                          <div className="bg-gray-100 h-32 flex items-center justify-center">
-                                            <p className="text-xs text-gray-500">No image</p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="border rounded p-2 mt-2">
-                                      <p className="text-xs text-center mb-1">Selfie with ID</p>
-                                      {kycDocuments.selfie_image ? (
-                                        <img
-                                          src={kycDocuments.selfie_image || "/placeholder.svg"}
-                                          alt="Selfie"
-                                          className="w-full h-32 object-cover"
-                                        />
-                                      ) : (
-                                        <div className="bg-gray-100 h-32 flex items-center justify-center">
-                                          <p className="text-xs text-gray-500">No image</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="py-4 text-center">
-                                <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-2" />
-                                <p>Could not load document details</p>
-                              </div>
-                            )}
-
-                            <DialogFooter>
-                              {activeTab === "pending" && (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    className="text-green-600"
-                                    onClick={() => handleVerification(profile.id, "approve")}
-                                    disabled={isVerifying}
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" /> Approve
-                                  </Button>
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button variant="outline" className="text-red-600">
-                                        <XCircle className="h-4 w-4 mr-1" /> Reject
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Reject Verification</DialogTitle>
-                                        <DialogDescription>
-                                          Please provide a reason for rejecting this verification
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <Textarea
-                                        placeholder="Rejection reason..."
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
-                                      />
-                                      <DialogFooter>
-                                        <Button
-                                          variant="destructive"
-                                          onClick={() => handleVerification(profile.id, "reject", rejectionReason)}
-                                          disabled={isVerifying || !rejectionReason}
-                                        >
-                                          {isVerifying ? "Processing..." : "Confirm Rejection"}
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button variant="outline" className="text-orange-600">
-                                        <Flag className="h-4 w-4 mr-1" /> Flag
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Flag for Review</DialogTitle>
-                                        <DialogDescription>
-                                          Please provide a reason for flagging this profile for further review
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <Textarea
-                                        placeholder="Flagging reason..."
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
-                                      />
-                                      <DialogFooter>
-                                        <Button
-                                          variant="destructive"
-                                          onClick={() => handleVerification(profile.id, "flag", rejectionReason)}
-                                          disabled={isVerifying || !rejectionReason}
-                                        >
-                                          {isVerifying ? "Processing..." : "Confirm Flag"}
-                                        </Button>
-                                      </DialogFooter>
-                                    </DialogContent>
-                                  </Dialog>
-                                </>
-                              )}
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                          }
+                        />
 
                         {activeTab === "pending" && (
                           <>
@@ -567,7 +370,29 @@ export default function KYCVerificationPage() {
                               variant="outline"
                               size="sm"
                               className="text-green-600"
-                              onClick={() => handleVerification(profile.id, "approve")}
+                              onClick={async () => {
+                                try {
+                                  await verifyKYC({
+                                    profileId: profile.id,
+                                    data: {
+                                      action: "approve",
+                                    },
+                                  }).unwrap()
+
+                                  toast({
+                                    title: "Success",
+                                    description: "User has been verified successfully.",
+                                  })
+
+                                  refetch()
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: error.data?.error || "Failed to verify user.",
+                                    variant: "destructive",
+                                  })
+                                }
+                              }}
                               disabled={isVerifying}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" /> Approve
@@ -594,7 +419,40 @@ export default function KYCVerificationPage() {
                                 <DialogFooter>
                                   <Button
                                     variant="destructive"
-                                    onClick={() => handleVerification(profile.id, "reject", rejectionReason)}
+                                    onClick={async () => {
+                                      if (!rejectionReason.trim()) {
+                                        toast({
+                                          title: "Error",
+                                          description: "Please provide a reason for rejection.",
+                                          variant: "destructive",
+                                        })
+                                        return
+                                      }
+
+                                      try {
+                                        await verifyKYC({
+                                          profileId: profile.id,
+                                          data: {
+                                            action: "reject",
+                                            reason: rejectionReason,
+                                          },
+                                        }).unwrap()
+
+                                        toast({
+                                          title: "Success",
+                                          description: "User has been rejected successfully.",
+                                        })
+
+                                        setRejectionReason("")
+                                        refetch()
+                                      } catch (error: any) {
+                                        toast({
+                                          title: "Error",
+                                          description: error.data?.error || "Failed to reject user.",
+                                          variant: "destructive",
+                                        })
+                                      }
+                                    }}
                                     disabled={isVerifying || !rejectionReason}
                                   >
                                     {isVerifying ? "Processing..." : "Confirm Rejection"}

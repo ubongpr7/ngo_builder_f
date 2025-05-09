@@ -49,6 +49,7 @@ interface UserProfileDialogProps {
   defaultOpen?: boolean
 }
 
+
 export function UserProfileDialog({
   userId,
   trigger,
