@@ -1,4 +1,4 @@
-import KYCVerificationPanel from "@/src/components/admin/KYCVerificationPanel"
+import KYCVerificationPanel from "@/components/admin/KYCVerificationPanel"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
