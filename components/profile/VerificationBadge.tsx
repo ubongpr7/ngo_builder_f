@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 interface VerificationBadgeProps {
   isVerified: boolean
   verificationStatus?: string
-  verificationDate?: string
+  verificationDate?: string | null
   className?: string
   size?: "sm" | "md" | "lg"
   showTooltip?: boolean
@@ -45,7 +45,7 @@ export function VerificationBadge({
     if (showTooltip) {
       return (
         <TooltipProvider>
-          <Tooltip >
+          <Tooltip>
             <TooltipTrigger asChild>{badge}</TooltipTrigger>
             <TooltipContent>
               <p>This user's identity has been verified</p>
@@ -84,6 +84,26 @@ export function VerificationBadge({
       tooltipContent = "Identity verification was unsuccessful"
       badgeStyle = "bg-red-500 text-white hover:bg-red-600"
       break
+    case "flagged":
+      badgeContent = (
+        <>
+          <ShieldAlert className={iconSizes[size]} />
+          Flagged for Review
+        </>
+      )
+      tooltipContent = "This profile has been flagged for further review"
+      badgeStyle = "bg-orange-500 text-white hover:bg-orange-600"
+      break
+    case "scammer":
+      badgeContent = (
+        <>
+          <ShieldAlert className={iconSizes[size]} />
+          Marked as Scammer
+        </>
+      )
+      tooltipContent = "This profile has been identified as potentially fraudulent"
+      badgeStyle = "bg-purple-500 text-white hover:bg-purple-600"
+      break
     default:
       badgeContent = (
         <>
@@ -100,7 +120,7 @@ export function VerificationBadge({
   if (showTooltip) {
     return (
       <TooltipProvider>
-        <Tooltip className="bg-gray-50 -z-30">
+        <Tooltip>
           <TooltipTrigger asChild>{badge}</TooltipTrigger>
           <TooltipContent>
             <p>{tooltipContent}</p>
