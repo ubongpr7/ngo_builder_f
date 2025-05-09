@@ -30,20 +30,20 @@ export const kycApiSlice = apiSlice.injectEndpoints({
     // Get pending KYC submissions
     getPendingKYCSubmissions: builder.query({
       query: () => ({
-        url: `/${management_api}/profiles/`,
+        url: `/${management_api}/user-profiles/`,
         params: { kyc_status: "pending" },
       }),
     }),
 
     // Get KYC documents for a specific profile
     getKYCDocuments: builder.query<KYCDocumentsResponse, number>({
-      query: (profileId) => `/${management_api}/profiles/${profileId}/kyc_documents/`,
+      query: (profileId) => `/${management_api}/user-profiles/${profileId}/kyc_documents/`,
     }),
 
     // Verify or reject KYC submission
     verifyKYC: builder.mutation<KYCVerificationResponse, { profileId: number; data: KYCVerificationRequest }>({
       query: ({ profileId, data }) => ({
-        url: `/${management_api}/profiles/${profileId}/verify_kyc/`,
+        url: `/${management_api}/user-profiles/${profileId}/verify_kyc/`,
         method: "POST",
         body: data,
       }),
