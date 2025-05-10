@@ -115,14 +115,6 @@ export function VerificationCodeDialog({
               <KYCFormContainer
                 profileId={profileData.id.toString()}
                 userId={profileData.user_id.toString()}
-                date_of_birth={profileData.date_of_birth || ""}
-                profile_link={profileData.profile_link || ""}
-                linkedin_profile={profileData.linkedin_profile || ""}
-                first_name={profileData.user?.first_name || ""}
-                last_name={profileData.user?.last_name || ""}
-                sex={profileData.user?.sex || ""}
-                userDisabled={!!profileData.user?.is_disabled}
-                userDisability={profileData.user?.disability_id || ""}
               />
             </div>
           )}

@@ -32,10 +32,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
         body: data
       }),
     }),
-    getAUser: builder.mutation({
-      query: ({ id }) => ({
+    getAUser: builder.query({
+      query: (id ) => ({
         url: `/${user_api}/users/${id}/`,
-        method: 'GET',
       }),
     }),
     getLoggedInUser: builder.query({
@@ -53,7 +52,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
 export const { 
   useUpdateUserMutation,
-  useGetAUserMutation,
+  useGetAUserQuery,
   useGetLoggedInUserQuery,
   useGetCompanyUsersQuery,
   

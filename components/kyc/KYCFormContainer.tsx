@@ -17,6 +17,7 @@ import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import {ProfileImageUploader} from "./ProfileImageUploader"
+import { useGetAUserQuery } from "@/redux/features/users/userApiSlice"
 
 const TOTAL_STEPS = 8
 
@@ -45,31 +46,28 @@ const TAB_TO_STEP = {
 export default function KYCFormContainer({
   profileId,
   userId,
-  date_of_birth,
-  linkedin_profile,
-  profile_link,
-  first_name,
-  last_name,
-  sex,
-  userDisabled,
-  userDisability,
 }: {
   profileId: string
   userId: string
-  date_of_birth: string
-  profile_link: string
-  linkedin_profile: string
-  first_name: string
-  last_name: string
-  sex: string
-  userDisabled: boolean
-  userDisability: string
+ 
 }) {
+
   const router = useRouter()
   const { data: userProfile, isLoading, refetch } = useGetProfileQuery(profileId, { skip: !profileId })
   const addressId = userProfile?.address || null
   const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
   const { data: address } = useGetAddressByIdQuery({ userProfileId: profileId, addressId: addressId }, { skip: !addressId })
+  const {data:userData,isLoading:isUserDataLoading,refetch:refetchUser}=useGetAUserQuery(userId, {skip:!userId})
+  
+  const date_of_birth= userData?.date_of_birth
+  const linkedin_profile= userData?.linkedin_profile
+  const profile_link= userData?.profile_link
+  const first_name= userData?.first_name
+  const last_name= userData?.last_name
+  const sex= userData?.sex
+  const userDisabled= userData?.disabled
+  const userDisability= userData?.disability
+
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],

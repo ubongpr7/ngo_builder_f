@@ -7,16 +7,10 @@ export default function KYCPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <KYCFormContainer 
-      linkedin_profile={loggedInUser?.linkedin_profile}
-      profile_link={loggedInUser?.profile_link}
-      date_of_birth={loggedInUser?.date_of_birth}
+      
       userId={loggedInUser?.id} 
-      userDisabled={loggedInUser?.disabled} 
-      userDisability={loggedInUser?.disability}
-      profileId={loggedInUser?.profile} 
-      sex={loggedInUser?.sex}
-      first_name={loggedInUser?.first_name} 
-      last_name={loggedInUser?.last_name} />
+      profileId={loggedInUser?.profile}
+      />
     </div>
   )
 }
