@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
@@ -37,10 +37,17 @@ interface PasswordFormData {
   password: string
 }
 
-export default function VerificationLoginForm() {
-  const router = useRouter()
+// Create a wrapper component that uses searchParams
+function LoginFormWithParams() {
   const searchParams = useSearchParams()
   const nextUrl = searchParams.get("next") || "/dashboard"
+
+  return <LoginFormContent nextUrl={nextUrl} />
+}
+
+// Main component that receives nextUrl as a prop
+function LoginFormContent({ nextUrl }: { nextUrl: string }) {
+  const router = useRouter()
 
   // Form state
   const [currentStep, setCurrentStep] = useState<FormStep>("EMAIL")
@@ -361,5 +368,14 @@ export default function VerificationLoginForm() {
         </p>
       </div>
     </div>
+  )
+}
+
+// Export the main component with Suspense boundary
+export default function VerificationLoginForm() {
+  return (
+    <Suspense fallback={<div className="max-w-md w-full space-y-6 mx-auto text-center">Loading...</div>}>
+      <LoginFormWithParams />
+    </Suspense>
   )
 }
