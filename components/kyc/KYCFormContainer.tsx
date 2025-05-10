@@ -18,6 +18,7 @@ import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import {ProfileImageUploader} from "./ProfileImageUploader"
 import { useGetAUserQuery } from "@/redux/features/users/userApiSlice"
+import { useGetUserProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 const TOTAL_STEPS = 8
 
@@ -57,7 +58,7 @@ export default function KYCFormContainer({
   const addressId = userProfile?.address || null
   const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
   const { data: address } = useGetAddressByIdQuery({ userProfileId: profileId, addressId: addressId }, { skip: !addressId })
-  const {data:userData,isLoading:isUserDataLoading,refetch:refetchUser}=useGetAUserQuery(userId, {skip:!userId})
+  const {data:userData,isLoading:isUserDataLoading,refetch:refetchUser}=useGetUserProfileDetailsQuery(userId, {skip:!userId})
   
   const date_of_birth= userData?.date_of_birth
   const linkedin_profile= userData?.linkedin_profile
