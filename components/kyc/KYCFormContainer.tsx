@@ -136,7 +136,7 @@ export default function KYCFormContainer({
           linkedin_profile: userData.linkedin_profile || "",
           sex: userData.sex || "",
           disabled: userData.disabled || false,
-          disability: Number(userData.disability) 
+          disability: userData.disability || null,
         },
       }))
     }
