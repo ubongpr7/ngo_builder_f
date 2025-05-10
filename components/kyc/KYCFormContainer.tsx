@@ -16,8 +16,7 @@ import ExpertiseForm from "./ExpertiseForm"
 import RolesForm from "./RolesForm"
 import { useGetProfileQuery } from "@/redux/features/profile/profileAPISlice"
 import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedAPISlice"
-import {ProfileImageUploader} from "./ProfileImageUploader"
-import { useGetAUserQuery } from "@/redux/features/users/userApiSlice"
+import { ProfileImageUploader } from "./ProfileImageUploader"
 import { useGetUserProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 const TOTAL_STEPS = 8
@@ -33,52 +32,47 @@ const STEP_ORDER: Record<number, string> = {
   8: "profile-image",
 }
 
-const TAB_TO_STEP = {
-  "personal-info": 1,
-  expertise: 2,
-  roles: 3,
-  "professional-info": 4,
-  address: 5,
-  "contact-info": 6,
-  "identity-verification": 7,
-  "profile-image": 8,
-}
-
 export default function KYCFormContainer({
   profileId,
   userId,
 }: {
   profileId: string
   userId: string
- 
 }) {
-
   const router = useRouter()
-  const { data: userProfile, isLoading, refetch } = useGetProfileQuery(profileId, { skip: !profileId })
-  const addressId = userProfile?.address || null
-  const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
-  const { data: address } = useGetAddressByIdQuery({ userProfileId: profileId, addressId: addressId }, { skip: !addressId })
-  const {data:userData,isLoading:isUserDataLoading,refetch:refetchUser}=useGetUserProfileDetailsQuery(userId, {skip:!userId})
-  
-  const date_of_birth= userData?.date_of_birth
-  const linkedin_profile= userData?.linkedin_profile
-  const profile_link= userData?.profile_link
-  const first_name= userData?.first_name
-  const last_name= userData?.last_name
-  const sex= userData?.sex
-  const userDisabled= userData?.disabled
-  const userDisability= userData?.disability
 
+  // API queries
+  const {
+    data: userProfile,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useGetProfileQuery(profileId, { skip: !profileId })
+  const {
+    data: userData,
+    isLoading: isUserDataLoading,
+    refetch: refetchUser,
+  } = useGetUserProfileDetailsQuery(userId, { skip: !userId })
+
+  const addressId = userProfile?.address || null
+  const { data: address, isLoading: isAddressLoading } = useGetAddressByIdQuery(
+    { userProfileId: profileId, addressId: addressId },
+    { skip: !addressId },
+  )
+
+  // UI state
+  const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
+
+  // Initialize form state with empty values
   const [formState, setFormState] = useState<KYCFormState>({
     currentStep: 1,
     completedSteps: [],
     personalInfo: {
-      first_name: first_name,
-      last_name: last_name,
-      date_of_birth: date_of_birth,
-      profile_link: profile_link,
-      linkedin_profile: linkedin_profile,
-      sex: sex,
+      first_name: "",
+      last_name: "",
+      date_of_birth: "",
+      profile_link: "",
+      linkedin_profile: "",
+      sex: "",
       disabled: false,
       disability: "",
     },
@@ -126,18 +120,36 @@ export default function KYCFormContainer({
     },
   })
 
+  // Handle userData changes - separate useEffect for better control
+  useEffect(() => {
+    if (userData) {
+      console.log("User data loaded:", userData)
+
+      setFormState((prev) => ({
+        ...prev,
+        personalInfo: {
+          ...prev.personalInfo,
+          first_name: userData.first_name || "",
+          last_name: userData.last_name || "",
+          date_of_birth: userData.date_of_birth || "",
+          profile_link: userData.profile_link || "",
+          linkedin_profile: userData.linkedin_profile || "",
+          sex: userData.sex || "",
+          disabled: userData.disabled || false,
+          disability: userData.disability || "",
+        },
+      }))
+    }
+  }, [userData])
+
+  // Handle userProfile and address changes
   useEffect(() => {
     if (userProfile) {
-      const updatedFormState = { ...formState }
-      updatedFormState.personalInfo.first_name = first_name
-      updatedFormState.personalInfo.last_name = last_name
-      updatedFormState.personalInfo.date_of_birth = date_of_birth
-      updatedFormState.personalInfo.profile_link = profile_link
-      updatedFormState.personalInfo.linkedin_profile = linkedin_profile
-      updatedFormState.personalInfo.sex = sex
-      updatedFormState.personalInfo.disabled = userDisabled
-      updatedFormState.personalInfo.disability = userDisability
+      console.log("User profile loaded:", userProfile)
 
+      const updatedFormState = { ...formState }
+
+      // Update address data if available
       if (userProfile.address && address) {
         updatedFormState.address = {
           country: address.country || null,
@@ -151,11 +163,13 @@ export default function KYCFormContainer({
         }
       }
 
+      // Update contact info
       updatedFormState.contactInfo = {
         phone_number: userProfile.phone_number || "",
         bio: userProfile.bio || null,
       }
 
+      // Update professional info
       updatedFormState.professionalInfo = {
         organization: userProfile.organization || null,
         position: userProfile.position || null,
@@ -164,23 +178,13 @@ export default function KYCFormContainer({
         company_website: userProfile.company_website || null,
       }
 
-      const completedSteps: number[] = []
-
-      if (
-        updatedFormState.personalInfo.first_name &&
-        updatedFormState.personalInfo.last_name &&
-        updatedFormState.personalInfo.date_of_birth
-      ) {
-        completedSteps.push(1)
-      }
-
+      // Update expertise
       if (userProfile.expertise && userProfile.expertise.length > 0) {
-        completedSteps.push(2)
         updatedFormState.expertise.expertise = userProfile.expertise
       }
 
+      // Update roles
       if (userProfile.is_project_manager !== undefined) {
-        completedSteps.push(3)
         updatedFormState.roles = {
           is_donor: userProfile.is_donor || false,
           is_volunteer: userProfile.is_volunteer || false,
@@ -194,20 +198,8 @@ export default function KYCFormContainer({
         }
       }
 
-      if (userProfile.industry) {
-        completedSteps.push(4)
-      }
-
-      if (updatedFormState.address.country && updatedFormState.address.city) {
-        completedSteps.push(5)
-      }
-
-      if (updatedFormState.contactInfo.phone_number) {
-        completedSteps.push(6)
-      }
-
+      // Update identity verification
       if (userProfile.id_document_type && userProfile.id_document_number) {
-        completedSteps.push(7)
         updatedFormState.identityVerification = {
           id_document_type: userProfile.id_document_type,
           id_document_number: userProfile.id_document_number,
@@ -217,18 +209,72 @@ export default function KYCFormContainer({
         }
       }
 
-      if (userProfile.profile_image) {
-        completedSteps.push(8)
-      }
-
-      updatedFormState.completedSteps = completedSteps
-      updatedFormState.currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
-
       setFormState(updatedFormState)
-      setActiveTab(STEP_ORDER[updatedFormState.currentStep])
     }
   }, [userProfile, address])
 
+  // Calculate completed steps and set current step
+  useEffect(() => {
+    const completedSteps: number[] = []
+
+    // Check personal info completion
+    if (formState.personalInfo.first_name && formState.personalInfo.last_name && formState.personalInfo.date_of_birth) {
+      completedSteps.push(1)
+    }
+
+    // Check expertise completion
+    if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
+      completedSteps.push(2)
+    }
+
+    // Check roles completion
+    if (userProfile?.is_project_manager !== undefined) {
+      completedSteps.push(3)
+    }
+
+    // Check professional info completion
+    if (userProfile?.industry) {
+      completedSteps.push(4)
+    }
+
+    // Check address completion
+    if (formState.address.country && formState.address.city) {
+      completedSteps.push(5)
+    }
+
+    // Check contact info completion
+    if (formState.contactInfo.phone_number) {
+      completedSteps.push(6)
+    }
+
+    // Check identity verification completion
+    if (userProfile?.id_document_type && userProfile?.id_document_number) {
+      completedSteps.push(7)
+    }
+
+    // Check profile image completion
+    if (userProfile?.profile_image) {
+      completedSteps.push(8)
+    }
+
+    // Update form state with completed steps
+    setFormState((prev) => {
+      const currentStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
+
+      // Only update active tab if it's a new step
+      if (currentStep !== prev.currentStep) {
+        setActiveTab(STEP_ORDER[currentStep])
+      }
+
+      return {
+        ...prev,
+        completedSteps,
+        currentStep,
+      }
+    })
+  }, [formState.personalInfo, formState.expertise, formState.address, formState.contactInfo, userProfile])
+
+  // Handle step completion
   const handleStepComplete = (step: number) => {
     setFormState((prev) => {
       const completedSteps = [...prev.completedSteps]
@@ -245,7 +291,10 @@ export default function KYCFormContainer({
     })
   }
 
+  // Update form data
   const updateFormData = (section: keyof KYCFormState, data: any) => {
+    console.log(`Updating ${section} with:`, data)
+
     setFormState((prev) => ({
       ...prev,
       [section]: {
@@ -255,9 +304,11 @@ export default function KYCFormContainer({
     }))
   }
 
+  // Check if step is completed
   const isStepCompleted = (step: number) => formState.completedSteps.includes(step)
 
-  if (isLoading) {
+  // Show loading state
+  if (isProfileLoading || isUserDataLoading || isAddressLoading) {
     return (
       <div className="container mx-auto py-10 px-4">
         <Card className="max-w-4xl mx-auto">
@@ -270,6 +321,13 @@ export default function KYCFormContainer({
       </div>
     )
   }
+
+  // Debug info
+  console.log("Current form state:", {
+    personalInfo: formState.personalInfo,
+    completedSteps: formState.completedSteps,
+    currentStep: formState.currentStep,
+  })
 
   return (
     <div className="container mx-auto py-6 sm:py-10 px-4">
@@ -284,10 +342,16 @@ export default function KYCFormContainer({
             <div className="flex justify-center gap-8 mb-2 items-start">
               {[1, 2, 3, 4, 5].map((stepNumber) => (
                 <div key={stepNumber} className="flex flex-col items-center">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full 
-                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
-                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
-                        "bg-gray-100 text-gray-400"}`}>
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full 
+                    ${
+                      isStepCompleted(stepNumber)
+                        ? "bg-green-600 text-white"
+                        : formState.currentStep === stepNumber
+                          ? "bg-green-100 border-2 border-green-600 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
                     {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
                   </div>
                   <span className="text-xs mt-1">Step {stepNumber}</span>
@@ -297,10 +361,16 @@ export default function KYCFormContainer({
             <div className="flex justify-left gap-5">
               {[6, 7, 8].map((stepNumber) => (
                 <div key={stepNumber} className="flex flex-col items-center ml-2">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full 
-                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
-                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
-                        "bg-gray-100 text-gray-400"}`}>
+                  <div
+                    className={`flex items-center justify-center w-8 h-8 rounded-full 
+                    ${
+                      isStepCompleted(stepNumber)
+                        ? "bg-green-600 text-white"
+                        : formState.currentStep === stepNumber
+                          ? "bg-green-100 border-2 border-green-600 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
                     {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
                   </div>
                   <span className="text-xs mt-1">Step {stepNumber}</span>
@@ -314,10 +384,16 @@ export default function KYCFormContainer({
               const stepNumber = index + 1
               return (
                 <div key={stepNumber} className="flex flex-col items-center">
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full 
-                    ${isStepCompleted(stepNumber) ? "bg-green-600 text-white" :
-                      formState.currentStep === stepNumber ? "bg-green-100 border-2 border-green-600 text-green-600" :
-                        "bg-gray-100 text-gray-400"}`}>
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-full 
+                    ${
+                      isStepCompleted(stepNumber)
+                        ? "bg-green-600 text-white"
+                        : formState.currentStep === stepNumber
+                          ? "bg-green-100 border-2 border-green-600 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
                     {isStepCompleted(stepNumber) ? <CheckCircle className="h-5 w-5" /> : stepNumber}
                   </div>
                   <span className="text-xs mt-1">Step {stepNumber}</span>
@@ -330,29 +406,61 @@ export default function KYCFormContainer({
         <CardContent className="p-4 sm:p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1} className="text-xs p-2">1. Personal</TabsTrigger>
-              <TabsTrigger value="expertise" disabled={formState.currentStep < 2} className="text-xs p-2">2. Expertise</TabsTrigger>
-              <TabsTrigger value="roles" disabled={formState.currentStep < 3} className="text-xs p-2">3. Roles</TabsTrigger>
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1} className="text-xs p-2">
+                1. Personal
+              </TabsTrigger>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < 2} className="text-xs p-2">
+                2. Expertise
+              </TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < 3} className="text-xs p-2">
+                3. Roles
+              </TabsTrigger>
             </TabsList>
             <TabsList className="sm:hidden grid w-full grid-cols-3 gap-2 mb-4">
-              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4} className="text-xs p-2">4. Professional</TabsTrigger>
-              <TabsTrigger value="address" disabled={formState.currentStep < 5} className="text-xs p-2">5. Address</TabsTrigger>
-              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6} className="text-xs p-2">6. Contact</TabsTrigger>
+              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4} className="text-xs p-2">
+                4. Professional
+              </TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < 5} className="text-xs p-2">
+                5. Address
+              </TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6} className="text-xs p-2">
+                6. Contact
+              </TabsTrigger>
             </TabsList>
             <TabsList className="sm:hidden grid w-full grid-cols-2 gap-2 mb-6">
-              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7} className="text-xs p-2">7. Identity</TabsTrigger>
-              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8} className="text-xs p-2">8. Photo</TabsTrigger>
+              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7} className="text-xs p-2">
+                7. Identity
+              </TabsTrigger>
+              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8} className="text-xs p-2">
+                8. Photo
+              </TabsTrigger>
             </TabsList>
 
             <TabsList className="hidden sm:grid w-full grid-cols-8 mb-8">
-              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1}>Personal</TabsTrigger>
-              <TabsTrigger value="expertise" disabled={formState.currentStep < 2}>Expertise</TabsTrigger>
-              <TabsTrigger value="roles" disabled={formState.currentStep < 3}>Roles</TabsTrigger>
-              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4}>Professional</TabsTrigger>
-              <TabsTrigger value="address" disabled={formState.currentStep < 5}>Address</TabsTrigger>
-              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6}>Contact</TabsTrigger>
-              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7}>Identity</TabsTrigger>
-              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8}>Photo</TabsTrigger>
+              <TabsTrigger value="personal-info" disabled={formState.currentStep < 1}>
+                Personal
+              </TabsTrigger>
+              <TabsTrigger value="expertise" disabled={formState.currentStep < 2}>
+                Expertise
+              </TabsTrigger>
+              <TabsTrigger value="roles" disabled={formState.currentStep < 3}>
+                Roles
+              </TabsTrigger>
+              <TabsTrigger value="professional-info" disabled={formState.currentStep < 4}>
+                Professional
+              </TabsTrigger>
+              <TabsTrigger value="address" disabled={formState.currentStep < 5}>
+                Address
+              </TabsTrigger>
+              <TabsTrigger value="contact-info" disabled={formState.currentStep < 6}>
+                Contact
+              </TabsTrigger>
+              <TabsTrigger value="identity-verification" disabled={formState.currentStep < 7}>
+                Identity
+              </TabsTrigger>
+              <TabsTrigger value="profile-image" disabled={formState.currentStep < 8}>
+                Photo
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="personal-info">
@@ -427,18 +535,20 @@ export default function KYCFormContainer({
 
             <TabsContent value="profile-image">
               <div className="p-4 border relative rounded-md bg-gray-50">
-                <h3 className="text-sm  font-medium text-gray-700 mb-4">Profile Photo</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-4">Profile Photo</h3>
                 <ProfileImageUploader
-                userId={userId}
-                profileId={profileId}
-                currentImage={userProfile?.profile_image}
-                userName={first_name + " " + last_name}
-                onSuccess={refetch}
-                size="lg"
-              />
-                      <p className="text-sm text-gray-500 mt-2">
-                  Upload a clear headshot for your member profile
-                </p>
+                  userId={userId}
+                  profileId={profileId}
+                  currentImage={userProfile?.profile_image}
+                  userName={
+                    formState.personalInfo.first_name && formState.personalInfo.last_name
+                      ? `${formState.personalInfo.first_name} ${formState.personalInfo.last_name}`
+                      : "User"
+                  }
+                  onSuccess={refetchProfile}
+                  size="lg"
+                />
+                <p className="text-sm text-gray-500 mt-2">Upload a clear headshot for your member profile</p>
               </div>
             </TabsContent>
           </Tabs>
