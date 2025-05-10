@@ -136,7 +136,7 @@ export default function KYCFormContainer({
           linkedin_profile: userData.linkedin_profile || "",
           sex: userData.sex || "",
           disabled: userData.disabled || false,
-          disability: userData.disability || null,
+          disability: userProfile?.disability?.id || null,
         },
       }))
     }
@@ -191,7 +191,7 @@ export default function KYCFormContainer({
           is_partner: userProfile.is_partner || false,
           is_ceo: userProfile.is_ceo || false,
           is_standard_member: userProfile.is_standard_member || false,
-          is_DB_executive: userProfile.is_executive || false,
+          is_DB_executive: userProfile.is_DB_executive || false,
           is_DB_staff: userProfile.is_DB_staff || false,
           is_benefactor: userProfile.is_benefactor || false,
           is_DB_admin: userProfile.is_DB_admin || false,
