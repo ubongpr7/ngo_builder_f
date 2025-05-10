@@ -3,11 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useDispatch } from "react-redux"
-import { useLogoutMutation } from '../../redux/features/authApiSlice';
+import { useLogoutMutation } from "@/redux/features/authApiSlice"
+import { useGetLoggedInUserQuery } from "@/redux/features/users/userApiSlice"
 import Image from "next/image"
-
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,23 +31,46 @@ export default function AuthenticatedHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const dispatch = useAppDispatch()
-  const [logoutM, { isLoading }] = useLogoutMutation();
+  const [logoutM, { isLoading }] = useLogoutMutation()
   const router = useRouter()
+
+  // Fetch user data
+  const { data: userData, isLoading: isUserLoading } = useGetLoggedInUserQuery('')
+
+  // Extract user information
+  const userFullName =
+    userData?.first_name && userData?.last_name
+      ? `${userData.first_name} ${userData.last_name}`
+      : userData?.email?.split("@")[0] || "My Account"
+
+  const userEmail = userData?.email || ""
+
+  // Get profile image from nested profile_data
+  const profileImage = userData?.profile_data?.profile_image || ""
+
+  // Get first letter of first name and last name for avatar fallback
+  const getInitials = () => {
+    if (userData?.first_name && userData?.last_name) {
+      return `${userData.first_name[0]}${userData.last_name[0]}`.toUpperCase()
+    }
+    return userEmail ? userEmail[0].toUpperCase() : "U"
+  }
+
   const handleLogout = async () => {
     try {
       // await logoutM('').unwrap();
-      dispatch(logout());
-      toast.success('Logged out successfully');
+      dispatch(logout())
+      toast.success("Logged out successfully")
       // router.push('/');
-      window.location.href = '/';
+      window.location.href = "/"
     } catch (error) {
-      dispatch(logout());
-      router.push('/');
-      window.location.href = '/';
+      dispatch(logout())
+      router.push("/")
+      window.location.href = "/"
 
-      toast.error('Logout failed. Please try again.');
+      toast.error("Logout failed. Please try again.")
     }
-  };
+  }
 
   return (
     <header className="bg-white shadow-sm border border-b-grey-400">
@@ -77,10 +98,11 @@ export default function AuthenticatedHeader() {
             <Link
               key={item.name}
               href={item.href}
-              className={`text-sm font-medium ${pathname === item.href
+              className={`text-sm font-medium ${
+                pathname === item.href
                   ? "text-green-700 border-b-2 border-green-700"
                   : "text-gray-700 hover:text-green-700"
-                }`}
+              }`}
             >
               {item.name}
             </Link>
@@ -88,7 +110,7 @@ export default function AuthenticatedHeader() {
         </div>
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-        <button className="relative p-2 rounded-md text-gray-700 hover:text-green-700">
+          <button className="relative p-2 rounded-md text-gray-700 hover:text-green-700">
             <Bell className="h-6 w-6" />
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
           </button>
@@ -97,15 +119,23 @@ export default function AuthenticatedHeader() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:text-green-700">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/user-icon.svg" alt="User" />
-                  <AvatarFallback>U</AvatarFallback>
+                  {profileImage ? (
+                    <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
+                  ) : (
+                    <AvatarFallback>{getInitials()}</AvatarFallback>
+                  )}
                 </Avatar>
-                <span className="hidden md:inline">My Account</span>
+                <span className="hidden md:inline max-w-[150px] truncate">{userFullName}</span>
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{userFullName}</p>
+                  <p className="text-xs leading-none text-gray-500 truncate">{userEmail}</p>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
@@ -138,8 +168,8 @@ export default function AuthenticatedHeader() {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden">
-          <div className="fixed inset-0 z-50 bg-black/50" />
-          <div className="absolute top-0 right-0 z-50 w-full sm:max-w-sm h-auto max-h-screen overflow-y-auto bg-white px-4 py-4">
+          <div className="fixed inset-0 z-[9999] bg-black" />
+          <div className="absolute top-0 right-0 z-[10000] w-full sm:max-w-sm h-auto max-h-screen overflow-y-auto bg-white px-4 py-4">
             <div className="flex items-center justify-between">
               <Link href="/" className="-m-1.5 p-1.5 flex items-center">
                 <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
@@ -154,15 +184,34 @@ export default function AuthenticatedHeader() {
                 <X className="h-8 w-8" aria-hidden="true" />
               </button>
             </div>
-            <div className="mt-6 flow-root">
+
+            {/* User profile in mobile menu */}
+            <div className="mt-6 mb-4 flex items-center">
+              <Avatar className="h-12 w-12 mr-3">
+                {profileImage ? (
+                  <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
+                ) : (
+                  <AvatarFallback>{getInitials()}</AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <p className="text-base font-medium">{userFullName}</p>
+                <p className="text-sm text-gray-500 truncate">{userEmail}</p>
+              </div>
+            </div>
+
+            <div className="flow-root">
               <div className="divide-y divide-gray-500/10">
                 <div className="space-y-4 py-3 px-0 flex flex-col items-center">
                   {navigation.map((item) => (
                     <div key={item.name} className="border-b border-gray-200 last:border-b-0 w-full">
                       <Link
                         href={item.href}
-                        className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === item.href ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
-                          }`}
+                        className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${
+                          pathname === item.href
+                            ? "text-green-700 underline"
+                            : "text-black hover:underline hover:text-green-700"
+                        }`}
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
@@ -174,8 +223,11 @@ export default function AuthenticatedHeader() {
                   <div className="border-b border-gray-200 last:border-b-0 w-full">
                     <Link
                       href="/profile"
-                      className={`block rounded-lg px-3 py-2 text-2xl font-bold tracking-tight text-center ${pathname === "/dashboard/profile" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
-                        }`}
+                      className={`block rounded-lg px-3 py-2 text-2xl font-bold tracking-tight text-center ${
+                        pathname === "/dashboard/profile"
+                          ? "text-green-700 underline"
+                          : "text-black hover:underline hover:text-green-700"
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Profile
@@ -184,8 +236,11 @@ export default function AuthenticatedHeader() {
                   <div className="border-b border-gray-200 last:border-b-0 w-full">
                     <Link
                       href="/dashboard/settings"
-                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === "/dashboard/settings" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
-                        }`}
+                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${
+                        pathname === "/dashboard/settings"
+                          ? "text-green-700 underline"
+                          : "text-black hover:underline hover:text-green-700"
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Settings
@@ -194,8 +249,11 @@ export default function AuthenticatedHeader() {
                   <div className="border-b border-gray-200 last:border-b-0 w-full">
                     <Link
                       href="/profile/update"
-                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${pathname === "/profile/update" ? "text-green-700 underline" : "text-black hover:underline hover:text-green-700"
-                        }`}
+                      className={`block rounded-lg px-3 py-2 text-[18px] font-bold tracking-tight text-center ${
+                        pathname === "/profile/update"
+                          ? "text-green-700 underline"
+                          : "text-black hover:underline hover:text-green-700"
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Update Profile
