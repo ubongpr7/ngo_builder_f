@@ -1,24 +1,24 @@
 "use client"
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, RotateCw, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, RotateCw, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useLoginMutation, useVerifyCodeMutation, useResendCodeMutation } from "@/redux/features/authApiSlice"
 import { toast } from "react-toastify"
 
 export interface LoginErrorResponse {
   data?: {
-    detail?: string;
-    non_field_errors?: string[];
-    email?: string[];
-    password?: string[];
-    code?: string[];
-  };
-  status?: number;
+    detail?: string
+    non_field_errors?: string[]
+    email?: string[]
+    password?: string[]
+    code?: string[]
+  }
+  status?: number
 }
 
 // Step types for the multi-step form
@@ -39,6 +39,8 @@ interface PasswordFormData {
 
 export default function VerificationLoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextUrl = searchParams.get("next") || "/dashboard"
 
   // Form state
   const [currentStep, setCurrentStep] = useState<FormStep>("EMAIL")
@@ -69,46 +71,53 @@ export default function VerificationLoginForm() {
   // Extract error message from API response
   const extractErrorMessage = (error: any): string => {
     if (!error) return "An unknown error occurred"
-    
+
     const errorData = error.data || {}
-    
+
     // Check for specific field errors
     if (errorData.email && errorData.email.length > 0) {
       return `Email: ${errorData.email[0]}`
     }
-    
+
     if (errorData.password && errorData.password.length > 0) {
       return `Password: ${errorData.password[0]}`
     }
-    
+
     if (errorData.code && errorData.code.length > 0) {
       return `Code: ${errorData.code[0]}`
     }
-    
+
     if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
       return errorData.non_field_errors[0]
     }
-    
+
     if (errorData.detail) {
       return errorData.detail
     }
-    
+
     // Handle network errors
     if (!navigator.onLine) {
       return "Network error: Please check your internet connection"
     }
-    
+
     // Default error messages based on status code
     switch (error.status) {
-      case 400: return "Invalid request: Please check your information"
-      case 401: return "Authentication failed: Your credentials are incorrect"
-      case 403: return "Access denied: You don't have permission for this action"
-      case 404: return "Account not found: No account exists with this email"
-      case 429: return "Too many attempts: Please wait a moment before trying again"
+      case 400:
+        return "Invalid request: Please check your information"
+      case 401:
+        return "Authentication failed: Your credentials are incorrect"
+      case 403:
+        return "Access denied: You don't have permission for this action"
+      case 404:
+        return "Account not found: No account exists with this email"
+      case 429:
+        return "Too many attempts: Please wait a moment before trying again"
       case 500:
       case 502:
-      case 503: return "Server error: We're experiencing technical difficulties"
-      default: return "An error occurred. Please try again"
+      case 503:
+        return "Server error: We're experiencing technical difficulties"
+      default:
+        return "An error occurred. Please try again"
     }
   }
 
@@ -151,7 +160,13 @@ export default function VerificationLoginForm() {
       }).unwrap()
 
       toast.success("Login successful. Welcome back!")
-      router.push(user.profile ? "/dashboard" : "/profile/update")
+
+      // Redirect to the next URL if it exists, otherwise check profile
+      if (nextUrl && nextUrl !== "/dashboard") {
+        router.push(nextUrl)
+      } else {
+        router.push(user.profile ? "/dashboard" : "/profile/update")
+      }
     } catch (err) {
       const errorMessage = extractErrorMessage(err)
       toast.error(errorMessage)
@@ -183,10 +198,7 @@ export default function VerificationLoginForm() {
 
   return (
     <div className="max-w-md w-full space-y-6 mx-auto">
-    <div className="text-center">
-        {/* Title and subtitle 
-        <h1 className="text-2xl font-bold">Secure Login</h1>
-        */}
+      <div className="text-center">
         <p className="mt-2 text-[14px]">
           {currentStep === "EMAIL" && "Enter your email to begin"}
           {currentStep === "VERIFICATION" && "Enter the verification code sent to your email"}

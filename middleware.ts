@@ -43,41 +43,27 @@ export function middleware(request: NextRequest) {
   ]
 
   // Auth pages that should redirect to dashboard for logged-in users
-  const authPages = [
-    "/membership/portal",
-    "/membership/register"
-  ]
+  const authPages = ["/membership/portal", "/membership/register"]
 
   // Paths accessible even with valid token
-  const allowedWithTokenPaths = [
-    "/activate",
-    "/accounts/verify",
-    "/logout",
-    "/api/auth",
-  ]
+  const allowedWithTokenPaths = ["/activate", "/accounts/verify", "/logout", "/api/auth"]
 
   // Check path types
-  const isPublicPath = publicPaths.some(publicPath => 
-    path === publicPath || path.startsWith(`${publicPath}/`)
-  )
+  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
 
-  const isAuthPage = authPages.some(authPage => 
-    path === authPage || path.startsWith(`${authPage}/`)
-  )
+  const isAuthPage = authPages.some((authPage) => path === authPage || path.startsWith(`${authPage}/`))
 
-  const isAllowedWithToken = allowedWithTokenPaths.some(allowedPath =>
-    path.startsWith(allowedPath)
-  )
+  const isAllowedWithToken = allowedWithTokenPaths.some((allowedPath) => path.startsWith(allowedPath))
 
   // Handle activation paths
   const isActivationPath = path.startsWith("/activate")
-  const isDirectActivationLink = path.match(/^\/activate\/[^\/]+\/[^\/]+$/)
+  const isDirectActivationLink = path.match(/^\/activate\/[^/]+\/[^/]+$/)
 
   // Special case: Direct activation links (from email)
   if (isDirectActivationLink) {
     // Allow access without any cookies
     if (!accessToken && !userId) return NextResponse.next()
-    
+
     // If logged in but accessing activation link, allow completion
     if (accessToken) return NextResponse.next()
   }
@@ -90,12 +76,33 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Redirect logged-in users away from auth pages
   if (isAuthPage && accessToken) {
+    // Check if there's a next parameter to redirect to
+    const nextUrl = request.nextUrl.searchParams.get("next")
+    if (nextUrl && !nextUrl.includes("/membership/portal")) {
+      // Validate the next URL to prevent open redirect vulnerabilities
+      // Only allow relative URLs that start with / and are on the same domain
+      if (nextUrl.startsWith("/") && !nextUrl.includes("://")) {
+        return NextResponse.redirect(new URL(nextUrl, request.url))
+      }
+    }
+
+    // Default redirect to dashboard if no valid next parameter
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
+  // Handle unauthenticated access to protected routes
   if (!isPublicPath && !accessToken && !isAllowedWithToken) {
-    return NextResponse.redirect(new URL("/membership/portal", request.url))
+    // Store the current URL as the next parameter
+    const loginUrl = new URL("/membership/portal", request.url)
+
+    // Only add the next parameter if it's not already an auth page
+    if (!isAuthPage && !path.includes("/api/")) {
+      loginUrl.searchParams.set("next", path)
+    }
+
+    return NextResponse.redirect(loginUrl)
   }
 
   // Final check for activation paths
@@ -107,7 +114,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images|assets|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|images|assets|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)"],
 }
