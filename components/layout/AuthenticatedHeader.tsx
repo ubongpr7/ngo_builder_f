@@ -4,7 +4,6 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useLogoutMutation } from "@/redux/features/authApiSlice"
-import { useGetLoggedInUserQuery } from "@/redux/features/users/userApiSlice"
 import Image from "next/image"
 import {
   DropdownMenu,
@@ -20,6 +19,7 @@ import { toast } from "react-toastify"
 import { useRouter } from "next/navigation"
 import { logout } from "@/redux/features/authSlice"
 import { useAppDispatch } from "@/redux/store"
+import { useGetUserLoggedInProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 const navigation = [
   { name: "Dashboard", href: "/membership/dashboard" },
@@ -35,7 +35,7 @@ export default function AuthenticatedHeader() {
   const router = useRouter()
 
   // Fetch user data
-  const { data: userData, isLoading: isUserLoading } = useGetLoggedInUserQuery('')
+  const { data: userData, isLoading: isUserLoading } = useGetUserLoggedInProfileDetailsQuery('')
 
   // Extract user information
   const userFullName =
