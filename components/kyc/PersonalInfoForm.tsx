@@ -36,7 +36,7 @@ interface FormErrors {
 }
 
 interface Disability {
-  id: string
+  id: number
   name: string
   description?: string
 }
@@ -502,6 +502,7 @@ export default function PersonalInfoForm({
         </RadioGroup>
       </div>
 
+
       {/* Disability Selection - Only shown if user has selected "Yes" for disabilities */}
       {formData.disabled && (
         <div className="space-y-3 text-gray-800">
@@ -520,7 +521,7 @@ export default function PersonalInfoForm({
                 </SelectItem>
               ) : disabilities.length > 0 ? (
                 disabilities.map((disability: Disability) => (
-                  <SelectItem key={disability.id} value={disability.id}>
+                  <SelectItem key={disability.id} value={disability.id.toString()}>
                     {disability.name}
                     {disability.description && ` (${disability.description})`}
                   </SelectItem>

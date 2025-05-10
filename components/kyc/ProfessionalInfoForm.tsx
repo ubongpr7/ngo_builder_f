@@ -186,7 +186,7 @@ export default function ProfessionalInfoForm({
               <SelectValue placeholder="Select industry" />
             </SelectTrigger>
             <SelectContent>
-              <div className="p-2">
+            <div className="p-2">
                 <Input
                   placeholder="Search industries..."
                   value={searchTerm}
