@@ -508,8 +508,8 @@ export default function PersonalInfoForm({
         <div className="space-y-3 text-gray-800">
           <Label htmlFor="disability">Select Disability</Label>
           <Select
-            value={formData.disability || ""}
-            onValueChange={(value: string) => updateFormData({ disability: value })}
+            value={formData.disability !== undefined && formData.disability !== null ? formData.disability.toString() : undefined}
+            onValueChange={(value: string) => updateFormData({ disability: Number(value) })}
           >
             <SelectTrigger className={errors.disability ? "border-red-500" : ""}>
               <SelectValue placeholder="Select a disability" />

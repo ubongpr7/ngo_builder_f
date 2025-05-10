@@ -9,7 +9,7 @@ export interface DropdownOption {
     last_name: string
     sex:string
     disabled: boolean
-    disability: string 
+    disability: number | null 
     date_of_birth: string 
     linkedin_profile: string | null
     profile_link: string | null
