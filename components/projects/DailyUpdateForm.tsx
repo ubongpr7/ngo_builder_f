@@ -69,7 +69,7 @@ export default function DailyUpdateForm({ projectId }: { projectId?: string }) {
         title: "Update submitted",
         description: "Your daily project update has been submitted successfully.",
       })
-      router.push(`/membership/dashboard/projects/${projectId}`)
+      router.push(`/dashboard/projects/${projectId}`)
     }, 1500)
   }
 

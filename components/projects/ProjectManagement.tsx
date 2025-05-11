@@ -191,7 +191,7 @@ function ProjectCard({ project }: { project: any }) {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button asChild variant="outline" size="sm">
-          <Link href={`/membership/dashboard/projects/${project.id}`}>View Details</Link>
+          <Link href={`/dashboard/projects/${project.id}`}>View Details</Link>
         </Button>
         <Button variant="ghost" size="sm">
           <Upload className="mr-2 h-4 w-4" />

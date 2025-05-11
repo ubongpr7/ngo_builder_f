@@ -224,7 +224,7 @@ export default function DailyUpdatesList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem asChild>
-                            <Link href={`/membership/dashboard/projects/daily-updates/${update.id}`}>
+                            <Link href={`/dashboard/projects/daily-updates/${update.id}`}>
                               <Eye className="h-4 w-4 mr-2" /> View Details
                             </Link>
                           </DropdownMenuItem>
