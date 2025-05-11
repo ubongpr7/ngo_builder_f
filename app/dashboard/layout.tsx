@@ -35,7 +35,6 @@ export default function DashboardLayout({
 
         {/* Page content */}
         <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
-      </div>
     </div>
   )
 }
