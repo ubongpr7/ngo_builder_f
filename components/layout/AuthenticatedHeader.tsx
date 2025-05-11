@@ -619,6 +619,7 @@ export default function AuthenticatedHeader() {
                     <Settings className="h-4 w-4 mr-2" />
                     Update Profile
                   </Link>
+                  {/* Add any additional user-specific links here
                   <Link
                     href="/settings"
                     className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
@@ -627,6 +628,7 @@ export default function AuthenticatedHeader() {
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </Link>
+                   */}
                   <button
                     onClick={() => {
                       handleLogout()
