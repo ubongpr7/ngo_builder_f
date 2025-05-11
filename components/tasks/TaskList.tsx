@@ -1,28 +1,32 @@
 "use client"
+
 import { useState } from "react"
-import { useGetTasksQuery } from "@/redux/features/tasks/tasksAPISlice"
+import { useGetTopLevelTasksQuery } from "@/redux/features/tasks/tasksAPISlice"
 import TaskItem from "./TaskItem"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AddTaskDialog from "./AddTaskDialog"
 import { Loader2 } from "lucide-react"
 
+
 export default function TaskList() {
-  const [activeTab, setActiveTab] = useState("all")
+  const [activeTab, setActiveTab] = useState<string>("all")
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false)
 
-  const { data: tasks, isLoading, refetch } = useGetTasksQuery()
+  const { data: tasks = [], isLoading, refetch } = useGetTopLevelTasksQuery()
 
-  // Filter tasks based on active tab
-  const filteredTasks = tasks
-    ?.filter((task) => {
-      if (activeTab === "all") return true
-      if (activeTab === "pending") return task.status === "pending"
-      if (activeTab === "in_progress") return task.status === "in_progress"
-      if (activeTab === "completed") return task.status === "completed"
-      return true
-    })
-    .filter((task) => task.parent === null) // Only show top-level tasks
+  // Filter tasks based on active tab - ensure tasks is an array before filtering
+  const filteredTasks = Array.isArray(tasks)
+    ? tasks.filter((task) => {
+        if (activeTab === "all") return true
+        if (activeTab === "todo") return task.status === "todo"
+        if (activeTab === "in_progress") return task.status === "in_progress"
+        if (activeTab === "review") return task.status === "review"
+        if (activeTab === "completed") return task.status === "completed"
+        if (activeTab === "blocked") return task.status === "blocked"
+        return true
+      })
+    : []
 
   // Handle tab change
   const handleTabChange = (value: string) => {
@@ -43,11 +47,13 @@ export default function TaskList() {
       </div>
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
+        <TabsList className="grid grid-cols-6 mb-6">
           <TabsTrigger value="all">All Tasks</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="todo">To Do</TabsTrigger>
           <TabsTrigger value="in_progress">In Progress</TabsTrigger>
+          <TabsTrigger value="review">Review</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="blocked">Blocked</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-0">
@@ -55,7 +61,7 @@ export default function TaskList() {
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : filteredTasks && filteredTasks.length > 0 ? (
+          ) : filteredTasks.length > 0 ? (
             <div className="space-y-4">
               {filteredTasks.map((task) => (
                 <TaskItem key={task.id} task={task} onUpdate={refetch} />

@@ -6,16 +6,32 @@ import {
   useDeleteTaskMutation,
   useCompleteTaskMutation,
   useGetSubtasksQuery,
-  type Task,
 } from "@/redux/features/tasks/tasksAPISlice"
+import type { Task } from "@/types/tasks"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronDown, ChevronRight, Edit, Trash, Plus } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  Trash,
+  Plus,
+  Clock,
+  AlertTriangle,
+  Users,
+  Calendar,
+  BarChart2,
+} from "lucide-react"
+import { format, isValid, parseISO } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { AvatarGroup } from "@/components/ui/avatar-group"
+import { Progress } from "@/components/ui/progress"
 import EditTaskDialog from "./EditTaskDialog"
 import AddSubtaskDialog from "./AddSubtaskDialog"
-import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface TaskItemProps {
   task: Task
@@ -28,31 +44,68 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isAddSubtaskOpen, setIsAddSubtaskOpen] = useState(false)
 
-  const { data: subtasks, isLoading: isLoadingSubtasks } = useGetSubtasksQuery(task.id, {
-    skip: !task.has_subtasks || isExpanded,
+  const { data: subtasks = [], isLoading: isLoadingSubtasks } = useGetSubtasksQuery(task.id, {
+    skip: !task.has_subtasks || !isExpanded,
   })
 
   const [updateTask] = useUpdateTaskMutation()
   const [deleteTask] = useDeleteTaskMutation()
   const [completeTask] = useCompleteTaskMutation()
+  const { toast } = useToast()
 
   const handleStatusChange = async () => {
     if (task.status !== "completed") {
-      await completeTask(task.id)
-      onUpdate()
+      try {
+        await completeTask(task.id).unwrap()
+        toast({
+          title: "Task completed",
+          description: `"${task.title}" has been marked as completed.`,
+        })
+        onUpdate()
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to complete the task. Please try again.",
+          variant: "destructive",
+        })
+      }
     } else {
-      await updateTask({
-        id: task.id,
-        data: { status: "pending" },
-      })
-      onUpdate()
+      try {
+        await updateTask({
+          id: task.id,
+          data: { status: "todo" },
+        }).unwrap()
+        toast({
+          title: "Task reopened",
+          description: `"${task.title}" has been reopened.`,
+        })
+        onUpdate()
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to reopen the task. Please try again.",
+          variant: "destructive",
+        })
+      }
     }
   }
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this task?")) {
-      await deleteTask(task.id)
-      onUpdate()
+    if (confirm(`Are you sure you want to delete "${task.title}"?`)) {
+      try {
+        await deleteTask(task.id).unwrap()
+        toast({
+          title: "Task deleted",
+          description: `"${task.title}" has been deleted.`,
+        })
+        onUpdate()
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete the task. Please try again.",
+          variant: "destructive",
+        })
+      }
     }
   }
 
@@ -70,36 +123,95 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
     setIsExpanded(!isExpanded)
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800"
-      case "medium":
-        return "bg-yellow-100 text-yellow-800"
-      case "low":
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "todo":
+        return "bg-gray-100 text-gray-800"
+      case "in_progress":
+        return "bg-blue-100 text-blue-800"
+      case "review":
+        return "bg-purple-100 text-purple-800"
+      case "completed":
         return "bg-green-100 text-green-800"
+      case "blocked":
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "low":
         return "bg-green-100 text-green-800"
-      case "in_progress":
-        return "bg-blue-100 text-blue-800"
-      case "pending":
-        return "bg-gray-100 text-gray-800"
+      case "medium":
+        return "bg-yellow-100 text-yellow-800"
+      case "high":
+        return "bg-orange-100 text-orange-800"
+      case "urgent":
+        return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "todo":
+        return "To Do"
+      case "in_progress":
+        return "In Progress"
+      case "review":
+        return "Under Review"
+      case "completed":
+        return "Completed"
+      case "blocked":
+        return "Blocked"
+      default:
+        return status
+    }
+  }
+
+  const getBorderColor = (task: Task) => {
+    if (task.status === "completed") return "border-l-green-500"
+    if (task.status === "blocked") return "border-l-red-500"
+
+    switch (task.priority) {
+      case "urgent":
+        return "border-l-red-500"
+      case "high":
+        return "border-l-orange-500"
+      case "medium":
+        return "border-l-yellow-500"
+      case "low":
+        return "border-l-green-500"
+      default:
+        return "border-l-gray-500"
+    }
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null
+    try {
+      const date = parseISO(dateString)
+      return isValid(date) ? format(date, "MMM d, yyyy") : null
+    } catch (error) {
+      return null
+    }
+  }
+
+  // Safely access assigned_to as an array
+  const assignedUsers = Array.isArray(task.assigned_to) ? task.assigned_to : []
 
   return (
     <>
       <Card
-        className={`border-l-4 ${task.status === "completed" ? "border-l-green-500" : task.priority === "high" ? "border-l-red-500" : task.priority === "medium" ? "border-l-yellow-500" : "border-l-blue-500"}`}
+        className={cn(
+          "border-l-4 mb-2",
+          getBorderColor(task),
+          task.status === "completed" && "bg-gray-50",
+          level > 0 && `ml-${level * 4}`,
+        )}
       >
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
@@ -111,25 +223,85 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3
-                    className={`text-lg font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
+                    className={cn("text-lg font-medium", task.status === "completed" && "line-through text-gray-500")}
                   >
                     {task.title}
                   </h3>
-                  <p
-                    className={`text-sm text-gray-600 mt-1 ${task.status === "completed" ? "line-through text-gray-400" : ""}`}
-                  >
-                    {task.description}
-                  </p>
-                </div>
 
-                <div className="flex gap-2">
-                  <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
-                  <Badge className={getStatusColor(task.status)}>{task.status.replace("_", " ")}</Badge>
+                  {task.description && (
+                    <p className={cn("text-sm text-gray-600 mt-1", task.status === "completed" && "text-gray-400")}>
+                      {task.description}
+                    </p>
+                  )}
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge className={getStatusColor(task.status)}>{getStatusText(task.status)}</Badge>
+
+                    <Badge className={getPriorityColor(task.priority)}>{task.priority}</Badge>
+
+                    {task.milestone && (
+                      <Badge variant="outline" className="border-purple-200 text-purple-800">
+                        {typeof task.milestone === "object" ? task.milestone.title : `Milestone #${task.milestone}`}
+                      </Badge>
+                    )}
+
+                    {task.is_overdue && (
+                      <Badge variant="outline" className="border-red-200 text-red-800">
+                        <AlertTriangle className="mr-1 h-3 w-3" />
+                        Overdue
+                      </Badge>
+                    )}
+
+                    {task.is_unblocked === false && (
+                      <Badge variant="outline" className="border-red-200 text-red-800">
+                        Blocked
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {task.due_date && (
-                <div className="mt-2 text-sm text-gray-500">Due: {format(new Date(task.due_date), "MMM d, yyyy")}</div>
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-gray-500">
+                {task.due_date && (
+                  <div className="flex items-center">
+                    <Calendar className="mr-1 h-3 w-3" />
+                    <span>Due: {formatDate(task.due_date)}</span>
+                  </div>
+                )}
+
+                {task.estimated_hours && (
+                  <div className="flex items-center">
+                    <Clock className="mr-1 h-3 w-3" />
+                    <span>Est: {task.estimated_hours}h</span>
+                    {task.actual_hours && <span className="ml-1">(Actual: {task.actual_hours}h)</span>}
+                  </div>
+                )}
+
+                {task.has_subtasks && typeof task.completion_percentage === "number" && (
+                  <div className="flex items-center">
+                    <BarChart2 className="mr-1 h-3 w-3" />
+                    <span>Progress: {task.completion_percentage}%</span>
+                  </div>
+                )}
+              </div>
+
+              {task.has_subtasks &&
+                typeof task.completion_percentage === "number" &&
+                task.completion_percentage > 0 && <Progress value={task.completion_percentage} className="h-1 mt-2" />}
+
+              {assignedUsers.length > 0 && (
+                <div className="mt-3 flex items-center">
+                  <Users className="h-3 w-3 mr-2 text-gray-500" />
+                  <AvatarGroup>
+                    {assignedUsers.map((user) => (
+                      <Avatar key={typeof user === "object" ? user.id : user} className="h-6 w-6">
+                        <AvatarFallback>
+                          {typeof user === "object" ? user.first_name?.[0] || user.email?.[0] || "?" : "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                    ))}
+                  </AvatarGroup>
+                </div>
               )}
             </div>
           </div>
@@ -158,8 +330,8 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
         </CardFooter>
       </Card>
 
-      {isExpanded && task.has_subtasks && subtasks && (
-        <div className={`pl-8 mt-2 space-y-2`}>
+      {isExpanded && task.has_subtasks && Array.isArray(subtasks) && (
+        <div className={`pl-4 space-y-2 mb-4`}>
           {subtasks.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} onUpdate={onUpdate} level={level + 1} />
           ))}
