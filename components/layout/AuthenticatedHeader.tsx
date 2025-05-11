@@ -553,9 +553,9 @@ export default function AuthenticatedHeader() {
                       </>
                     )}
 
+                    { /* Add any executive-specific links here 
                     {userRoles.isDBExecutive && (
                       <>
-                        
                         <Link
                           href="/executive/reports"
                           className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
@@ -566,8 +566,9 @@ export default function AuthenticatedHeader() {
                         </Link>
                       </>
                     )}
+                      */ }
 
-                    
+                    {/* Add any staff-specific links here
                     {userRoles.isDonor && (
                       <>
                         <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Donations</p>
@@ -595,9 +596,10 @@ export default function AuthenticatedHeader() {
                         </Link>
                       </>
                     )}
+                      */ }
                   </div>
                 )}
-
+              
                 {/* User section */}
                 <div className="py-3">
                   <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Your Account</p>
