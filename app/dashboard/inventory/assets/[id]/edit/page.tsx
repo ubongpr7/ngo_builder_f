@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar"
 import AssetForm from "@/components/inventory/AssetForm"
 import type { AssetItem } from "@/types/inventory"
 
@@ -50,7 +49,6 @@ export default async function EditAssetPage({ params }: { params: { id: string }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <DashboardSidebar />
       <div className="flex-1 p-4 md:p-8 pt-16 md:pt-8">
         <AssetForm asset={asset} isEditing={true} />
       </div>
