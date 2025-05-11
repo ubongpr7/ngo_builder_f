@@ -1,7 +1,7 @@
 import { apiSlice } from "../../services/apiSlice"
 import type { Task, CreateTaskRequest, UpdateTaskRequest, TaskStatus, TaskPriority } from "@/types/tasks"
 
-const tasks_api = "api/v1/tasks"
+const tasks_api = "task_api"
 
 export const tasksApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
