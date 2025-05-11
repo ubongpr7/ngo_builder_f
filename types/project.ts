@@ -32,8 +32,11 @@ export interface Project {
   created_by: UserData
   created_at: string
   updated_at: string
+  budget_utilization?: number
+  target_end_date?: string
   tasks?: Task[]
   milestones?: Milestone[]
+  status: "planned" | "in_progress" | "completed" | "on_hold" | "cancelled"
 }
 
 export interface CreateProjectRequest {
@@ -84,4 +87,58 @@ export interface ProjectUpdate {
   comments_count?: number
   created_at: string
   updated_at: string
+}
+
+
+export interface ProjectCategory {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface ProjectMedia {
+  id: number;
+  update: number;
+  media_type: 'image' | 'video' | 'document' | 'audio';
+  file: string;
+  file_url: string;
+  caption?: string;
+  uploaded_at: string;
+}
+
+export interface ProjectStatistics {
+  status_counts: Record<string, number>;
+  type_counts: Record<string, number>;
+  budget_stats: {
+    total_budget: number;
+    total_allocated: number;
+    total_spent: number;
+    avg_budget: number;
+  };
+  timeline_stats: {
+    active_projects: number;
+    delayed_projects: number;
+    completed_on_time: number;
+    completed_late: number;
+  };
+  category_counts: Record<string, number>;
+}
+
+export interface UpdateStatistics {
+  total_updates: number;
+  updates_by_project: Array<{
+    project__title: string;
+    count: number;
+  }>;
+  total_funds_spent: number;
+  updates_by_user: Array<{
+    submitted_by__username: string;
+    submitted_by__first_name: string;
+    submitted_by__last_name: string;
+    count: number;
+  }>;
+  updates_by_date: Array<{
+    date: string;
+    count: number;
+  }>;
 }
