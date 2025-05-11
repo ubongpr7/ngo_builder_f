@@ -42,7 +42,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
   
     getCompanyUsers: builder.query<UserData[], void>({
-      query: () => `/${user_api}/staff/list/`,
+      query: () => `/profile_api/users/`,
     }),
   
     
