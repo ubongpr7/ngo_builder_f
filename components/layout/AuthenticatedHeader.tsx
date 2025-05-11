@@ -142,7 +142,7 @@ export default function AuthenticatedHeader() {
     // Add role-specific navigation items
     if (userRoles.isDBAdmin || userRoles.isDBExecutive) {
       baseNavigation.push(
-        { name: "Admin Panel", href: "/admin/dashboard", icon: <ShieldCheck className="h-4 w-4 mr-2" /> },
+        // { name: "Admin Panel", href: "/admin/dashboard", icon: <ShieldCheck className="h-4 w-4 mr-2" /> },
         { name: "KYC Verification", href: "/admin/kyc-verification", icon: <UserCog className="h-4 w-4 mr-2" /> },
       )
     }
@@ -365,9 +365,7 @@ export default function AuthenticatedHeader() {
                   </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/dashboard">Admin Dashboard</Link>
-                      </DropdownMenuItem>
+                      
                       <DropdownMenuItem asChild>
                         <Link href="/admin/users">Manage Users</Link>
                       </DropdownMenuItem>
@@ -562,14 +560,7 @@ export default function AuthenticatedHeader() {
                     {userRoles.isDBAdmin && (
                       <>
                         <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Admin</p>
-                        <Link
-                          href="/admin/dashboard"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <ShieldCheck className="h-4 w-4 mr-2" />
-                          Admin Dashboard
-                        </Link>
+                       
                         <Link
                           href="/admin/kyc-verification"
                           className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
@@ -583,15 +574,7 @@ export default function AuthenticatedHeader() {
 
                     {userRoles.isDBExecutive && (
                       <>
-                        <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Executive</p>
-                        <Link
-                          href="/executive/dashboard"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <Award className="h-4 w-4 mr-2" />
-                          Executive Dashboard
-                        </Link>
+                        
                         <Link
                           href="/executive/reports"
                           className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
@@ -603,20 +586,7 @@ export default function AuthenticatedHeader() {
                       </>
                     )}
 
-                    {userRoles.isPartner && (
-                      <>
-                        <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Partnership</p>
-                        <Link
-                          href="/partnership/dashboard"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <Handshake className="h-4 w-4 mr-2" />
-                          Partnership Dashboard
-                        </Link>
-                      </>
-                    )}
-
+                    
                     {userRoles.isDonor && (
                       <>
                         <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Donations</p>
