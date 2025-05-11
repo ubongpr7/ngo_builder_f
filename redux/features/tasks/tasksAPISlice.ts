@@ -10,7 +10,9 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
       query: () => `/${tasks_api}/`,
       
     }),
-
+    getAllTasks: builder.query<Task[], void>({
+      query: () => `/${tasks_api}/`,
+    }),
     // Get top-level tasks
     getTopLevelTasks: builder.query<Task[], void>({
       query: () => `/${tasks_api}/?top_level=true`,
@@ -129,6 +131,7 @@ export const tasksApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetTasksQuery,
+  useGetAllTasksQuery,
   useGetTopLevelTasksQuery,
   useGetTasksByStatusQuery,
   useGetTasksByPriorityQuery,

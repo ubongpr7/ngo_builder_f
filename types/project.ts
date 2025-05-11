@@ -49,3 +49,39 @@ export interface UpdateProjectRequest {
   start_date?: string | null
   end_date?: string | null
 }
+
+
+
+export interface UpdateProjectRequest {
+  title?: string
+  description?: string
+  status?: "planned" | "in_progress" | "completed" | "on_hold" | "cancelled"
+  start_date?: string | null
+  due_date?: string
+  completion_date?: string
+  manager?: number
+  team_members?: number[]
+  budget?: number
+}
+
+export interface ProjectUpdate {
+  id: number
+  project: number | Project
+  title: string
+  content: string
+  type: "milestone" | "progress" | "general"
+  author: {
+    id: number
+    name: string
+    profile_image?: string
+  }
+  attachments?: {
+    id: number
+    name: string
+    file: string
+    file_type: string
+  }[]
+  comments_count?: number
+  created_at: string
+  updated_at: string
+}

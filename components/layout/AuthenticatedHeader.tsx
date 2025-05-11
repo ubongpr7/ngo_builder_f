@@ -148,7 +148,6 @@ export default function AuthenticatedHeader() {
     }
 
     if (userRoles.isDBStaff || userRoles.isDBExecutive || userRoles.isDBAdmin) {
-      baseNavigation.push({ name: "Members", href: "/membership/members", icon: <Users className="h-4 w-4 mr-2" /> })
     }
 
     // baseNavigation.push(

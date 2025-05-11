@@ -191,23 +191,18 @@ export default function DashboardSidebar() {
                 </NavItem>
               )}
 
-              {/* CEO and DB Executive can see Created Projects */}
-              {(userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/dashboard/projects/created" icon={UserPlus}>
-                  Created Projects
-                </NavItem>
-              )}
 
               {/* Project Manager, CEO, and DB Executive can see Managed Projects */}
+              {/* All users can see Daily Updates 
               {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
                 <NavItem href="/dashboard/projects/managed" icon={Award}>
                   Managed Projects
                 </NavItem>
               )}
-
               <NavItem href="/dashboard/projects/daily-updates" icon={FileText}>
                 Daily Updates
               </NavItem>
+              */}
 
               <NavItem href="/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
@@ -230,13 +225,7 @@ export default function DashboardSidebar() {
                 My Tasks
               </NavItem>
 
-              {/* CEO and DB Executive can see Created Tasks */}
-              {(userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/dashboard/tasks/created" icon={UserPlus}>
-                  Created Tasks
-                </NavItem>
-              )}
-
+              
               {/* Project Manager, CEO, and DB Executive can see Overdue Tasks */}
               {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
                 <NavItem href="/dashboard/tasks/overdue" icon={Clock}>
