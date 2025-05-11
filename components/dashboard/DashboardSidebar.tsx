@@ -157,7 +157,7 @@ export default function DashboardSidebar() {
     >
       <div className="flex h-full flex-col gap-2">
         <div className="flex h-14 items-center justify-between border-b px-4">
-          <Link href="/membership/dashboard" className="flex items-center gap-2 font-semibold">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <LayoutDashboard className="h-5 w-5 text-green-600" />
             <span>Destiny Builders</span>
           </Link>
@@ -173,47 +173,47 @@ export default function DashboardSidebar() {
         </div>
         <div className="flex-1 overflow-auto py-2 px-4">
           <nav className="grid gap-1">
-            <NavItem href="/membership/dashboard" icon={Home}>
+            <NavItem href="/dashboard" icon={Home}>
               Overview
             </NavItem>
 
             {/* Projects Section - Role-based */}
             <NavSection title="Projects" name="projects" icon={FolderOpen}>
               {/* All users can see All Projects */}
-              <NavItem href="/membership/dashboard/projects" icon={ClipboardList}>
+              <NavItem href="/dashboard/projects" icon={ClipboardList}>
                 All Projects
               </NavItem>
 
               {/* CEO and DB Executive can see My Projects */}
               {(userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/projects/my-projects" icon={Briefcase}>
+                <NavItem href="/dashboard/projects/my-projects" icon={Briefcase}>
                   My Projects
                 </NavItem>
               )}
 
               {/* CEO and DB Executive can see Created Projects */}
               {(userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/projects/created" icon={UserPlus}>
+                <NavItem href="/dashboard/projects/created" icon={UserPlus}>
                   Created Projects
                 </NavItem>
               )}
 
               {/* Project Manager, CEO, and DB Executive can see Managed Projects */}
               {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/projects/managed" icon={Award}>
+                <NavItem href="/dashboard/projects/managed" icon={Award}>
                   Managed Projects
                 </NavItem>
               )}
 
-              <NavItem href="/membership/dashboard/projects/daily-updates" icon={FileText}>
+              <NavItem href="/dashboard/projects/daily-updates" icon={FileText}>
                 Daily Updates
               </NavItem>
 
-              <NavItem href="/membership/dashboard/projects/milestones" icon={Calendar}>
+              <NavItem href="/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
               </NavItem>
 
-              <NavItem href="/membership/dashboard/projects/teams" icon={Users}>
+              <NavItem href="/dashboard/projects/teams" icon={Users}>
                 Teams
               </NavItem>
             </NavSection>
@@ -221,32 +221,32 @@ export default function DashboardSidebar() {
             {/* Tasks Section - Role-based */}
             <NavSection title="Tasks" name="tasks" icon={ListTodo}>
               {/* All users can see All Tasks */}
-              <NavItem href="/membership/dashboard/tasks" icon={ClipboardList}>
+              <NavItem href="/dashboard/tasks" icon={ClipboardList}>
                 All Tasks
               </NavItem>
 
               {/* All users can see My Tasks */}
-              <NavItem href="/membership/dashboard/tasks/my-tasks" icon={CheckSquare}>
+              <NavItem href="/dashboard/tasks/my-tasks" icon={CheckSquare}>
                 My Tasks
               </NavItem>
 
               {/* CEO and DB Executive can see Created Tasks */}
               {(userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/tasks/created" icon={UserPlus}>
+                <NavItem href="/dashboard/tasks/created" icon={UserPlus}>
                   Created Tasks
                 </NavItem>
               )}
 
               {/* Project Manager, CEO, and DB Executive can see Overdue Tasks */}
               {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/tasks/overdue" icon={Clock}>
+                <NavItem href="/dashboard/tasks/overdue" icon={Clock}>
                   Overdue Tasks
                 </NavItem>
               )}
 
               {/* Project Manager, CEO, and DB Executive can see Blocked Tasks */}
               {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/membership/dashboard/tasks/blocked" icon={AlertTriangle}>
+                <NavItem href="/dashboard/tasks/blocked" icon={AlertTriangle}>
                   Blocked Tasks
                 </NavItem>
               )}
@@ -255,16 +255,16 @@ export default function DashboardSidebar() {
             {/* Only show Inventory section to specific roles */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
               <NavSection title="Inventory" name="inventory" icon={Package}>
-                <NavItem href="/membership/dashboard/inventory" icon={BarChart3}>
+                <NavItem href="/dashboard/inventory" icon={BarChart3}>
                   Overview
                 </NavItem>
-                <NavItem href="/membership/dashboard/inventory/assets" icon={Package}>
+                <NavItem href="/dashboard/inventory/assets" icon={Package}>
                   Assets
                 </NavItem>
-                <NavItem href="/membership/dashboard/inventory/maintenance" icon={Settings}>
+                <NavItem href="/dashboard/inventory/maintenance" icon={Settings}>
                   Maintenance
                 </NavItem>
-                <NavItem href="/membership/dashboard/inventory/audits" icon={ClipboardList}>
+                <NavItem href="/dashboard/inventory/audits" icon={ClipboardList}>
                   Audits
                 </NavItem>
               </NavSection>
@@ -273,19 +273,19 @@ export default function DashboardSidebar() {
             {/* Only show Finance section to specific roles */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
               <NavSection title="Finance" name="finance" icon={Wallet}>
-                <NavItem href="/membership/dashboard/finance" icon={BarChart3}>
+                <NavItem href="/dashboard/finance" icon={BarChart3}>
                   Overview
                 </NavItem>
-                <NavItem href="/membership/dashboard/finance/donations" icon={Heart}>
+                <NavItem href="/dashboard/finance/donations" icon={Heart}>
                   Donations
                 </NavItem>
-                <NavItem href="/membership/dashboard/finance/expenses" icon={FileText}>
+                <NavItem href="/dashboard/finance/expenses" icon={FileText}>
                   Expenses
                 </NavItem>
-                <NavItem href="/membership/dashboard/finance/grants" icon={FileText}>
+                <NavItem href="/dashboard/finance/grants" icon={FileText}>
                   Grants
                 </NavItem>
-                <NavItem href="/membership/dashboard/finance/budgets" icon={PieChart}>
+                <NavItem href="/dashboard/finance/budgets" icon={PieChart}>
                   Budgets
                 </NavItem>
               </NavSection>
@@ -294,50 +294,50 @@ export default function DashboardSidebar() {
             {/* Only show Reporting section to specific roles */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isProjectManager) && (
               <NavSection title="Reporting" name="reporting" icon={FileText}>
-                <NavItem href="/membership/dashboard/reporting" icon={BarChart3}>
+                <NavItem href="/dashboard/reporting" icon={BarChart3}>
                   Overview
                 </NavItem>
-                <NavItem href="/membership/dashboard/reporting/project-reports" icon={FileText}>
+                <NavItem href="/dashboard/reporting/project-reports" icon={FileText}>
                   Project Reports
                 </NavItem>
-                <NavItem href="/membership/dashboard/reporting/financial-reports" icon={PieChart}>
+                <NavItem href="/dashboard/reporting/financial-reports" icon={PieChart}>
                   Financial Reports
                 </NavItem>
-                <NavItem href="/membership/dashboard/reporting/impact-metrics" icon={BarChart3}>
+                <NavItem href="/dashboard/reporting/impact-metrics" icon={BarChart3}>
                   Impact Metrics
                 </NavItem>
               </NavSection>
             )}
 
             {/* Common sections for all users */}
-            <NavItem href="/membership/dashboard/events" icon={Calendar}>
+            <NavItem href="/dashboard/events" icon={Calendar}>
               Events
             </NavItem>
-            <NavItem href="/membership/dashboard/members" icon={Users}>
+            <NavItem href="/dashboard/members" icon={Users}>
               Members
             </NavItem>
 
             {/* Only show Volunteers section to specific roles */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isVolunteer) && (
-              <NavItem href="/membership/dashboard/volunteers" icon={Heart}>
+              <NavItem href="/dashboard/volunteers" icon={Heart}>
                 Volunteers
               </NavItem>
             )}
 
             {/* Only show Partners section to specific roles */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isPartner) && (
-              <NavItem href="/membership/dashboard/partners" icon={Building}>
+              <NavItem href="/dashboard/partners" icon={Building}>
                 Partners
               </NavItem>
             )}
 
-            <NavItem href="/membership/dashboard/media" icon={Camera}>
+            <NavItem href="/dashboard/media" icon={Camera}>
               Media Gallery
             </NavItem>
-            <NavItem href="/membership/dashboard/blog" icon={BookOpen}>
+            <NavItem href="/dashboard/blog" icon={BookOpen}>
               Blog
             </NavItem>
-            <NavItem href="/membership/dashboard/messages" icon={MessageSquare}>
+            <NavItem href="/dashboard/messages" icon={MessageSquare}>
               Messages
             </NavItem>
           </nav>
