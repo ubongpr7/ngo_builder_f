@@ -151,10 +151,10 @@ export default function AuthenticatedHeader() {
       baseNavigation.push({ name: "Members", href: "/membership/members", icon: <Users className="h-4 w-4 mr-2" /> })
     }
 
-    baseNavigation.push(
-      { name: "Events", href: "/membership/events", icon: <Calendar className="h-4 w-4 mr-2" /> },
-      { name: "Resources", href: "/membership/resources", icon: <FileText className="h-4 w-4 mr-2" /> },
-    )
+    // baseNavigation.push(
+    //   { name: "Events", href: "/membership/events", icon: <Calendar className="h-4 w-4 mr-2" /> },
+    //   { name: "Resources", href: "/membership/resources", icon: <FileText className="h-4 w-4 mr-2" /> },
+    // )
 
     if (userRoles.isDonor) {
       baseNavigation.push({
