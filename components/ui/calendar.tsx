@@ -38,7 +38,7 @@ function Calendar({
         head_row: "flex",
         head_cell: "text-gray-500 w-8 h-8 flex items-center justify-center text-xs font-medium",
         row: "flex w-full",
-        cell: "h-8 w-8 text-center text-sm p-0 relative focus-within:z-20",
+        cell: "h-8 w-8 text-center text-sm p-0 relative focus-within:z-[9999]",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-8 w-8 p-0 text-sm text-gray-800 hover:bg-gray-200 rounded-full"
