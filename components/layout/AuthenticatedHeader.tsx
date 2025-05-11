@@ -136,7 +136,7 @@ export default function AuthenticatedHeader() {
   // Dynamic navigation based on user roles
   const getDynamicNavigation = () => {
     const baseNavigation = [
-      { name: "Dashboard", href: "/membership/dashboard", icon: <BarChart3 className="h-4 w-4 mr-2" /> },
+      { name: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-4 w-4 mr-2" /> },
     ]
 
     // Add role-specific navigation items
