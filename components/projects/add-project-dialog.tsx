@@ -68,10 +68,8 @@ export function AddProjectDialog() {
   async function onSubmit(data: ProjectFormValues) {
     try {
       await createProject({
-        ...data,
-        status: "planning",
-        funds_allocated: 0,
-        funds_spent: 0,
+        data,
+        
       }).unwrap()
 
       toast({
