@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { CalendarIcon, Loader2 } from "lucide-react"
+import { CalendarIcon, Loader2, Plus } from "lucide-react"
 import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -67,10 +67,7 @@ export function AddProjectDialog() {
 
   async function onSubmit(data: ProjectFormValues) {
     try {
-      await createProject({
-        data,
-        
-      }).unwrap()
+      await createProject(data).unwrap()
 
       toast({
         title: "Project created",
@@ -92,7 +89,9 @@ export function AddProjectDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">+ New Project</Button>
+        <Button className="bg-green-600 hover:bg-green-700 text-white">
+          <Plus className="mr-2 h-4 w-4" /> New Project
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -218,7 +217,13 @@ export function AddProjectDialog() {
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className="rounded-md border"
+                        />
                       </PopoverContent>
                     </Popover>
                     <FormMessage />
@@ -250,7 +255,11 @@ export function AddProjectDialog() {
                           selected={field.value}
                           onSelect={field.onChange}
                           initialFocus
-                          disabled={(date) => date < (form.getValues().start_date || new Date())}
+                          disabled={(date) => {
+                            const startDate = form.getValues().start_date
+                            return startDate ? date < startDate : date < new Date()
+                          }}
+                          className="rounded-md border"
                         />
                       </PopoverContent>
                     </Popover>
@@ -321,7 +330,7 @@ export function AddProjectDialog() {
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Project
               </Button>
