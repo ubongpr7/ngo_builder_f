@@ -247,16 +247,18 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/inventory/assets" icon={Package}>
                   Assets
                 </NavItem>
+                {/* Only show Equipment section to specific roles}
                 <NavItem href="/dashboard/inventory/maintenance" icon={Settings}>
                   Maintenance
                 </NavItem>
                 <NavItem href="/dashboard/inventory/audits" icon={ClipboardList}>
                   Audits
                 </NavItem>
+                */}
               </NavSection>
             )}
 
-            {/* Only show Finance section to specific roles */}
+            {/* Only show Finance section to specific roles 
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
               <NavSection title="Finance" name="finance" icon={Wallet}>
                 <NavItem href="/dashboard/finance" icon={BarChart3}>
@@ -276,8 +278,8 @@ export default function DashboardSidebar() {
                 </NavItem>
               </NavSection>
             )}
-
-            {/* Only show Reporting section to specific roles */}
+          */}
+            {/* Only show Reporting section to specific roles 
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isProjectManager) && (
               <NavSection title="Reporting" name="reporting" icon={FileText}>
                 <NavItem href="/dashboard/reporting" icon={BarChart3}>
@@ -294,23 +296,24 @@ export default function DashboardSidebar() {
                 </NavItem>
               </NavSection>
             )}
+              */}
 
-            {/* Common sections for all users */}
+            {/* Common sections for all users 
             <NavItem href="/dashboard/events" icon={Calendar}>
               Events
             </NavItem>
             <NavItem href="/dashboard/members" icon={Users}>
               Members
             </NavItem>
-
-            {/* Only show Volunteers section to specific roles */}
+            */}
+            {/* Only show Volunteers section to specific roles
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isVolunteer) && (
               <NavItem href="/dashboard/volunteers" icon={Heart}>
                 Volunteers
               </NavItem>
             )}
-
-            {/* Only show Partners section to specific roles */}
+          */}
+            {/* Only show Partners section to specific roles
             {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isPartner) && (
               <NavItem href="/dashboard/partners" icon={Building}>
                 Partners
@@ -326,6 +329,7 @@ export default function DashboardSidebar() {
             <NavItem href="/dashboard/messages" icon={MessageSquare}>
               Messages
             </NavItem>
+             */}
           </nav>
         </div>
         <div className="mt-auto border-t p-1">
