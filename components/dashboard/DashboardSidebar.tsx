@@ -25,18 +25,45 @@ import {
   Building,
   ChevronDown,
   X,
+  ListTodo,
+  CheckSquare,
+  Clock,
+  AlertTriangle,
+  Award,
+  UserPlus,
+  Briefcase,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useGetUserLoggedInProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 export default function DashboardSidebar() {
   const pathname = usePathname()
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
     projects: true,
+    tasks: true,
     inventory: false,
     finance: false,
     reporting: false,
   })
+
+  // Fetch user data
+  const { data: userData, isLoading: isUserLoading } = useGetUserLoggedInProfileDetailsQuery("")
+
+  // Extract user roles and permissions
+  const userRoles = {
+    isKycVerified: userData?.profile_data?.is_kyc_verified || false,
+    isExecutive: userData?.profile_data?.is_executive || false,
+    isCeo: userData?.profile_data?.is_ceo || false,
+    isProjectManager: userData?.profile_data?.is_project_manager || false,
+    isDonor: userData?.profile_data?.is_donor || false,
+    isVolunteer: userData?.profile_data?.is_volunteer || false,
+    isPartner: userData?.profile_data?.is_partner || false,
+    isDBStaff: userData?.profile_data?.is_DB_staff || false,
+    isStandardMember: userData?.profile_data?.is_standard_member || false,
+    isDBExecutive: userData?.profile_data?.is_DB_executive || false,
+    isDBAdmin: userData?.profile_data?.is_DB_admin || false,
+  }
 
   const toggleMenu = (menu: string) => {
     setOpenMenus((prev) => ({
@@ -67,8 +94,8 @@ export default function DashboardSidebar() {
       onClick={() => {
         // Close sidebar on mobile when a link is clicked
         if (window.innerWidth < 768) {
-          const sidebar = document.getElementById('dashboard-sidebar');
-          sidebar?.classList.add('hidden');
+          const sidebar = document.getElementById("dashboard-sidebar")
+          sidebar?.classList.add("hidden")
         }
       }}
     >
@@ -104,8 +131,27 @@ export default function DashboardSidebar() {
     </div>
   )
 
+  // Get user's full name and role for display
+  const userFullName =
+    userData?.first_name && userData?.last_name
+      ? `${userData.first_name} ${userData.last_name}`
+      : userData?.email?.split("@")[0] || "User"
+
+  const userRole = userRoles.isDBAdmin
+    ? "Admin"
+    : userRoles.isDBExecutive
+      ? "Executive"
+      : userRoles.isCeo
+        ? "CEO"
+        : userRoles.isProjectManager
+          ? "Project Manager"
+          : "Member"
+
+  // Get profile image
+  const profileImage = userData?.profile_data?.profile_image || "/user-icon.svg"
+
   return (
-    <div 
+    <div
       id="dashboard-sidebar"
       className="fixed md:relative z-50 h-screen w-64 border-r bg-white hidden md:block lg:w-64"
     >
@@ -115,11 +161,11 @@ export default function DashboardSidebar() {
             <LayoutDashboard className="h-5 w-5 text-green-600" />
             <span>Destiny Builders</span>
           </Link>
-          <button 
+          <button
             className="md:hidden text-gray-500 hover:text-gray-700"
             onClick={() => {
-              const sidebar = document.getElementById('dashboard-sidebar');
-              sidebar?.classList.add('hidden');
+              const sidebar = document.getElementById("dashboard-sidebar")
+              sidebar?.classList.add("hidden")
             }}
           >
             <X className="h-5 w-5" />
@@ -130,84 +176,161 @@ export default function DashboardSidebar() {
             <NavItem href="/membership/dashboard" icon={Home}>
               Overview
             </NavItem>
+
+            {/* Projects Section - Role-based */}
             <NavSection title="Projects" name="projects" icon={FolderOpen}>
+              {/* All users can see All Projects */}
               <NavItem href="/membership/dashboard/projects" icon={ClipboardList}>
                 All Projects
               </NavItem>
+
+              {/* CEO and DB Executive can see My Projects */}
+              {(userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/projects/my-projects" icon={Briefcase}>
+                  My Projects
+                </NavItem>
+              )}
+
+              {/* CEO and DB Executive can see Created Projects */}
+              {(userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/projects/created" icon={UserPlus}>
+                  Created Projects
+                </NavItem>
+              )}
+
+              {/* Project Manager, CEO, and DB Executive can see Managed Projects */}
+              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/projects/managed" icon={Award}>
+                  Managed Projects
+                </NavItem>
+              )}
+
               <NavItem href="/membership/dashboard/projects/daily-updates" icon={FileText}>
                 Daily Updates
               </NavItem>
-              <NavItem href="/membership/dashboard/projects/tasks" icon={ClipboardList}>
-                Tasks
-              </NavItem>
+
               <NavItem href="/membership/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
               </NavItem>
+
               <NavItem href="/membership/dashboard/projects/teams" icon={Users}>
                 Teams
               </NavItem>
             </NavSection>
 
-            <NavSection title="Inventory" name="inventory" icon={Package}>
-              <NavItem href="/membership/dashboard/inventory" icon={BarChart3}>
-                Overview
+            {/* Tasks Section - Role-based */}
+            <NavSection title="Tasks" name="tasks" icon={ListTodo}>
+              {/* All users can see All Tasks */}
+              <NavItem href="/membership/dashboard/tasks" icon={ClipboardList}>
+                All Tasks
               </NavItem>
-              <NavItem href="/membership/dashboard/inventory/assets" icon={Package}>
-                Assets
+
+              {/* All users can see My Tasks */}
+              <NavItem href="/membership/dashboard/tasks/my-tasks" icon={CheckSquare}>
+                My Tasks
               </NavItem>
-              <NavItem href="/membership/dashboard/inventory/maintenance" icon={Settings}>
-                Maintenance
-              </NavItem>
-              <NavItem href="/membership/dashboard/inventory/audits" icon={ClipboardList}>
-                Audits
-              </NavItem>
+
+              {/* CEO and DB Executive can see Created Tasks */}
+              {(userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/tasks/created" icon={UserPlus}>
+                  Created Tasks
+                </NavItem>
+              )}
+
+              {/* Project Manager, CEO, and DB Executive can see Overdue Tasks */}
+              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/tasks/overdue" icon={Clock}>
+                  Overdue Tasks
+                </NavItem>
+              )}
+
+              {/* Project Manager, CEO, and DB Executive can see Blocked Tasks */}
+              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
+                <NavItem href="/membership/dashboard/tasks/blocked" icon={AlertTriangle}>
+                  Blocked Tasks
+                </NavItem>
+              )}
             </NavSection>
 
-            <NavSection title="Finance" name="finance" icon={Wallet}>
-              <NavItem href="/membership/dashboard/finance" icon={BarChart3}>
-                Overview
-              </NavItem>
-              <NavItem href="/membership/dashboard/finance/donations" icon={Heart}>
-                Donations
-              </NavItem>
-              <NavItem href="/membership/dashboard/finance/expenses" icon={FileText}>
-                Expenses
-              </NavItem>
-              <NavItem href="/membership/dashboard/finance/grants" icon={FileText}>
-                Grants
-              </NavItem>
-              <NavItem href="/membership/dashboard/finance/budgets" icon={PieChart}>
-                Budgets
-              </NavItem>
-            </NavSection>
+            {/* Only show Inventory section to specific roles */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
+              <NavSection title="Inventory" name="inventory" icon={Package}>
+                <NavItem href="/membership/dashboard/inventory" icon={BarChart3}>
+                  Overview
+                </NavItem>
+                <NavItem href="/membership/dashboard/inventory/assets" icon={Package}>
+                  Assets
+                </NavItem>
+                <NavItem href="/membership/dashboard/inventory/maintenance" icon={Settings}>
+                  Maintenance
+                </NavItem>
+                <NavItem href="/membership/dashboard/inventory/audits" icon={ClipboardList}>
+                  Audits
+                </NavItem>
+              </NavSection>
+            )}
 
-            <NavSection title="Reporting" name="reporting" icon={FileText}>
-              <NavItem href="/membership/dashboard/reporting" icon={BarChart3}>
-                Overview
-              </NavItem>
-              <NavItem href="/membership/dashboard/reporting/project-reports" icon={FileText}>
-                Project Reports
-              </NavItem>
-              <NavItem href="/membership/dashboard/reporting/financial-reports" icon={PieChart}>
-                Financial Reports
-              </NavItem>
-              <NavItem href="/membership/dashboard/reporting/impact-metrics" icon={BarChart3}>
-                Impact Metrics
-              </NavItem>
-            </NavSection>
+            {/* Only show Finance section to specific roles */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
+              <NavSection title="Finance" name="finance" icon={Wallet}>
+                <NavItem href="/membership/dashboard/finance" icon={BarChart3}>
+                  Overview
+                </NavItem>
+                <NavItem href="/membership/dashboard/finance/donations" icon={Heart}>
+                  Donations
+                </NavItem>
+                <NavItem href="/membership/dashboard/finance/expenses" icon={FileText}>
+                  Expenses
+                </NavItem>
+                <NavItem href="/membership/dashboard/finance/grants" icon={FileText}>
+                  Grants
+                </NavItem>
+                <NavItem href="/membership/dashboard/finance/budgets" icon={PieChart}>
+                  Budgets
+                </NavItem>
+              </NavSection>
+            )}
 
+            {/* Only show Reporting section to specific roles */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isProjectManager) && (
+              <NavSection title="Reporting" name="reporting" icon={FileText}>
+                <NavItem href="/membership/dashboard/reporting" icon={BarChart3}>
+                  Overview
+                </NavItem>
+                <NavItem href="/membership/dashboard/reporting/project-reports" icon={FileText}>
+                  Project Reports
+                </NavItem>
+                <NavItem href="/membership/dashboard/reporting/financial-reports" icon={PieChart}>
+                  Financial Reports
+                </NavItem>
+                <NavItem href="/membership/dashboard/reporting/impact-metrics" icon={BarChart3}>
+                  Impact Metrics
+                </NavItem>
+              </NavSection>
+            )}
+
+            {/* Common sections for all users */}
             <NavItem href="/membership/dashboard/events" icon={Calendar}>
               Events
             </NavItem>
             <NavItem href="/membership/dashboard/members" icon={Users}>
               Members
             </NavItem>
-            <NavItem href="/membership/dashboard/volunteers" icon={Heart}>
-              Volunteers
-            </NavItem>
-            <NavItem href="/membership/dashboard/partners" icon={Building}>
-              Partners
-            </NavItem>
+
+            {/* Only show Volunteers section to specific roles */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isVolunteer) && (
+              <NavItem href="/membership/dashboard/volunteers" icon={Heart}>
+                Volunteers
+              </NavItem>
+            )}
+
+            {/* Only show Partners section to specific roles */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isPartner) && (
+              <NavItem href="/membership/dashboard/partners" icon={Building}>
+                Partners
+              </NavItem>
+            )}
+
             <NavItem href="/membership/dashboard/media" icon={Camera}>
               Media Gallery
             </NavItem>
@@ -221,12 +344,18 @@ export default function DashboardSidebar() {
         </div>
         <div className="mt-auto border-t p-1">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="h-8 w-8 rounded-full bg-gray-200">
-              <Image src="/user-icon.svg" alt="Destiny Builders Logo" width={50} height={50}/>
+            <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+              <Image
+                src={profileImage || "/placeholder.svg"}
+                alt={userFullName}
+                width={32}
+                height={32}
+                className="h-full w-full object-cover"
+              />
             </div>
             <div>
-              <div className="text-sm font-medium">John Doe</div>
-              <div className="text-xs text-gray-500">Project Manager</div>
+              <div className="text-sm font-medium">{userFullName}</div>
+              <div className="text-xs text-gray-500">{userRole}</div>
             </div>
           </div>
         </div>
