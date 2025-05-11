@@ -385,19 +385,6 @@ export default function AuthenticatedHeader() {
                     <Award className="h-4 w-4" />
                     <span>Executive</span>
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/executive/dashboard">Executive Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/executive/reports">Reports</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/executive/analytics">Analytics</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
                 </DropdownMenuSub>
               )}
 
@@ -470,12 +457,7 @@ export default function AuthenticatedHeader() {
               <DropdownMenuSeparator />
 
               {/* Settings and logout */}
-              <DropdownMenuItem asChild>
-                <Link href="/settings" className="flex items-center gap-2 cursor-pointer">
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
+              
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="flex items-center gap-2 cursor-pointer text-red-600 hover:text-red-700"
