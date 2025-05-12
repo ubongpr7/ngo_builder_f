@@ -70,7 +70,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <CardHeader>
         <CardTitle>{project.title}</CardTitle>
         <CardDescription>
-          {project.description.length > 120 ? `${project.description.substring(0, 120)}...` : project.description}
+          {project.description?.length > 120 ? `${project?.description.substring(0, 120)}...` : project.description}
         </CardDescription>
       </CardHeader>
       <CardContent>
