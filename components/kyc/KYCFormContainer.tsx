@@ -609,7 +609,6 @@ export default function KYCFormContainer({
                   : "Complete Current Step"}
             </Button>
           </div>
-
           <div className="mt-4 text-center text-sm text-gray-500">
             {formState.completedSteps.length} of {TOTAL_STEPS} steps completed
           </div>

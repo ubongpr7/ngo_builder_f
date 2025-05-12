@@ -17,7 +17,7 @@ interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 }
 
 export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
-  ({ value, onChange, error, label, helperText, className, minDate, maxDate, ...props }, ref) => {
+  ({ value, onChange, error, label, helperText, className, minDate, maxDate, id, ...props }, ref) => {
     // Convert Date to string format for input
     const dateString = value ? format(value, "yyyy-MM-dd") : ""
 
@@ -40,12 +40,16 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
 
     return (
       <div className="space-y-1">
-        {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+        {label && (
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+            {label}
+          </label>
+        )}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          </div>
+          
           <input
             ref={ref}
+            id={id}
             type="date"
             className={cn(
               "block w-full pl-10 py-2 px-3 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",

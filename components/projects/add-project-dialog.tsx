@@ -124,15 +124,15 @@ export function AddProjectDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id="create-project-form">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title *</FormLabel>
+                  <FormLabel htmlFor="project-title">Title *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Project title" {...field} />
+                    <Input id="project-title" placeholder="Project title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,9 +144,9 @@ export function AddProjectDialog() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description *</FormLabel>
+                  <FormLabel htmlFor="project-description">Description *</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Project description" {...field} />
+                    <Textarea id="project-description" placeholder="Project description" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,13 +159,14 @@ export function AddProjectDialog() {
                 name="project_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Type *</FormLabel>
+                    <FormLabel htmlFor="project-type">Project Type *</FormLabel>
                     <FormControl>
                       <Controller
                         name="project_type"
                         control={form.control}
                         render={({ field }) => (
                           <ReactSelectField
+                            inputId="project-type"
                             options={projectTypeOptions}
                             placeholder="Select project type"
                             value={projectTypeOptions.find((option) => option.value === field.value)}
@@ -173,11 +174,12 @@ export function AddProjectDialog() {
                             error={form.formState.errors.project_type?.message}
                             isSearchable
                             isClearable
+                            aria-labelledby="project-type-label"
                           />
                         )}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id="project-type-error" />
                   </FormItem>
                 )}
               />
@@ -187,13 +189,14 @@ export function AddProjectDialog() {
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
+                    <FormLabel htmlFor="project-category">Category</FormLabel>
                     <FormControl>
                       <Controller
                         name="category"
                         control={form.control}
                         render={({ field }) => (
                           <ReactSelectField
+                            inputId="project-category"
                             options={categoryOptions}
                             placeholder="Select category"
                             value={categoryOptions.find((option) => option.value === field.value)}
@@ -201,11 +204,12 @@ export function AddProjectDialog() {
                             error={form.formState.errors.category?.message}
                             isSearchable
                             isClearable
+                            aria-labelledby="project-category-label"
                           />
                         )}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id="project-category-error" />
                   </FormItem>
                 )}
               />
@@ -216,9 +220,9 @@ export function AddProjectDialog() {
               name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location *</FormLabel>
+                  <FormLabel htmlFor="project-location">Location *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Project location" {...field} />
+                    <Input id="project-location" placeholder="Project location" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -231,16 +235,18 @@ export function AddProjectDialog() {
                 name="start_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Date *</FormLabel>
+                    <FormLabel htmlFor="project-start-date">Start Date *</FormLabel>
                     <FormControl>
                       <DateInput
+                        id="project-start-date"
                         value={field.value}
                         onChange={field.onChange}
                         minDate={today}
                         error={form.formState.errors.start_date?.message}
+                        aria-describedby="start-date-error"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id="start-date-error" />
                   </FormItem>
                 )}
               />
@@ -250,16 +256,18 @@ export function AddProjectDialog() {
                 name="target_end_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Target End Date *</FormLabel>
+                    <FormLabel htmlFor="project-end-date">Target End Date *</FormLabel>
                     <FormControl>
                       <DateInput
+                        id="project-end-date"
                         value={field.value}
                         onChange={field.onChange}
                         minDate={startDate || today}
                         error={form.formState.errors.target_end_date?.message}
+                        aria-describedby="end-date-error"
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage id="end-date-error" />
                   </FormItem>
                 )}
               />
@@ -270,9 +278,9 @@ export function AddProjectDialog() {
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget (USD) *</FormLabel>
+                  <FormLabel htmlFor="project-budget">Budget (USD) *</FormLabel>
                   <FormControl>
-                    <Input type="number" min="0" step="0.01" placeholder="0.00" {...field} />
+                    <Input id="project-budget" type="number" min="0" step="0.01" placeholder="0.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -284,11 +292,13 @@ export function AddProjectDialog() {
               name="beneficiaries"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Beneficiaries</FormLabel>
+                  <FormLabel htmlFor="project-beneficiaries">Beneficiaries</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Who will benefit from this project?" {...field} />
+                    <Textarea id="project-beneficiaries" placeholder="Who will benefit from this project?" {...field} />
                   </FormControl>
-                  <FormDescription>Describe the target beneficiaries of this project</FormDescription>
+                  <FormDescription id="beneficiaries-description">
+                    Describe the target beneficiaries of this project
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -299,9 +309,9 @@ export function AddProjectDialog() {
               name="success_criteria"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Success Criteria</FormLabel>
+                  <FormLabel htmlFor="project-success-criteria">Success Criteria</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="How will success be measured?" {...field} />
+                    <Textarea id="project-success-criteria" placeholder="How will success be measured?" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -313,9 +323,9 @@ export function AddProjectDialog() {
               name="risks"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Risks</FormLabel>
+                  <FormLabel htmlFor="project-risks">Risks</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Potential risks and mitigation strategies" {...field} />
+                    <Textarea id="project-risks" placeholder="Potential risks and mitigation strategies" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -326,7 +336,12 @@ export function AddProjectDialog() {
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+              <Button
+                type="submit"
+                form="create-project-form"
+                disabled={isLoading}
+                className="bg-green-600 hover:bg-green-700"
+              >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Project
               </Button>

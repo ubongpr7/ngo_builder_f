@@ -3,10 +3,9 @@
 import type React from "react"
 import { forwardRef } from "react"
 import { format, parse } from "date-fns"
-import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface DateTimeInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface DateTimeInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   error?: string
@@ -17,7 +16,7 @@ interface DateTimeInputProps extends React.InputHTMLAttributes<HTMLInputElement>
 }
 
 export const DateTimeInput = forwardRef<HTMLInputElement, DateTimeInputProps>(
-  ({ value, onChange, error, label, helperText, className, minDateTime, maxDateTime, ...props }, ref) => {
+  ({ value, onChange, error, label, helperText, className, minDateTime, maxDateTime, id, ...props }, ref) => {
     // Convert Date to string format for datetime-local input (YYYY-MM-DDThh:mm)
     const dateTimeString = value ? format(value, "yyyy-MM-dd'T'HH:mm") : ""
 
@@ -40,13 +39,16 @@ export const DateTimeInput = forwardRef<HTMLInputElement, DateTimeInputProps>(
 
     return (
       <div className="space-y-1">
-        {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
+        {label && (
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+            {label}
+          </label>
+        )}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <CalendarIcon className="h-4 w-4 text-gray-500" />
-          </div>
+          
           <input
             ref={ref}
+            id={id}
             type="datetime-local"
             className={cn(
               "block w-full pl-10 py-2 px-3 bg-gray-100 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
@@ -57,11 +59,15 @@ export const DateTimeInput = forwardRef<HTMLInputElement, DateTimeInputProps>(
             onChange={handleChange}
             min={minDateTime ? format(minDateTime, "yyyy-MM-dd'T'HH:mm") : undefined}
             max={maxDateTime ? format(maxDateTime, "yyyy-MM-dd'T'HH:mm") : undefined}
+            aria-invalid={!!error}
+            aria-describedby={error || helperText ? `${id}-description` : undefined}
             {...props}
           />
         </div>
         {(error || helperText) && (
-          <p className={cn("text-xs", error ? "text-red-500" : "text-gray-500")}>{error || helperText}</p>
+          <p id={`${id}-description`} className={cn("text-xs", error ? "text-red-500" : "text-gray-500")}>
+            {error || helperText}
+          </p>
         )}
       </div>
     )

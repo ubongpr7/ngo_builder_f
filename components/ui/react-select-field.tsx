@@ -19,11 +19,12 @@ export type ReactSelectFieldProps<
   error?: string
   label?: string
   helperText?: string
+  inputId?: string
 }
 
 export const ReactSelectField = forwardRef(
   <Option extends SelectOption, IsMulti extends boolean = false, Group extends GroupBase<Option> = GroupBase<Option>>(
-    { className, error, label, helperText, ...props }: ReactSelectFieldProps<Option, IsMulti, Group>,
+    { className, error, label, helperText, inputId, ...props }: ReactSelectFieldProps<Option, IsMulti, Group>,
     ref: React.ForwardedRef<any>,
   ) => {
     // Custom styles that match your design system
@@ -102,6 +103,7 @@ export const ReactSelectField = forwardRef(
           classNames={{
             container: () => "text-sm",
           }}
+          inputId={inputId}
           {...props}
         />
         {helperText && <p className={cn("text-xs", error ? "text-red-500" : "text-gray-500")}>{helperText}</p>}
