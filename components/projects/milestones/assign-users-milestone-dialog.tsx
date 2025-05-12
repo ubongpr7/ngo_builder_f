@@ -58,7 +58,6 @@ export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger }: As
       setOpen(false)
       if (onSuccess) onSuccess()
     } catch (error) {
-      console.error("Failed to assign users:", error)
     }
   }
 

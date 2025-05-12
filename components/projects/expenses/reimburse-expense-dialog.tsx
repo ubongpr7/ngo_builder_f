@@ -80,7 +80,6 @@ export function ReimburseExpenseDialog({ expense, open, onOpenChange, onSuccess 
 
       handleClose()
     } catch (error) {
-      console.error("Failed to reimburse expense:", error)
       toast({
         title: "Error",
         description: "Failed to mark expense as reimbursed. Please try again.",

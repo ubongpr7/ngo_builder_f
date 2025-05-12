@@ -33,7 +33,6 @@ export const DateTimeInput = forwardRef<HTMLInputElement, DateTimeInputProps>(
         const date = parse(val, "yyyy-MM-dd'T'HH:mm", new Date())
         onChange(date)
       } catch (error) {
-        console.error("Invalid datetime format", error)
       }
     }
 

@@ -61,7 +61,6 @@ export function UpdateMilestoneStatusDialog({ milestone, onSuccess, trigger }: U
       setOpen(false)
       if (onSuccess) onSuccess()
     } catch (error) {
-      console.error("Failed to update status:", error)
     }
   }
 

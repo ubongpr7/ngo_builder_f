@@ -105,7 +105,6 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
       form.reset()
       if (onSuccess) onSuccess()
     } catch (error) {
-      console.error("Failed to save milestone:", error)
     }
   }
 

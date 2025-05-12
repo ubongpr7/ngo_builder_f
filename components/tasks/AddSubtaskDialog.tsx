@@ -71,7 +71,6 @@ export default function AddSubtaskDialog({ isOpen, onClose, parentId }: AddSubta
       form.reset()
       onClose()
     } catch (error) {
-      console.error("Failed to add subtask:", error)
     } finally {
       setIsSubmitting(false)
     }

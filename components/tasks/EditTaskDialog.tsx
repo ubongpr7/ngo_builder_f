@@ -83,7 +83,6 @@ export default function EditTaskDialog({ isOpen, onClose, task }: EditTaskDialog
 
       onClose()
     } catch (error) {
-      console.error("Failed to update task:", error)
     } finally {
       setIsSubmitting(false)
     }

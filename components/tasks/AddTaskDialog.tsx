@@ -70,7 +70,6 @@ export default function AddTaskDialog({ isOpen, onClose, projectId }: AddTaskDia
       form.reset()
       onClose()
     } catch (error) {
-      console.error("Failed to create task:", error)
     } finally {
       setIsSubmitting(false)
     }

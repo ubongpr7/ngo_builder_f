@@ -118,7 +118,6 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
         await deleteTeamMember(id).unwrap()
         refetch()
       } catch (error) {
-        console.error("Failed to delete team member:", error)
       }
     }
   }
@@ -144,7 +143,6 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
       setRoleDialogOpen(false)
       refetch()
     } catch (error) {
-      console.error("Failed to change role:", error)
     }
   }
 
@@ -165,7 +163,6 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
       setExtendDialogOpen(false)
       refetch()
     } catch (error) {
-      console.error("Failed to extend membership:", error)
     }
   }
 

@@ -55,7 +55,6 @@ export function RejectExpenseDialog({ isOpen, onClose, expense, onSuccess }: Rej
       onSuccess()
       handleClose()
     } catch (error) {
-      console.error("Failed to reject expense:", error)
     }
   }
 

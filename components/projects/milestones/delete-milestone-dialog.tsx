@@ -34,7 +34,6 @@ export function DeleteMilestoneDialog({ milestone, onSuccess, trigger }: DeleteM
       setOpen(false)
       if (onSuccess) onSuccess()
     } catch (error) {
-      console.error("Failed to delete milestone:", error)
     }
   }
 

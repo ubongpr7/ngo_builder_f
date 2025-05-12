@@ -87,7 +87,6 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
       form.reset()
       if (onSuccess) onSuccess()
     } catch (error) {
-      console.error("Failed to add team member:", error)
     }
   }
 

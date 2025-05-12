@@ -146,12 +146,7 @@ export default function KYCFormContainer({
               : prev.personalInfo.disability || null,
         }
 
-        // Log the before/after for debugging
-          before: prev.personalInfo,
-          after: updatedPersonalInfo,
-          userData: userData,
-        })
-
+      
         return {
           ...prev,
           personalInfo: updatedPersonalInfo,

@@ -31,7 +31,6 @@ export function formatDate(
 
     return new Intl.DateTimeFormat("en-US", options).format(date)
   } catch (error) {
-    console.error("Error formatting date:", error)
     return "Error formatting date"
   }
 }
