@@ -133,7 +133,14 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
     if (!selectedMember || !newRole) return
 
     try {
-      await changeRole({ id: selectedMember, role: newRole }).unwrap()
+      // Make sure we're sending the role as a string value, not an object
+      const roleValue = typeof newRole === "object" && newRole !== null ? newRole.value : newRole
+
+      await changeRole({
+        id: selectedMember,
+        role: roleValue,
+      }).unwrap()
+
       setRoleDialogOpen(false)
       refetch()
     } catch (error) {
