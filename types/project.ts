@@ -162,16 +162,31 @@ export interface ProjectTeamMember {
   end_date?: string
 }
 
-export interface ProjectMilestone {
-  id: number
-  project: number
-  title: string
-  description: string
-  due_date: string
-  completion_date?: string
-  status: string
-  notes?: string
+
+export interface MilestoneStatistics {
+  total_milestones: number
+  status_counts: Array<{
+    status: string
+    count: number
+  }>
+  priority_counts: Array<{
+    priority: string
+    count: number
+  }>
+  avg_completion: {
+    avg_completion: number
+  }
+  overdue_count: number
+  upcoming_count: number
+  assignee_counts: Array<{
+    assigned_to__id: number
+    assigned_to__username: string
+    assigned_to__first_name: string
+    assigned_to__last_name: string
+    count: number
+  }>
 }
+
 
 export interface ProjectExpense {
   id: number
@@ -237,4 +252,72 @@ export interface ProjectComment {
   created_at: string
   updated_at: string
   parent?: ProjectComment | null
+}
+
+
+export interface ProjectMilestone {
+  id: number
+  project: number
+  title: string
+  description: string
+  due_date: string
+  completion_date?: string
+  status: "pending" | "in_progress" | "completed" | "delayed" | "cancelled"
+  priority: "low" | "medium" | "high" | "critical"
+  completion_percentage: number
+  assigned_to?: Array<{
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }>
+  dependencies?: Array<{
+    id: number
+    title: string
+    status: string
+    due_date: string
+  }>
+  deliverables?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+  created_by?: number
+  created_by_details?: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  days_remaining: number
+  is_overdue: boolean
+}
+
+export interface ProjectExpense {
+  id: number
+  project: number
+  title: string
+  description: string
+  category: string
+  amount: number
+  date_incurred: string
+  incurred_by: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  receipt?: string
+  status: string
+  approval_date?: string
+  approved_by?: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  notes?: string
 }

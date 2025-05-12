@@ -7,63 +7,45 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, CheckCircle, Clock, AlertTriangle, Loader2, Flag } from "lucide-react"
+import {
+  Search,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Loader2,
+  Flag,
+  Users,
+  MoreHorizontal,
+  Trash2,
+  Edit,
+  BarChart,
+} from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-// Mock data for now - will be replaced with actual API call
-const mockMilestones = [
-  {
-    id: 1,
-    title: "Project Planning",
-    description: "Complete project planning including scope definition, resource allocation, and timeline.",
-    due_date: "2023-06-01",
-    completion_date: "2023-05-28",
-    status: "completed",
-    notes: "Completed ahead of schedule with full team participation.",
-  },
-  {
-    id: 2,
-    title: "Initial Implementation",
-    description: "Begin implementation of core project components.",
-    due_date: "2023-07-15",
-    status: "in_progress",
-    notes: "Making good progress, but facing some technical challenges.",
-  },
-  {
-    id: 3,
-    title: "Mid-project Review",
-    description: "Conduct comprehensive review of project progress and adjust plans as needed.",
-    due_date: "2023-08-01",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "Final Implementation",
-    description: "Complete all implementation tasks and prepare for testing.",
-    due_date: "2023-09-15",
-    status: "pending",
-  },
-  {
-    id: 5,
-    title: "Testing and Quality Assurance",
-    description: "Conduct thorough testing and address any issues.",
-    due_date: "2023-05-01",
-    status: "delayed",
-    notes: "Delayed due to resource constraints. Working on getting back on track.",
-  },
-]
+import { useGetMilestonesByProjectQuery } from "@/redux/features/projects/milestoneApiSlice"
+import { AddEditMilestoneDialog } from "./add-edit-milestone-dialog"
+import { AssignUsersMilestoneDialog } from "./assign-users-milestone-dialog"
+import { UpdateMilestoneStatusDialog } from "./update-milestone-status-dialog"
+import { UpdateMilestonePercentageDialog } from "./update-milestone-percentage-dialog"
+import { CompleteMilestoneDialog } from "./complete-milestone-dialog"
+import { DeleteMilestoneDialog } from "./delete-milestone-dialog"
+import { MilestoneStatistics } from "./milestone-statistics"
 
 interface ProjectMilestonesProps {
   projectId: number
 }
 
 export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
-  // In a real implementation, this would use your API
-  // const { data: milestones = [], isLoading } = useGetProjectMilestonesQuery(projectId)
-  const milestones = mockMilestones
-  const isLoading = false
-
+  const { data: milestones = [], isLoading, refetch } = useGetMilestonesByProjectQuery(projectId)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
+  const [showStats, setShowStats] = useState(false)
 
   // Filter milestones based on search term and active tab
   const filteredMilestones = milestones.filter((milestone) => {
@@ -85,6 +67,22 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
       case "completed":
         return "bg-green-100 text-green-800 border-green-300"
       case "delayed":
+        return "bg-red-100 text-red-800 border-red-300"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-300"
+    }
+  }
+
+  // Get priority badge color
+  const getPriorityBadgeColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case "low":
+        return "bg-green-100 text-green-800 border-green-300"
+      case "medium":
+        return "bg-blue-100 text-blue-800 border-blue-300"
+      case "high":
+        return "bg-orange-100 text-orange-800 border-orange-300"
+      case "critical":
         return "bg-red-100 text-red-800 border-red-300"
       default:
         return "bg-gray-100 text-gray-800 border-gray-300"
@@ -123,6 +121,11 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
     return <span>{diffDays} days remaining</span>
   }
 
+  // Handle successful operations
+  const handleSuccess = () => {
+    refetch()
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -139,11 +142,25 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
           <h2 className="text-xl font-semibold mb-1">Project Milestones</h2>
           <p className="text-gray-500">Track key milestones and deliverables</p>
         </div>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
-          <Flag className="mr-2 h-4 w-4" />
-          Add Milestone
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowStats(!showStats)} className={showStats ? "bg-blue-50" : ""}>
+            <BarChart className="mr-2 h-4 w-4" />
+            {showStats ? "Hide Statistics" : "Show Statistics"}
+          </Button>
+          <AddEditMilestoneDialog
+            projectId={projectId}
+            onSuccess={handleSuccess}
+            trigger={
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Flag className="mr-2 h-4 w-4" />
+                Add Milestone
+              </Button>
+            }
+          />
+        </div>
       </div>
+
+      {showStats && <MilestoneStatistics projectId={projectId} />}
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1">
@@ -176,10 +193,16 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                 ? "No milestones match your search criteria. Try a different search term."
                 : "No milestones have been created for this project yet."}
             </p>
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
-              <Flag className="mr-2 h-4 w-4" />
-              Add First Milestone
-            </Button>
+            <AddEditMilestoneDialog
+              projectId={projectId}
+              onSuccess={handleSuccess}
+              trigger={
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <Flag className="mr-2 h-4 w-4" />
+                  Add First Milestone
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
       ) : (
@@ -192,7 +215,12 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                     <CardTitle>{milestone.title}</CardTitle>
                     <CardDescription>Due: {new Date(milestone.due_date).toLocaleDateString()}</CardDescription>
                   </div>
-                  <Badge className={getStatusBadgeColor(milestone.status)}>{formatStatus(milestone.status)}</Badge>
+                  <div className="flex gap-2">
+                    <Badge className={getPriorityBadgeColor(milestone.priority)}>
+                      {milestone.priority?.charAt(0).toUpperCase() + milestone.priority?.slice(1)}
+                    </Badge>
+                    <Badge className={getStatusBadgeColor(milestone.status)}>{formatStatus(milestone.status)}</Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -211,13 +239,36 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                   )}
                 </div>
 
-                {milestone.status === "in_progress" && (
+                {milestone.status !== "completed" && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
                       <span>Progress</span>
-                      <span>50%</span>
+                      <span>{milestone.completion_percentage || 0}%</span>
                     </div>
-                    <Progress value={50} className="h-2" />
+                    <Progress value={milestone.completion_percentage || 0} className="h-2" />
+                  </div>
+                )}
+
+                {milestone.assigned_to && milestone.assigned_to.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-sm font-medium mb-2 flex items-center">
+                      <Users className="mr-2 h-4 w-4 text-gray-500" />
+                      Assigned To
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {milestone.assigned_to.map((user) => (
+                        <Badge key={user.id} variant="outline" className="bg-gray-50">
+                          {user.first_name} {user.last_name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {milestone.deliverables && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-sm font-medium mb-1">Deliverables</div>
+                    <p className="text-sm text-gray-700">{milestone.deliverables}</p>
                   </div>
                 )}
 
@@ -229,15 +280,88 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                 )}
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                {milestone.status !== "completed" && (
-                  <Button variant="outline" size="sm">
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Mark Complete
-                  </Button>
-                )}
-                <Button variant="outline" size="sm">
-                  Edit
-                </Button>
+                <AssignUsersMilestoneDialog
+                  milestone={milestone}
+                  onSuccess={handleSuccess}
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      <Users className="mr-2 h-4 w-4" />
+                      Assign Users
+                    </Button>
+                  }
+                />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <UpdateMilestoneStatusDialog
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Flag className="mr-2 h-4 w-4" />
+                          Update Status
+                        </DropdownMenuItem>
+                      }
+                    />
+
+                    <UpdateMilestonePercentageDialog
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <BarChart className="mr-2 h-4 w-4" />
+                          Update Progress
+                        </DropdownMenuItem>
+                      }
+                    />
+
+                    {milestone.status !== "completed" && (
+                      <CompleteMilestoneDialog
+                        milestone={milestone}
+                        onSuccess={handleSuccess}
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                            Mark Complete
+                          </DropdownMenuItem>
+                        }
+                      />
+                    )}
+
+                    <DropdownMenuSeparator />
+
+                    <AddEditMilestoneDialog
+                      projectId={projectId}
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Milestone
+                        </DropdownMenuItem>
+                      }
+                    />
+
+                    <DeleteMilestoneDialog
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Milestone
+                        </DropdownMenuItem>
+                      }
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CardFooter>
             </Card>
           ))}
