@@ -142,7 +142,7 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
       // Keep the current status
       formData.append("status", expense.status)
 
-      await updateExpense({ id: expense.id, data: formData }).unwrap()
+      await updateExpense({ id: expense.id, expense: formData }).unwrap()
 
       toast({
         title: "Expense Updated",

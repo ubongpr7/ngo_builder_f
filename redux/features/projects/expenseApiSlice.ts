@@ -37,7 +37,7 @@ export const expenseApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    updateExpense: builder.mutation<ProjectExpense, { id: number; expense: Partial<ProjectExpense> }>({
+    updateExpense: builder.mutation({
       query: ({ id, expense }) => ({
         url: `/${backend}/expenses/${id}/`,
         method: "PATCH",
