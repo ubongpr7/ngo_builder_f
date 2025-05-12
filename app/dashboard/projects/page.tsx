@@ -11,7 +11,7 @@ import { AddProjectDialog } from "@/components/projects/add-project-dialog"
 import type { Project } from "@/types/project"
 
 export default function ProjectManagement() {
-  const { data: projects = [], isLoading, isError, refetch } = useGetAllProjectsQuery()
+  const { data: projects = [], isLoading, isError, refetch } = useGetAllProjectsQuery('')
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
