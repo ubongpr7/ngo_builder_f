@@ -46,7 +46,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
   
     getProjectTeamMembers: builder.query({
-      query: (projectId) => `/project-team-members/?project_id=${projectId}`,
+      query: (projectId) => `/project_api/project-team-members/?project_id=${projectId}`,
     }),
   }),
 
