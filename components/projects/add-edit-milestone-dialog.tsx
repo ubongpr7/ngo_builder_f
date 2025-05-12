@@ -114,7 +114,7 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || <Button>Add Milestone</Button>}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Milestone" : "Add Milestone"}</DialogTitle>
           <DialogDescription>
@@ -123,45 +123,17 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
               : "Add a new milestone to this project. Fill out the form below to create a new milestone."}
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Milestone title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Describe the milestone" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+        <div className="py-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="due_date"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Due Date</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <DateInput value={field.value} onChange={field.onChange} label="" id="due-date" />
+                      <Input placeholder="Milestone title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,29 +142,95 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
 
               <FormField
                 control={form.control}
-                name="status"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <ReactSelectField options={statusOptions} placeholder="Select status" {...field} />
+                      <Textarea placeholder="Describe the milestone" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="due_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Due Date</FormLabel>
+                      <FormControl>
+                        <DateInput value={field.value} onChange={field.onChange} label="" id="due-date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <ReactSelectField options={statusOptions} placeholder="Select status" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Priority</FormLabel>
+                      <FormControl>
+                        <ReactSelectField options={priorityOptions} placeholder="Select priority" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="completion_percentage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Completion Percentage</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="0"
+                          {...field}
+                          onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="priority"
+                name="deliverables"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Priority</FormLabel>
+                    <FormLabel>Deliverables</FormLabel>
                     <FormControl>
-                      <ReactSelectField options={priorityOptions} placeholder="Select priority" {...field} />
+                      <Textarea placeholder="Expected deliverables for this milestone" {...field} />
                     </FormControl>
+                    <FormDescription>Optional. List the expected outputs for this milestone.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -200,67 +238,31 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
 
               <FormField
                 control={form.control}
-                name="completion_percentage"
+                name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Completion Percentage</FormLabel>
+                    <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        placeholder="0"
-                        {...field}
-                        onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
-                      />
+                      <Textarea placeholder="Additional notes" {...field} />
                     </FormControl>
+                    <FormDescription>Optional. Add any additional notes or context.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="deliverables"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Deliverables</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Expected deliverables for this milestone" {...field} />
-                  </FormControl>
-                  <FormDescription>Optional. List the expected outputs for this milestone.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Additional notes" {...field} />
-                  </FormControl>
-                  <FormDescription>Optional. Add any additional notes or context.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? "Update Milestone" : "Add Milestone"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEditing ? "Update Milestone" : "Add Milestone"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )
