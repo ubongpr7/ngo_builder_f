@@ -41,7 +41,6 @@ interface Disability {
   description?: string
 }
 
-// Custom date picker component with year navigation
 function BirthDatePicker({
   value,
   onChange,

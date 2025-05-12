@@ -4,8 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { CalendarIcon, Loader2, Plus } from "lucide-react"
-import { format } from "date-fns"
+import { Loader2, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,9 +20,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useToast } from "@/components/ui/use-toast"
+import { CustomDatePicker } from "@/components/ui/custom-date-picker"
 import { useCreateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
 
 const projectSchema = z.object({
@@ -67,7 +65,12 @@ export function AddProjectDialog() {
 
   async function onSubmit(data: ProjectFormValues) {
     try {
-      await createProject(data).unwrap()
+      await createProject({
+        ...data,
+        status: "planning",
+        funds_allocated: 0,
+        funds_spent: 0,
+      }).unwrap()
 
       toast({
         title: "Project created",
@@ -85,6 +88,9 @@ export function AddProjectDialog() {
       })
     }
   }
+
+  // Get the current start date from the form
+  const startDate = form.watch("start_date")
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -202,30 +208,19 @@ export function AddProjectDialog() {
                 control={form.control}
                 name="start_date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Start Date *</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          className="rounded-md border"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <CustomDatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select start date"
+                        minDate={new Date()} // Can't start in the past
+                        disablePast={true}
+                        initialFocusDate={new Date()}
+                        error={form.formState.errors.start_date?.message}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -235,34 +230,18 @@ export function AddProjectDialog() {
                 control={form.control}
                 name="target_end_date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Target End Date *</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          disabled={(date) => {
-                            const startDate = form.getValues().start_date
-                            return startDate ? date < startDate : date < new Date()
-                          }}
-                          className="rounded-md border"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <CustomDatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select end date"
+                        minDate={startDate || new Date()} // End date must be after start date
+                        initialFocusDate={startDate ? new Date(startDate) : new Date()}
+                        error={form.formState.errors.target_end_date?.message}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
