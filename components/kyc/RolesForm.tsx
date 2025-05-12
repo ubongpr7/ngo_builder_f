@@ -109,7 +109,6 @@ export default function RolesForm({
 
       onComplete()
     } catch (error) {
-      console.error("Failed to update roles:", error)
     }
   }
 

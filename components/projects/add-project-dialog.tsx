@@ -113,7 +113,6 @@ export function AddProjectDialog() {
       form.reset()
       setOpen(false)
     } catch (error) {
-      console.error("Failed to create project:", error)
       toast({
         title: "Error",
         description: "Failed to create project. Please try again.",

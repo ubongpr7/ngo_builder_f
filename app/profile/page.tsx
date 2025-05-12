@@ -32,7 +32,6 @@ export default function ProfilePage() {
         day: "numeric",
       }).format(date)
     } catch (error) {
-      console.error("Error formatting date:", error)
       return dateString
     }
   }

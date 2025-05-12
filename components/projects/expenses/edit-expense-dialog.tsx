@@ -142,7 +142,6 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      console.error("Failed to update expense:", error)
       toast({
         title: "Error",
         description: "Failed to update expense. Please try again.",

@@ -131,7 +131,7 @@ export default function UpdateCard({ update }: UpdateCardProps) {
         )}
       </CardContent>
       <CardFooter className="flex justify-between items-center pt-2 pb-3">
-        <ReactionBar reactions={update.reactions} onReact={(type) => console.log(`Reacted with ${type}`)} />
+        <ReactionBar reactions={update.reactions} onReact={(type) => {}} />
 
         <div className="flex items-center">
           <div className="flex items-center mr-3 text-gray-500 text-sm">

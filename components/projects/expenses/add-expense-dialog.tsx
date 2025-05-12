@@ -128,7 +128,6 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      console.error("Failed to add expense:", error)
       toast({
         title: "Error",
         description: "Failed to add expense. Please try again.",

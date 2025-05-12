@@ -39,7 +39,6 @@ export function ProfileDialog({ trigger, defaultOpen = false }: ProfileDialogPro
         day: "numeric",
       }).format(date)
     } catch (error) {
-      console.error("Error formatting date:", error)
       return dateString
     }
   }

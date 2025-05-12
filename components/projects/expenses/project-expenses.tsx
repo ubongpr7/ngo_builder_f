@@ -126,7 +126,6 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       })
       refetch()
     } catch (error) {
-      console.error("Failed to approve expense:", error)
       toast({
         title: "Error",
         description: "Failed to approve expense. Please try again.",
@@ -151,7 +150,6 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       })
       refetch()
     } catch (error) {
-      console.error("Failed to reimburse expense:", error)
       toast({
         title: "Error",
         description: "Failed to mark expense as reimbursed. Please try again.",

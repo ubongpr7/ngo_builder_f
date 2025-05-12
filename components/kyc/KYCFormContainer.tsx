@@ -123,7 +123,6 @@ export default function KYCFormContainer({
   // Handle userData changes - separate useEffect for better control
   useEffect(() => {
     if (userData) {
-      console.log("User data loaded:", userData)
 
       // Use functional update to ensure we're working with the latest state
       setFormState((prev) => {
@@ -148,7 +147,6 @@ export default function KYCFormContainer({
         }
 
         // Log the before/after for debugging
-        console.log("Personal info update:", {
           before: prev.personalInfo,
           after: updatedPersonalInfo,
           userData: userData,
@@ -165,7 +163,6 @@ export default function KYCFormContainer({
   // Handle userProfile and address changes
   useEffect(() => {
     if (userProfile) {
-      console.log("User profile loaded:", userProfile)
 
       const updatedFormState = { ...formState }
 
@@ -313,7 +310,6 @@ export default function KYCFormContainer({
 
   // Update form data
   const updateFormData = (section: keyof KYCFormState, data: any) => {
-    console.log(`Updating ${section} with:`, data)
 
     setFormState((prev) => ({
       ...prev,
@@ -343,11 +339,7 @@ export default function KYCFormContainer({
   }
 
   // Debug info
-  console.log("Current form state:", {
-    personalInfo: formState.personalInfo,
-    completedSteps: formState.completedSteps,
-    currentStep: formState.currentStep,
-  })
+  
 
   return (
     <div className="container mx-auto py-6 sm:py-10 px-4">

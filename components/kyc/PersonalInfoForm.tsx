@@ -138,7 +138,6 @@ export default function PersonalInfoForm({
 
       onComplete()
     } catch (error) {
-      console.error("Error updating user profile:", error)
     }
   }
 

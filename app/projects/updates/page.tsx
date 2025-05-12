@@ -188,7 +188,6 @@ export default function UpdatesPage() {
             <CardContent>
               <UpdateFilters
                 onFilterChange={(filters) => {
-                  console.log("Filters changed:", filters)
                   // Apply filters to updates
                 }}
               />

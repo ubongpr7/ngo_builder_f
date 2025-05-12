@@ -144,7 +144,6 @@ export function ProfileImageUploader({
         description: "There was a problem uploading your profile image. Please try again.",
         variant: "destructive",
       })
-      console.error("Error uploading profile image:", error)
     }
   }
 

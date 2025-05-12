@@ -123,7 +123,6 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
       onComplete()
     } catch (error) {
-      console.error("Error saving address:", error)
     }
   }
 
