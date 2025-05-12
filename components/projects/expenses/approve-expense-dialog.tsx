@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useApproveExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, CheckCircle } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 import type { ProjectExpense } from "@/types/project"
 
 // Define the form schema
@@ -19,13 +20,14 @@ const approvalSchema = z.object({
 type ApprovalFormValues = z.infer<typeof approvalSchema>
 
 interface ApproveExpenseDialogProps {
-  isOpen: boolean
-  onClose: () => void
   expense: ProjectExpense
-  onSuccess: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-export function ApproveExpenseDialog({ isOpen, onClose, expense, onSuccess }: ApproveExpenseDialogProps) {
+export function ApproveExpenseDialog({ expense, open, onOpenChange, onSuccess }: ApproveExpenseDialogProps) {
+  const { toast } = useToast()
   const [approveExpense, { isLoading: isSubmitting }] = useApproveExpenseMutation()
 
   const {
@@ -42,7 +44,7 @@ export function ApproveExpenseDialog({ isOpen, onClose, expense, onSuccess }: Ap
 
   const handleClose = () => {
     reset()
-    onClose()
+    onOpenChange(false)
   }
 
   const onSubmit = async (data: ApprovalFormValues) => {
@@ -52,15 +54,25 @@ export function ApproveExpenseDialog({ isOpen, onClose, expense, onSuccess }: Ap
         notes: data.notes,
       }).unwrap()
 
-      onSuccess()
+      toast({
+        title: "Expense Approved",
+        description: "The expense has been approved successfully.",
+      })
+
+      onSuccess?.()
       handleClose()
     } catch (error) {
       console.error("Failed to approve expense:", error)
+      toast({
+        title: "Error",
+        description: "Failed to approve expense. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Approve Expense</DialogTitle>
@@ -68,18 +80,19 @@ export function ApproveExpenseDialog({ isOpen, onClose, expense, onSuccess }: Ap
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <p className="mb-2">
-              Are you sure you want to approve the expense <strong>{expense.title}</strong> for{" "}
-              <strong>${expense.amount.toLocaleString()}</strong>?
+              Are you sure you want to approve the expense <strong>{expense?.title}</strong> for{" "}
+              <strong>${expense?.amount?.toLocaleString()}</strong>?
             </p>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea id="notes" placeholder="Add any notes about this approval" {...register("notes")} />
+            {errors.notes && <p className="text-sm text-red-500">{errors.notes.message}</p>}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
