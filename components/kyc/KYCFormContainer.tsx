@@ -125,20 +125,40 @@ export default function KYCFormContainer({
     if (userData) {
       console.log("User data loaded:", userData)
 
-      setFormState((prev) => ({
-        ...prev,
-        personalInfo: {
+      // Use functional update to ensure we're working with the latest state
+      setFormState((prev) => {
+        // Create a new personalInfo object with defaults for all fields
+        const updatedPersonalInfo = {
+          // Start with current values to avoid losing any manually entered data
           ...prev.personalInfo,
-          first_name: userData.first_name || "",
-          last_name: userData.last_name || "",
-          date_of_birth: userData.date_of_birth || "",
-          profile_link: userData.profile_link || "",
-          linkedin_profile: userData.linkedin_profile || "",
-          sex: userData.sex || "",
-          disabled: userData.disabled || false,
-          disability: userData.disability || null,
-        },
-      }))
+          // Then apply values from userData with proper null/undefined handling
+          first_name: userData.first_name || prev.personalInfo.first_name || "",
+          last_name: userData.last_name || prev.personalInfo.last_name || "",
+          date_of_birth: userData.date_of_birth || prev.personalInfo.date_of_birth || "",
+          profile_link: userData.profile_link || prev.personalInfo.profile_link || "",
+          linkedin_profile: userData.linkedin_profile || prev.personalInfo.linkedin_profile || "",
+          sex: userData.sex || prev.personalInfo.sex || "",
+          // For boolean values, explicitly check if they're defined
+          disabled: userData.disabled !== undefined ? userData.disabled : prev.personalInfo.disabled || false,
+          // For nullable values, check if they're null before applying defaults
+          disability:
+            userData.disability !== null && userData.disability !== undefined
+              ? userData.disability
+              : prev.personalInfo.disability || null,
+        }
+
+        // Log the before/after for debugging
+        console.log("Personal info update:", {
+          before: prev.personalInfo,
+          after: updatedPersonalInfo,
+          userData: userData,
+        })
+
+        return {
+          ...prev,
+          personalInfo: updatedPersonalInfo,
+        }
+      })
     }
   }, [userData])
 
