@@ -19,7 +19,6 @@ import {
   Trash2,
   Edit,
   Clock,
-  CalendarIcon,
 } from "lucide-react"
 import { format } from "date-fns"
 
@@ -46,9 +45,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { ReactSelectField } from "@/components/ui/react-select-field"
+import { DateInput } from "@/components/ui/date-input"
 
 interface ProjectTeamProps {
   projectId: number
@@ -71,6 +69,16 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
   // State for extend membership dialog
   const [extendDialogOpen, setExtendDialogOpen] = useState(false)
   const [newEndDate, setNewEndDate] = useState<Date | undefined>(undefined)
+
+  // Role options for the dropdown
+  const roleOptions = [
+    { value: "manager", label: "Project Manager" },
+    { value: "coordinator", label: "Coordinator" },
+    { value: "member", label: "Team Member" },
+    { value: "advisor", label: "Advisor" },
+    { value: "volunteer", label: "Volunteer" },
+    { value: "monitoring", label: "Monitoring/Reporting Officer" },
+  ]
 
   // Filter team members based on search term and active tab
   const filteredMembers = teamMembers.filter((member) => {
@@ -337,19 +345,12 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
               <label htmlFor="role" className="text-sm font-medium">
                 Role
               </label>
-              <Select value={newRole} onValueChange={setNewRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manager">Project Manager</SelectItem>
-                  <SelectItem value="coordinator">Coordinator</SelectItem>
-                  <SelectItem value="member">Team Member</SelectItem>
-                  <SelectItem value="advisor">Advisor</SelectItem>
-                  <SelectItem value="volunteer">Volunteer</SelectItem>
-                  <SelectItem value="monitoring">Monitoring/Reporting Officer</SelectItem>
-                </SelectContent>
-              </Select>
+              <ReactSelectField
+                options={roleOptions}
+                value={newRole}
+                onChange={(value) => setNewRole(value)}
+                placeholder="Select a role"
+              />
             </div>
           </div>
           <DialogFooter>
@@ -376,17 +377,7 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
               <label htmlFor="end-date" className="text-sm font-medium">
                 End Date
               </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant={"outline"} className="w-full justify-start text-left font-normal">
-                    {newEndDate ? format(newEndDate, "PPP") : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <CalendarComponent mode="single" selected={newEndDate} onSelect={setNewEndDate} initialFocus />
-                </PopoverContent>
-              </Popover>
+              <DateInput value={newEndDate} onChange={setNewEndDate} id="end-date" />
             </div>
           </div>
           <DialogFooter>

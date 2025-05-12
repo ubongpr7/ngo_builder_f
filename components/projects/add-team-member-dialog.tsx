@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
-import { CalendarIcon, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,9 +21,8 @@ import {
 } from "@/components/ui/dialog"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { DateInput } from "@/components/ui/date-input"
+import { ReactSelectField } from "@/components/ui/react-select-field"
 import { useCreateTeamMemberMutation } from "@/redux/features/projects/teamMemberApiSlice"
 import { useGetManagerCeoQuery } from "@/redux/features/projects/projectsAPISlice"
 
@@ -45,7 +44,7 @@ interface AddTeamMemberDialogProps {
 
 export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMemberDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery()
+  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery('')
   const [createTeamMember, { isLoading }] = useCreateTeamMemberMutation()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,6 +55,22 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
       join_date: new Date(),
     },
   })
+
+  // Prepare user options for react-select
+  const userOptions = users.map((user) => ({
+    value: user.id.toString(),
+    label: `${user.first_name} ${user.last_name} (${user.email})`,
+  }))
+
+  // Prepare role options for react-select
+  const roleOptions = [
+    { value: "manager", label: "Project Manager" },
+    { value: "coordinator", label: "Coordinator" },
+    { value: "member", label: "Team Member" },
+    { value: "advisor", label: "Advisor" },
+    { value: "volunteer", label: "Volunteer" },
+    { value: "monitoring", label: "Monitoring/Reporting Officer" },
+  ]
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -94,56 +109,33 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>User</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a user" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {isLoadingUsers ? (
-                        <div className="flex items-center justify-center p-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="ml-2">Loading users...</span>
-                        </div>
-                      ) : (
-                        users.map((user) => (
-                          <SelectItem key={user.id} value={user.id.toString()}>
-                            {user.first_name} {user.last_name} ({user.email})
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <ReactSelectField
+                      options={userOptions}
+                      isLoading={isLoadingUsers}
+                      placeholder="Select a user"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="manager">Project Manager</SelectItem>
-                      <SelectItem value="coordinator">Coordinator</SelectItem>
-                      <SelectItem value="member">Team Member</SelectItem>
-                      <SelectItem value="advisor">Advisor</SelectItem>
-                      <SelectItem value="volunteer">Volunteer</SelectItem>
-                      <SelectItem value="monitoring">Monitoring/Reporting Officer</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <ReactSelectField options={roleOptions} placeholder="Select a role" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="responsibilities"
@@ -158,60 +150,37 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
                 </FormItem>
               )}
             />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="join_date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Join Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DateInput value={field.value} onChange={field.onChange} label="" id="join-date" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="end_date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>End Date (Optional)</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <DateInput value={field.value} onChange={field.onChange} label="" id="end-date" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
