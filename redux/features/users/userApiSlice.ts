@@ -45,7 +45,9 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: () => `/profile_api/users/`,
     }),
   
-    
+    getProjectTeamMembers: builder.query({
+      query: (projectId) => `/project-team-members/?project_id=${projectId}`,
+    }),
   }),
 
 });
@@ -55,5 +57,6 @@ export const {
   useGetAUserQuery,
   useGetLoggedInUserQuery,
   useGetCompanyUsersQuery,
+  useGetProjectTeamMembersQuery,
   
 } = userApiSlice;
