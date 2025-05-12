@@ -14,7 +14,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Project endpoints
     getManagerCeo: builder.query({
-      query: () => `/${projects_api}/manager-ceo/`,
+      query: () => `/auth-ususers/`,
     }),
     getAllProjects: builder.query<Project[], void>({
       query: () => `/${projects_api}/projects/`,
