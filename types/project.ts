@@ -142,3 +142,99 @@ export interface UpdateStatistics {
     count: number;
   }>;
 }
+
+
+
+
+export interface ProjectTeamMember {
+  id: number
+  project: number
+  user: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  role: string
+  responsibilities?: string
+  join_date: string
+  end_date?: string
+}
+
+export interface ProjectMilestone {
+  id: number
+  project: number
+  title: string
+  description: string
+  due_date: string
+  completion_date?: string
+  status: string
+  notes?: string
+}
+
+export interface ProjectExpense {
+  id: number
+  project: number
+  title: string
+  description: string
+  category: string
+  amount: number
+  date_incurred: string
+  incurred_by: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  receipt?: string
+  status: string
+  approval_date?: string
+  approved_by?: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  notes?: string
+}
+
+export interface ProjectAsset {
+  id: number
+  project: number
+  asset: {
+    id: number
+    name: string
+    asset_type: string
+    model?: string
+    serial_number?: string
+  }
+  assigned_date: string
+  assigned_by: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  return_date?: string
+  notes?: string
+}
+
+export interface ProjectComment {
+  id: number
+  project: number
+  user: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  content: string
+  created_at: string
+  updated_at: string
+  parent?: ProjectComment | null
+}

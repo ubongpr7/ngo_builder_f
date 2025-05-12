@@ -1,403 +1,259 @@
 "use client"
 
 import { useState } from "react"
-import { useForm, Controller } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Loader2, Plus } from "lucide-react"
-
+import { useParams } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
-import { DateInput } from "@/components/ui/date-input"
-import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
-import {
-  useCreateProjectMutation,
-  useGetProjectsCategoriesQuery,
-  useGetManagerCeoQuery,
-} from "@/redux/features/projects/projectsAPISlice"
-import { format } from "date-fns"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Calendar, MapPin, FileText, Briefcase, AlertTriangle, MessageSquare, FileImage, Loader2 } from "lucide-react"
 
-const projectSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
-  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
-  project_type: z.string().min(1, { message: "Project type is required" }),
-  category: z.string().optional(),
-  manager: z.string().min(1, { message: "Manager is required" }),
-  location: z.string().min(2, { message: "Location is required" }),
-  start_date: z.date({ required_error: "Start date is required" }),
-  target_end_date: z.date({ required_error: "End date is required" }),
-  budget: z
-    .string()
-    .min(1, { message: "Budget is required" })
-    .transform((val) => Number.parseFloat(val)),
-  beneficiaries: z.string().optional(),
-  success_criteria: z.string().optional(),
-  risks: z.string().optional(),
-})
+import { ProjectOverview } from "@/components/projects/project-overview"
+import { ProjectTeam } from "@/components/projects/project-team"
+import { ProjectMilestones } from "@/components/projects/project-milestones"
+import { ProjectUpdates } from "@/components/projects/project-updates"
+import { ProjectExpenses } from "@/components/projects/project-expenses"
+import { ProjectAssets } from "@/components/projects/project-assets"
+import { ProjectComments } from "@/components/projects/project-comments"
+import { ProjectDocuments } from "@/components/projects/project-documents"
 
-type ProjectFormValues = z.infer<typeof projectSchema>
+// Mock API call - replace with actual API call
+import { useGetProjectByIdQuery } from "@/services/projectsApiSlice"
 
-export function AddProjectDialog() {
-  const [open, setOpen] = useState(false)
-  const { toast } = useToast()
-  const [createProject, { isLoading }] = useCreateProjectMutation()
-  const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
-  const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery()
+export default function ProjectDetail() {
+  const { id } = useParams()
+  const { data: project, isLoading, isError } = useGetProjectByIdQuery(id)
+  const [activeTab, setActiveTab] = useState("overview")
 
-  // Transform categories data to select options
-  const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
-    value: category.id.toString(),
-    label: category.name,
-  }))
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading project details...</span>
+      </div>
+    )
+  }
 
-  // Transform managers data to select options
-  const managerOptions: SelectOption[] = managersData.map((manager) => ({
-    value: manager.id.toString(),
-    label: `${manager.first_name} ${manager.last_name}`,
-  }))
+  if (isError || !project) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Project Not Found</h2>
+        <p className="text-gray-500 mb-4">
+          The project you're looking for doesn't exist or you don't have permission to view it.
+        </p>
+        <Button variant="outline" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
+      </div>
+    )
+  }
 
-  // Project type options based on backend choices
-  const projectTypeOptions: SelectOption[] = [
-    { value: "profit", label: "Profit" },
-    { value: "non_profit", label: "Non-Profit" },
-    { value: "community", label: "Community" },
-    { value: "internal", label: "Internal" },
-  ]
+  // Calculate project progress
+  const calculateProgress = () => {
+    if (project.status === "completed") return 100
+    if (project.status === "planning" || project.status === "cancelled") return 0
 
-  const form = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      project_type: "",
-      category: "",
-      manager: "",
-      location: "",
-      beneficiaries: "",
-      success_criteria: "",
-      risks: "",
-    },
-  })
+    // Calculate based on budget utilization if available
+    if (project.funds_spent && project.budget) {
+      const budgetProgress = (project.funds_spent / project.budget) * 100
+      return Math.min(budgetProgress, 100)
+    }
 
-  async function onSubmit(data: ProjectFormValues) {
-    try {
-      // Format dates to ISO string format (YYYY-MM-DD)
-      const formattedData = {
-        ...data,
-        start_date: format(data.start_date, "yyyy-MM-dd"),
-        target_end_date: format(data.target_end_date, "yyyy-MM-dd"),
-        status: "planning",
-        funds_allocated: 0,
-        funds_spent: 0,
-      }
+    // Calculate based on timeline
+    const today = new Date()
+    const startDate = new Date(project.start_date)
+    const endDate = new Date(project.target_end_date)
 
-      await createProject(formattedData).unwrap()
+    if (today < startDate) return 0
+    if (today > endDate) return 100
 
-      toast({
-        title: "Project created",
-        description: "Your project has been created successfully.",
-      })
+    const totalDuration = endDate.getTime() - startDate.getTime()
+    const elapsedDuration = today.getTime() - startDate.getTime()
 
-      form.reset()
-      setOpen(false)
-    } catch (error) {
-      console.error("Failed to create project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
-        variant: "destructive",
-      })
+    return Math.round((elapsedDuration / totalDuration) * 100)
+  }
+
+  // Get status badge color
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "bg-green-100 text-green-800 border-green-300"
+      case "planning":
+        return "bg-blue-100 text-blue-800 border-blue-300"
+      case "on_hold":
+        return "bg-amber-100 text-amber-800 border-amber-300"
+      case "completed":
+        return "bg-gray-100 text-gray-800 border-gray-300"
+      case "cancelled":
+        return "bg-red-100 text-red-800 border-red-300"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-300"
     }
   }
 
-  // Get the current start date from the form
-  const startDate = form.watch("start_date")
-  const today = new Date()
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount)
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  const progress = calculateProgress()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="mr-2 h-4 w-4" /> New Project
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Project</DialogTitle>
-          <DialogDescription>
-            Fill in the details to create a new project. Required fields are marked with an asterisk (*).
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6" id="create-project-form">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-title">Title *</FormLabel>
-                  <FormControl>
-                    <Input id="project-title" placeholder="Project title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <div className="space-y-6">
+      {/* Project Header */}
+      <div className="flex flex-col lg:flex-row justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+            <Badge className={getStatusColor(project.status)}>
+              {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace("_", " ")}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+            <div className="flex items-center">
+              <Calendar className="mr-1 h-4 w-4" />
+              {formatDate(project.start_date)} - {formatDate(project.target_end_date)}
+            </div>
+            {project.location && (
+              <div className="flex items-center">
+                <MapPin className="mr-1 h-4 w-4" />
+                {project.location}
+              </div>
+            )}
+            <div className="flex items-center">
+              <Briefcase className="mr-1 h-4 w-4" />
+              {project.project_type.charAt(0).toUpperCase() + project.project_type.slice(1)}
+            </div>
+            {project.category && (
+              <div className="flex items-center">
+                <FileText className="mr-1 h-4 w-4" />
+                {project.category_details?.name}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline">
+            <FileText className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+          <Button variant="outline">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Add Comment
+          </Button>
+          <Button className="bg-green-600 hover:bg-green-700 text-white">
+            <FileImage className="mr-2 h-4 w-4" />
+            Add Update
+          </Button>
+        </div>
+      </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-description">Description *</FormLabel>
-                  <FormControl>
-                    <Textarea id="project-description" placeholder="Project description" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="project_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="project-type">Project Type *</FormLabel>
-                    <FormControl>
-                      <Controller
-                        name="project_type"
-                        control={form.control}
-                        render={({ field }) => (
-                          <ReactSelectField
-                            inputId="project-type"
-                            options={projectTypeOptions}
-                            placeholder="Select project type"
-                            value={projectTypeOptions.find((option) => option.value === field.value)}
-                            onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
-                            error={form.formState.errors.project_type?.message}
-                            isSearchable
-                            isClearable
-                            aria-labelledby="project-type-label"
-                          />
-                        )}
-                      />
-                    </FormControl>
-                    <FormMessage id="project-type-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="project-category">Category</FormLabel>
-                    <FormControl>
-                      <Controller
-                        name="category"
-                        control={form.control}
-                        render={({ field }) => (
-                          <ReactSelectField
-                            inputId="project-category"
-                            options={categoryOptions}
-                            placeholder="Select category"
-                            value={categoryOptions.find((option) => option.value === field.value)}
-                            onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
-                            error={form.formState.errors.category?.message}
-                            isSearchable
-                            isClearable
-                            aria-labelledby="project-category-label"
-                          />
-                        )}
-                      />
-                    </FormControl>
-                    <FormMessage id="project-category-error" />
-                  </FormItem>
-                )}
-              />
+      {/* Progress Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Progress</span>
+                <span className="font-medium">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+              <p className="text-sm text-gray-500">
+                {project.status === "completed"
+                  ? "Project completed"
+                  : project.status === "planning"
+                    ? "Project in planning phase"
+                    : `${progress}% complete based on timeline and budget`}
+              </p>
             </div>
 
-            {/* Manager Field */}
-            <FormField
-              control={form.control}
-              name="manager"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-manager">Manager *</FormLabel>
-                  <FormControl>
-                    <Controller
-                      name="manager"
-                      control={form.control}
-                      render={({ field }) => (
-                        <ReactSelectField
-                          inputId="project-manager"
-                          options={managerOptions}
-                          placeholder={isLoadingManagers ? "Loading managers..." : "Select manager"}
-                          value={managerOptions.find((option) => option.value === field.value)}
-                          onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
-                          error={form.formState.errors.manager?.message}
-                          isSearchable
-                          isClearable
-                          isDisabled={isLoadingManagers}
-                          aria-labelledby="project-manager-label"
-                        />
-                      )}
-                    />
-                  </FormControl>
-                  <FormMessage id="project-manager-error" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-location">Location *</FormLabel>
-                  <FormControl>
-                    <Input id="project-location" placeholder="Project location" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="project-start-date">Start Date *</FormLabel>
-                    <FormControl>
-                      <DateInput
-                        id="project-start-date"
-                        value={field.value}
-                        onChange={field.onChange}
-                        minDate={today}
-                        error={form.formState.errors.start_date?.message}
-                        aria-describedby="start-date-error"
-                      />
-                    </FormControl>
-                    <FormMessage id="start-date-error" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="target_end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="project-end-date">Target End Date *</FormLabel>
-                    <FormControl>
-                      <DateInput
-                        id="project-end-date"
-                        value={field.value}
-                        onChange={field.onChange}
-                        minDate={startDate || today}
-                        error={form.formState.errors.target_end_date?.message}
-                        aria-describedby="end-date-error"
-                      />
-                    </FormControl>
-                    <FormMessage id="end-date-error" />
-                  </FormItem>
-                )}
-              />
+            <div className="space-y-1">
+              <div className="text-sm text-gray-500">Budget</div>
+              <div className="text-2xl font-bold">{formatCurrency(project.budget)}</div>
+              <div className="flex justify-between text-sm">
+                <span>Spent: {formatCurrency(project.funds_spent)}</span>
+                <span className={project.funds_spent > project.budget ? "text-red-500" : "text-green-500"}>
+                  {Math.round((project.funds_spent / project.budget) * 100)}%
+                </span>
+              </div>
             </div>
 
-            <FormField
-              control={form.control}
-              name="budget"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-budget">Budget (USD) *</FormLabel>
-                  <FormControl>
-                    <Input id="project-budget" type="number" min="0" step="0.01" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-1">
+              <div className="text-sm text-gray-500">Timeline</div>
+              <div className="text-2xl font-bold">
+                {project.status === "completed"
+                  ? `${Math.round((new Date(project.actual_end_date || project.target_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`
+                  : `${Math.round((new Date(project.target_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`}
+              </div>
+              <div className="text-sm">
+                {project.status === "completed"
+                  ? `Completed ${formatDate(project.actual_end_date || project.target_end_date)}`
+                  : `Due ${formatDate(project.target_end_date)}`}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-            <FormField
-              control={form.control}
-              name="beneficiaries"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-beneficiaries">Beneficiaries</FormLabel>
-                  <FormControl>
-                    <Textarea id="project-beneficiaries" placeholder="Who will benefit from this project?" {...field} />
-                  </FormControl>
-                  <FormDescription id="beneficiaries-description">
-                    Describe the target beneficiaries of this project
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      {/* Project Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="milestones">Milestones</TabsTrigger>
+          <TabsTrigger value="updates">Updates</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="assets">Assets</TabsTrigger>
+          <TabsTrigger value="comments">Comments</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+        </TabsList>
 
-            <FormField
-              control={form.control}
-              name="success_criteria"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-success-criteria">Success Criteria</FormLabel>
-                  <FormControl>
-                    <Textarea id="project-success-criteria" placeholder="How will success be measured?" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <TabsContent value="overview" className="space-y-4">
+          <ProjectOverview project={project} />
+        </TabsContent>
 
-            <FormField
-              control={form.control}
-              name="risks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="project-risks">Risks</FormLabel>
-                  <FormControl>
-                    <Textarea id="project-risks" placeholder="Potential risks and mitigation strategies" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <TabsContent value="team" className="space-y-4">
+          <ProjectTeam projectId={project.id} />
+        </TabsContent>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                form="create-project-form"
-                disabled={isLoading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Project
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <TabsContent value="milestones" className="space-y-4">
+          <ProjectMilestones projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="updates" className="space-y-4">
+          <ProjectUpdates projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="expenses" className="space-y-4">
+          <ProjectExpenses projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="assets" className="space-y-4">
+          <ProjectAssets projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="comments" className="space-y-4">
+          <ProjectComments projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-4">
+          <ProjectDocuments projectId={project.id} />
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }
