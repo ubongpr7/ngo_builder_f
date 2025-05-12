@@ -5,11 +5,11 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { DropdownOption, ProfessionalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useGetIndustryQuery } from "@/redux/features/profile/profileRelatedAPISlice"
 import { Loader2 } from "lucide-react"
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 
 interface ProfessionalInfoFormProps {
   formData: ProfessionalInfoFormData
@@ -30,20 +30,21 @@ export default function ProfessionalInfoForm({
   const { data: industries, isLoading: isLoadingIndustries } = useGetIndustryQuery("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isInitialized, setIsInitialized] = useState(false)
-  const [selectedIndustry, setSelectedIndustry] = useState<string | ''>('')
+  const [selectedIndustry, setSelectedIndustry] = useState<string | "">("")
   const [apiError, setApiError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const initialIndustryRef = useRef<string | null>(formData.industry || '')
+  const initialIndustryRef = useRef<string | null>(formData.industry || "")
 
   useEffect(() => {
     if (industries && industries.length > 0 && !isInitialized) {
-      if (initialIndustryRef.current !== '') {
-        const industryExists = industries.some((industry: { id: string; name: string }) => industry.id === initialIndustryRef.current)
+      if (initialIndustryRef.current !== "") {
+        const industryExists = industries.some(
+          (industry: { id: string; name: string }) => industry.id === initialIndustryRef.current,
+        )
         if (industryExists) {
-          setSelectedIndustry(initialIndustryRef.current)
+          setSelectedIndustry(initialIndustryRef.current || "")
         } else {
-          setSelectedIndustry('')
-          updateFormData({ industry: '' })
+          setSelectedIndustry("")
+          updateFormData({ industry: "" })
         }
       }
       setIsInitialized(true)
@@ -52,7 +53,7 @@ export default function ProfessionalInfoForm({
 
   useEffect(() => {
     if (isInitialized && formData.industry !== selectedIndustry) {
-      setSelectedIndustry(formData.industry ? formData.industry : '')
+      setSelectedIndustry(formData.industry ? formData.industry : "")
     }
   }, [formData.industry, isInitialized, selectedIndustry])
 
@@ -63,9 +64,23 @@ export default function ProfessionalInfoForm({
     }
   }, [industry_id, !isInitialized])
 
-  const filteredIndustries = industries?.filter((industry: { name: string }) =>
-    industry.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
+  // Convert industries to select options
+  const industryOptions: SelectOption[] = industries
+    ? industries.map((industry: { id: number; name: string }) => ({
+        value: industry.id.toString(),
+        label: industry.name,
+      }))
+    : []
+
+  // Company size options
+  const companySizeOptions: SelectOption[] = [
+    { value: "1-10", label: "1-10 employees" },
+    { value: "11-50", label: "11-50 employees" },
+    { value: "51-200", label: "51-200 employees" },
+    { value: "201-500", label: "201-500 employees" },
+    { value: "501-1000", label: "501-1000 employees" },
+    { value: "1001+", label: "1001+ employees" },
+  ]
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -76,11 +91,10 @@ export default function ProfessionalInfoForm({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleIndustryChange = (value: string) => {
-    const industryId = Number.parseInt(value)
-    setSelectedIndustry(industryId.toString())
-    updateFormData({ industry: industryId.toString() })
-    setSearchTerm("")
+  const handleIndustryChange = (option: SelectOption | null) => {
+    const value = option ? option.value : ""
+    setSelectedIndustry(value)
+    updateFormData({ industry: value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,7 +152,7 @@ export default function ProfessionalInfoForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-xs text-gray-500 mb-4 p-2 bg-gray-50 rounded hidden">
         <div>
-          Selected Industry: {selectedIndustry} ({getIndustryName(selectedIndustry)})
+          Selected Industry: {selectedIndustry} ({getIndustryName(Number(selectedIndustry))})
         </div>
         <div>Form Industry: {formData.industry}</div>
         <div>Initial Industry: {initialIndustryRef.current}</div>
@@ -177,51 +191,34 @@ export default function ProfessionalInfoForm({
           <Label htmlFor="industry">
             Industry <span className="text-red-500">*</span>
           </Label>
-          <Select
-            value={formData.industry?.toString() || ""}
-            onValueChange={handleIndustryChange}
-            disabled={!isInitialized}
-          >
-            <SelectTrigger className={errors.industry ? "border-red-500" : ""}>
-              <SelectValue placeholder="Select industry" />
-            </SelectTrigger>
-            <SelectContent>
-            <div className="p-2">
-                <Input
-                  placeholder="Search industries..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="mb-2"
-                />
-              </div>
-              {filteredIndustries.map((industry: { id: number; name: string }) => (
-                <SelectItem key={industry.id} value={industry.id.toString()}>
-                  {industry.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ReactSelectField
+            options={industryOptions}
+            value={formData.industry ? industryOptions.find((option) => option.value === formData.industry) : null}
+            onChange={handleIndustryChange}
+            placeholder="Select industry"
+            isDisabled={!isInitialized}
+            error={errors.industry}
+            isSearchable
+            isClearable
+          />
           {errors.industry && <p className="text-red-500 text-sm">{errors.industry}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="company_size">Company Size</Label>
-          <Select
-            value={formData.company_size || ""}
-            onValueChange={(value) => updateFormData({ company_size: value })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select company size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-10">1-10 employees</SelectItem>
-              <SelectItem value="11-50">11-50 employees</SelectItem>
-              <SelectItem value="51-200">51-200 employees</SelectItem>
-              <SelectItem value="201-500">201-500 employees</SelectItem>
-              <SelectItem value="501-1000">501-1000 employees</SelectItem>
-              <SelectItem value="1001+">1001+ employees</SelectItem>
-            </SelectContent>
-          </Select>
+          <ReactSelectField
+            options={companySizeOptions}
+            value={
+              formData.company_size ? companySizeOptions.find((option) => option.value === formData.company_size) : null
+            }
+            onChange={(option) =>
+              updateFormData({
+                company_size: option && !Array.isArray(option) && "value" in option ? option.value : "",
+              })
+            }
+            placeholder="Select company size"
+            isClearable
+          />
         </div>
 
         <div className="space-y-2">
