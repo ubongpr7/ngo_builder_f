@@ -1,10 +1,12 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 import type { AddressFormData } from "../interfaces/kyc-forms"
 import {
   useGetCountriesQuery,
@@ -12,83 +14,7 @@ import {
   useGetSubregionsQuery,
   useGetCitiesQuery,
 } from "@/redux/features/common/typeOF"
-import { useUpdateProfileMutation } from "@/redux/features/profile/profileAPISlice"
 import { useAddAddressMutation, useUpdateAddressMutation } from "@/redux/features/profile/profileRelatedAPISlice"
-
-const SearchableSelect = ({
-  value,
-  onValueChange,
-  options,
-  placeholder,
-  disabled,
-  error,
-  loading,
-  className = ""
-}: {
-  value: string
-  onValueChange: (value: string) => void
-  options: Array<{ value: string; label: string }>
-  placeholder?: string
-  disabled?: boolean
-  error?: boolean
-  loading?: boolean
-  className?: string
-}) => {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
-  
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
-  const selectedLabel = options.find(o => o.value === value)?.label || ""
-
-  return (
-    <Select
-      value={value}
-      onValueChange={onValueChange}
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      disabled={disabled}
-    >
-      <SelectTrigger 
-        className={`${className} ${error ? "border-red-500" : ""}`}
-        onClick={(e) => {
-          if (!disabled) {
-            setIsOpen(true)
-            setSearchTerm("")
-          }
-        }}
-      >
-        <SelectValue placeholder={loading ? "Loading..." : placeholder}>
-          {selectedLabel}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <div className="p-2 sticky top-0 bg-white z-10">
-          <Input
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="mb-2"
-            autoFocus
-            onKeyDown={(e) => {
-              // Prevent scrolling when using arrow keys
-              if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
-                e.preventDefault()
-              }
-            }}
-          />
-        </div>
-        {filteredOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
 
 interface AddressFormProps {
   formData: AddressFormData
@@ -105,17 +31,17 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
   const isMounted = useRef(false)
 
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
-  
+
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
     refetchOnMountOrArgChange: true,
   })
-  
+
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
     refetchOnMountOrArgChange: true,
   })
-  
+
   const { data: cities, isLoading: isLoadingCities } = useGetCitiesQuery(formData.subregion || 0, {
     skip: !formData.subregion,
     refetchOnMountOrArgChange: true,
@@ -137,6 +63,23 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
       })
     }
   }, [formData.country])
+
+  useEffect(() => {
+    if (isMounted.current && formData.region) {
+      updateFormData({
+        subregion: null,
+        city: null,
+      })
+    }
+  }, [formData.region])
+
+  useEffect(() => {
+    if (isMounted.current && formData.subregion) {
+      updateFormData({
+        city: null,
+      })
+    }
+  }, [formData.subregion])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -184,8 +127,34 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     }
   }
 
-  const getEntityName = (id: number | null, data: Array<{ id: number; name: string }> | undefined) => 
-    data?.find(entity => entity.id === id)?.name
+  // Convert data arrays to react-select options
+  const countryOptions: SelectOption[] = countries
+    ? countries.map((country) => ({
+        value: country.id.toString(),
+        label: country.name,
+      }))
+    : []
+
+  const regionOptions: SelectOption[] = regions
+    ? regions.map((region) => ({
+        value: region.id.toString(),
+        label: region.name,
+      }))
+    : []
+
+  const subregionOptions: SelectOption[] = subregions
+    ? subregions.map((subregion) => ({
+        value: subregion.id.toString(),
+        label: subregion.name,
+      }))
+    : []
+
+  const cityOptions: SelectOption[] = cities
+    ? cities.map((city) => ({
+        value: city.id.toString(),
+        label: city.name,
+      }))
+    : []
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -193,17 +162,17 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Country Select */}
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
-          <SearchableSelect
-            value={formData.country?.toString() || ""}
-            onValueChange={value => updateFormData({ country: Number(value) })}
-            placeholder="Select your country"
-            options={countries?.map(country => ({
-              value: country.id.toString(),
-              label: country.name
-            })) || []}
-            disabled={isLoadingCountries}
-            error={!!errors.country}
-            loading={isLoadingCountries}
+          <ReactSelectField
+            options={countryOptions}
+            value={countryOptions.find((option) => option.value === formData.country?.toString())}
+            onChange={(option) =>
+              updateFormData({ country: option && "value" in option ? Number(option.value) : null })
+            }
+            placeholder={isLoadingCountries ? "Loading countries..." : "Select your country"}
+            isDisabled={isLoadingCountries}
+            error={errors.country}
+            isSearchable
+            isClearable
           />
           {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
         </div>
@@ -211,23 +180,21 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Region Select */}
         <div className="space-y-2">
           <Label htmlFor="region">Region/State</Label>
-          <SearchableSelect
-            value={formData.region?.toString() || ""}
-            onValueChange={value => updateFormData({ region: Number(value) })}
-            placeholder={
-              isLoadingRegions && formData.region 
-                ? "Loading saved region..." 
-                : formData.region
-                  ? getEntityName(formData.region, regions) || "Invalid region"
-                  : "Select region"
+          <ReactSelectField
+            options={regionOptions}
+            value={regionOptions.find((option) => option.value === formData.region?.toString())}
+            onChange={(option) =>
+              updateFormData({
+                region: option && "value" in option ? Number(option.value) : null,
+              })
             }
-            options={regions?.map(region => ({
-              value: region.id.toString(),
-              label: region.name
-            })) || []}
-            disabled={isLoadingRegions || !formData.country}
-            error={!!errors.region}
-            loading={isLoadingRegions}
+            placeholder={
+              isLoadingRegions ? "Loading regions..." : !formData.country ? "Select country first" : "Select region"
+            }
+            isDisabled={isLoadingRegions || !formData.country}
+            error={errors.region}
+            isSearchable
+            isClearable
           />
           {errors.region && <p className="text-red-500 text-sm">{errors.region}</p>}
         </div>
@@ -235,23 +202,25 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* Subregion Select */}
         <div className="space-y-2">
           <Label htmlFor="subregion">Subregion/LGA</Label>
-          <SearchableSelect
-            value={formData.subregion?.toString() || ""}
-            onValueChange={value => updateFormData({ subregion: Number(value) })}
+          <ReactSelectField
+            options={subregionOptions}
+            value={subregionOptions.find((option) => option.value === formData.subregion?.toString())}
+            onChange={(option) =>
+              updateFormData({
+                subregion: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
+              })
+            }
             placeholder={
-              isLoadingSubregions && formData.subregion 
-                ? "Loading saved subregion..." 
-                : formData.subregion
-                  ? getEntityName(formData.subregion, subregions) || "Invalid subregion"
+              isLoadingSubregions
+                ? "Loading subregions..."
+                : !formData.region
+                  ? "Select region first"
                   : "Select subregion"
             }
-            options={subregions?.map(subregion => ({
-              value: subregion.id.toString(),
-              label: subregion.name
-            })) || []}
-            disabled={isLoadingSubregions || !formData.region}
-            error={!!errors.subregion}
-            loading={isLoadingSubregions}
+            isDisabled={isLoadingSubregions || !formData.region}
+            error={errors.subregion}
+            isSearchable
+            isClearable
           />
           {errors.subregion && <p className="text-red-500 text-sm">{errors.subregion}</p>}
         </div>
@@ -259,23 +228,21 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         {/* City Select */}
         <div className="space-y-2">
           <Label htmlFor="city">City/Town</Label>
-          <SearchableSelect
-            value={formData.city?.toString() || ""}
-            onValueChange={value => updateFormData({ city: Number(value) })}
-            placeholder={
-              isLoadingCities && formData.city 
-                ? "Loading saved city..." 
-                : formData.city
-                  ? getEntityName(formData.city, cities) || "Invalid city"
-                  : "Select city"
+          <ReactSelectField
+            options={cityOptions}
+            value={cityOptions.find((option) => option.value === formData.city?.toString())}
+            onChange={(option) =>
+              updateFormData({
+                city: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
+              })
             }
-            options={cities?.map(city => ({
-              value: city.id.toString(),
-              label: city.name
-            })) || []}
-            disabled={isLoadingCities || !formData.subregion}
-            error={!!errors.city}
-            loading={isLoadingCities}
+            placeholder={
+              isLoadingCities ? "Loading cities..." : !formData.subregion ? "Select subregion first" : "Select city"
+            }
+            isDisabled={isLoadingCities || !formData.subregion}
+            error={errors.city}
+            isSearchable
+            isClearable
           />
           {errors.city && <p className="text-red-500 text-sm">{errors.city}</p>}
         </div>
@@ -287,7 +254,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             id="street_number"
             type="number"
             value={formData.street_number?.toString() || ""}
-            onChange={e => updateFormData({ street_number: e.target.value ? Number(e.target.value) : null })}
+            onChange={(e) => updateFormData({ street_number: e.target.value ? Number(e.target.value) : null })}
             placeholder="Enter street number (optional)"
             min="0"
           />
@@ -300,7 +267,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             id="apt_number"
             type="number"
             value={formData.apt_number?.toString() || ""}
-            onChange={e => updateFormData({ apt_number: e.target.value ? Number(e.target.value) : null })}
+            onChange={(e) => updateFormData({ apt_number: e.target.value ? Number(e.target.value) : null })}
             placeholder="Enter apartment number (optional)"
             min="0"
           />
@@ -311,8 +278,8 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <Label htmlFor="street">Street Name</Label>
           <Input
             id="street"
-            value={formData.street}
-            onChange={e => updateFormData({ street: e.target.value })}
+            value={formData.street || ""}
+            onChange={(e) => updateFormData({ street: e.target.value })}
             placeholder="Enter street name"
             className={errors.street ? "border-red-500" : ""}
           />
@@ -325,7 +292,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <Input
             id="postal_code"
             value={formData.postal_code || ""}
-            onChange={e => updateFormData({ postal_code: e.target.value })}
+            onChange={(e) => updateFormData({ postal_code: e.target.value })}
             placeholder="Enter postal code (optional)"
           />
         </div>
