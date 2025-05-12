@@ -188,6 +188,40 @@ export interface MilestoneStatistics {
 }
 
 
+export interface ExpenseStatistics {
+  total_expenses: {
+    total: number
+    pending: number
+    approved: number
+    rejected: number
+    reimbursed: number
+  }
+  status_counts: Array<{
+    status: string
+    count: number
+    total: number
+  }>
+  category_counts: Array<{
+    category: string
+    count: number
+    total: number
+  }>
+  expenses_by_month: Array<{
+    month: string
+    count: number
+    total: number
+  }>
+  expenses_by_user: Array<{
+    incurred_by__id: number
+    incurred_by__username: string
+    incurred_by__first_name: string
+    incurred_by__last_name: string
+    count: number
+    total: number
+  }>
+}
+
+
 export interface ProjectExpense {
   id: number
   project: number
