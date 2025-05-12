@@ -142,7 +142,7 @@ export function CustomDatePicker({
     }),
     menu: (provided: any) => ({
       ...provided,
-      zIndex: 70, // Higher than popover's z-index
+      zIndex: 10000, 
     }),
     option: (provided: any, state: any) => ({
       ...provided,
@@ -178,7 +178,7 @@ export function CustomDatePicker({
       <PopoverContent 
         className="w-auto p-0" 
         align="start"
-        style={{ zIndex: 60 }} // Higher than dialog's z-50
+        style={{ zIndex: 9999 }} // Higher than dialog's z-50
       >
         <div className="p-3 border-b">
           <div className="flex justify-between items-center mb-2">
