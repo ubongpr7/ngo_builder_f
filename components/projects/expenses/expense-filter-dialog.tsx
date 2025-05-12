@@ -47,11 +47,11 @@ export function ExpenseFilterDialog({ isOpen, onClose, filters, onApplyFilters }
     formState: { errors },
   } = useForm<FilterFormValues>({
     defaultValues: {
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-      minAmount: filters.minAmount,
-      maxAmount: filters.maxAmount,
-      categories: filters.categories,
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      minAmount: filters?.minAmount,
+      maxAmount: filters?.maxAmount,
+      categories: filters?.categories,
     },
   })
 
