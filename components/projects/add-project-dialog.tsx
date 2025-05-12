@@ -22,13 +22,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
-import { useCreateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
+import {
+  useCreateProjectMutation,
+  useGetProjectsCategoriesQuery,
+  useGetManagerCeoQuery,
+} from "@/redux/features/projects/projectsAPISlice"
+import { format } from "date-fns"
 
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   description: z.string().min(10, { message: "Description must be at least 10 characters" }),
   project_type: z.string().min(1, { message: "Project type is required" }),
   category: z.string().optional(),
+  manager: z.string().min(1, { message: "Manager is required" }),
   location: z.string().min(2, { message: "Location is required" }),
   start_date: z.date({ required_error: "Start date is required" }),
   target_end_date: z.date({ required_error: "End date is required" }),
@@ -48,6 +54,7 @@ export function AddProjectDialog() {
   const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
+  const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery()
 
   // Transform categories data to select options
   const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
@@ -55,14 +62,18 @@ export function AddProjectDialog() {
     label: category.name,
   }))
 
-  // Project type options
+  // Transform managers data to select options
+  const managerOptions: SelectOption[] = managersData.map((manager) => ({
+    value: manager.id.toString(),
+    label: `${manager.first_name} ${manager.last_name}`,
+  }))
+
+  // Project type options based on backend choices
   const projectTypeOptions: SelectOption[] = [
-    { value: "education", label: "Education" },
-    { value: "health", label: "Health" },
-    { value: "infrastructure", label: "Infrastructure" },
-    { value: "agriculture", label: "Agriculture" },
-    { value: "technology", label: "Technology" },
-    { value: "other", label: "Other" },
+    { value: "profit", label: "Profit" },
+    { value: "non_profit", label: "Non-Profit" },
+    { value: "community", label: "Community" },
+    { value: "internal", label: "Internal" },
   ]
 
   const form = useForm<ProjectFormValues>({
@@ -72,6 +83,7 @@ export function AddProjectDialog() {
       description: "",
       project_type: "",
       category: "",
+      manager: "",
       location: "",
       beneficiaries: "",
       success_criteria: "",
@@ -81,12 +93,17 @@ export function AddProjectDialog() {
 
   async function onSubmit(data: ProjectFormValues) {
     try {
-      await createProject({
+      // Format dates to ISO string format (YYYY-MM-DD)
+      const formattedData = {
         ...data,
+        start_date: format(data.start_date, "yyyy-MM-dd"),
+        target_end_date: format(data.target_end_date, "yyyy-MM-dd"),
         status: "planning",
         funds_allocated: 0,
         funds_spent: 0,
-      }).unwrap()
+      }
+
+      await createProject(formattedData).unwrap()
 
       toast({
         title: "Project created",
@@ -214,6 +231,38 @@ export function AddProjectDialog() {
                 )}
               />
             </div>
+
+            {/* Manager Field */}
+            <FormField
+              control={form.control}
+              name="manager"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="project-manager">Manager *</FormLabel>
+                  <FormControl>
+                    <Controller
+                      name="manager"
+                      control={form.control}
+                      render={({ field }) => (
+                        <ReactSelectField
+                          inputId="project-manager"
+                          options={managerOptions}
+                          placeholder={isLoadingManagers ? "Loading managers..." : "Select manager"}
+                          value={managerOptions.find((option) => option.value === field.value)}
+                          onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
+                          error={form.formState.errors.manager?.message}
+                          isSearchable
+                          isClearable
+                          isDisabled={isLoadingManagers}
+                          aria-labelledby="project-manager-label"
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormMessage id="project-manager-error" />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
