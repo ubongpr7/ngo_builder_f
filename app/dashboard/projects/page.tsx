@@ -96,7 +96,7 @@ export default function ProjectManagement() {
             Retry
           </Button>
         </div>
-      ) : filteredProjects.length > 0 ? (
+      ) : filteredProjects?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
