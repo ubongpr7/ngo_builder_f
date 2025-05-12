@@ -1,5 +1,6 @@
 import { apiSlice } from "../../services/apiSlice"
 import type { ProjectExpense, ExpenseStatistics } from "../../../types/project"
+import { create } from "domain";
 const  backend='project_api'
 export const expenseApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -74,6 +75,13 @@ export const expenseApiSlice = apiSlice.injectEndpoints({
         body: { notes, reimbursement_date },
       }),
     }),
+    createExpense: builder.mutation<ProjectExpense, Partial<ProjectExpense>>({
+      query: (expense) => ({
+        url: `/${backend}/expenses/`,
+        method: "POST",
+        body: expense,
+      }),
+    }),
   }),
 })
 
@@ -90,4 +98,6 @@ export const {
   useApproveExpenseMutation,
   useRejectExpenseMutation,
   useReimburseExpenseMutation,
+  useCreateExpenseMutation,
+
 } = expenseApiSlice
