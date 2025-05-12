@@ -7,15 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, subYears, isAfter } from "date-fns"
-import { CalendarIcon, Info, ChevronLeft, ChevronRight, Linkedin, Link2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Info, Linkedin, Link2 } from "lucide-react"
 import type { PersonalInfoFormData } from "../interfaces/kyc-forms"
 import { useUpdateUserMutation } from "@/redux/features/users/userApiSlice"
 import { useGetDisabilitiesQuery } from "@/redux/features/profile/profileRelatedAPISlice"
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
+import { BirthDateInput } from "@/components/ui/birth-date-input"
 
 interface PersonalInfoFormProps {
   formData: PersonalInfoFormData
@@ -39,211 +37,6 @@ interface Disability {
   id: number
   name: string
   description?: string
-}
-
-function BirthDatePicker({
-  value,
-  onChange,
-  error,
-}: {
-  value: Date | undefined
-  onChange: (date: Date | undefined) => void
-  error?: string
-}) {
-  const [open, setOpen] = useState(false)
-  const [year, setYear] = useState<number>(() => {
-    // Default to 17 years ago
-    return subYears(new Date(), 17).getFullYear()
-  })
-  const [month, setMonth] = useState<number>(() => {
-    // Default to current month
-    return new Date().getMonth()
-  })
-
-  const seventeenYearsAgo = subYears(new Date(), 17)
-
-  const years = Array.from({ length: seventeenYearsAgo.getFullYear() - 1899 }, (_, i) => 1900 + i)
-
-  // Generate array of month names
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ]
-
-  // Handle year change
-  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setYear(Number.parseInt(e.target.value))
-  }
-
-  // Handle month change
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setMonth(Number.parseInt(e.target.value))
-  }
-
-  // Handle previous year
-  const handlePrevYear = () => {
-    if (year > 1900) {
-      setYear(year - 1)
-    }
-  }
-
-  // Handle next year
-  const handleNextYear = () => {
-    if (year < seventeenYearsAgo.getFullYear()) {
-      setYear(year + 1)
-    }
-  }
-
-  // Handle previous month
-  const handlePrevMonth = () => {
-    if (month === 0) {
-      if (year > 1900) {
-        setMonth(11)
-        setYear(year - 1)
-      }
-    } else {
-      setMonth(month - 1)
-    }
-  }
-
-  // Handle next month
-  const handleNextMonth = () => {
-    if (month === 11) {
-      if (year < seventeenYearsAgo.getFullYear()) {
-        setMonth(0)
-        setYear(year + 1)
-      }
-    } else {
-      setMonth(month + 1)
-    }
-  }
-
-  // Set default date when opening the picker
-  useEffect(() => {
-    if (open && !value) {
-      // Default to January 1st, 17 years ago
-      const defaultDate = new Date(subYears(new Date(), 17).getFullYear(), 0, 1)
-      setYear(defaultDate.getFullYear())
-      setMonth(defaultDate.getMonth())
-    }
-  }, [open, value])
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground",
-            error && "border-red-500",
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {value ? format(value, "PPP") : <span>Select your date of birth</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-3 border-b">
-          <div className="flex justify-between items-center mb-2">
-            <button
-              type="button"
-              onClick={handlePrevYear}
-              className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year <= 1900}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <Select value={year.toString()} onValueChange={(value) => setYear(Number.parseInt(value))}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder={year.toString()} />
-              </SelectTrigger>
-              <SelectContent className="max-h-[200px]">
-                {years.reverse().map((y) => (
-                  <SelectItem key={y} value={y.toString()}>
-                    {y}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <button
-              type="button"
-              onClick={handleNextYear}
-              className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year >= seventeenYearsAgo.getFullYear()}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year === 1900 && month === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <Select value={month.toString()} onValueChange={(value) => setMonth(Number.parseInt(value))}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder={months[month]} />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((m, i) => (
-                  <SelectItem key={m} value={i.toString()}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="p-1 rounded-full hover:bg-gray-100"
-              disabled={year === seventeenYearsAgo.getFullYear() && month >= seventeenYearsAgo.getMonth()}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <Calendar
-          mode="single"
-          selected={value}
-          onSelect={onChange}
-          month={new Date(year, month)}
-          onMonthChange={(date) => {
-            setMonth(date.getMonth())
-            setYear(date.getFullYear())
-          }}
-          disabled={(date) => {
-            // Disable future dates
-            if (isAfter(date, new Date())) return true
-
-            // Disable dates less than 17 years ago (too young)
-            if (isAfter(date, seventeenYearsAgo)) return true
-
-            // Disable dates before 1900
-            if (date < new Date(1900, 0, 1)) return true
-
-            return false
-          }}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 export default function PersonalInfoForm({
@@ -345,8 +138,17 @@ export default function PersonalInfoForm({
 
       onComplete()
     } catch (error) {
+      console.error("Error updating user profile:", error)
     }
   }
+
+  // Convert disabilities to select options
+  const disabilityOptions: SelectOption[] = disabilities
+    ? disabilities.map((disability: Disability) => ({
+        value: disability.id.toString(),
+        label: disability.description ? `${disability.name} (${disability.description})` : disability.name,
+      }))
+    : []
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -376,7 +178,7 @@ export default function PersonalInfoForm({
         </div>
       </div>
 
-      {/* Date of Birth Field with Custom Picker */}
+      {/* Date of Birth Field with BirthDateInput */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="date_of_birth">Date of Birth</Label>
@@ -386,10 +188,14 @@ export default function PersonalInfoForm({
           </div>
         </div>
 
-        <BirthDatePicker
+        <BirthDateInput
           value={formData.date_of_birth ? new Date(formData.date_of_birth) : undefined}
           onChange={(date) => updateFormData({ date_of_birth: date ? date.toISOString() : undefined })}
           error={errors.date_of_birth}
+          minAge={17}
+          maxAge={120}
+          label=""
+          placeholder="Select your date of birth"
         />
 
         {errors.date_of_birth && <p className="text-red-500 text-sm">{errors.date_of_birth}</p>}
@@ -501,37 +307,32 @@ export default function PersonalInfoForm({
         </RadioGroup>
       </div>
 
-
       {/* Disability Selection - Only shown if user has selected "Yes" for disabilities */}
       {formData.disabled && (
         <div className="space-y-3 text-gray-800">
           <Label htmlFor="disability">Select Disability</Label>
-          <Select
-            value={formData.disability !== undefined && formData.disability !== null ? formData.disability.toString() : undefined}
-            onValueChange={(value: string) => updateFormData({ disability: Number(value) })}
-          >
-            <SelectTrigger className={errors.disability ? "border-red-500" : ""}>
-              <SelectValue placeholder="Select a disability" />
-            </SelectTrigger>
-            <SelectContent>
-              {!disabilities ? (
-                <SelectItem value="loading" disabled>
-                  Loading disabilities...
-                </SelectItem>
-              ) : disabilities.length > 0 ? (
-                disabilities.map((disability: Disability) => (
-                  <SelectItem key={disability.id} value={disability.id.toString()}>
-                    {disability.name}
-                    {disability.description && ` (${disability.description})`}
-                  </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="none" disabled>
-                  No disabilities available
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+          <ReactSelectField
+            options={disabilityOptions}
+            value={
+              formData.disability !== undefined && formData.disability !== null
+                ? disabilityOptions.find((option) => option.value === formData.disability?.toString())
+                : null
+            }
+            onChange={(option) => {
+              if (option && !Array.isArray(option)) {
+                if (option && "value" in option) {
+                  updateFormData({ disability: Number(option.value) });
+                }
+              } else {
+                updateFormData({ disability: undefined });
+              }
+            }}
+            placeholder={disabilitiesLoading ? "Loading disabilities..." : "Select a disability"}
+            isDisabled={disabilitiesLoading}
+            error={errors.disability}
+            isSearchable
+            isClearable
+          />
           {errors.disability && <p className="text-red-500 text-sm">{errors.disability}</p>}
         </div>
       )}
