@@ -12,7 +12,7 @@ export const expenseApiSlice = apiSlice.injectEndpoints({
     }),
 
     getExpensesByProject: builder.query<ProjectExpense[], number>({
-      query: (projectId) => `/${backend}/${projectId}/expenses/`,
+      query: (projectId) => `/${backend}/projects/${projectId}/expenses/`,
     }),
 
     getExpensesByUser: builder.query<ProjectExpense[], number | void>({
