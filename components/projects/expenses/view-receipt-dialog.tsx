@@ -12,7 +12,7 @@ interface ViewReceiptDialogProps {
 }
 
 export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialogProps) {
-  const receiptUrl = expense.receipt_url || ""
+  const receiptUrl = expense.receipt || ''
   const isImage = receiptUrl.match(/\.(jpeg|jpg|gif|png)$/i) !== null
   const isPdf = receiptUrl.match(/\.(pdf)$/i) !== null
 
