@@ -2,18 +2,18 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download, FileText, ImageIcon } from "lucide-react"
+import { Download, FileText } from "lucide-react"
 import type { ProjectExpense } from "@/types/project"
 
 interface ViewReceiptDialogProps {
-  isOpen: boolean
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
   expense: ProjectExpense
 }
 
-export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialogProps) {
-  const receiptUrl = expense.receipt || ''
-  const isImage = receiptUrl.match(/\.(jpeg|jpg|gif|png)$/i) !== null
+export function ViewReceiptDialog({ open, onOpenChange, expense }: ViewReceiptDialogProps) {
+  const receiptUrl = expense?.receipt || ""
+  const isImage = receiptUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) !== null
   const isPdf = receiptUrl.match(/\.(pdf)$/i) !== null
 
   const handleDownload = () => {
@@ -23,7 +23,7 @@ export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialo
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Receipt for {expense.title}</DialogTitle>
@@ -38,7 +38,7 @@ export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialo
           )}
 
           {isImage && receiptUrl && (
-            <ImageIcon
+            <img
               src={receiptUrl || "/placeholder.svg"}
               alt={`Receipt for ${expense.title}`}
               className="max-w-full max-h-[60vh] object-contain border rounded"
@@ -49,10 +49,13 @@ export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialo
             <div className="flex flex-col items-center justify-center p-8">
               <FileText className="h-16 w-16 mb-4 text-red-500" />
               <p className="mb-4">PDF Receipt</p>
-              <Button onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
+              <div className="flex gap-4">
+                <Button onClick={handleDownload}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Button onClick={() => window.open(receiptUrl, "_blank")}>View PDF</Button>
+              </div>
             </div>
           )}
 
@@ -69,7 +72,7 @@ export function ViewReceiptDialog({ isOpen, onClose, expense }: ViewReceiptDialo
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
