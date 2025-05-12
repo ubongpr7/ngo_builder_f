@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
@@ -169,14 +169,19 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
                   )}
                 />
 
-                <FormField
+                <Controller
                   control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Status</FormLabel>
                       <FormControl>
-                        <ReactSelectField options={statusOptions} placeholder="Select status" {...field} />
+                        <ReactSelectField
+                          options={statusOptions}
+                          placeholder="Select status"
+                          value={statusOptions.find((option) => option.value === field.value) || null}
+                          onChange={(option) => field.onChange(option ? option.value : "")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -185,14 +190,19 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormField
+                <Controller
                   control={form.control}
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Priority</FormLabel>
                       <FormControl>
-                        <ReactSelectField options={priorityOptions} placeholder="Select priority" {...field} />
+                        <ReactSelectField
+                          options={priorityOptions}
+                          placeholder="Select priority"
+                          value={priorityOptions.find((option) => option.value === field.value) || null}
+                          onChange={(option) => field.onChange(option ? option.value : "")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
