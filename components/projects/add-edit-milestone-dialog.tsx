@@ -35,7 +35,6 @@ const formSchema = z.object({
   }),
   status: z.string().min(1, { message: "Status is required" }),
   priority: z.string().min(1, { message: "Priority is required" }),
-  completion_percentage: z.number().min(0).max(100).optional(),
   notes: z.string().optional(),
   deliverables: z.string().optional(),
 })
@@ -62,7 +61,6 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
       due_date: milestone?.due_date ? new Date(milestone.due_date) : new Date(),
       status: milestone?.status || "pending",
       priority: milestone?.priority || "medium",
-      completion_percentage: milestone?.completion_percentage || 0,
       notes: milestone?.notes || "",
       deliverables: milestone?.deliverables || "",
     },
@@ -189,47 +187,24 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <FormControl>
-                        <ReactSelectField
-                          options={priorityOptions}
-                          placeholder="Select priority"
-                          value={priorityOptions.find((option) => option.value === field.value) || null}
-                          onChange={(option) => field.onChange(option ? option.value : "")}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="completion_percentage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Completion Percentage</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="0"
-                          {...field}
-                          onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <Controller
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <ReactSelectField
+                        options={priorityOptions}
+                        placeholder="Select priority"
+                        value={priorityOptions.find((option) => option.value === field.value) || null}
+                        onChange={(option) => field.onChange(option ? option.value : "")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

@@ -67,10 +67,7 @@ export function CompleteMilestoneDialog({ milestone, onSuccess, trigger }: Compl
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>Complete Milestone</DialogTitle>
-          <DialogDescription>
-            Mark the milestone "{milestone.title}" as completed. This will set the status to completed and update the
-            completion percentage to 100%.
-          </DialogDescription>
+          <DialogDescription>Mark the milestone "{milestone.title}" as completed.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,7 +89,7 @@ export function CompleteMilestoneDialog({ milestone, onSuccess, trigger }: Compl
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+              <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Mark Complete

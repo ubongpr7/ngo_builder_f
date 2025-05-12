@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Loader2 } from "lucide-react"
@@ -18,8 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { ReactSelectField } from "@/components/ui/react-select-field"
+import { Form, FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useAssignUsersToMilestoneMutation } from "@/redux/features/projects/milestoneApiSlice"
 import { useGetManagerCeoQuery } from "@/redux/features/projects/projectsAPISlice"
 import type { ProjectMilestone } from "@/types/project"
@@ -49,12 +48,6 @@ export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger }: As
     },
   })
 
-  // Prepare user options for react-select
-  const userOptions = users.map((user: { id: number; first_name: string; last_name: string; email: string }) => ({
-    value: user.id.toString(),
-    label: `${user.first_name} ${user.last_name} (${user.email})`,
-  }))
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       await assignUsers({
@@ -72,7 +65,7 @@ export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger }: As
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || <Button>Assign Users</Button>}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assign Users to Milestone</DialogTitle>
           <DialogDescription>
@@ -82,20 +75,45 @@ export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger }: As
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
+            <Controller
               control={form.control}
               name="userIds"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Users</FormLabel>
                   <FormControl>
-                    <ReactSelectField
-                      options={userOptions}
-                      isLoading={isLoadingUsers}
-                      placeholder="Select users"
-                      isMulti
-                      {...field}
-                    />
+                    <div className="space-y-2">
+                      {isLoadingUsers ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="ml-2">Loading users...</span>
+                        </div>
+                      ) : (
+                        <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-md p-2">
+                          {users.map((user: { id: number; first_name: string; last_name: string; email: string }) => (
+                            <div key={user.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50">
+                              <input
+                                type="checkbox"
+                                id={`user-${user.id}`}
+                                value={user.id.toString()}
+                                checked={field.value.includes(user.id.toString())}
+                                onChange={(e) => {
+                                  const value = e.target.value
+                                  const newValues = e.target.checked
+                                    ? [...field.value, value]
+                                    : field.value.filter((id) => id !== value)
+                                  field.onChange(newValues)
+                                }}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <label htmlFor={`user-${user.id}`} className="text-sm">
+                                {user.first_name} {user.last_name} ({user.email})
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

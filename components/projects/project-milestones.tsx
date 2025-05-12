@@ -32,7 +32,6 @@ import { useGetMilestonesByProjectQuery } from "@/redux/features/projects/milest
 import { AddEditMilestoneDialog } from "./add-edit-milestone-dialog"
 import { AssignUsersMilestoneDialog } from "./assign-users-milestone-dialog"
 import { UpdateMilestoneStatusDialog } from "./update-milestone-status-dialog"
-import { UpdateMilestonePercentageDialog } from "./update-milestone-percentage-dialog"
 import { CompleteMilestoneDialog } from "./complete-milestone-dialog"
 import { DeleteMilestoneDialog } from "./delete-milestone-dialog"
 import { MilestoneStatistics } from "./milestone-statistics"
@@ -305,17 +304,6 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                           <Flag className="mr-2 h-4 w-4" />
                           Update Status
-                        </DropdownMenuItem>
-                      }
-                    />
-
-                    <UpdateMilestonePercentageDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <BarChart className="mr-2 h-4 w-4" />
-                          Update Progress
                         </DropdownMenuItem>
                       }
                     />

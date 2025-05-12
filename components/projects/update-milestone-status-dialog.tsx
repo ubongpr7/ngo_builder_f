@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Loader2 } from "lucide-react"
@@ -18,8 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { ReactSelectField } from "@/components/ui/react-select-field"
+import { Form, FormControl, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useUpdateMilestoneStatusMutation } from "@/redux/features/projects/milestoneApiSlice"
 import type { ProjectMilestone } from "@/types/project"
 
@@ -44,7 +43,7 @@ export function UpdateMilestoneStatusDialog({ milestone, onSuccess, trigger }: U
     },
   })
 
-  // Prepare status options for react-select
+  // Prepare status options for select
   const statusOptions = [
     { value: "pending", label: "Pending" },
     { value: "in_progress", label: "In Progress" },
@@ -76,14 +75,27 @@ export function UpdateMilestoneStatusDialog({ milestone, onSuccess, trigger }: U
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
+            <Controller
               control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
                   <FormControl>
-                    <ReactSelectField options={statusOptions} placeholder="Select status" {...field} />
+                    <select
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={field.value}
+                      onChange={(e) => field.onChange(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Select status
+                      </option>
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
