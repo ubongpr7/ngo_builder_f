@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Loader2, Plus } from "lucide-react"
@@ -19,9 +19,9 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { DateInput } from "@/components/ui/date-input"
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 import { useCreateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
 
 const projectSchema = z.object({
@@ -47,7 +47,23 @@ export function AddProjectDialog() {
   const [open, setOpen] = useState(false)
   const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
-  const { data: categories = [] } = useGetProjectsCategoriesQuery()
+  const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
+
+  // Transform categories data to select options
+  const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
+    value: category.id.toString(),
+    label: category.name,
+  }))
+
+  // Project type options
+  const projectTypeOptions: SelectOption[] = [
+    { value: "education", label: "Education" },
+    { value: "health", label: "Health" },
+    { value: "infrastructure", label: "Infrastructure" },
+    { value: "agriculture", label: "Agriculture" },
+    { value: "technology", label: "Technology" },
+    { value: "other", label: "Other" },
+  ]
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -144,21 +160,23 @@ export function AddProjectDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Project Type *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select project type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="health">Health</SelectItem>
-                        <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                        <SelectItem value="agriculture">Agriculture</SelectItem>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Controller
+                        name="project_type"
+                        control={form.control}
+                        render={({ field }) => (
+                          <ReactSelectField
+                            options={projectTypeOptions}
+                            placeholder="Select project type"
+                            value={projectTypeOptions.find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
+                            error={form.formState.errors.project_type?.message}
+                            isSearchable
+                            isClearable
+                          />
+                        )}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -170,20 +188,23 @@ export function AddProjectDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Controller
+                        name="category"
+                        control={form.control}
+                        render={({ field }) => (
+                          <ReactSelectField
+                            options={categoryOptions}
+                            placeholder="Select category"
+                            value={categoryOptions.find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
+                            error={form.formState.errors.category?.message}
+                            isSearchable
+                            isClearable
+                          />
+                        )}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
