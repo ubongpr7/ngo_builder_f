@@ -165,7 +165,7 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Edit Expense</DialogTitle>
           <DialogDescription>

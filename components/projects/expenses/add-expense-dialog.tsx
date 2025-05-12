@@ -23,7 +23,6 @@ import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSli
 import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2 } from "lucide-react"
 
-// Define the form schema with Zod
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
@@ -40,7 +39,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-// Define expense categories
 const EXPENSE_CATEGORIES = [
   { value: "Travel", label: "Travel" },
   { value: "Meals", label: "Meals" },
@@ -143,7 +141,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
           <DialogDescription>
