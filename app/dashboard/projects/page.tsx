@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, FileText, Loader2 } from "lucide-react"
-import { useGetAllProjectsQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetAllProjectsQuery } from "@/services/projectsApiSlice"
 import { ProjectCard } from "@/components/projects/project-card"
 import { AddProjectDialog } from "@/components/projects/add-project-dialog"
 import type { Project } from "@/types/project"
@@ -20,11 +20,11 @@ export default function ProjectManagement() {
   useEffect(() => {
     if (!projects) return
 
-    const filtered = projects.filter((project:Project) => {
+    const filtered = projects.filter((project: Project) => {
       const matchesSearch =
         project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (project.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-        false // Removed reference to project.location as it does not exist on type 'Project'
+        project.description?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+        false
 
       if (activeTab === "all") return matchesSearch
 
