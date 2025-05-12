@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { MessageSquare, Send, ThumbsUp, Reply, MoreHorizontal, Loader2 } from "lucide-react"
 
 // Mock API call - replace with actual API call
-import { useGetProjectCommentsQuery } from "@/services/projectsApiSlice"
+import { useGetProjectCommentsQuery } from "@/redux/features/projects/projectsAPISlice"
 
 interface ProjectCommentsProps {
   projectId: number | string

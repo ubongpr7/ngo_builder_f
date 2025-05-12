@@ -9,7 +9,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Calendar, Briefcase, AlertTriangle, Loader2, Package, ArrowLeft } from "lucide-react"
 
 // Mock API call - replace with actual API call
-import { useGetProjectAssetsQuery } from "@/services/projectsApiSlice"
+import { useGetProjectAssetsQuery } from "@/redux/features/projects/projectsAPISlice"
+import { ProjectAsset } from "@/types/project"
 
 interface ProjectAssetsProps {
   projectId: number | string
@@ -21,7 +22,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
   const [activeTab, setActiveTab] = useState("all")
 
   // Filter assets based on search term and active tab
-  const filteredAssets = assets.filter((asset) => {
+  const filteredAssets = assets.filter((asset:ProjectAsset) => {
     const matchesSearch =
       asset.asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.asset.asset_type.toLowerCase().includes(searchTerm.toLowerCase()) ||

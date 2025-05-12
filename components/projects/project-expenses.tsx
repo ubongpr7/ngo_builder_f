@@ -19,15 +19,113 @@ import {
   Receipt,
 } from "lucide-react"
 
-// Mock API call - replace with actual API call
-import { useGetProjectExpensesQuery } from "@/services/projectsApiSlice"
+// Mock data for now - will be replaced with actual API call
+const mockExpenses = [
+  {
+    id: 1,
+    title: "Office Supplies",
+    description: "Purchased office supplies for the project team.",
+    category: "Supplies",
+    amount: 250.75,
+    date_incurred: "2023-05-10",
+    incurred_by: {
+      id: 1,
+      username: "johndoe",
+      first_name: "John",
+      last_name: "Doe",
+      email: "john.doe@example.com",
+    },
+    receipt: "receipt.pdf",
+    status: "approved",
+    approval_date: "2023-05-12",
+    approved_by: {
+      id: 2,
+      username: "janedoe",
+      first_name: "Jane",
+      last_name: "Doe",
+      email: "jane.doe@example.com",
+    },
+  },
+  {
+    id: 2,
+    title: "Team Lunch",
+    description: "Team lunch for project kickoff meeting.",
+    category: "Meals",
+    amount: 175.5,
+    date_incurred: "2023-05-15",
+    incurred_by: {
+      id: 3,
+      username: "bobsmith",
+      first_name: "Bob",
+      last_name: "Smith",
+      email: "bob.smith@example.com",
+    },
+    receipt: "lunch_receipt.pdf",
+    status: "reimbursed",
+    approval_date: "2023-05-16",
+    approved_by: {
+      id: 2,
+      username: "janedoe",
+      first_name: "Jane",
+      last_name: "Doe",
+      email: "jane.doe@example.com",
+    },
+    notes: "Reimbursed via direct deposit on 5/20/2023.",
+  },
+  {
+    id: 3,
+    title: "Software License",
+    description: "Annual license for project management software.",
+    category: "Software",
+    amount: 599.99,
+    date_incurred: "2023-05-20",
+    incurred_by: {
+      id: 1,
+      username: "johndoe",
+      first_name: "John",
+      last_name: "Doe",
+      email: "john.doe@example.com",
+    },
+    receipt: "license_receipt.pdf",
+    status: "pending",
+  },
+  {
+    id: 4,
+    title: "Travel Expenses",
+    description: "Flight and hotel for client meeting.",
+    category: "Travel",
+    amount: 1250.0,
+    date_incurred: "2023-05-25",
+    incurred_by: {
+      id: 4,
+      username: "alicejones",
+      first_name: "Alice",
+      last_name: "Jones",
+      email: "alice.jones@example.com",
+    },
+    status: "rejected",
+    approval_date: "2023-05-26",
+    approved_by: {
+      id: 2,
+      username: "janedoe",
+      first_name: "Jane",
+      last_name: "Doe",
+      email: "jane.doe@example.com",
+    },
+    notes: "Rejected due to missing receipts. Please resubmit with complete documentation.",
+  },
+]
 
 interface ProjectExpensesProps {
-  projectId: number | string
+  projectId: number
 }
 
 export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
-  const { data: expenses = [], isLoading } = useGetProjectExpensesQuery(projectId)
+  // In a real implementation, this would use your API
+  // const { data: expenses = [], isLoading } = useGetProjectExpensesQuery(projectId)
+  const expenses = mockExpenses
+  const isLoading = false
+
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
 

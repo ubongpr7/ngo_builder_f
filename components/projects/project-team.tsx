@@ -9,15 +9,81 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, UserPlus, Mail, Calendar, Briefcase, AlertTriangle, Loader2 } from "lucide-react"
 
-// Mock API call - replace with actual API call
-import { useGetProjectTeamQuery } from "@/services/projectsApiSlice"
+// Mock data for now - will be replaced with actual API call
+const mockTeamMembers = [
+  {
+    user: {
+      id: 1,
+      username: "johndoe",
+      first_name: "John",
+      last_name: "Doe",
+      email: "john.doe@example.com",
+    },
+    role: "manager",
+    responsibilities: "Overall project management and coordination",
+    join_date: "2023-01-15",
+  },
+  {
+    user: {
+      id: 2,
+      username: "janedoe",
+      first_name: "Jane",
+      last_name: "Doe",
+      email: "jane.doe@example.com",
+    },
+    role: "coordinator",
+    responsibilities: "Day-to-day operations and team coordination",
+    join_date: "2023-01-20",
+  },
+  {
+    user: {
+      id: 3,
+      username: "bobsmith",
+      first_name: "Bob",
+      last_name: "Smith",
+      email: "bob.smith@example.com",
+    },
+    role: "member",
+    responsibilities: "Technical implementation and development",
+    join_date: "2023-02-01",
+  },
+  {
+    user: {
+      id: 4,
+      username: "alicejones",
+      first_name: "Alice",
+      last_name: "Jones",
+      email: "alice.jones@example.com",
+    },
+    role: "advisor",
+    responsibilities: "Technical guidance and quality assurance",
+    join_date: "2023-02-15",
+  },
+  {
+    user: {
+      id: 5,
+      username: "charliebrown",
+      first_name: "Charlie",
+      last_name: "Brown",
+      email: "charlie.brown@example.com",
+    },
+    role: "volunteer",
+    responsibilities: "Community outreach and support",
+    join_date: "2023-03-01",
+    end_date: "2023-06-01",
+  },
+]
 
 interface ProjectTeamProps {
-  projectId: number | string
+  projectId: number
 }
 
 export function ProjectTeam({ projectId }: ProjectTeamProps) {
-  const { data: teamMembers = [], isLoading } = useGetProjectTeamQuery(projectId)
+  // In a real implementation, this would use your API
+  // const { data: teamMembers = [], isLoading } = useGetProjectTeamQuery(projectId)
+  const teamMembers = mockTeamMembers
+  const isLoading = false
+
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
 

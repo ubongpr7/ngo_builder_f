@@ -211,6 +211,28 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+
+
+    getProjectTeam: builder.query({
+      query: (projectId) => `/projects/${projectId}/team`,
+    }),
+    getProjectMilestones: builder.query({
+      query: (projectId) => `/projects/${projectId}/milestones`,
+    }),
+    
+    getProjectExpenses: builder.query({
+      query: (projectId) => `/projects/${projectId}/expenses`,
+    }),
+    getProjectAssets: builder.query({
+      query: (projectId) => `/projects/${projectId}/assets`,
+    }),
+    getProjectComments: builder.query({
+      query: (projectId) => `/projects/${projectId}/comments`,
+    }),
+    getProjectDocuments: builder.query<any[], string | string[]>({
+      query: (projectId) => `/projects/${projectId}/documents`,
+    }),
+
   }),
 })
 
@@ -260,4 +282,13 @@ export const {
   useUpdateProjectMediaMutation,
   useDeleteProjectMediaMutation,
   useBulkUploadMediaMutation,
+
+  // Project team, milestones, expenses, assets, comments, documents queries
+  useGetProjectTeamQuery,
+  useGetProjectMilestonesQuery,
+  useGetProjectExpensesQuery,
+  useGetProjectAssetsQuery,
+  useGetProjectCommentsQuery,
+  useGetProjectDocumentsQuery,
+  
 } = projectsApiSlice

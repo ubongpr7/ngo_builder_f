@@ -8,15 +8,61 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Calendar, FileText, DollarSign, MessageSquare, AlertTriangle, Loader2, FileImage } from "lucide-react"
 
-// Mock API call - replace with actual API call
-import { useGetProjectUpdatesQuery } from "@/services/projectsApiSlice"
+// Mock data for now - will be replaced with actual API call
+const mockUpdates = [
+  {
+    id: 1,
+    date: "2023-05-15",
+    summary: "Completed initial project planning phase. Team has been assembled and roles assigned.",
+    achievements: "Successfully defined project scope and timeline.",
+    challenges: "Difficulty in securing all required resources.",
+    next_steps: "Begin implementation of first milestone.",
+    funds_spent_today: 500,
+    submitted_by_details: {
+      first_name: "John",
+      last_name: "Doe",
+    },
+    created_at: "2023-05-15T14:30:00Z",
+    media_files: [
+      {
+        id: 1,
+        media_type: "image",
+        file_url: "/project-meeting.png",
+        caption: "Planning meeting with team",
+      },
+      {
+        id: 2,
+        media_type: "document",
+        file_url: "#",
+        caption: "Project plan document",
+      },
+    ],
+  },
+  {
+    id: 2,
+    date: "2023-05-16",
+    summary: "Started work on first milestone. Team is making good progress.",
+    achievements: "Completed 20% of first milestone tasks.",
+    next_steps: "Continue implementation and prepare for first review.",
+    funds_spent_today: 300,
+    submitted_by_details: {
+      first_name: "Jane",
+      last_name: "Smith",
+    },
+    created_at: "2023-05-16T16:45:00Z",
+  },
+]
 
 interface ProjectUpdatesProps {
-  projectId: number | string
+  projectId: number
 }
 
 export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
-  const { data: updates = [], isLoading } = useGetProjectUpdatesQuery(projectId)
+  // In a real implementation, this would use your API
+  // const { data: updates = [], isLoading } = useGetMediaByProjectQuery(projectId)
+  const updates = mockUpdates
+  const isLoading = false
+
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
 

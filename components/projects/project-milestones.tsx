@@ -9,15 +9,59 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, CheckCircle, Clock, AlertTriangle, Loader2, Flag } from "lucide-react"
 
-// Mock API call - replace with actual API call
-import { useGetProjectMilestonesQuery } from "@/services/projectsApiSlice"
+// Mock data for now - will be replaced with actual API call
+const mockMilestones = [
+  {
+    id: 1,
+    title: "Project Planning",
+    description: "Complete project planning including scope definition, resource allocation, and timeline.",
+    due_date: "2023-06-01",
+    completion_date: "2023-05-28",
+    status: "completed",
+    notes: "Completed ahead of schedule with full team participation.",
+  },
+  {
+    id: 2,
+    title: "Initial Implementation",
+    description: "Begin implementation of core project components.",
+    due_date: "2023-07-15",
+    status: "in_progress",
+    notes: "Making good progress, but facing some technical challenges.",
+  },
+  {
+    id: 3,
+    title: "Mid-project Review",
+    description: "Conduct comprehensive review of project progress and adjust plans as needed.",
+    due_date: "2023-08-01",
+    status: "pending",
+  },
+  {
+    id: 4,
+    title: "Final Implementation",
+    description: "Complete all implementation tasks and prepare for testing.",
+    due_date: "2023-09-15",
+    status: "pending",
+  },
+  {
+    id: 5,
+    title: "Testing and Quality Assurance",
+    description: "Conduct thorough testing and address any issues.",
+    due_date: "2023-05-01",
+    status: "delayed",
+    notes: "Delayed due to resource constraints. Working on getting back on track.",
+  },
+]
 
 interface ProjectMilestonesProps {
-  projectId: number | string
+  projectId: number
 }
 
 export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
-  const { data: milestones = [], isLoading } = useGetProjectMilestonesQuery(projectId)
+  // In a real implementation, this would use your API
+  // const { data: milestones = [], isLoading } = useGetProjectMilestonesQuery(projectId)
+  const milestones = mockMilestones
+  const isLoading = false
+
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
 
@@ -53,7 +97,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
   }
 
   // Calculate days remaining or overdue
-  const getDaysRemaining = (dueDate: string, completionDate: string | null, status: string) => {
+  const getDaysRemaining = (dueDate: string, completionDate: string | null | undefined, status: string) => {
     const today = new Date()
     const due = new Date(dueDate)
 

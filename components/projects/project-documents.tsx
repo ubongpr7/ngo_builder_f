@@ -21,14 +21,14 @@ import {
 } from "lucide-react"
 
 // Mock API call - replace with actual API call
-import { useGetProjectDocumentsQuery } from "@/services/projectsApiSlice"
+import { useGetProjectDocumentsQuery } from "@/redux/features/projects/projectsAPISlice"
 
 interface ProjectDocumentsProps {
   projectId: number | string
 }
 
 export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
-  const { data: documents = [], isLoading } = useGetProjectDocumentsQuery(projectId)
+  const { data: documents = [], isLoading } = useGetProjectDocumentsQuery(String(projectId))
   const [searchTerm, setSearchTerm] = useState("")
 
   // Filter documents based on search term
