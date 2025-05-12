@@ -75,7 +75,7 @@ export const expenseApiSlice = apiSlice.injectEndpoints({
         body: { notes, reimbursement_date },
       }),
     }),
-    createExpense: builder.mutation<ProjectExpense, Partial<ProjectExpense>>({
+    createExpense: builder.mutation({
       query: (expense) => ({
         url: `/${backend}/expenses/`,
         method: "POST",
