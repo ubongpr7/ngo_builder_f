@@ -4,7 +4,6 @@ import type React from "react"
 
 import { forwardRef } from "react"
 import { format, parse } from "date-fns"
-import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DateInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
@@ -44,7 +43,6 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(
         {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <CalendarIcon className="h-4 w-4 text-gray-500" />
           </div>
           <input
             ref={ref}
