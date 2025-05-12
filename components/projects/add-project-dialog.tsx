@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Loader2, Plus } from "lucide-react"
+import Select from "react-select"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +20,6 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { CustomDatePicker } from "@/components/ui/custom-date-picker"
 import { useCreateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
@@ -42,6 +42,15 @@ const projectSchema = z.object({
 })
 
 type ProjectFormValues = z.infer<typeof projectSchema>
+
+const projectTypeOptions = [
+  { value: "education", label: "Education" },
+  { value: "health", label: "Health" },
+  { value: "infrastructure", label: "Infrastructure" },
+  { value: "agriculture", label: "Agriculture" },
+  { value: "technology", label: "Technology" },
+  { value: "other", label: "Other" },
+]
 
 export function AddProjectDialog() {
   const [open, setOpen] = useState(false)
@@ -91,6 +100,47 @@ export function AddProjectDialog() {
 
   // Get the current start date from the form
   const startDate = form.watch("start_date")
+
+  // Prepare category options
+  const categoryOptions = categories.map(category => ({
+    value: category.id.toString(),
+    label: category.name
+  }))
+
+  // Custom styles for react-select
+  const selectStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      minHeight: '42px',
+      border: '1px solid hsl(240 5.9% 90%)',
+      borderRadius: '6px',
+      backgroundColor: 'hsl(0 0% 100%)',
+      '&:hover': {
+        borderColor: 'hsl(240 5.9% 90%)',
+      },
+      '&:focus-within': {
+        borderColor: 'hsl(240 5% 64.9%)',
+        boxShadow: '0 0 0 1px hsl(240 5% 64.9%)',
+      },
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      zIndex: 60,
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? 'hsl(240 4.8% 95.9%)' : 'white',
+      color: 'hsl(240 10% 3.9%)',
+      cursor: 'pointer',
+      ':hover': {
+        backgroundColor: 'hsl(240 4.8% 95.9%)',
+      },
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: 'hsl(240 10% 3.9%)',
+    }),
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -143,21 +193,20 @@ export function AddProjectDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Project Type *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select project type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="health">Health</SelectItem>
-                        <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                        <SelectItem value="agriculture">Agriculture</SelectItem>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Select
+                        options={projectTypeOptions}
+                        value={projectTypeOptions.find(opt => opt.value === field.value)}
+                        onChange={(option) => field.onChange(option?.value)}
+                        placeholder="Select project type"
+                        styles={selectStyles}
+                        isSearchable
+                        menuPlacement="auto"
+                        components={{
+                          IndicatorSeparator: () => null,
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -169,20 +218,20 @@ export function AddProjectDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Select
+                        options={categoryOptions}
+                        value={categoryOptions.find(opt => opt.value === field.value)}
+                        onChange={(option) => field.onChange(option?.value)}
+                        placeholder="Select category"
+                        styles={selectStyles}
+                        isSearchable
+                        menuPlacement="auto"
+                        components={{
+                          IndicatorSeparator: () => null,
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
