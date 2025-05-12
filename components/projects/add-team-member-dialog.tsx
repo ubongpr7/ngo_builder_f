@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
@@ -44,7 +44,7 @@ interface AddTeamMemberDialogProps {
 
 export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMemberDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery('')
+  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery("")
   const [createTeamMember, { isLoading }] = useCreateTeamMemberMutation()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,7 +57,7 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
   })
 
   // Prepare user options for react-select
-  const userOptions = users.map((user) => ({
+  const userOptions = users.map((user: { id: number; first_name: string; last_name: string; email: string }) => ({
     value: user.id.toString(),
     label: `${user.first_name} ${user.last_name} (${user.email})`,
   }))
@@ -110,11 +110,19 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
                 <FormItem>
                   <FormLabel>User</FormLabel>
                   <FormControl>
-                    <ReactSelectField
-                      options={userOptions}
-                      isLoading={isLoadingUsers}
-                      placeholder="Select a user"
-                      {...field}
+                    <Controller
+                      name="user"
+                      control={form.control}
+                      render={({ field: { onChange, value, ref } }) => (
+                        <ReactSelectField
+                          inputRef={ref}
+                          options={userOptions}
+                          isLoading={isLoadingUsers}
+                          placeholder="Select a user"
+                          value={userOptions.find((option) => option.value === value)}
+                          onChange={(option: any) => onChange(option?.value || "")}
+                        />
+                      )}
                     />
                   </FormControl>
                   <FormMessage />
@@ -129,7 +137,19 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
                 <FormItem>
                   <FormLabel>Role</FormLabel>
                   <FormControl>
-                    <ReactSelectField options={roleOptions} placeholder="Select a role" {...field} />
+                    <Controller
+                      name="role"
+                      control={form.control}
+                      render={({ field: { onChange, value, ref } }) => (
+                        <ReactSelectField
+                          inputRef={ref}
+                          options={roleOptions}
+                          placeholder="Select a role"
+                          value={roleOptions.find((option) => option.value === value)}
+                          onChange={(option: any) => onChange(option?.value || "")}
+                        />
+                      )}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
