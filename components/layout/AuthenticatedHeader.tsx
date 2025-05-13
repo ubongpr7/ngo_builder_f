@@ -55,21 +55,16 @@ export default function AuthenticatedHeader() {
   const [logoutM, { isLoading }] = useLogoutMutation()
   const router = useRouter()
 
-  // Fetch user data
   const { data: userData, isLoading: isUserLoading } = useGetUserLoggedInProfileDetailsQuery("")
 
-  // Extract user information
   const userFullName =
     userData?.first_name && userData?.last_name
       ? `${userData.first_name} ${userData.last_name}`
       : userData?.email?.split("@")[0] || "My Account"
 
   const userEmail = userData?.email || ""
-
-  // Get profile image from nested profile_data
   const profileImage = userData?.profile_data?.profile_image || ""
 
-  // Get user roles and permissions
   const userRoles = {
     isKycVerified: userData?.profile_data?.is_kyc_verified || false,
     isExecutive: userData?.profile_data?.is_executive || false,
@@ -85,7 +80,6 @@ export default function AuthenticatedHeader() {
     kycStatus: userData?.profile_data?.kyc_status || "pending",
   }
 
-  // Get first letter of first name and last name for avatar fallback
   const getInitials = () => {
     if (userData?.first_name && userData?.last_name) {
       return `${userData.first_name[0]}${userData.last_name[0]}`.toUpperCase()
@@ -93,10 +87,8 @@ export default function AuthenticatedHeader() {
     return userEmail ? userEmail[0].toUpperCase() : "U"
   }
 
-  // Get KYC status badge
   const getKycStatusBadge = () => {
     const status = userData?.profile_data?.kyc_status || "pending"
-
     switch (status) {
       case "approved":
         return (
@@ -133,53 +125,67 @@ export default function AuthenticatedHeader() {
     }
   }
 
-  // Dynamic navigation based on user roles
+  const shouldShowRoleFeatures = () => {
+    return userRoles.kycStatus === "approved" && userRoles.isKycVerified
+  }
+
   const getDynamicNavigation = () => {
     const baseNavigation = [
       { name: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-4 w-4 mr-2" /> },
     ]
 
-    // Add role-specific navigation items
-    if (userRoles.isDBAdmin || userRoles.isDBExecutive) {
-      baseNavigation.push(
-        // { name: "Admin Panel", href: "/admin/dashboard", icon: <ShieldCheck className="h-4 w-4 mr-2" /> },
-        { name: "KYC Verification", href: "/admin/kyc-verification", icon: <UserCog className="h-4 w-4 mr-2" /> },
-      )
-    }
+    if (shouldShowRoleFeatures()) {
+      if (userRoles.isDBAdmin || userRoles.isDBExecutive) {
+        baseNavigation.push(
+          { name: "KYC Verification", href: "/admin/kyc-verification", icon: <UserCog className="h-4 w-4 mr-2" /> },
+        )
+      }
 
-    if (userRoles.isDBStaff || userRoles.isDBExecutive || userRoles.isDBAdmin) {
-    }
+      if (userRoles.isDonor) {
+        baseNavigation.push({
+          name: "My Donations",
+          href: "/membership/donations",
+          icon: <DollarSign className="h-4 w-4 mr-2" />,
+        })
+      }
 
-    // baseNavigation.push(
-    //   { name: "Events", href: "/membership/events", icon: <Calendar className="h-4 w-4 mr-2" /> },
-    //   { name: "Resources", href: "/membership/resources", icon: <FileText className="h-4 w-4 mr-2" /> },
-    // )
+      if (userRoles.isPartner) {
+        baseNavigation.push({
+          name: "Partnership",
+          href: "/membership/partnership",
+          icon: <Handshake className="h-4 w-4 mr-2" />,
+        })
+      }
 
-    if (userRoles.isDonor) {
-      baseNavigation.push({
-        name: "My Donations",
-        href: "/membership/donations",
-        icon: <DollarSign className="h-4 w-4 mr-2" />,
-      })
-    }
-
-    if (userRoles.isPartner) {
-      baseNavigation.push({
-        name: "Partnership",
-        href: "/membership/partnership",
-        icon: <Handshake className="h-4 w-4 mr-2" />,
-      })
-    }
-
-    if (userRoles.isVolunteer) {
-      baseNavigation.push({
-        name: "Volunteer",
-        href: "/membership/volunteer",
-        icon: <Heart className="h-4 w-4 mr-2" />,
-      })
+      if (userRoles.isVolunteer) {
+        baseNavigation.push({
+          name: "Volunteer",
+          href: "/membership/volunteer",
+          icon: <Heart className="h-4 w-4 mr-2" />,
+        })
+      }
     }
 
     return baseNavigation
+  }
+
+  const getRoleDisplayText = () => {
+    if (!shouldShowRoleFeatures()) {
+      return "Member (KYC Required)"
+    }
+    return userRoles.isDBAdmin
+      ? "Admin"
+      : userRoles.isDBExecutive
+        ? "Executive"
+        : userRoles.isDBStaff
+          ? "Staff"
+          : userRoles.isPartner
+            ? "Partner"
+            : userRoles.isDonor
+              ? "Donor"
+              : userRoles.isVolunteer
+                ? "Volunteer"
+                : "Member"
   }
 
   const navigation = getDynamicNavigation()
@@ -199,13 +205,13 @@ export default function AuthenticatedHeader() {
   return (
     <header className="bg-white shadow-sm border border-b-grey-400">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-3 sm:p-4 lg:px-8" aria-label="Global">
+        {/* Logo and mobile menu button */}
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 flex items-center">
             <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
             <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
           </Link>
         </div>
-
         <div className="flex lg:hidden">
           <button
             type="button"
@@ -217,6 +223,7 @@ export default function AuthenticatedHeader() {
           </button>
         </div>
 
+        {/* Desktop navigation */}
         <div className="hidden lg:flex lg:gap-x-8">
           {navigation.slice(0, 4).map((item) => (
             <Link
@@ -232,8 +239,6 @@ export default function AuthenticatedHeader() {
               {item.name}
             </Link>
           ))}
-
-          {/* More dropdown for additional navigation items */}
           {navigation.length > 4 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -255,8 +260,8 @@ export default function AuthenticatedHeader() {
           )}
         </div>
 
+        {/* Right section */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-          {/* Notifications dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="relative p-2 rounded-md text-gray-700 hover:text-green-700">
@@ -268,17 +273,17 @@ export default function AuthenticatedHeader() {
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="max-h-[300px] overflow-y-auto">
-                <div className="p-3 border-b">
-                  <p className="font-medium text-sm">Your KYC verification is pending</p>
-                  <p className="text-xs text-gray-500 mt-1">Please complete your verification to access all features</p>
-                </div>
+                {!shouldShowRoleFeatures() && (
+                  <div className="p-3 border-b bg-yellow-50">
+                    <p className="font-medium text-sm text-yellow-700">
+                      <AlertTriangle className="h-4 w-4 mr-2 inline" />
+                      Complete KYC verification
+                    </p>
+                  </div>
+                )}
                 <div className="p-3 border-b">
                   <p className="font-medium text-sm">New event: Annual Conference</p>
                   <p className="text-xs text-gray-500 mt-1">Join us for our annual conference on June 15th</p>
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-sm">Welcome to Destiny Builders!</p>
-                  <p className="text-xs text-gray-500 mt-1">Thank you for joining our community</p>
                 </div>
               </div>
               <DropdownMenuSeparator />
@@ -299,7 +304,7 @@ export default function AuthenticatedHeader() {
               <button className="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:text-green-700">
                 <Avatar className="h-8 w-8">
                   {profileImage ? (
-                    <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
+                    <AvatarImage src={profileImage} alt={userFullName} />
                   ) : (
                     <AvatarFallback>{getInitials()}</AvatarFallback>
                   )}
@@ -307,21 +312,7 @@ export default function AuthenticatedHeader() {
                 <div className="hidden md:flex md:flex-col md:items-start">
                   <span className="max-w-[150px] truncate text-sm font-medium">{userFullName}</span>
                   <div className="flex items-center">
-                    <span className="text-xs text-gray-500">
-                      {userRoles.isDBAdmin
-                        ? "Admin"
-                        : userRoles.isDBExecutive
-                          ? "Executive"
-                          : userRoles.isDBStaff
-                            ? "Staff"
-                            : userRoles.isPartner
-                              ? "Partner"
-                              : userRoles.isDonor
-                                ? "Donor"
-                                : userRoles.isVolunteer
-                                  ? "Volunteer"
-                                  : "Member"}
-                    </span>
+                    <span className="text-xs text-gray-500">{getRoleDisplayText()}</span>
                     {getKycStatusBadge()}
                   </div>
                 </div>
@@ -338,7 +329,6 @@ export default function AuthenticatedHeader() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
 
-              {/* User section */}
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
@@ -355,109 +345,67 @@ export default function AuthenticatedHeader() {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
 
-              {/* Role-based section */}
-              {userRoles.isDBAdmin && (
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>Admin</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/users">Manage Users</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/kyc-verification">KYC Verification</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin/settings">System Settings</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              )}
+              {shouldShowRoleFeatures() ? (
+                <>
+                  {userRoles.isDBAdmin && (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Admin</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/users">Manage Users</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/admin/kyc-verification">KYC Verification</Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  )}
 
-              {userRoles.isDBExecutive && (
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="flex items-center gap-2">
-                    <Award className="h-4 w-4" />
-                    <span>Executive</span>
-                  </DropdownMenuSubTrigger>
-                </DropdownMenuSub>
-              )}
+                  {userRoles.isDonor && (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span>Donations</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem asChild>
+                            <Link href="/donations/history">Donation History</Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  )}
 
-              {userRoles.isPartner && (
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="flex items-center gap-2">
-                    <Handshake className="h-4 w-4" />
-                    <span>Partnership</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/partnership/dashboard">Partnership Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/partnership/projects">Joint Projects</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/partnership/agreements">Agreements</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              )}
-
-              {userRoles.isDonor && (
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    <span>Donations</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/donations/history">Donation History</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/donations/tax-receipts">Tax Receipts</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/donations/impact">Impact Reports</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              )}
-
-              {userRoles.isVolunteer && (
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="flex items-center gap-2">
-                    <Heart className="h-4 w-4" />
-                    <span>Volunteer</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/volunteer/opportunities">Opportunities</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/volunteer/hours">My Hours</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/volunteer/schedule">Schedule</Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
+                  {userRoles.isVolunteer && (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex items-center gap-2">
+                        <Heart className="h-4 w-4" />
+                        <span>Volunteer</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuItem asChild>
+                            <Link href="/volunteer/opportunities">Opportunities</Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  )}
+                </>
+              ) : (
+                <DropdownMenuItem className="text-xs text-yellow-600 bg-yellow-50 cursor-default">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <span>Complete KYC to access special features</span>
+                </DropdownMenuItem>
               )}
 
               <DropdownMenuSeparator />
-
-              {/* Settings and logout */}
-              
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="flex items-center gap-2 cursor-pointer text-red-600 hover:text-red-700"
@@ -468,183 +416,117 @@ export default function AuthenticatedHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </nav>
 
-      {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden">
-          <div className="fixed inset-0 z-[9999] bg-black" />
-          <div className="fixed top-0 right-0 z-[10000] w-full sm:max-w-sm h-screen overflow-y-auto bg-white px-4 py-4">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="-m-1.5 p-1.5 flex items-center">
-                <Image src="/logo.jpg" alt="Destiny Builders Logo" width={56} height={56} className="h-10 w-auto" />
-                <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
-              </Link>
-              <button
-                type="button"
-                className="-m-2.5 rounded-md p-2.5 text-green-700"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <span className="sr-only">Close menu</span>
-                <X className="h-8 w-8" aria-hidden="true" />
-              </button>
-            </div>
-
-            {/* User profile in mobile menu */}
-            <div className="mt-6 mb-4 flex items-center">
-              <Avatar className="h-12 w-12 mr-3">
-                {profileImage ? (
-                  <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
-                ) : (
-                  <AvatarFallback>{getInitials()}</AvatarFallback>
-                )}
-              </Avatar>
-              <div>
-                <div className="flex items-center">
-                  <p className="text-base font-medium">{userFullName}</p>
-                  {getKycStatusBadge()}
-                </div>
-                <p className="text-sm text-gray-500 truncate">{userEmail}</p>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden">
+            <div className="fixed inset-0 z-[9999] bg-black" />
+            <div className="fixed top-0 right-0 z-[10000] w-full sm:max-w-sm h-screen overflow-y-auto bg-white px-4 py-4">
+              {/* Mobile menu header */}
+              <div className="flex items-center justify-between">
+                <Link href="/" className="-m-1.5 p-1.5 flex items-center">
+                  <Image src="/logo.jpg" alt="Logo" width={56} height={56} className="h-10 w-auto" />
+                  <span className="text-2xl font-bold text-green-700 ml-3">destinybuilders</span>
+                </Link>
+                <button
+                  type="button"
+                  className="-m-2.5 rounded-md p-2.5 text-green-700"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <X className="h-8 w-8" />
+                </button>
               </div>
-            </div>
 
-            <div className="flow-root">
-              <div className="divide-y divide-gray-500/10">
-                {/* Main navigation */}
-                <div className="space-y-2 py-3">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      className={`flex items-center rounded-lg px-3 py-2 text-base font-medium ${
-                        pathname === item.href ? "text-green-700 bg-green-50" : "text-gray-900 hover:bg-gray-50"
-                      }`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </Link>
-                  ))}
+              {/* Mobile user info */}
+              <div className="mt-6 mb-4 flex items-center">
+                <Avatar className="h-12 w-12 mr-3">
+                  {profileImage ? (
+                    <AvatarImage src={profileImage} alt={userFullName} />
+                  ) : (
+                    <AvatarFallback>{getInitials()}</AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <div className="flex items-center">
+                    <p className="text-base font-medium">{userFullName}</p>
+                    {getKycStatusBadge()}
+                  </div>
+                  <p className="text-sm text-gray-500 truncate">{userEmail}</p>
                 </div>
+              </div>
 
-                {/* Role-based sections */}
-                {(userRoles.isDBAdmin ||
-                  userRoles.isDBExecutive ||
-                  userRoles.isPartner ||
-                  userRoles.isDonor ||
-                  userRoles.isVolunteer) && (
-                  <div className="py-3">
-                    <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Role-specific
-                    </p>
+              {/* Mobile navigation */}
+              <div className="flow-root">
+                <div className="divide-y divide-gray-500/10">
+                  <div className="space-y-2 py-3">
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center rounded-lg px-3 py-2 text-base font-medium ${
+                          pathname === item.href ? "text-green-700 bg-green-50" : "text-gray-900 hover:bg-gray-50"
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
 
-                    {userRoles.isDBAdmin && (
-                      <>
-                        <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Admin</p>
-                       
+                  {shouldShowRoleFeatures() && (
+                    <div className="py-3">
+                      <p className="px-3 text-xs font-semibold text-gray-500 uppercase mb-2">Role Features</p>
+                      {userRoles.isDBAdmin && (
                         <Link
                           href="/admin/kyc-verification"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <UserCog className="h-4 w-4 mr-2" />
                           KYC Verification
                         </Link>
-                      </>
-                    )}
-
-                    { /* Add any executive-specific links here 
-                    {userRoles.isDBExecutive && (
-                      <>
-                        <Link
-                          href="/executive/reports"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <FileText className="h-4 w-4 mr-2" />
-                          Reports
-                        </Link>
-                      </>
-                    )}
-                      */ }
-
-                    {/* Add any staff-specific links here
-                    {userRoles.isDonor && (
-                      <>
-                        <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Donations</p>
+                      )}
+                      {userRoles.isDonor && (
                         <Link
                           href="/donations/history"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+                          className="flex items-center px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <DollarSign className="h-4 w-4 mr-2" />
                           Donation History
                         </Link>
-                      </>
-                    )}
+                      )}
+                    </div>
+                  )}
 
-                    {userRoles.isVolunteer && (
-                      <>
-                        <p className="px-3 text-sm font-medium text-gray-900 mt-3 mb-1">Volunteer</p>
-                        <Link
-                          href="/volunteer/opportunities"
-                          className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          <Heart className="h-4 w-4 mr-2" />
-                          Volunteer Opportunities
-                        </Link>
-                      </>
-                    )}
-                      */ }
+                  <div className="py-3">
+                    <p className="px-3 text-xs font-semibold text-gray-500 uppercase mb-2">Account</p>
+                    <Link
+                      href="/profile"
+                      className="flex items-center px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout()
+                        setMobileMenuOpen(false)
+                      }}
+                      className="flex w-full items-center px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </button>
                   </div>
-                )}
-              
-                {/* User section */}
-                <div className="py-3">
-                  <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Your Account</p>
-                  <Link
-                    href="/profile"
-                    className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    My Profile
-                  </Link>
-                  <Link
-                    href="/profile/update"
-                    className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Update Profile
-                  </Link>
-                  {/* Add any additional user-specific links here
-                  <Link
-                    href="/settings"
-                    className="flex items-center rounded-lg px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Link>
-                   */}
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                    className="flex w-full items-center rounded-lg px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </nav>
     </header>
   )
 }
