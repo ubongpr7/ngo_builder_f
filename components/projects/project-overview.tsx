@@ -201,8 +201,49 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                   <Users className="mr-2 h-4 w-4 text-gray-500" />
                   <span>Team Members</span>
                 </div>
-                <span className="font-medium">{project.officials?.length || 0}</span>
+                <span className="font-medium">{project.team_members?.length || 0}</span>
               </div>
+
+              
+              {project.team_member_details && project.team_member_details.length > 0 && (
+                <div className="pt-2">
+                  <div className="text-sm font-medium mb-2">Key Officials</div>
+                  <div className="flex flex-wrap gap-2">
+                    {project.team_member_details.slice(0, 3).map((member) => (
+                      <div key={member.id} className="flex items-center space-x-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage
+                            src={`${member.profile_image}`}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {member.first_name?.[0]}
+                            {member.last_name?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">
+                          {member.first_name} {member.last_name}
+                        </span>
+                      </div>
+                    ))}
+                    {project.team_member_details.length > 3 && (
+                      <div className="text-sm text-gray-500">+{project.team_member_details.length - 3} more</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <div className="flex items-center text-sm">
+                  <Users className="mr-2 h-4 w-4 text-gray-500" />
+                  <span>DBEF Officials</span>
+                </div>
+                <span className="font-medium">{project.officials_details?.length || 0}</span>
+              </div>
+
+              
               {project.officials_details && project.officials_details.length > 0 && (
                 <div className="pt-2">
                   <div className="text-sm font-medium mb-2">Key Officials</div>
@@ -211,7 +252,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                       <div key={official.id} className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage
-                            src={`/abstract-geometric-shapes.png?height=24&width=24&query=${encodeURIComponent(official.username)}`}
+                            src={`${official.profile_image}`}
                           />
                           <AvatarFallback className="text-xs">
                             {official.first_name?.[0]}

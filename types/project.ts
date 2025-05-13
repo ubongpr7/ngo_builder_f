@@ -33,7 +33,13 @@ export interface Project {
   created_at: string
   updated_at: string
   budget_utilization?: number
+  team_member_details?: ProjectUser[]
   target_end_date?: string
+  team_members?: ProjectUser[]
+  officials_details?: ProjectUser[]
+  manager_details?: ProjectUser
+  created_by_details?: ProjectUser
+  manager?: ProjectUser
   tasks?: Task[]
   milestones?: Milestone[]
   status: "planned" | "in_progress" | "completed" | "on_hold" | "cancelled"
