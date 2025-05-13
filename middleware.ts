@@ -117,7 +117,8 @@ export async function middleware(request: NextRequest) {
   if (kycProtectedPaths.some(p => path.startsWith(p))) {
     if (!isKycVerified || kycStatus !== "approved") {
       return NextResponse.redirect(
-        new URL(`/profile/update?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
+        new URL(`/profile/update`, request.url)
+        // new URL(`/profile/update?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
       )
     }
   }

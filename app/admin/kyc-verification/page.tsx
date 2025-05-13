@@ -619,7 +619,7 @@ export default function KYCVerificationPage() {
                             </>
                           )}
 
-                          {activeTab !== "pending" && getStatusBadge(profile.kyc_status.status)}
+                          {activeTab !== "pending" && getStatusBadge(profile.kyc_status)}
                         </div>
                       </div>
                     </CardContent>
