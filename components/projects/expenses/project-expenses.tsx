@@ -60,10 +60,9 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
     data: expenses = [],
     isLoading,
     refetch,
-  } = useGetExpensesByProjectQuery({
+  } = useGetExpensesByProjectQuery(
     projectId,
-    ...filters,
-  })
+  )
 
   const { data: statistics } = useGetExpenseStatisticsQuery(projectId)
 
