@@ -102,15 +102,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-8 bg-[#171717] p-6 rounded-lg border border-black">
-        <h2 className="text-xl font-bold mb-2 text-[#fdd65b]">Complete Your Profile</h2>
-        <p className="mb-4 text-white">
-          Your profile is 70% complete. Finish setting up your profile to get the most out of your membership.
-        </p>
-        <Link href="/dashboard/profile" className="bg-[#FDD65B] text-black px-4 py-2 rounded hover:bg-green-700 hover:text-white">
-          Update Profile
-        </Link>
-      </div>
+      
     </div>
   )
 }
