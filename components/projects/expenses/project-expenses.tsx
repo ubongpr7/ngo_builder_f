@@ -60,9 +60,10 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
     data: expenses = [],
     isLoading,
     refetch,
-  } = useGetExpensesByProjectQuery(
+  } = useGetExpensesByProjectQuery({
     projectId,
-  )
+    ...filters,
+  })
 
   const { data: statistics } = useGetExpenseStatisticsQuery(projectId)
 
@@ -345,7 +346,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
                   )}
                 </div>
 
-                {expense.receipt && (
+                {expense.receipt_url && (
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-gray-500" />
                     <button onClick={() => handleViewReceipt(expense)} className="text-blue-600 hover:underline">
@@ -448,12 +449,11 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       )}
 
       <ExpenseFilterDialog
-        open={filterDialogOpen}
-        onOpenChange={setFilterDialogOpen}
-        initialFilters={filters}
-        onApply={handleFilterApply}
+        isOpen={filterDialogOpen}
+        onClose={() => setFilterDialogOpen(false)}
+        filters={filters}
+        onApplyFilters={handleFilterApply}
         onClear={handleFilterClear}
-        projectId={projectId}
       />
     </div>
   )

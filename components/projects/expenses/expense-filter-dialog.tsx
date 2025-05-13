@@ -10,7 +10,6 @@ import { DateInput } from "@/components/ui/date-input"
 import Select from "react-select"
 import { Filter, X } from "lucide-react"
 
-// Define common expense categories
 const EXPENSE_CATEGORIES = [
   { value: "Travel", label: "Travel" },
   { value: "Meals", label: "Meals" },
@@ -35,9 +34,10 @@ interface ExpenseFilterDialogProps {
   onClose: () => void
   filters: FilterFormValues
   onApplyFilters: (filters: FilterFormValues) => void
+  onClear: () => void
 }
 
-export function ExpenseFilterDialog({ isOpen, onClose, filters, onApplyFilters }: ExpenseFilterDialogProps) {
+export function ExpenseFilterDialog({ isOpen, onClose, filters, onApplyFilters, onClear }: ExpenseFilterDialogProps) {
   const {
     register,
     handleSubmit,
@@ -47,11 +47,11 @@ export function ExpenseFilterDialog({ isOpen, onClose, filters, onApplyFilters }
     formState: { errors },
   } = useForm<FilterFormValues>({
     defaultValues: {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      minAmount: filters?.minAmount,
-      maxAmount: filters?.maxAmount,
-      categories: filters?.categories,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      minAmount: filters.minAmount,
+      maxAmount: filters.maxAmount,
+      categories: filters.categories,
     },
   })
 
