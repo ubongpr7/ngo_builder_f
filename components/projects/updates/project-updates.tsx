@@ -529,6 +529,7 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
                                     >
                                       <Eye className="h-4 w-4" />
                                     </Button>
+                                    {/* Uncomment if you want to allow media deletion
                                     <Button 
                                       size="icon" 
                                       variant="ghost" 
@@ -537,6 +538,7 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
                                     >
                                       <Download className="h-4 w-4" />
                                     </Button>
+                                     */}
                                   </div>
                                 </div>
                                 {media.caption && (
