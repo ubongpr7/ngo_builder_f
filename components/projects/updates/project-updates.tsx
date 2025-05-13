@@ -356,7 +356,12 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-gray-500">Total Funds Spent</div>
-                <div className="text-2xl font-bold">${statistics.total_funds_spent?.toLocaleString() || "0.00"}</div>
+                <div className="text-2xl font-bold">
+                  $
+                  {typeof statistics.total_funds_spent === "number"
+                    ? statistics.total_funds_spent.toLocaleString()
+                    : "0.00"}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-gray-500">Media Files</div>
