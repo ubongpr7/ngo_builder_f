@@ -22,6 +22,7 @@ import { Form, FormControl, FormItem, FormLabel, FormMessage } from "@/component
 import { useAssignUsersToMilestoneMutation } from "@/redux/features/projects/milestoneApiSlice"
 import { useGetManagerCeoQuery } from "@/redux/features/projects/projectsAPISlice"
 import type { ProjectMilestone } from "@/types/project"
+import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
 
 const formSchema = z.object({
   userIds: z.array(z.string()).min(1, { message: "Please select at least one user" }),
@@ -31,12 +32,14 @@ interface AssignUsersMilestoneDialogProps {
   milestone: ProjectMilestone
   onSuccess?: () => void
   trigger?: React.ReactNode
+  projectId: number
 }
 
-export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger }: AssignUsersMilestoneDialogProps) {
+export function AssignUsersMilestoneDialog({ milestone, onSuccess, trigger,projectId }: AssignUsersMilestoneDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery("")
   const [assignUsers, { isLoading }] = useAssignUsersToMilestoneMutation()
+const { data: users = [], isLoading: isLoadingUsers } = useGetProjectTeamMembersQuery(projectId)
+ 
 
   // Get currently assigned users
   const assignedUserIds = milestone.assigned_to?.map((user) => user.id.toString()) || []

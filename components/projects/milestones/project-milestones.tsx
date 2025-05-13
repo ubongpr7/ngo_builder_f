@@ -288,6 +288,7 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                       Assign Users
                     </Button>
                   }
+                  projectId={projectId}
                 />
 
                 <DropdownMenu>

@@ -52,7 +52,7 @@ export function AddEditMilestoneDialog({ projectId, milestone, onSuccess, trigge
   const [updateMilestone, { isLoading: isUpdating }] = useUpdateMilestoneMutation()
   const isLoading = isCreating || isUpdating
   const isEditing = !!milestone
-
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
