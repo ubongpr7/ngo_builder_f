@@ -4,21 +4,6 @@ import { apiSlice } from "../../services/apiSlice"
 const management_api = "profile_api"
 
 // Define interfaces for the API responses
-export interface KYCProfile {
-  id: number
-  full_name: string
-  email: string
-  phone_number: string
-  profile_image: string | null
-  kyc_status: "pending" | "approved" | "rejected" | "flagged" | "scammer"
-  kyc_submission_date: string
-  kyc_verification_date: string | null
-  kyc_rejection_reason: string | null
-  organization: string | null
-  position: string | null
-  membership_type_name: string | null
-  role_summary: string[]
-}
 
 export interface KYCStats {
   pending: number
@@ -42,6 +27,23 @@ export interface KYCDocuments {
   kyc_status: string
   kyc_verification_date: string | null
   kyc_rejection_reason: string | null
+}
+
+export interface KYCProfile extends KYCDocuments {
+  id: number
+  user_id: number
+  full_name: string
+  email: string
+  phone_number: string
+  profile_image: string | null
+  kyc_status: "pending" | "approved" | "rejected" | "flagged" | "scammer"
+  kyc_submission_date: string
+  kyc_verification_date: string | null
+  kyc_rejection_reason: string | null
+  organization: string | null
+  position: string | null
+  membership_type_name: string | null
+  role_summary: string[]
 }
 
 export interface KYCVerificationRequest {

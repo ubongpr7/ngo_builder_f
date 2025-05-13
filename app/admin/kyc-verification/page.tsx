@@ -28,6 +28,7 @@ import {
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
   useSendKYCReminderMutation,
+  KYCProfile,
 } from "@/redux/features/admin/kyc-verification"
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
 import { VerificationCodeDialog } from "@/components/admin/VerificationCodeDialog"
@@ -47,10 +48,10 @@ export default function KYCVerificationPage() {
   const [editedProfileData, setEditedProfileData] = useState<any>(null)
 
   const { toast } = useToast()
-  const hasCompletedKYC = (profile: UserProfile) => {
+  const hasCompletedKYC = (profile: KYCProfile) => {
     if (!profile) return false
 
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     return !!(
       profileData?.id_document_type &&
@@ -91,16 +92,13 @@ export default function KYCVerificationPage() {
     setSearchTerm("")
   }
 
-  // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
   }
 
-  // Handle select all checkbox
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked)
     if (checked && displayProfiles) {
-      // Only select profiles that have completed KYC if we're in the pending tab
       if (activeTab === "pending") {
         const completedProfileIds = displayProfiles
           .filter((profile) => hasCompletedKYC(profile))
@@ -186,7 +184,10 @@ export default function KYCVerificationPage() {
     // Check if any selected profiles don't have complete KYC for approval
     if (action === "approve" && profiles) {
       const incompleteProfiles = selectedProfiles.filter(
-        (id) => !hasCompletedKYC(profiles.find((profile) => profile.id === id)),
+        (id) => {
+          const profile = profiles.find((profile) => profile?.id === id);
+          return profile ? !hasCompletedKYC(profile) : true;
+        },
       )
 
       if (incompleteProfiles.length > 0) {
@@ -502,7 +503,7 @@ export default function KYCVerificationPage() {
                                 {activeTab === "pending"
                                   ? `Submitted: ${formatDate(profile.kyc_submission_date)}`
                                   : activeTab === "approved"
-                                    ? `Verified: ${formatDate(profile.kyc_verification_date)}`
+                                    ? `Verified: ${formatDate(profile.kyc_verification_date??'')}`
                                     : `Rejected: ${formatDate(profile.kyc_verification_date || profile.kyc_submission_date)}`}
                               </span>
                             </div>
