@@ -207,7 +207,6 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
               
               {project.team_members && project.team_members.length > 0 && (
                 <div className="pt-2">
-                  <div className="text-sm font-medium mb-2">Key Officials</div>
                   <div className="flex flex-wrap gap-2">
                     {project.team_members.slice(0, 3).map((member) => (
                       <div key={member.id} className="flex items-center space-x-2">
@@ -246,7 +245,6 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
               
               {project.officials_details && project.officials_details.length > 0 && (
                 <div className="pt-2">
-                  <div className="text-sm font-medium mb-2">Key Officials</div>
                   <div className="flex flex-wrap gap-2">
                     {project.officials_details.slice(0, 3).map((official) => (
                       <div key={official.id} className="flex items-center space-x-2">
