@@ -332,7 +332,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
                   {expense.approved_by_details && (
                     <div className="flex items-center text-gray-500">
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      By: {expense.approved_by_details.first_name} {expense.approved_by_details.last_name}
+                      By: {expense.approved_by_details.first_name} {expense.approved_by_details.last_name} ({expense.approved_by_details.email})
                     </div>
                   )}
                 </div>
