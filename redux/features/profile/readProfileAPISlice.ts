@@ -1,3 +1,4 @@
+import { UserProfileRoles } from '@/components/permissionHander';
 import { apiSlice } from '../../services/apiSlice';
 const management_api='profile_api'
 
@@ -12,7 +13,9 @@ export const userProfileReading = apiSlice.injectEndpoints({
     getListOfProfiles: builder.query({
       query: (id) => `/${management_api}/users/`,
     }),
-  
+  getLoggedInProfileRoles: builder.query<UserProfileRoles, void>({
+    query: () => `/${management_api}/profile-roles/`,
+  }),
   }),
 
 });
@@ -21,5 +24,5 @@ export const {
     useGetUserProfileDetailsQuery,
     useGetListOfProfilesQuery,
     useGetUserLoggedInProfileDetailsQuery,
-
+  useGetLoggedInProfileRolesQuery,
 } = userProfileReading;

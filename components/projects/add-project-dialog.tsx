@@ -29,6 +29,8 @@ import {
 } from "@/redux/features/projects/projectsAPISlice"
 import { format } from "date-fns"
 import { debounce } from "lodash"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { usePermissions } from "../permissionHander"
 
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -55,12 +57,10 @@ export function AddProjectDialog() {
   const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
-
-  // State for manager search
+  
   const [managerSearchTerm, setManagerSearchTerm] = useState("")
   const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery(managerSearchTerm)
 
-  // Transform categories data to select options
   const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
     value: category.id.toString(),
     label: category.name,

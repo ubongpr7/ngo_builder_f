@@ -9,6 +9,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Plus, Calendar, MapPin, Users, FileText, Upload } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { usePermissions } from "../permissionHander"
 
 // Sample project data
 const projects = [
@@ -77,8 +79,9 @@ const projects = [
 export default function ProjectManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
+  const {data:userRoles} = useGetLoggedInProfileRolesQuery()
+  const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
 
-  // Filter projects based on search term and active tab
   const filteredProjects = projects.filter((project) => {
     const matchesSearch =
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,11 +99,14 @@ export default function ProjectManagement() {
           <h1 className="text-2xl font-bold tracking-tight">Project Management</h1>
           <p className="text-gray-500">Manage and track organizational projects</p>
         </div>
-        <div className="mt-4 md:mt-0">
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            <Plus className="mr-2 h-4 w-4" /> New Project
-          </Button>
-        </div>
+        {is_DB_admin && (
+          <div className="mt-4 md:mt-0">
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Plus className="mr-2 h-4 w-4" /> New Project
+            </Button>
+          </div>
+        )
+        }
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
