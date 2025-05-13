@@ -20,17 +20,24 @@ import { DateInput } from "@/components/ui/date-input"
 import { useToast } from "@/components/ui/use-toast"
 import Select from "react-select"
 import { useUpdateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
-import { Loader2, Download, FileText, Eye } from "lucide-react"
+import { Loader2, Download, FileText, Eye, Save } from "lucide-react"
 
 // Define the form schema with Zod
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   amount: z.coerce.number().positive("Amount must be positive"),
-  date_incurred: z.date({
-    required_error: "Date is required",
-    invalid_type_error: "Date is required",
-  }),
+  date_incurred: z
+    .date({
+      required_error: "Date is required",
+      invalid_type_error: "Date is required",
+    })
+    .refine((date) => {
+      // Ensure date is not in the future
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day for fair comparison
+      return date <= today
+    }, "Date cannot be in the future"),
   category: z.string().min(1, "Category is required"),
   receipt: z.union([z.instanceof(File), z.string()]).optional(),
   notes: z.string().optional(),
@@ -63,6 +70,9 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [updateExpense] = useUpdateExpenseMutation()
   const [viewingReceipt, setViewingReceipt] = useState(false)
+
+  // Get today's date for max date restriction
+  const today = new Date()
 
   const {
     register,
@@ -142,6 +152,7 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
+      console.error("Failed to update expense:", error)
       toast({
         title: "Error",
         description: "Failed to update expense. Please try again.",
@@ -153,7 +164,7 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
   }
 
   // Check if receipt URL is an image or PDF
-  const receiptUrl = expense?.receipt || ""
+  const receiptUrl = expense?.receipt_url || ""
   const isImage = receiptUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) !== null
   const isPdf = receiptUrl.match(/\.(pdf)$/i) !== null
 
@@ -164,12 +175,21 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          reset() // Reset form when dialog closes
+          setViewingReceipt(false) // Reset receipt view state
+        }
+        onOpenChange(isOpen)
+      }}
+    >
       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[550px]">
         {viewingReceipt ? (
           <>
             <DialogHeader>
-              <DialogTitle>Receipt for {expense.title}</DialogTitle>
+              <DialogTitle>Receipt for {expense?.title}</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center py-4">
               {!receiptUrl && (
@@ -182,7 +202,7 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
               {isImage && receiptUrl && (
                 <img
                   src={receiptUrl || "/placeholder.svg"}
-                  alt={`Receipt for ${expense.title}`}
+                  alt={`Receipt for ${expense?.title}`}
                   className="max-w-full max-h-[60vh] object-contain border rounded"
                 />
               )}
@@ -250,10 +270,15 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
                     control={control}
                     name="date_incurred"
                     render={({ field }) => (
-                      <DateInput id="date_incurred" value={field.value} onChange={field.onChange} />
+                      <DateInput
+                        id="date_incurred"
+                        value={field.value}
+                        onChange={field.onChange}
+                        maxDate={today} // Restrict to today and earlier
+                        error={errors.date_incurred?.message}
+                      />
                     )}
                   />
-                  {errors.date_incurred && <p className="text-sm text-red-500">{errors.date_incurred.message}</p>}
                 </div>
               </div>
 
@@ -347,7 +372,10 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
                       Updating...
                     </>
                   ) : (
-                    "Update Expense"
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Update Expense
+                    </>
                   )}
                 </Button>
               </DialogFooter>

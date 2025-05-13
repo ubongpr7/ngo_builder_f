@@ -21,16 +21,23 @@ import { useToast } from "@/components/ui/use-toast"
 import Select from "react-select"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
 import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
-import { Loader2 } from "lucide-react"
+import { Loader2, Receipt } from "lucide-react"
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(5, "Description must be at least 5 characters"),
   amount: z.coerce.number().positive("Amount must be positive"),
-  date_incurred: z.date({
-    required_error: "Date is required",
-    invalid_type_error: "Date is required",
-  }),
+  date_incurred: z
+    .date({
+      required_error: "Date is required",
+      invalid_type_error: "Date is required",
+    })
+    .refine((date) => {
+      // Ensure date is not in the future
+      const today = new Date()
+      today.setHours(0, 0, 0, 0) // Reset time to start of day for fair comparison
+      return date <= today
+    }, "Date cannot be in the future"),
   category: z.string().min(1, "Category is required"),
   incurred_by: z.number().optional(),
   receipt: z.instanceof(File).optional(),
@@ -61,6 +68,9 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
+
+  // Get today's date for max date restriction
+  const today = new Date()
 
   // Fetch team members for the project
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
@@ -128,6 +138,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
+      console.error("Failed to add expense:", error)
       toast({
         title: "Error",
         description: "Failed to add expense. Please try again.",
@@ -139,7 +150,15 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          reset() // Reset form when dialog closes
+        }
+        onOpenChange(isOpen)
+      }}
+    >
       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
@@ -173,9 +192,16 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
               <Controller
                 control={control}
                 name="date_incurred"
-                render={({ field }) => <DateInput id="date_incurred" value={field.value} onChange={field.onChange} />}
+                render={({ field }) => (
+                  <DateInput
+                    id="date_incurred"
+                    value={field.value}
+                    onChange={field.onChange}
+                    maxDate={today} // Restrict to today and earlier
+                    error={errors.date_incurred?.message}
+                  />
+                )}
               />
-              {errors.date_incurred && <p className="text-sm text-red-500">{errors.date_incurred.message}</p>}
             </div>
           </div>
 
@@ -223,6 +249,11 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
               )}
             />
             {errors.incurred_by && <p className="text-sm text-red-500">{errors.incurred_by.message}</p>}
+            {teamMemberOptions.length === 0 && !isLoadingTeamMembers && (
+              <p className="text-xs text-amber-500">
+                No team members found for this project. Only project team members can be assigned expenses.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -259,7 +290,10 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
                   Submitting...
                 </>
               ) : (
-                "Add Expense"
+                <>
+                  <Receipt className="mr-2 h-4 w-4" />
+                  Add Expense
+                </>
               )}
             </Button>
           </DialogFooter>
