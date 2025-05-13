@@ -66,7 +66,7 @@ export default function AuthenticatedHeader() {
   const profileImage = userData?.profile_data?.profile_image || ""
 
   const userRoles = {
-    isKycVerified: userData?.profile_data?.is_kyc_verified || false,
+    isKycVerified: userData?.profile_data?.kyc_status === "approved" || false,
     isExecutive: userData?.profile_data?.is_executive || false,
     isCeo: userData?.profile_data?.is_ceo || false,
     isProjectManager: userData?.profile_data?.is_project_manager || false,
@@ -77,7 +77,7 @@ export default function AuthenticatedHeader() {
     isStandardMember: userData?.profile_data?.is_standard_member || false,
     isDBExecutive: userData?.profile_data?.is_DB_executive || false,
     isDBAdmin: userData?.profile_data?.is_DB_admin || false,
-    kycStatus: userData?.profile_data?.kyc_status?.status || "pending",
+    kycStatus: userData?.profile_data?.kyc_status || "pending",
   }
 
   const getInitials = () => {
@@ -171,7 +171,7 @@ export default function AuthenticatedHeader() {
 
   const getRoleDisplayText = () => {
     if (!shouldShowRoleFeatures()) {
-      return "Member (KYC Required)"
+      return "Member"
     }
     return userRoles.isDBAdmin
       ? "Admin"
