@@ -12,9 +12,18 @@ const projects_api = "project_api"
 
 export const projectsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Project endpoints
+    
     getManagerCeo: builder.query({
-      query: () => `/auth-api/users/`,
+      query: (searchTerm) => {
+        let url = `/${projects_api}/ceos/`;
+        
+        if (searchTerm && searchTerm.trim() !== '') {
+          url += `?search=${encodeURIComponent(searchTerm)}`;
+        }
+        
+        return url;
+      },
+      keepUnusedDataFor: 300, 
     }),
     getAllProjects: builder.query({
       query: () => `/${projects_api}/projects/`,

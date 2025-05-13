@@ -18,7 +18,6 @@ import { ProjectExpenses } from "@/components/projects/expenses/project-expenses
 import { ProjectComments } from "@/components/projects/project-comments"
 import { ProjectDocuments } from "@/components/projects/project-documents"
 
-// Use the existing Redux API slice
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
 
 export default function ProjectDetail() {
@@ -54,7 +53,7 @@ export default function ProjectDetail() {
   // Calculate project progress
   const calculateProgress = () => {
     if (project.status === "completed") return 100
-    if (project.status === "planning" || project.status === "cancelled") return 0
+    if (project.status === "planned" || project.status === "cancelled") return 0
 
     // Calculate based on budget utilization if available
     if (project.funds_spent && project.budget) {
@@ -64,8 +63,8 @@ export default function ProjectDetail() {
 
     // Calculate based on timeline
     const today = new Date()
-    const startDate = new Date(project.start_date)
-    const endDate = new Date(project.target_end_date)
+    const startDate = new Date(project.start_date ??'')
+    const endDate = new Date(project.target_end_date??'')
 
     if (today < startDate) return 0
     if (today > endDate) return 100
@@ -127,7 +126,7 @@ export default function ProjectDetail() {
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />
-              {formatDate(project.start_date)} - {formatDate(project.target_end_date)}
+              {formatDate(project.start_date??'')} - {formatDate(project.target_end_date??'')}
             </div>
             {project.location && (
               <div className="flex items-center">
@@ -158,7 +157,7 @@ export default function ProjectDetail() {
           </Button>
           <Button className="bg-green-600 hover:bg-green-700 text-white">
             <FileImage className="mr-2 h-4 w-4" />
-            Add Update
+            Edit Project
           </Button>
         </div>
       </div>
@@ -176,7 +175,7 @@ export default function ProjectDetail() {
               <p className="text-sm text-gray-500">
                 {project.status === "completed"
                   ? "Project completed"
-                  : project.status === "planning"
+                  : project.status === "planned"
                     ? "Project in planning phase"
                     : `${progress}% complete based on timeline and budget`}
               </p>
@@ -197,8 +196,8 @@ export default function ProjectDetail() {
               <div className="text-sm text-gray-500">Timeline</div>
               <div className="text-2xl font-bold">
                 {project.status === "completed"
-                  ? `${Math.round((new Date(project.actual_end_date || project.target_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`
-                  : `${Math.round((new Date(project.target_end_date).getTime() - new Date(project.start_date).getTime()) / (1000 * 60 * 60 * 24))} days`}
+                  ? `${Math.round((new Date(project.actual_end_date || project.target_end_date).getTime() - new Date(project.start_date??'').getTime()) / (1000 * 60 * 60 * 24))} days`
+                  : `${Math.round((new Date(project.target_end_date).getTime() - new Date(project.start_date??'').getTime()) / (1000 * 60 * 60 * 24))} days`}
               </div>
               <div className="text-sm">
                 {project.status === "completed"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -28,6 +28,7 @@ import {
   useGetManagerCeoQuery,
 } from "@/redux/features/projects/projectsAPISlice"
 import { format } from "date-fns"
+import { debounce } from "lodash"
 
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -54,7 +55,10 @@ export function AddProjectDialog() {
   const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
-  const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery()
+
+  // State for manager search
+  const [managerSearchTerm, setManagerSearchTerm] = useState("")
+  const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery(managerSearchTerm)
 
   // Transform categories data to select options
   const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
@@ -63,10 +67,12 @@ export function AddProjectDialog() {
   }))
 
   // Transform managers data to select options
-  const managerOptions: SelectOption[] = managersData.map((manager) => ({
-    value: manager.id.toString(),
-    label: `${manager.first_name} ${manager.last_name}`,
-  }))
+  const managerOptions: SelectOption[] = managersData.map(
+    (manager: { id: number; first_name: string; last_name: string; email: string }) => ({
+      value: manager.id.toString(),
+      label: `${manager.first_name} ${manager.last_name} (${manager.email})`,
+    }),
+  )
 
   // Project type options based on backend choices
   const projectTypeOptions: SelectOption[] = [
@@ -91,6 +97,16 @@ export function AddProjectDialog() {
     },
   })
 
+  // Debounced search handler for manager field
+  const debouncedManagerSearch = debounce((inputValue: string) => {
+    setManagerSearchTerm(inputValue)
+  }, 300)
+
+  // Handle manager search input
+  const handleManagerInputChange = (inputValue: string) => {
+    debouncedManagerSearch(inputValue)
+  }
+
   async function onSubmit(data: ProjectFormValues) {
     try {
       // Format dates to ISO string format (YYYY-MM-DD)
@@ -113,6 +129,7 @@ export function AddProjectDialog() {
       form.reset()
       setOpen(false)
     } catch (error) {
+      console.error("Failed to create project:", error)
       toast({
         title: "Error",
         description: "Failed to create project. Please try again.",
@@ -124,6 +141,13 @@ export function AddProjectDialog() {
   // Get the current start date from the form
   const startDate = form.watch("start_date")
   const today = new Date()
+
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedManagerSearch.cancel()
+    }
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -231,7 +255,7 @@ export function AddProjectDialog() {
               />
             </div>
 
-            {/* Manager Field */}
+            {/* Manager Field with Search */}
             <FormField
               control={form.control}
               name="manager"
@@ -246,13 +270,18 @@ export function AddProjectDialog() {
                         <ReactSelectField
                           inputId="project-manager"
                           options={managerOptions}
-                          placeholder={isLoadingManagers ? "Loading managers..." : "Select manager"}
+                          placeholder={isLoadingManagers ? "Loading managers..." : "Search and select manager"}
                           value={managerOptions.find((option) => option.value === field.value)}
                           onChange={(option) => field.onChange(option ? (option as SelectOption).value : "")}
+                          onInputChange={handleManagerInputChange}
                           error={form.formState.errors.manager?.message}
                           isSearchable
                           isClearable
-                          isDisabled={isLoadingManagers}
+                          isLoading={isLoadingManagers}
+                          loadingMessage={() => "Searching managers..."}
+                          noOptionsMessage={({ inputValue }) =>
+                            inputValue.length > 0 ? "No managers found" : "Type to search managers"
+                          }
                           aria-labelledby="project-manager-label"
                         />
                       )}

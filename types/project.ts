@@ -34,7 +34,24 @@ export interface Project {
   updated_at: string
   budget_utilization?: number
   team_member_details?: ProjectUser[]
-  target_end_date?: string
+  target_end_date: string
+  actual_end_date?: string
+  notes?: string
+  location?: string
+  category_details?: {
+    id: number
+    name: string
+    description?: string
+  }
+  category: string
+  project_type: string
+  funds_allocated?: number
+  funds_spent: number
+  budget: number
+  risks?: string
+  beneficiaries?: string
+  deliverables?: string
+  success_criteria?: string
   team_members?: ProjectUser[]
   officials_details?: ProjectUser[]
   manager_details?: ProjectUser

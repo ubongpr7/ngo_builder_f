@@ -111,14 +111,14 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                 <Calendar className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Start Date</span>
               </div>
-              <span className="font-medium">{new Date(project.start_date).toLocaleDateString()}</span>
+              <span className="font-medium">{new Date(project.start_date ??'').toLocaleDateString()}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
                 <Calendar className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Target End Date</span>
               </div>
-              <span className="font-medium">{new Date(project.target_end_date).toLocaleDateString()}</span>
+              <span className="font-medium">{new Date(project.target_end_date ?? "").toLocaleDateString()}</span>
             </div>
             {project.actual_end_date && (
               <div className="flex justify-between">
@@ -126,7 +126,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                   <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                   <span>Actual End Date</span>
                 </div>
-                <span className="font-medium">{new Date(project.actual_end_date).toLocaleDateString()}</span>
+                <span className="font-medium">{new Date(project.actual_end_date ?? '').toLocaleDateString()}</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -164,7 +164,7 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                 <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Funds Allocated</span>
               </div>
-              <span className="font-medium">${project.funds_allocated.toLocaleString()}</span>
+              <span className="font-medium">${project.funds_allocated?.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
