@@ -124,10 +124,12 @@ const handleDownload = async () => {
           <div className="flex flex-col items-center justify-center h-full">
             <FileText className="h-24 w-24 text-amber-500 mb-4" />
             <p className="text-lg font-medium mb-4">{currentMedia.caption || "Document File"}</p>
+          {/* Add any additional document viewer here 
             <Button onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
               Download Document
             </Button>
+            */}
           </div>
         )
     }
