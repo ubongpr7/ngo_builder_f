@@ -12,35 +12,9 @@ export const expenseApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${backend}/expenses/${id}/`,
     }),
 
-    // getExpensesByProject: builder.query<ProjectExpense[], number>({
-    //   query: (projectId) => `/${backend}/projects/${projectId}/expenses/`,
-    // }),
-    getExpensesByProject: builder.query<
-    ProjectExpense[],
-    {
-      projectId: number
-      startDate?: string
-      endDate?: string
-      minAmount?: number
-      maxAmount?: number
-      categories?: string[]
-    }
-  >({
-    query: ({ projectId, ...params }) => {
-      const queryParams = new URLSearchParams()
-
-      if (params.startDate) queryParams.append("start_date", params.startDate)
-      if (params.endDate) queryParams.append("end_date", params.endDate)
-      if (params.minAmount !== undefined) queryParams.append("min_amount", params.minAmount.toString())
-      if (params.maxAmount !== undefined) queryParams.append("max_amount", params.maxAmount.toString())
-      if (params.categories && params.categories.length > 0) {
-        params.categories.forEach((category) => queryParams.append("category", category))
-      }
-
-      const queryString = queryParams.toString()
-      return `/${backend}/projects/${projectId}/expenses/${queryString ? `?${queryString}` : ""}`
-    },
-  }),
+    getExpensesByProject: builder.query<ProjectExpense[], number>({
+      query: (projectId) => `/${backend}/projects/${projectId}/expenses/`,
+    }),
 
     getExpensesByUser: builder.query<ProjectExpense[], number | void>({
       query: (userId) => (userId ? `/${backend}/expenses/by_user/?user_id=${userId}` : `/${backend}/expenses/by_user/`),
