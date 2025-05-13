@@ -205,11 +205,11 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
               </div>
 
               
-              {project.team_member_details && project.team_member_details.length > 0 && (
+              {project.team_members && project.team_members.length > 0 && (
                 <div className="pt-2">
                   <div className="text-sm font-medium mb-2">Key Officials</div>
                   <div className="flex flex-wrap gap-2">
-                    {project.team_member_details.slice(0, 3).map((member) => (
+                    {project.team_members.slice(0, 3).map((member) => (
                       <div key={member.id} className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage
@@ -225,8 +225,8 @@ export function ProjectOverview({ project }: ProjectOverviewProps) {
                         </span>
                       </div>
                     ))}
-                    {project.team_member_details.length > 3 && (
-                      <div className="text-sm text-gray-500">+{project.team_member_details.length - 3} more</div>
+                    {project.team_members.length > 3 && (
+                      <div className="text-sm text-gray-500">+{project.team_members.length - 3} more</div>
                     )}
                   </div>
                 </div>
