@@ -66,7 +66,7 @@ export default function AuthenticatedHeader() {
   const profileImage = userData?.profile_data?.profile_image || ""
 
   const userRoles = {
-    isKycVerified: userData?.profile_data?.is_kyc_verified || false,
+    isKycVerified: userData?.profile_data?.kyc_status === "approved" || false,
     isExecutive: userData?.profile_data?.is_executive || false,
     isCeo: userData?.profile_data?.is_ceo || false,
     isProjectManager: userData?.profile_data?.is_project_manager || false,
