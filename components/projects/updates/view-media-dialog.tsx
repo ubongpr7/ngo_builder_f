@@ -52,28 +52,30 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
     setZoomLevel(1)
     setRotation(0)
   }
-  const handleDownload = async () => {
-    try {
-      const response = await fetch(currentMedia.file_url, {
-        method: 'GET',
-        headers: {
-        },
-      })
-  
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', currentMedia.caption || `${currentMedia.media_type}-file`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error("Download failed", error)
-    }
+const handleDownload = async () => {
+  try {
+    const response = await fetch(currentMedia.file_url, {
+      method: 'GET',
+      headers: {
+        // Optional: You can add authorization headers if your S3 requires them.
+      },
+    })
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', currentMedia.caption || `${currentMedia.media_type}-file`)
+    link.setAttribute('target', '_blank')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error("Download failed", error)
   }
-  
+}
+
   const renderMediaContent = () => {
     switch (currentMedia.media_type) {
       case 'image':
