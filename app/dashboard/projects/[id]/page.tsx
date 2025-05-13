@@ -14,7 +14,7 @@ import { ProjectTeam } from "@/components/projects/teams/project-team"
 import { ProjectMilestones } from "@/components/projects/milestones/project-milestones"
 import { ProjectUpdates } from "@/components/projects/project-updates"
 import { ProjectExpenses } from "@/components/projects/expenses/project-expenses"
-import { ProjectAssets } from "@/components/projects/project-assets"
+// import { ProjectAssets } from "@/components/projects/project-assets"
 import { ProjectComments } from "@/components/projects/project-comments"
 import { ProjectDocuments } from "@/components/projects/project-documents"
 
@@ -242,7 +242,7 @@ export default function ProjectDetail() {
         <TabsContent value="expenses" className="space-y-4">
           <ProjectExpenses projectId={projectId} />
         </TabsContent>
-
+        {/*}
         <TabsContent value="assets" className="space-y-4">
           <ProjectAssets projectId={projectId} />
         </TabsContent>
@@ -254,6 +254,7 @@ export default function ProjectDetail() {
         <TabsContent value="documents" className="space-y-4">
           <ProjectDocuments projectId={projectId} />
         </TabsContent>
+        */}
       </Tabs>
     </div>
   )
