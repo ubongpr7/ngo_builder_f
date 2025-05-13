@@ -114,7 +114,7 @@ export function MilestoneStatistics({ projectId }: MilestoneStatisticsProps) {
             <div className="grid grid-cols-2 gap-4 mt-4">
               {statusCounts.map((status) => (
                 <Card key={status.status} className="p-3">
-                  <div className="font-medium">{status.status.charAt(0).toUpperCase() + status.status.slice(1)}</div>
+                  <div className="font-medium">{status.status.replace("_", " ").charAt(0).toUpperCase() + status.status.replace("_", " ").slice(1)}</div>
                   <div className="text-2xl font-bold">{status.count}</div>
                   <div className="text-sm text-gray-500">milestones</div>
                 </Card>
