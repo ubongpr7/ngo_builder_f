@@ -25,6 +25,18 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
       },
       keepUnusedDataFor: 300, 
     }),
+    getAllUsers: builder.query({
+      query: (searchTerm) => {
+        let url = `/${projects_api}/all-users/`;
+        
+        if (searchTerm && searchTerm.trim() !== '') {
+          url += `?search=${encodeURIComponent(searchTerm)}`;
+        }
+        
+        return url;
+      },
+      keepUnusedDataFor: 300, 
+    }),
     getAllProjects: builder.query({
       query: () => `/${projects_api}/projects/`,
     }),
@@ -241,6 +253,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetManagerCeoQuery, 
+  useGetAllUsersQuery,
   // Project queries
   useGetAllProjectsQuery,
   useGetProjectByIdQuery,

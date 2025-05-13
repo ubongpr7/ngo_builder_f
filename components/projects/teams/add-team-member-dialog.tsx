@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField } from "@/components/ui/react-select-field"
 import { useCreateTeamMemberMutation } from "@/redux/features/projects/teamMemberApiSlice"
-import { useGetManagerCeoQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetAllUsersQuery } from "@/redux/features/projects/projectsAPISlice"
 
 const formSchema = z.object({
   user: z.string().min(1, { message: "Please select a user" }),
@@ -44,7 +44,7 @@ interface AddTeamMemberDialogProps {
 
 export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMemberDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: users = [], isLoading: isLoadingUsers } = useGetManagerCeoQuery("")
+  const { data: users = [], isLoading: isLoadingUsers } = useGetAllUsersQuery("")
   const [createTeamMember, { isLoading }] = useCreateTeamMemberMutation()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -114,11 +114,11 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
                       control={form.control}
                       render={({ field: { onChange, value, ref } }) => (
                         <ReactSelectField
-                          inputRef={ref}
+                          ref={ref}
                           options={userOptions}
                           isLoading={isLoadingUsers}
                           placeholder="Select a user"
-                          value={userOptions.find((option) => option.value === value)}
+                          value={userOptions.find((option:{value:string}) => option.value === value)}
                           onChange={(option: any) => onChange(option?.value || "")}
                         />
                       )}
@@ -141,7 +141,7 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
                       control={form.control}
                       render={({ field: { onChange, value, ref } }) => (
                         <ReactSelectField
-                          inputRef={ref}
+                          ref={ref}
                           options={roleOptions}
                           placeholder="Select a role"
                           value={roleOptions.find((option) => option.value === value)}
