@@ -263,7 +263,8 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
             Statistics
           </Button>
           */}
-          
+
+
           <Button 
             className="bg-green-600 hover:bg-green-700 text-white" 
             onClick={() => setAddUpdateOpen(true)}
@@ -322,6 +323,8 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
             <FileText className="mr-2 h-4 w-4" />
             List View
           </Button>
+          {/* Uncomment if you want to add a timeline view
+          }
           <Button 
             variant={viewMode === "timeline" ? "default" : "outline"} 
             size="sm" 
@@ -338,6 +341,7 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
             <ImageIcon className="mr-2 h-4 w-4" />
             Gallery
           </Button>
+          */}
         </div>
         <div className="text-sm text-gray-500">
           {filteredUpdates.length} updates • ${totalFundsSpent.toLocaleString()} total spent
