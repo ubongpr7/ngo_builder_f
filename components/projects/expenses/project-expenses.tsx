@@ -56,8 +56,14 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
   const [selectedExpense, setSelectedExpense] = useState<any>(null)
 
   // API queries and mutations
-  // Changed from useGetExpensesQuery to useGetExpensesByProjectQuery
-  const { data: expenses = [], isLoading, refetch } = useGetExpensesByProjectQuery(projectId)
+  const {
+    data: expenses = [],
+    isLoading,
+    refetch,
+  } = useGetExpensesByProjectQuery({
+    projectId,
+    ...filters,
+  })
 
   const { data: statistics } = useGetExpenseStatisticsQuery(projectId)
 
@@ -65,31 +71,15 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
   const [rejectExpense] = useRejectExpenseMutation()
   const [reimburseExpense] = useReimburseExpenseMutation()
 
-  // Apply filters client-side
+  // Filter expenses based on search term and active tab
   const filteredExpenses = expenses.filter((expense) => {
-    // Search term filter
     const matchesSearch =
       expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       expense.category.toLowerCase().includes(searchTerm.toLowerCase())
 
-    // Status filter (tab)
-    const matchesStatus = activeTab === "all" || expense.status.toLowerCase() === activeTab.toLowerCase()
-
-    // Date range filter
-    const matchesDateRange =
-      (!filters.startDate || new Date(expense.date_incurred) >= new Date(filters.startDate)) &&
-      (!filters.endDate || new Date(expense.date_incurred) <= new Date(filters.endDate))
-
-    // Amount range filter
-    const matchesAmountRange =
-      (!filters.minAmount || expense.amount >= filters.minAmount) &&
-      (!filters.maxAmount || expense.amount <= filters.maxAmount)
-
-    // Categories filter
-    const matchesCategories = !filters.categories?.length || filters.categories.includes(expense.category)
-
-    return matchesSearch && matchesStatus && matchesDateRange && matchesAmountRange && matchesCategories
+    if (activeTab === "all") return matchesSearch
+    return matchesSearch && expense.status.toLowerCase() === activeTab.toLowerCase()
   })
 
   // Get status badge color
@@ -126,6 +116,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       })
       refetch()
     } catch (error) {
+      console.error("Failed to approve expense:", error)
       toast({
         title: "Error",
         description: "Failed to approve expense. Please try again.",
@@ -150,6 +141,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
       })
       refetch()
     } catch (error) {
+      console.error("Failed to reimburse expense:", error)
       toast({
         title: "Error",
         description: "Failed to mark expense as reimbursed. Please try again.",
@@ -313,7 +305,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
                   <div className="flex items-center space-x-3">
                     <Avatar>
                       <AvatarImage
-                        src={`/abstract-geometric-shapes.png?height=40&width=40&query=${encodeURIComponent(expense.incurred_by_details?.username || "user")}`}
+                        src={`${expense.incurred_by_details?.profile_image}`}
                       />
                       <AvatarFallback>
                         {expense.incurred_by_details?.first_name?.[0] || ""}
@@ -354,7 +346,7 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
                   )}
                 </div>
 
-                {expense.receipt_url && (
+                {expense.receipt && (
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-gray-500" />
                     <button onClick={() => handleViewReceipt(expense)} className="text-blue-600 hover:underline">
@@ -433,22 +425,22 @@ export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
 
           <ApproveExpenseDialog
             expense={selectedExpense}
-            open={approveExpenseOpen}
-            onOpenChange={setApproveExpenseOpen}
+            isOpen={approveExpenseOpen}
+            onClose={() => setApproveExpenseOpen(false)}
             onSuccess={refetch}
           />
 
           <RejectExpenseDialog
             expense={selectedExpense}
-            open={rejectExpenseOpen}
-            onOpenChange={setRejectExpenseOpen}
+            isOpen={rejectExpenseOpen}
+            onClose={() => setRejectExpenseOpen(false)}
             onSuccess={refetch}
           />
 
           <ReimburseExpenseDialog
             expense={selectedExpense}
-            open={reimburseExpenseOpen}
-            onOpenChange={setReimburseExpenseOpen}
+            isOpen={reimburseExpenseOpen}
+            onClose={() => setReimburseExpenseOpen(false)}
             onSuccess={refetch}
           />
 

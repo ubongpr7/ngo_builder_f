@@ -221,10 +221,19 @@ export interface ExpenseStatistics {
   }>
 }
 
-
+export interface ProjectUser {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+  email: string
+  profile_image?: string
+}
 export interface ProjectExpense {
   id: number
   project: number
+  incurred_by_details:ProjectUser
+  approved_by_details?: ProjectUser
   title: string
   description: string
   category: string
