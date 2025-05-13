@@ -19,13 +19,20 @@ import { ProjectComments } from "@/components/projects/project-comments"
 import { ProjectDocuments } from "@/components/projects/project-documents"
 
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { usePermissions } from "@/components/permissionHander"
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
   const { data: project, isLoading, isError } = useGetProjectByIdQuery(projectId)
   const [activeTab, setActiveTab] = useState("overview")
-
+  const {data:userRoles} = useGetLoggedInProfileRolesQuery()
+  const isManager = usePermissions(userRoles,{ requiredRoles:['is_ceo'],requireKYC:true,
+    customCheck:(user) => user.user_id === project?.manager_details?.id,
+  })
+  const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
+    
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -155,10 +162,13 @@ export default function ProjectDetail() {
             <MessageSquare className="mr-2 h-4 w-4" />
             Add Comment
           </Button>
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            <FileImage className="mr-2 h-4 w-4" />
-            Edit Project
-          </Button>
+          {isManager || is_DB_admin && (
+            <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <FileImage className="mr-2 h-4 w-4" />
+              Edit Project
+            </Button>
+            
+          )}
         </div>
       </div>
 
@@ -223,23 +233,23 @@ export default function ProjectDetail() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <ProjectOverview project={project} />
+          <ProjectOverview project={project} isManager={isManager} is_DB_admin={is_DB_admin} />
         </TabsContent>
 
         <TabsContent value="team" className="space-y-4">
-          <ProjectTeam projectId={projectId} />
+          <ProjectTeam projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
         </TabsContent>
 
         <TabsContent value="milestones" className="space-y-4">
-          <ProjectMilestones projectId={projectId} />
+          <ProjectMilestones projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
         </TabsContent>
 
         <TabsContent value="updates" className="space-y-4">
-          <ProjectUpdates projectId={projectId} />
+          <ProjectUpdates projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
         </TabsContent>
 
         <TabsContent value="expenses" className="space-y-4">
-          <ProjectExpenses projectId={projectId} />
+          <ProjectExpenses projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
         </TabsContent>
         {/*}
         <TabsContent value="assets" className="space-y-4">

@@ -35,9 +35,11 @@ import { UpdateGalleryView } from "./update-gallery-view"
 
 interface ProjectUpdatesProps {
   projectId: number
+  isManager?: boolean
+  is_DB_admin?: boolean
 }
 
-export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
+export function ProjectUpdates({ projectId, isManager, is_DB_admin }: ProjectUpdatesProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")

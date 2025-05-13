@@ -50,9 +50,11 @@ import { DateInput } from "@/components/ui/date-input"
 
 interface ProjectTeamProps {
   projectId: number
+  isManager?: boolean
+  is_DB_admin?: boolean
 }
 
-export function ProjectTeam({ projectId }: ProjectTeamProps) {
+export function ProjectTeam({ projectId, isManager, is_DB_admin }: ProjectTeamProps) {
   const { data: teamMembers = [], isLoading, refetch } = useGetProjectTeamQuery(projectId)
   const [deleteTeamMember, { isLoading: isDeleting }] = useDeleteTeamMemberMutation()
   const [changeRole, { isLoading: isChangingRole }] = useChangeTeamMemberRoleMutation()
@@ -182,16 +184,19 @@ export function ProjectTeam({ projectId }: ProjectTeamProps) {
           <h2 className="text-xl font-semibold mb-1">Project Team</h2>
           <p className="text-gray-500">Manage team members assigned to this project</p>
         </div>
-        <AddTeamMemberDialog
-          projectId={projectId}
-          onSuccess={refetch}
-          trigger={
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Team Member
-            </Button>
-          }
-        />
+        {isManager|| is_DB_admin && (
+          <AddTeamMemberDialog
+            projectId={projectId}
+            onSuccess={refetch}
+            trigger={
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Add Team Member
+              </Button>
+            }
+          />
+
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">

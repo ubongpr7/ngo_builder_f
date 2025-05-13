@@ -36,9 +36,11 @@ import {
 
 interface ProjectExpensesProps {
   projectId: number
+  isManager?: boolean
+  is_DB_admin?: boolean
 }
 
-export function ProjectExpenses({ projectId }: ProjectExpensesProps) {
+export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectExpensesProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")

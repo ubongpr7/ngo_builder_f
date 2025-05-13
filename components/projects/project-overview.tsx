@@ -7,9 +7,11 @@ import type { Project } from "@/types/project"
 
 interface ProjectOverviewProps {
   project: Project
+  isManager: boolean
+  is_DB_admin: boolean
 }
 
-export function ProjectOverview({ project }: ProjectOverviewProps) {
+export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOverviewProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column - Project Details */}

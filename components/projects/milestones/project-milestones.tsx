@@ -38,9 +38,11 @@ import { MilestoneStatistics } from "./milestone-statistics"
 
 interface ProjectMilestonesProps {
   projectId: number
+  isManager?: boolean
+  is_DB_admin?: boolean
 }
 
-export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
+export function ProjectMilestones({ projectId, isManager, is_DB_admin }: ProjectMilestonesProps) {
   const { data: milestones = [], isLoading, refetch } = useGetMilestonesByProjectQuery(projectId)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
@@ -146,16 +148,19 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
             <BarChart className="mr-2 h-4 w-4" />
             {showStats ? "Hide Statistics" : "Show Statistics"}
           </Button>
-          <AddEditMilestoneDialog
-            projectId={projectId}
-            onSuccess={handleSuccess}
-            trigger={
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Flag className="mr-2 h-4 w-4" />
-                Add Milestone
-              </Button>
-            }
-          />
+          {isManager ||is_DB_admin && (
+            <AddEditMilestoneDialog
+              projectId={projectId}
+              onSuccess={handleSuccess}
+              trigger={
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <Flag className="mr-2 h-4 w-4" />
+                  Add Milestone
+                </Button>
+              }
+            />
+
+          )}
         </div>
       </div>
 
@@ -192,16 +197,19 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                 ? "No milestones match your search criteria. Try a different search term."
                 : "No milestones have been created for this project yet."}
             </p>
-            <AddEditMilestoneDialog
-              projectId={projectId}
-              onSuccess={handleSuccess}
-              trigger={
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                  <Flag className="mr-2 h-4 w-4" />
-                  Add First Milestone
-                </Button>
-              }
-            />
+            {isManager || is_DB_admin && (
+              <AddEditMilestoneDialog
+                projectId={projectId}
+                onSuccess={handleSuccess}
+                trigger={
+                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                    <Flag className="mr-2 h-4 w-4" />
+                    Add First Milestone
+                  </Button>
+                }
+              />
+
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -323,18 +331,20 @@ export function ProjectMilestones({ projectId }: ProjectMilestonesProps) {
                     )}
 
                     <DropdownMenuSeparator />
+                    {isManager || is_DB_admin && (
 
-                    <AddEditMilestoneDialog
-                      projectId={projectId}
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Milestone
-                        </DropdownMenuItem>
-                      }
-                    />
+                      <AddEditMilestoneDialog
+                        projectId={projectId}
+                        milestone={milestone}
+                        onSuccess={handleSuccess}
+                        trigger={
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Milestone
+                          </DropdownMenuItem>
+                        }
+                      />
+                    )}
 
                     <DeleteMilestoneDialog
                       milestone={milestone}
