@@ -229,35 +229,6 @@ export interface ProjectUser {
   email: string
   profile_image?: string
 }
-export interface ProjectExpense {
-  id: number
-  project: number
-  incurred_by_details:ProjectUser
-  approved_by_details?: ProjectUser
-  title: string
-  description: string
-  category: string
-  amount: number
-  date_incurred: string
-  incurred_by: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
-  receipt?: string
-  status: string
-  approval_date?: string
-  approved_by?: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
-  notes?: string
-}
 
 export interface ProjectAsset {
   id: number
@@ -345,22 +316,11 @@ export interface ProjectExpense {
   category: string
   amount: number
   date_incurred: string
-  incurred_by: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
+  incurred_by_details:ProjectUser
+  approved_by_details?: ProjectUser
   receipt?: string
   status: string
   approval_date?: string
-  approved_by?: {
-    id: number
-    username: string
-    first_name: string
-    last_name: string
-    email: string
-  }
+  
   notes?: string
 }
