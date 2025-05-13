@@ -12,7 +12,7 @@ import { Calendar, MapPin, FileText, Briefcase, AlertTriangle, MessageSquare, Fi
 import { ProjectOverview } from "@/components/projects/project-overview"
 import { ProjectTeam } from "@/components/projects/teams/project-team"
 import { ProjectMilestones } from "@/components/projects/milestones/project-milestones"
-import { ProjectUpdates } from "@/components/projects/project-updates"
+import { ProjectUpdates } from "@/components/projects/updates/project-updates"
 import { ProjectExpenses } from "@/components/projects/expenses/project-expenses"
 // import { ProjectAssets } from "@/components/projects/project-assets"
 import { ProjectComments } from "@/components/projects/project-comments"
