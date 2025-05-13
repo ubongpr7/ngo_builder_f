@@ -1,113 +1,146 @@
 // middleware.ts
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import env from "./env_file"
 
-export function middleware(request: NextRequest) {
+// Role-based route permissions
+const rolePermissions: Record<string, string[]> = {
+  admin: ["/admin", "/api/admin"],
+  executive: ["/executive-dashboard", "/projects/approvals"],
+  donor: ["/donations", "/impact-reports"],
+  partner: ["/partnership", "/joint-projects"],
+  volunteer: ["/volunteer"],
+  staff: ["/staff-dashboard", "/inventory"]
+}
+
+// KYC-protected routes
+const kycProtectedPaths = [
+  "/donate",
+  "/volunteer",
+  "/projects",
+  "/membership/benefits",
+  ...Object.values(rolePermissions).flat()
+]
+
+// Public paths
+const publicPaths = [
+  "/",
+  "/activate",
+  "/accounts/verify",
+  "/membership/portal",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+  "/about",
+  "/vision-mission",
+  "/core-values",
+  "/history",
+  "/leadership",
+  "/resources",
+  "/resources/publications",
+  "/resources/reports",
+  "/resources/media",
+  "/blog",
+  "/blog/category",
+  "/faqs",
+  "/contact",
+  "/donate",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/membership/benefits",
+  "/membership/join",
+  "/membership/tiers",
+  "/membership/volunteer",
+  "/membership/partner",
+  "/kyc",
+  "/admin/member-verification",
+  "/membership/verification",
+  "/unauthorized"
+]
+
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname
   const accessToken = request.cookies.get("accessToken")?.value || ""
   const userId = request.cookies.get("userID")?.value || ""
 
-  // Public paths that don't require authentication
-  const publicPaths = [
-    "/",
-    "/activate",
-    "/accounts/verify",
-    "/membership/portal",
-    "/forgot-password",
-    "/reset-password",
-    "/verify-email",
-    "/about",
-    "/vision-mission",
-    "/core-values",
-    "/history",
-    "/leadership",
-    "/resources",
-    "/resources/publications",
-    "/resources/reports",
-    "/resources/media",
-    "/blog",
-    "/blog/category",
-    "/faqs",
-    "/contact",
-    "/donate",
-    "/privacy-policy",
-    "/terms-of-service",
-    "/membership/benefits",
-    "/membership/join",
-    "/membership/tiers",
-    "/membership/volunteer",
-    "/membership/partner",
-    "/kyc",
-    "/admin/member-verification",
-    "/membership/verification",
-  ]
+  // Check if current path is public
+  const isPublicPath = publicPaths.some(publicPath => 
+    path === publicPath || path.startsWith(`${publicPath}/`)
+  )
 
-  // Auth pages that should redirect to dashboard for logged-in users
-  const authPages = ["/membership/portal", "/membership/register"]
-
-  // Paths accessible even with valid token
-  const allowedWithTokenPaths = ["/activate", "/accounts/verify", "/logout", "/api/auth"]
-
-  // Check path types
-  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
-
-  const isAuthPage = authPages.some((authPage) => path === authPage || path.startsWith(`${authPage}/`))
-
-  const isAllowedWithToken = allowedWithTokenPaths.some((allowedPath) => path.startsWith(allowedPath))
-
-  // Handle activation paths
-  const isActivationPath = path.startsWith("/activate")
-  const isDirectActivationLink = path.match(/^\/activate\/[^/]+\/[^/]+$/)
-
-  // Special case: Direct activation links (from email)
-  if (isDirectActivationLink) {
-    // Allow access without any cookies
-    if (!accessToken && !userId) return NextResponse.next()
-
-    // If logged in but accessing activation link, allow completion
-    if (accessToken) return NextResponse.next()
-  }
-
-  // Special case: Verification status page
-  if (path.startsWith("/accounts/verify")) {
-    if (!userId) {
-      return NextResponse.redirect(new URL("/membership/portal", request.url))
-    }
-    return NextResponse.next()
-  }
-
-  // Redirect logged-in users away from auth pages
-  if (isAuthPage && accessToken) {
-    // Check if there's a next parameter to redirect to
-    const nextUrl = request.nextUrl.searchParams.get("next")
-    if (nextUrl && !nextUrl.includes("/membership/portal")) {
-      // Validate the next URL to prevent open redirect vulnerabilities
-      // Only allow relative URLs that start with / and are on the same domain
-      if (nextUrl.startsWith("/") && !nextUrl.includes("://")) {
-        return NextResponse.redirect(new URL(nextUrl, request.url))
-      }
-    }
-
-    // Default redirect to dashboard if no valid next parameter
+  // Redirect authenticated users from auth pages
+  if (["/membership/portal", "/membership/register"].some(authPath => 
+    path.startsWith(authPath)) && accessToken
+  ) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
-  // Handle unauthenticated access to protected routes
-  if (!isPublicPath && !accessToken && !isAllowedWithToken) {
-    // Store the current URL as the next parameter
-    const loginUrl = new URL("/membership/portal", request.url)
-
-    // Only add the next parameter if it's not already an auth page
-    if (!isAuthPage && !path.includes("/api/")) {
-      loginUrl.searchParams.set("next", path)
-    }
-
-    return NextResponse.redirect(loginUrl)
+  // Allow public paths and API routes
+  if (isPublicPath || path.startsWith("/api")) {
+    return NextResponse.next()
   }
 
-  // Final check for activation paths
-  if (isActivationPath && !isDirectActivationLink && !userId) {
-    return NextResponse.redirect(new URL("/membership/portal", request.url))
+  // Fetch user data for protected routes
+  let userData = null
+  try {
+    const response = await fetch(`${env.BACKEND_HOST_URL}/profile_api/users/me/`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      }
+    })
+
+    if (!response.ok) throw new Error("Unauthorized")
+    userData = await response.json()
+  } catch (error) {
+    // Clear invalid credentials and redirect
+    const response = NextResponse.redirect(new URL("/membership/portal", request.url))
+    response.cookies.delete("accessToken")
+    response.cookies.delete("userID")
+    return response
+  }
+
+  // Extract KYC status and roles
+  const profileData = userData.profile_data
+  const kycStatus = profileData?.kyc_status?.status
+  const isKycVerified = profileData?.is_kyc_verified
+  const userRoles = {
+    isAdmin: profileData?.is_DB_admin,
+    isExecutive: profileData?.is_DB_executive,
+    isDonor: profileData?.is_donor,
+    isPartner: profileData?.is_partner,
+    isVolunteer: profileData?.is_volunteer,
+    isStaff: profileData?.is_DB_staff
+  }
+
+  // KYC Verification Check
+  if (kycProtectedPaths.some(p => path.startsWith(p))) {
+    if (!isKycVerified || kycStatus !== "approved") {
+      return NextResponse.redirect(
+        new URL(`/kyc?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
+      )
+    }
+  }
+
+  // Role-Based Access Control
+  const requiredRole = Object.entries(rolePermissions).find(([_, paths]) => 
+    paths.some(p => path.startsWith(p))
+  )?.[0]
+
+  if (requiredRole) {
+    const roleKey = `is${requiredRole.charAt(0).toUpperCase()}${requiredRole.slice(1)}`
+    if (!userRoles[roleKey as keyof typeof userRoles]) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
+  }
+
+  // Specific role area protection
+  if (path.startsWith("/admin") && !userRoles.isAdmin) {
+    return NextResponse.redirect(new URL("/unauthorized", request.url))
+  }
+
+  if (path.startsWith("/executive") && !userRoles.isExecutive) {
+    return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
   return NextResponse.next()

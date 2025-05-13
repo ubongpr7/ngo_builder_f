@@ -287,6 +287,7 @@ export default function AuthenticatedHeader() {
                 </div>
               </div>
               <DropdownMenuSeparator />
+              {/* Add more notifications here 
               <DropdownMenuItem asChild>
                 <Link
                   href="/notifications"
@@ -295,9 +296,9 @@ export default function AuthenticatedHeader() {
                   View all notifications
                 </Link>
               </DropdownMenuItem>
+              */}
             </DropdownMenuContent>
           </DropdownMenu>
-
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -355,9 +356,6 @@ export default function AuthenticatedHeader() {
                       </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
-                          <DropdownMenuItem asChild>
-                            <Link href="/admin/users">Manage Users</Link>
-                          </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href="/admin/kyc-verification">KYC Verification</Link>
                           </DropdownMenuItem>
