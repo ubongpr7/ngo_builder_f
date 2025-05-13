@@ -5,8 +5,8 @@ import env from "./env_file"
 
 // Role-based route permissions
 const rolePermissions: Record<string, string[]> = {
-  admin: ["/admin", "/api/admin"],
-  executive: ["/executive-dashboard", "/projects/approvals"],
+  admin: ["/admin", "/admin/kyc-verification", ],
+  executive: ["/executive-dashboard", "/projects/approvals","/admin", "/admin/kyc-verification", ],
   donor: ["/donations", "/impact-reports"],
   partner: ["/partnership", "/joint-projects"],
   volunteer: ["/volunteer"],
@@ -102,7 +102,7 @@ export async function middleware(request: NextRequest) {
 
   // Extract KYC status and roles
   const profileData = userData.profile_data
-  const kycStatus = profileData?.kyc_status?.status
+  const kycStatus = profileData?.kyc_status
   const isKycVerified = profileData?.is_kyc_verified
   const userRoles = {
     isAdmin: profileData?.is_DB_admin,
@@ -117,7 +117,7 @@ export async function middleware(request: NextRequest) {
   if (kycProtectedPaths.some(p => path.startsWith(p))) {
     if (!isKycVerified || kycStatus !== "approved") {
       return NextResponse.redirect(
-        new URL(`/kyc?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
+        new URL(`/profile/update?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
       )
     }
   }
