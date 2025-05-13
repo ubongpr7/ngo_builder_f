@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, FileText, Video, Mic } from 'lucide-react'
+import { Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, FileText, Mic } from 'lucide-react'
 
 interface ViewMediaDialogProps {
   media: any
@@ -22,40 +22,38 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
   const [currentIndex, setCurrentIndex] = useState(0)
   const [zoomLevel, setZoomLevel] = useState(1)
   const [rotation, setRotation] = useState(0)
-  
-  // If we have related media, find the current index
+
   const allMedia = relatedMedia.length > 0 ? relatedMedia : [media]
-  const currentMedia = relatedMedia.length > 0 ? relatedMedia[currentIndex] : media
-  
+  const currentMedia = allMedia[currentIndex]
+
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % allMedia.length)
     resetView()
   }
-  
+
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length)
     resetView()
   }
-  
+
   const handleZoomIn = () => {
     setZoomLevel((prev) => Math.min(prev + 0.25, 3))
   }
-  
+
   const handleZoomOut = () => {
     setZoomLevel((prev) => Math.max(prev - 0.25, 0.5))
   }
-  
+
   const handleRotate = () => {
     setRotation((prev) => (prev + 90) % 360)
   }
-  
+
   const resetView = () => {
     setZoomLevel(1)
     setRotation(0)
   }
-  
+
   const handleDownload = () => {
-    // Create a temporary anchor element
     const link = document.createElement('a')
     link.href = currentMedia.file_url
     link.download = currentMedia.caption || `${currentMedia.media_type}-file`
@@ -63,7 +61,7 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
     link.click()
     document.body.removeChild(link)
   }
-  
+
   const renderMediaContent = () => {
     switch (currentMedia.media_type) {
       case 'image':
@@ -73,7 +71,7 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
               src={currentMedia.file_url || "/placeholder.svg"}
               alt={currentMedia.caption || "Media"}
               className="max-h-full max-w-full transition-all duration-200 ease-in-out"
-              style={{ 
+              style={{
                 transform: `scale(${zoomLevel}) rotate(${rotation}deg)`,
                 objectFit: 'contain'
               }}
@@ -120,17 +118,17 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
         )
     }
   }
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
         <DialogHeader className="p-4 border-b">
           <DialogTitle>{currentMedia.caption || "Media Viewer"}</DialogTitle>
         </DialogHeader>
-        
-        <div className="relative h-[calc(90vh-8rem)] bg-gray-900 flex items-center justify-center">
+
+        <div className="relative h-[calc(90vh-8rem)] bg-gray-900 flex items-center justify-center overflow-hidden">
           {renderMediaContent()}
-          
+
           {allMedia.length > 1 && (
             <>
               <Button
@@ -152,16 +150,17 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
             </>
           )}
         </div>
-        
-        <DialogFooter className="p-4 border-t flex justify-between">
-          <div className="flex items-center text-sm text-gray-500">
+
+        {/* Sticky Footer */}
+        <DialogFooter className="sticky bottom-0 z-10 bg-white dark:bg-gray-900 p-4 border-t flex justify-between">
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
             {allMedia.length > 1 && (
               <span>
                 {currentIndex + 1} of {allMedia.length}
               </span>
             )}
           </div>
-          
+
           <div className="flex gap-2">
             {currentMedia.media_type === 'image' && (
               <>
