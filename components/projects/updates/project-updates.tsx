@@ -254,6 +254,7 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
             <Filter className="mr-2 h-4 w-4" />
             {Object.keys(filters).length > 0 ? `Filters (${Object.keys(filters).length})` : "Filter"}
           </Button>
+          {/* Uncomment if you want to add a refresh button
           <Button
             variant="outline"
             onClick={() => setStatisticsOpen(true)}
@@ -261,6 +262,8 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
             <BarChart2 className="mr-2 h-4 w-4" />
             Statistics
           </Button>
+          */}
+          
           <Button 
             className="bg-green-600 hover:bg-green-700 text-white" 
             onClick={() => setAddUpdateOpen(true)}
