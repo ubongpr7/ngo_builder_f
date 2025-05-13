@@ -9,14 +9,17 @@ import { useGetAllProjectsQuery } from "@/redux/features/projects/projectsAPISli
 import { ProjectCard } from "@/components/projects/project-card"
 import { AddProjectDialog } from "@/components/projects/add-project-dialog"
 import type { Project } from "@/types/project"
+import { usePermissions } from "@/components/permissionHander"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 export default function ProjectManagement() {
   const { data: projects = [], isLoading, isError, refetch } = useGetAllProjectsQuery('')
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
+  const {data:userRoles} = useGetLoggedInProfileRolesQuery()
+  const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
 
-  // Filter projects when data, search term, or active tab changes
   useEffect(() => {
     if (!projects) return
 
@@ -55,10 +58,14 @@ export default function ProjectManagement() {
           <h1 className="text-2xl font-bold tracking-tight">Project Management</h1>
           <p className="text-gray-500">Manage and track organizational projects</p>
         </div>
-        <div className="mt-4 md:mt-0">
-          <AddProjectDialog />
+        {is_DB_admin && (
+          <div className="mt-4 md:mt-0">
+  
+            <AddProjectDialog />
+          </div>
+          
+        )}
         </div>
-      </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1">

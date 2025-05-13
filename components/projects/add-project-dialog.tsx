@@ -57,7 +57,7 @@ export function AddProjectDialog() {
   const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
-  
+
   const [managerSearchTerm, setManagerSearchTerm] = useState("")
   const { data: managersData = [], isLoading: isLoadingManagers } = useGetManagerCeoQuery(managerSearchTerm)
 
