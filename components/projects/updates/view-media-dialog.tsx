@@ -191,10 +191,12 @@ const handleDownload = async () => {
                 </Button>
               </>
             )}
+            {/* Add any additional media-specific actions here 
             <Button onClick={handleDownload}>
               <Download className="mr-2 h-4 w-4" />
               Download
             </Button>
+            */}
           </div>
         </DialogFooter>
       </DialogContent>
