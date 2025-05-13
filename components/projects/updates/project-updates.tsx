@@ -363,10 +363,7 @@ export function ProjectUpdates({ projectId }: ProjectUpdatesProps) {
                     : "0.00"}
                 </div>
               </div>
-              <div className="space-y-1">
-                <div className="text-sm text-gray-500">Media Files</div>
-                <div className="text-2xl font-bold">{statistics.total_media_files || 0}</div>
-              </div>
+              
             </div>
           </CardContent>
         </Card>
