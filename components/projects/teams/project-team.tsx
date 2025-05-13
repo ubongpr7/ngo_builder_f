@@ -184,7 +184,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin }: ProjectTeamPr
           <h2 className="text-xl font-semibold mb-1">Project Team</h2>
           <p className="text-gray-500">Manage team members assigned to this project</p>
         </div>
-        {isManager|| is_DB_admin && (
+        {(isManager|| is_DB_admin) && (
           <AddTeamMemberDialog
             projectId={projectId}
             onSuccess={refetch}
@@ -232,16 +232,19 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin }: ProjectTeamPr
                 ? "No team members match your search criteria. Try a different search term."
                 : "No team members have been assigned to this project yet."}
             </p>
-            <AddTeamMemberDialog
-              projectId={projectId}
-              onSuccess={refetch}
-              trigger={
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Add First Team Member
-                </Button>
-              }
-            />
+            {(isManager|| is_DB_admin) && (
+              <AddTeamMemberDialog
+                projectId={projectId}
+                onSuccess={refetch}
+                trigger={
+                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Add First Team Member
+                  </Button>
+                }
+              />
+              )
+            }
           </CardContent>
         </Card>
       ) : (

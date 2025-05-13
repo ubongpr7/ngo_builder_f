@@ -148,7 +148,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
             <BarChart className="mr-2 h-4 w-4" />
             {showStats ? "Hide Statistics" : "Show Statistics"}
           </Button>
-          {(isManager ||is_DB_admin) && (
+          {(isManager || is_DB_admin) && (
             <AddEditMilestoneDialog
               projectId={projectId}
               onSuccess={handleSuccess}
