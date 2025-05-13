@@ -66,7 +66,7 @@ const handleDownload = async () => {
     const link = document.createElement('a')
     link.href = url
     link.setAttribute('download', currentMedia.caption || `${currentMedia.media_type}-file`)
-    link.setAttribute('target', '_blank')
+    // link.setAttribute('target', '_blank')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
