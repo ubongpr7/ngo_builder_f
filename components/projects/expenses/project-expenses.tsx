@@ -423,13 +423,12 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
             onOpenChange={setEditExpenseOpen}
             onSuccess={refetch}
           />
-
           <ApproveExpenseDialog
-            expense={selectedExpense}
-            isOpen={approveExpenseOpen}
-            onClose={() => setApproveExpenseOpen(false)}
-            onSuccess={refetch}
-          />
+          expense={selectedExpense}
+          open={approveExpenseOpen}
+          onOpenChange={setApproveExpenseOpen}
+          onSuccess={refetch}
+        />
 
           <RejectExpenseDialog
             expense={selectedExpense}
