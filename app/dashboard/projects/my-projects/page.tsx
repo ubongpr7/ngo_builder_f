@@ -2,16 +2,17 @@
 
 import { useState } from "react"
 import { useGetUserProjectsQuery } from "@/redux/features/projects/userProjectsApiSlice"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
+import Link from "next/link"
+import { FileText, Users, Crown, Star, User } from "lucide-react"
 
 export default function UserProjects() {
+  const { data: projects, isLoading, error } = useGetUserProjectsQuery()
   const [activeTab, setActiveTab] = useState("all")
-  const { data: projects, isLoading, error } = useGetUserProjectsQuery("")
 
   // Group projects by role
   const projectsByRole = {
@@ -22,90 +23,153 @@ export default function UserProjects() {
     team_member: projects?.filter((p) => p.user_role === "team_member") || [],
   }
 
-  const getRoleBadgeColor = (role: string) => {
+  // Get role icon and color
+  const getRoleBadge = (role: string) => {
     switch (role) {
       case "manager":
-        return "bg-blue-100 text-blue-800"
+        return (
+          <Badge className="bg-blue-500">
+            <Crown className="h-3 w-3 mr-1" /> Manager
+          </Badge>
+        )
       case "official":
-        return "bg-purple-100 text-purple-800"
+        return (
+          <Badge className="bg-purple-500">
+            <Star className="h-3 w-3 mr-1" /> Official
+          </Badge>
+        )
       case "creator":
-        return "bg-green-100 text-green-800"
+        return (
+          <Badge className="bg-green-500">
+            <FileText className="h-3 w-3 mr-1" /> Creator
+          </Badge>
+        )
       case "team_member":
-        return "bg-orange-100 text-orange-800"
+        return (
+          <Badge className="bg-amber-500">
+            <Users className="h-3 w-3 mr-1" /> Team Member
+          </Badge>
+        )
       default:
-        return "bg-gray-100 text-gray-800"
+        return (
+          <Badge className="bg-gray-500">
+            <User className="h-3 w-3 mr-1" /> Member
+          </Badge>
+        )
+    }
+  }
+
+  // Get status badge
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "planned":
+        return <Badge className="bg-gray-500">Planned</Badge>
+      case "in_progress":
+        return <Badge className="bg-blue-500">In Progress</Badge>
+      case "completed":
+        return <Badge className="bg-green-500">Completed</Badge>
+      case "on_hold":
+        return <Badge className="bg-amber-500">On Hold</Badge>
+      case "cancelled":
+        return <Badge className="bg-red-500">Cancelled</Badge>
+      default:
+        return <Badge className="bg-gray-500">{status}</Badge>
     }
   }
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader>
-              <Skeleton className="h-6 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-2/3" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="container mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-6">My Projects</h1>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error) {
-    return <div className="text-red-500">Error loading projects</div>
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-6">My Projects</h1>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-red-500">Error loading projects. Please try again later.</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6">My Projects</h1>
+
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList>
           <TabsTrigger value="all">All Projects ({projectsByRole.all.length})</TabsTrigger>
-          <TabsTrigger value="manager">As Manager ({projectsByRole.manager.length})</TabsTrigger>
-          <TabsTrigger value="official">As Official ({projectsByRole.official.length})</TabsTrigger>
-          <TabsTrigger value="creator">Created ({projectsByRole.creator.length})</TabsTrigger>
-          <TabsTrigger value="team_member">Team Member ({projectsByRole.team_member.length})</TabsTrigger>
+          {projectsByRole.manager.length > 0 && (
+            <TabsTrigger value="manager">Managing ({projectsByRole.manager.length})</TabsTrigger>
+          )}
+          {projectsByRole.official.length > 0 && (
+            <TabsTrigger value="official">Official ({projectsByRole.official.length})</TabsTrigger>
+          )}
+          {projectsByRole.creator.length > 0 && (
+            <TabsTrigger value="creator">Created ({projectsByRole.creator.length})</TabsTrigger>
+          )}
+          {projectsByRole.team_member.length > 0 && (
+            <TabsTrigger value="team_member">Team Member ({projectsByRole.team_member.length})</TabsTrigger>
+          )}
         </TabsList>
 
         {Object.entries(projectsByRole).map(([role, roleProjects]) => (
-          <TabsContent key={role} value={role} className="space-y-4">
-            {roleProjects.length > 0 ? (
-              roleProjects.map((project) => (
-                <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                  <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{project.title}</CardTitle>
-                        <Badge className={getRoleBadgeColor(project.user_role)}>
-                          {project.user_role.replace("_", " ")}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-2">{project.description}</p>
-                      <div className="flex justify-between text-sm">
-                        <span>
-                          Status: <span className="font-medium">{project.status.replace("_", " ")}</span>
-                        </span>
-                        <span>
-                          Budget: <span className="font-medium">{formatCurrency(project.budget)}</span>
-                        </span>
-                      </div>
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-blue-600 h-2.5 rounded-full"
-                          style={{ width: `${project.completion_percentage}%` }}
-                        ></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))
+          <TabsContent key={role} value={role} className="mt-6">
+            {roleProjects.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-gray-500 text-center">No projects found.</p>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="text-center py-8 text-gray-500">No projects found in this category</div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {roleProjects.map((project) => (
+                  <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
+                    <Card className="h-full hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <CardTitle className="text-xl">{project.title}</CardTitle>
+                          {getRoleBadge(project.user_role)}
+                        </div>
+                        <CardDescription>
+                          {getStatusBadge(project.status)}
+                          <span className="ml-2">Budget: {formatCurrency(project.budget)}</span>
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-600 line-clamp-3 mb-2">{project.description}</p>
+                        <div className="flex justify-between text-xs text-gray-500 mt-4">
+                          <span>Completion: {project.completion_percentage}%</span>
+                          <span>
+                            {project.days_remaining > 0 ? `${project.days_remaining} days remaining` : "Due today"}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
             )}
           </TabsContent>
         ))}
