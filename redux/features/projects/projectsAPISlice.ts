@@ -45,9 +45,6 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${projects_api}/projects/${id}/`,
     }),
 
-    getUserProjects: builder.query<Project[], void>({
-      query: () => `/${projects_api}/projects/assigned/`,
-    }),
 
     getCreatedProjects: builder.query<Project[], void>({
       query: () => `/${projects_api}/projects/created/`,
@@ -257,7 +254,6 @@ export const {
   // Project queries
   useGetAllProjectsQuery,
   useGetProjectByIdQuery,
-  useGetUserProjectsQuery,
   useGetCreatedProjectsQuery,
   useGetManagedProjectsQuery,
   useGetProjectsCategoriesQuery,
