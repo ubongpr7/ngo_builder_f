@@ -31,6 +31,7 @@ export interface Project {
   end_date: string | null
   created_by: UserData
   created_at: string
+  days_remaining: number
   updated_at: string
   budget_utilization?: number
   team_member_details?: ProjectUser[]
@@ -60,6 +61,7 @@ export interface Project {
   tasks?: Task[]
   milestones?: Milestone[]
   status: "planned" | "in_progress" | "completed" | "on_hold" | "cancelled"
+  is_overbudget?: boolean
 }
 
 export interface CreateProjectRequest {
@@ -101,6 +103,13 @@ export interface ProjectUpdate {
     name: string
     profile_image?: string
   }
+  project_details?: {
+    id: number
+    title: string
+  }
+  date?:string
+  summary?: string
+  submitted_by_details?: ProjectUser
   attachments?: {
     id: number
     name: string
