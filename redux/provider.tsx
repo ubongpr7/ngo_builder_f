@@ -31,8 +31,6 @@ export default function StoreProvider({ children }: Props) {
 
   return (
     <ErrorBoundary FallbackComponent={AutoRefreshFallback} onError={(error) => {
-      // Optional: log the error to your monitoring service
-      console.error("Redux store error:", error)
     }}>
       <Provider store={storeRef.current}>{children}</Provider>
     </ErrorBoundary>
