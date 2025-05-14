@@ -123,8 +123,8 @@ export default function DashboardPage() {
         {/* Expenses Card */}
         <DashboardCard
           title="Expenses"
-          value={expensesLoading ? "—" : expenseStats?.total_expenses?.total.toString() || "0"}
-          description={`${expenseStats?.total_expenses?.pending || 0} pending approval`}
+          value={expensesLoading ? "—" :formatCurrency(Number(expenseStats?.total_expenses?.total) || 0)}
+          description={`${formatCurrency(Number(expenseStats?.total_expenses?.pending) || 0)} pending approval`}
           icon={<AlertTriangle className="h-4 w-4 text-black" />}
           trend={{
             value: calculateProcessedExpensesPercentage(),
