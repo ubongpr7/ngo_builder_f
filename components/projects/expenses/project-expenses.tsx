@@ -38,9 +38,10 @@ interface ProjectExpensesProps {
   projectId: number
   isManager?: boolean
   is_DB_admin?: boolean
+  isTeamMember?: boolean
 }
 
-export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectExpensesProps) {
+export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectExpensesProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
@@ -202,13 +203,16 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectEx
           <h2 className="text-xl font-semibold mb-1">Project Expenses</h2>
           <p className="text-gray-500">Track and manage project expenditures</p>
         </div>
-        <div className="flex gap-2">
-       
-          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setAddExpenseOpen(true)}>
-            <Receipt className="mr-2 h-4 w-4" />
-            Add Expense
-          </Button>
-        </div>
+        {(isManager || isTeamMember) && (
+          <div className="flex gap-2">
+         
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setAddExpenseOpen(true)}>
+              <Receipt className="mr-2 h-4 w-4" />
+              Add Expense
+            </Button>
+          </div>
+
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -356,8 +360,9 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectEx
                 )}
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                {expense.status === "pending" && (
+                {(expense.status === "pending" && is_DB_admin) && (
                   <>
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -378,7 +383,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectEx
                     </Button>
                   </>
                 )}
-                {expense.status === "approved" && (
+                {(expense.status === "approved" && isManager) && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -389,9 +394,12 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin }: ProjectEx
                     Mark Reimbursed
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => handleEditExpense(expense)}>
-                  Edit
-                </Button>
+                {(isManager  || isTeamMember) && (
+                  <Button variant="outline" size="sm" onClick={() => handleEditExpense(expense)}>
+                    Edit
+                  </Button>
+
+                  )}
               </CardFooter>
             </Card>
           ))}

@@ -251,7 +251,7 @@ export default function ProjectDetail() {
         </TabsContent>
 
         <TabsContent value="expenses" className="space-y-4">
-          <ProjectExpenses projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
+          <ProjectExpenses projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
         </TabsContent>
         {/*}
         <TabsContent value="assets" className="space-y-4">

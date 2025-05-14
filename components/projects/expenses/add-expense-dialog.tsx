@@ -69,13 +69,10 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
 
-  // Get today's date for max date restriction
   const today = new Date()
 
-  // Fetch team members for the project
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
 
-  // Format team members for react-select
   const teamMemberOptions = teamMembers.map((user) => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
