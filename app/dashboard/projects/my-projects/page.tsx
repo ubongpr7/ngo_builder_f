@@ -63,17 +63,17 @@ export default function UserProjects() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "planned":
-        return <Badge className="bg-gray-500">Planned</Badge>
+        return <Badge className="bg-gray-800 text-gray-50">Planned</Badge>
       case "in_progress":
-        return <Badge className="bg-blue-500">In Progress</Badge>
+        return <Badge className="bg-blue-800 text-gray-50">In Progress</Badge>
       case "completed":
-        return <Badge className="bg-green-500">Completed</Badge>
+        return <Badge className="bg-green-800 text-gray-50">Completed</Badge>
       case "on_hold":
-        return <Badge className="bg-amber-500">On Hold</Badge>
+        return <Badge className="bg-amber-800 text-gray-50">On Hold</Badge>
       case "cancelled":
-        return <Badge className="bg-red-500">Cancelled</Badge>
+        return <Badge className="bg-red-500 text-gray-50">Cancelled</Badge>
       default:
-        return <Badge className="bg-gray-500">{status}</Badge>
+        return <Badge className="bg-gray-800 text-gray-50">{status}</Badge>
     }
   }
 
