@@ -62,7 +62,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         city: null,
       })
     }
-  }, [formData.country])
+  }, [formData.country, updateFormData])
 
   useEffect(() => {
     if (isMounted.current && formData.region) {
@@ -71,7 +71,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         city: null,
       })
     }
-  }, [formData.region])
+  }, [formData.region, updateFormData])
 
   useEffect(() => {
     if (isMounted.current && formData.subregion) {
@@ -79,7 +79,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         city: null,
       })
     }
-  }, [formData.subregion])
+  }, [formData.subregion, updateFormData])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -123,6 +123,8 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
       onComplete()
     } catch (error) {
+      console.error("Submission error:", error)
+      // Handle error (e.g., show toast notification)
     }
   }
 
@@ -162,6 +164,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         <div className="space-y-2">
           <Label htmlFor="country">Country</Label>
           <ReactSelectField
+            key="country-select"
             options={countryOptions}
             value={countryOptions.find((option) => option.value === formData.country?.toString())}
             onChange={(option) =>
@@ -180,12 +183,11 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         <div className="space-y-2">
           <Label htmlFor="region">Region/State</Label>
           <ReactSelectField
+            key={`region-${formData.country}`}
             options={regionOptions}
             value={regionOptions.find((option) => option.value === formData.region?.toString())}
             onChange={(option) =>
-              updateFormData({
-                region: option && "value" in option ? Number(option.value) : null,
-              })
+              updateFormData({ region: option && "value" in option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingRegions ? "Loading regions..." : !formData.country ? "Select country first" : "Select region"
@@ -202,12 +204,11 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         <div className="space-y-2">
           <Label htmlFor="subregion">Subregion/LGA</Label>
           <ReactSelectField
+            key={`subregion-${formData.region}`}
             options={subregionOptions}
             value={subregionOptions.find((option) => option.value === formData.subregion?.toString())}
             onChange={(option) =>
-              updateFormData({
-                subregion: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
-              })
+              updateFormData({ subregion: option && "value" in option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingSubregions
@@ -228,12 +229,11 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         <div className="space-y-2">
           <Label htmlFor="city">City/Town</Label>
           <ReactSelectField
+            key={`city-${formData.subregion}`}
             options={cityOptions}
             value={cityOptions.find((option) => option.value === formData.city?.toString())}
             onChange={(option) =>
-              updateFormData({
-                city: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
-              })
+              updateFormData({ city: option && "value" in option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingCities ? "Loading cities..." : !formData.subregion ? "Select subregion first" : "Select city"
