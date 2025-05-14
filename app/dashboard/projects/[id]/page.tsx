@@ -21,6 +21,7 @@ import { ProjectDocuments } from "@/components/projects/project-documents"
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { usePermissions } from "@/components/permissionHander"
+import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -165,11 +166,15 @@ export default function ProjectDetail() {
             Add Comment
           </Button>
           {isManager || is_DB_admin && (
-            <Button className="bg-green-600 hover:bg-green-700 text-white">
-              <FileImage className="mr-2 h-4 w-4" />
-              Edit Project
-            </Button>
-            
+            <EditProjectDialog 
+              project={project} 
+              trigger={
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
+                  <FileImage className="mr-2 h-4 w-4" />
+                  Edit Project
+                </Button>
+              }
+            />
           )}
         </div>
       </div>
