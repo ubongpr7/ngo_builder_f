@@ -36,8 +36,8 @@ export default function DashboardPage() {
       const active = projects.filter((p) => p.status === "planned" || p.status === "in_progress").length
       const completed = projects.filter((p) => p.status === "completed").length
       const overbudget = projects.filter((p) => p.is_overbudget).length
-      const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0)
-      const totalSpent = projects.reduce((sum, p) => sum + (p.funds_spent || 0), 0)
+      const totalBudget = projects.reduce((sum, p) => Number(sum) + (Number(p.budget) || 0), 0)
+      const totalSpent = projects.reduce((sum, p) => Number(sum )+ (Number(p.funds_spent) || 0), 0)
 
       setProjectStats({
         total: projects.length,
@@ -110,7 +110,7 @@ export default function DashboardPage() {
         {/* Budget Card */}
         <DashboardCard
           title="Budget"
-          value={projectsLoading ? "—" : Math.round(projectStats.totalBudget).toString()}
+          value={projectsLoading ? "—" : formatCurrency(projectStats.totalBudget)}
           description={`${formatCurrency(projectStats.totalSpent)} spent`}
           icon={<DollarSign className="h-4 w-4 text-black" />}
           trend={{
