@@ -193,12 +193,8 @@ export default function DashboardSidebar() {
                 Milestones
               </NavItem>
 
-              <NavItem href="/dashboard/projects/teams" icon={Users}>
-                Teams
-              </NavItem>
             </NavSection>
 
-            {/* Only show Inventory section to specific roles */}
             {(userRoles.isDBAdmin && userRoles.isDBExecutive && userRoles.isCeo) && (
               <NavSection title="Inventory" name="inventory" icon={Package}>
                 <NavItem href="/dashboard/inventory" icon={BarChart3}>
@@ -207,89 +203,9 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/inventory/assets" icon={Package}>
                   Assets
                 </NavItem>
-                {/* Only show Equipment section to specific roles}
-                <NavItem href="/dashboard/inventory/maintenance" icon={Settings}>
-                  Maintenance
-                </NavItem>
-                <NavItem href="/dashboard/inventory/audits" icon={ClipboardList}>
-                  Audits
-                </NavItem>
-                */}
+                
               </NavSection>
             )}
-
-            {/* Only show Finance section to specific roles 
-            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
-              <NavSection title="Finance" name="finance" icon={Wallet}>
-                <NavItem href="/dashboard/finance" icon={BarChart3}>
-                  Overview
-                </NavItem>
-                <NavItem href="/dashboard/finance/donations" icon={Heart}>
-                  Donations
-                </NavItem>
-                <NavItem href="/dashboard/finance/expenses" icon={FileText}>
-                  Expenses
-                </NavItem>
-                <NavItem href="/dashboard/finance/grants" icon={FileText}>
-                  Grants
-                </NavItem>
-                <NavItem href="/dashboard/finance/budgets" icon={PieChart}>
-                  Budgets
-                </NavItem>
-              </NavSection>
-            )}
-          */}
-            {/* Only show Reporting section to specific roles 
-            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isProjectManager) && (
-              <NavSection title="Reporting" name="reporting" icon={FileText}>
-                <NavItem href="/dashboard/reporting" icon={BarChart3}>
-                  Overview
-                </NavItem>
-                <NavItem href="/dashboard/reporting/project-reports" icon={FileText}>
-                  Project Reports
-                </NavItem>
-                <NavItem href="/dashboard/reporting/financial-reports" icon={PieChart}>
-                  Financial Reports
-                </NavItem>
-                <NavItem href="/dashboard/reporting/impact-metrics" icon={BarChart3}>
-                  Impact Metrics
-                </NavItem>
-              </NavSection>
-            )}
-              */}
-
-            {/* Common sections for all users 
-            <NavItem href="/dashboard/events" icon={Calendar}>
-              Events
-            </NavItem>
-            <NavItem href="/dashboard/members" icon={Users}>
-              Members
-            </NavItem>
-            */}
-            {/* Only show Volunteers section to specific roles
-            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isVolunteer) && (
-              <NavItem href="/dashboard/volunteers" icon={Heart}>
-                Volunteers
-              </NavItem>
-            )}
-          */}
-            {/* Only show Partners section to specific roles
-            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo || userRoles.isPartner) && (
-              <NavItem href="/dashboard/partners" icon={Building}>
-                Partners
-              </NavItem>
-            )}
-
-            <NavItem href="/dashboard/media" icon={Camera}>
-              Media Gallery
-            </NavItem>
-            <NavItem href="/dashboard/blog" icon={BookOpen}>
-              Blog
-            </NavItem>
-            <NavItem href="/dashboard/messages" icon={MessageSquare}>
-              Messages
-            </NavItem>
-             */}
           </nav>
         </div>
         <div className="mt-auto border-t p-1">
