@@ -1,12 +1,26 @@
 "use client"
 
 import type React from "react"
+import { useEffect } from "react"
 import { makeStore } from "./store"
 import { Provider } from "react-redux"
 import { useRef } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 
 interface Props {
   children: React.ReactNode
+}
+
+function AutoRefreshFallback() {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      window.location.reload()
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [])
+  
+  return <div className="hidden"></div>
 }
 
 export default function StoreProvider({ children }: Props) {
@@ -15,5 +29,12 @@ export default function StoreProvider({ children }: Props) {
     storeRef.current = makeStore()
   }
 
-  return <Provider store={storeRef.current}>{children}</Provider>
+  return (
+    <ErrorBoundary FallbackComponent={AutoRefreshFallback} onError={(error) => {
+      // Optional: log the error to your monitoring service
+      console.error("Redux store error:", error)
+    }}>
+      <Provider store={storeRef.current}>{children}</Provider>
+    </ErrorBoundary>
+  )
 }
