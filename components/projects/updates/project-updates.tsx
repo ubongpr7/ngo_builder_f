@@ -267,14 +267,16 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
           </Button>
           */}
 
+          {(isManager  || isTeamMember) && (
+            <Button 
+              className="bg-green-600 hover:bg-green-700 text-white" 
+              onClick={() => setAddUpdateOpen(true)}
+            >
+              <FileImage className="mr-2 h-4 w-4" />
+              Add Update
+            </Button>
 
-          <Button 
-            className="bg-green-600 hover:bg-green-700 text-white" 
-            onClick={() => setAddUpdateOpen(true)}
-          >
-            <FileImage className="mr-2 h-4 w-4" />
-            Add Update
-          </Button>
+          )}
         </div>
       </div>
 
@@ -437,32 +439,35 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                               <DollarSign className="mr-1 h-3 w-3" />${Number(update.funds_spent_today).toLocaleString()}
                             </Badge>
                           )}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <ChevronDown className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditUpdate(update)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Update
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toggleUpdateExpansion(update.id)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                {isExpanded ? "Collapse" : "Expand"}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteUpdate(update)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete Update
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {(isManager || isTeamMember) && (
+
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Open menu</span>
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditUpdate(update)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit Update
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => toggleUpdateExpansion(update.id)}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  {isExpanded ? "Collapse" : "Expand"}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteUpdate(update)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete Update
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -590,14 +595,17 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                             View Details
                           </Button>
                         )}
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditUpdate(update)}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
+                        {(isManager || isTeamMember) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEditUpdate(update)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+
+                        )}
                       </div>
                     </CardFooter>
                   </Card>
