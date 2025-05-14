@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,62 +24,67 @@ interface AddressFormProps {
 }
 
 export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId }: AddressFormProps) {
+  // Form state
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // API mutations
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
-  const isMounted = useRef(false)
 
+  // Loading state
+  const isLoading = isLoadingAddAddress || isLoadingUpdateProfile
+
+  // Fetch countries (always)
   const { data: countries, isLoading: isLoadingCountries } = useGetCountriesQuery()
 
+  // Fetch regions (only if country is selected)
   const { data: regions, isLoading: isLoadingRegions } = useGetRegionsQuery(formData.country || 0, {
     skip: !formData.country,
     refetchOnMountOrArgChange: true,
   })
 
+  // Fetch subregions (only if region is selected)
   const { data: subregions, isLoading: isLoadingSubregions } = useGetSubregionsQuery(formData.region || 0, {
     skip: !formData.region,
     refetchOnMountOrArgChange: true,
   })
 
+  // Fetch cities (only if subregion is selected)
   const { data: cities, isLoading: isLoadingCities } = useGetCitiesQuery(formData.subregion || 0, {
     skip: !formData.subregion,
     refetchOnMountOrArgChange: true,
   })
 
-  const isLoading = isLoadingAddAddress || isLoadingUpdateProfile
+  // Convert data arrays to react-select options
+  const countryOptions: SelectOption[] = countries
+    ? countries.map((country) => ({
+        value: country.id.toString(),
+        label: country.name,
+      }))
+    : []
 
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true
-      return
-    }
+  const regionOptions: SelectOption[] = regions
+    ? regions.map((region) => ({
+        value: region.id.toString(),
+        label: region.name,
+      }))
+    : []
 
-    if (formData.country) {
-      updateFormData({
-        region: null,
-        subregion: null,
-        city: null,
-      })
-    }
-  }, [formData.country])
+  const subregionOptions: SelectOption[] = subregions
+    ? subregions.map((subregion) => ({
+        value: subregion.id.toString(),
+        label: subregion.name,
+      }))
+    : []
 
-  useEffect(() => {
-    if (isMounted.current && formData.region) {
-      updateFormData({
-        subregion: null,
-        city: null,
-      })
-    }
-  }, [formData.region])
+  const cityOptions: SelectOption[] = cities
+    ? cities.map((city) => ({
+        value: city.id.toString(),
+        label: city.name,
+      }))
+    : []
 
-  useEffect(() => {
-    if (isMounted.current && formData.subregion) {
-      updateFormData({
-        city: null,
-      })
-    }
-  }, [formData.subregion])
-
+  // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     if (!formData.country) newErrors.country = "Country is required"
@@ -92,6 +96,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     return Object.keys(newErrors).length === 0
   }
 
+  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
@@ -123,37 +128,24 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
       onComplete()
     } catch (error) {
+      console.error("Error saving address:", error)
     }
   }
 
-  // Convert data arrays to react-select options
-  const countryOptions: SelectOption[] = countries
-    ? countries.map((country) => ({
-        value: country.id.toString(),
-        label: country.name,
-      }))
-    : []
-
-  const regionOptions: SelectOption[] = regions
-    ? regions.map((region) => ({
-        value: region.id.toString(),
-        label: region.name,
-      }))
-    : []
-
-  const subregionOptions: SelectOption[] = subregions
-    ? subregions.map((subregion) => ({
-        value: subregion.id.toString(),
-        label: subregion.name,
-      }))
-    : []
-
-  const cityOptions: SelectOption[] = cities
-    ? cities.map((city) => ({
-        value: city.id.toString(),
-        label: city.name,
-      }))
-    : []
+  // Handle form reset
+  const handleReset = () => {
+    updateFormData({
+      country: null,
+      region: null,
+      subregion: null,
+      city: null,
+      street: "",
+      street_number: null,
+      apt_number: null,
+      postal_code: "",
+    })
+    setErrors({})
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -164,9 +156,15 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <ReactSelectField
             options={countryOptions}
             value={countryOptions.find((option) => option.value === formData.country?.toString())}
-            onChange={(option) =>
-              updateFormData({ country: option && "value" in option ? Number(option.value) : null })
-            }
+            onChange={(option) => {
+              // When country changes, reset all dependent fields
+              updateFormData({
+                country: option ? Number(option.value) : null,
+                region: null,
+                subregion: null,
+                city: null,
+              })
+            }}
             placeholder={isLoadingCountries ? "Loading countries..." : "Select your country"}
             isDisabled={isLoadingCountries}
             error={errors.country}
@@ -182,11 +180,14 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <ReactSelectField
             options={regionOptions}
             value={regionOptions.find((option) => option.value === formData.region?.toString())}
-            onChange={(option) =>
+            onChange={(option) => {
+              // When region changes, reset subregion and city
               updateFormData({
-                region: option && "value" in option ? Number(option.value) : null,
+                region: option ? Number(option.value) : null,
+                subregion: null,
+                city: null,
               })
-            }
+            }}
             placeholder={
               isLoadingRegions ? "Loading regions..." : !formData.country ? "Select country first" : "Select region"
             }
@@ -204,11 +205,13 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <ReactSelectField
             options={subregionOptions}
             value={subregionOptions.find((option) => option.value === formData.subregion?.toString())}
-            onChange={(option) =>
+            onChange={(option) => {
+              // When subregion changes, reset city
               updateFormData({
-                subregion: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
+                subregion: option ? Number(option.value) : null,
+                city: null,
               })
-            }
+            }}
             placeholder={
               isLoadingSubregions
                 ? "Loading subregions..."
@@ -230,11 +233,11 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
           <ReactSelectField
             options={cityOptions}
             value={cityOptions.find((option) => option.value === formData.city?.toString())}
-            onChange={(option) =>
+            onChange={(option) => {
               updateFormData({
-                city: option && !Array.isArray(option) && "value" in option ? Number(option.value) : null,
+                city: option ? Number(option.value) : null,
               })
-            }
+            }}
             placeholder={
               isLoadingCities ? "Loading cities..." : !formData.subregion ? "Select subregion first" : "Select city"
             }
@@ -297,7 +300,10 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between">
+        <Button type="button" variant="outline" onClick={handleReset} disabled={isLoading}>
+          Reset Form
+        </Button>
         <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
           {isLoading ? "Saving..." : "Save & Continue"}
         </Button>
