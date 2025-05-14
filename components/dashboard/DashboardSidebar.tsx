@@ -184,25 +184,10 @@ export default function DashboardSidebar() {
                 All Projects
               </NavItem>
 
-              {/* CEO and DB Executive can see My Projects */}
-              {(userRoles.isCeo || userRoles.isDBExecutive) && (
                 <NavItem href="/dashboard/projects/my-projects" icon={Briefcase}>
                   My Projects
                 </NavItem>
-              )}
 
-
-              {/* Project Manager, CEO, and DB Executive can see Managed Projects */}
-              {/* All users can see Daily Updates 
-              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/dashboard/projects/managed" icon={Award}>
-                  Managed Projects
-                </NavItem>
-              )}
-              <NavItem href="/dashboard/projects/daily-updates" icon={FileText}>
-                Daily Updates
-              </NavItem>
-              */}
 
               <NavItem href="/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
