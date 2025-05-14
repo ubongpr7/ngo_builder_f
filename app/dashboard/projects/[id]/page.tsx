@@ -7,16 +7,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Calendar, MapPin, FileText, Briefcase, AlertTriangle, MessageSquare, FileImage, Loader2 } from "lucide-react"
+import { Calendar, MapPin, FileText, Briefcase, AlertTriangle, MessageSquare, Loader2, Edit } from "lucide-react"
 
 import { ProjectOverview } from "@/components/projects/project-overview"
 import { ProjectTeam } from "@/components/projects/teams/project-team"
 import { ProjectMilestones } from "@/components/projects/milestones/project-milestones"
 import { ProjectUpdates } from "@/components/projects/updates/project-updates"
 import { ProjectExpenses } from "@/components/projects/expenses/project-expenses"
-// import { ProjectAssets } from "@/components/projects/project-assets"
-import { ProjectComments } from "@/components/projects/project-comments"
-import { ProjectDocuments } from "@/components/projects/project-documents"
 
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
@@ -26,16 +23,29 @@ import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
-  const { data: project, isLoading, isError } = useGetProjectByIdQuery(projectId)
+  const { data: project, isLoading, isError, refetch } = useGetProjectByIdQuery(projectId)
   const [activeTab, setActiveTab] = useState("overview")
-  const {data:userRoles} = useGetLoggedInProfileRolesQuery()
-  const isManager = usePermissions(userRoles,{ requiredRoles:['is_ceo'],requireKYC:true,
-    customCheck:(user) => user.user_id === project?.manager_details?.id,
+  const { data: userRoles } = useGetLoggedInProfileRolesQuery()
+  const isManager = usePermissions(userRoles, {
+    requiredRoles: ["is_ceo"],
+    requireKYC: true,
+    customCheck: (user) => user.user_id === project?.manager_details?.id,
   })
-  const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
-  const isTeamMember = usePermissions(userRoles,{ requiredRoles:[],requireKYC:true,
-    customCheck:(user) => !!project?.team_members?.some((member) => member?.id === user.user_id),
+  const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
+  const isTeamMember = usePermissions(userRoles, {
+    requiredRoles: [],
+    requireKYC: true,
+    customCheck: (user) => !!project?.team_members?.some((member) => member?.id === user.user_id),
   })
+
+  // State for edit project dialog
+  const [editProjectOpen, setEditProjectOpen] = useState(false)
+
+  // Function to refresh project data
+  const refreshProject = () => {
+    refetch()
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -73,8 +83,8 @@ export default function ProjectDetail() {
 
     // Calculate based on timeline
     const today = new Date()
-    const startDate = new Date(project.start_date ??'')
-    const endDate = new Date(project.target_end_date??'')
+    const startDate = new Date(project.start_date ?? "")
+    const endDate = new Date(project.target_end_date ?? "")
 
     if (today < startDate) return 0
     if (today > endDate) return 100
@@ -136,7 +146,7 @@ export default function ProjectDetail() {
           <div className="flex flex-wrap gap-4 text-sm text-gray-500">
             <div className="flex items-center">
               <Calendar className="mr-1 h-4 w-4" />
-              {formatDate(project.start_date??'')} - {formatDate(project.target_end_date??'')}
+              {formatDate(project.start_date ?? "")} - {formatDate(project.target_end_date ?? "")}
             </div>
             {project.location && (
               <div className="flex items-center">
@@ -157,17 +167,30 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          
-           {/*isManager || is_DB_admin && (*/}
-            <EditProjectDialog 
-              project={project} 
-              trigger={
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                  <FileImage className="mr-2 h-4 w-4" />
-                  Edit Project
-                </Button>
-              }
+          <Button variant="outline">
+            <FileText className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
+          <Button variant="outline">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Add Comment
+          </Button>
+
+          {/* Edit Project Button - Only show for managers and admins */}
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setEditProjectOpen(true)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Project
+            </Button>
+
+          {/* Edit Project Dialog */}
+          {project && (
+            <EditProjectDialog
+              project={project}
+              open={editProjectOpen}
+              onOpenChange={setEditProjectOpen}
+              onSuccess={refreshProject}
             />
+          )}
         </div>
       </div>
 
@@ -205,8 +228,8 @@ export default function ProjectDetail() {
               <div className="text-sm text-gray-500">Timeline</div>
               <div className="text-2xl font-bold">
                 {project.status === "completed"
-                  ? `${Math.round((new Date(project.actual_end_date || project.target_end_date).getTime() - new Date(project.start_date??'').getTime()) / (1000 * 60 * 60 * 24))} days`
-                  : `${Math.round((new Date(project.target_end_date).getTime() - new Date(project.start_date??'').getTime()) / (1000 * 60 * 60 * 24))} days`}
+                  ? `${Math.round((new Date(project.actual_end_date || project.target_end_date).getTime() - new Date(project.start_date ?? "").getTime()) / (1000 * 60 * 60 * 24))} days`
+                  : `${Math.round((new Date(project.target_end_date).getTime() - new Date(project.start_date ?? "").getTime()) / (1000 * 60 * 60 * 24))} days`}
               </div>
               <div className="text-sm">
                 {project.status === "completed"
@@ -240,15 +263,30 @@ export default function ProjectDetail() {
         </TabsContent>
 
         <TabsContent value="milestones" className="space-y-4">
-          <ProjectMilestones projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
+          <ProjectMilestones
+            projectId={projectId}
+            isManager={isManager}
+            is_DB_admin={is_DB_admin}
+            isTeamMember={isTeamMember}
+          />
         </TabsContent>
 
         <TabsContent value="updates" className="space-y-4">
-          <ProjectUpdates projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
+          <ProjectUpdates
+            projectId={projectId}
+            isManager={isManager}
+            is_DB_admin={is_DB_admin}
+            isTeamMember={isTeamMember}
+          />
         </TabsContent>
 
         <TabsContent value="expenses" className="space-y-4">
-          <ProjectExpenses projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
+          <ProjectExpenses
+            projectId={projectId}
+            isManager={isManager}
+            is_DB_admin={is_DB_admin}
+            isTeamMember={isTeamMember}
+          />
         </TabsContent>
         {/*}
         <TabsContent value="assets" className="space-y-4">
