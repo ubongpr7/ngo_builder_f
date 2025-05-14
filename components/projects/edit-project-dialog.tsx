@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Loader2, Edit } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -50,13 +50,27 @@ type ProjectFormValues = z.infer<typeof projectSchema>
 interface EditProjectDialogProps {
   project: Project
   trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-export function EditProjectDialog({ project, trigger }: EditProjectDialogProps) {
-  const [open, setOpen] = useState(false)
+export function EditProjectDialog({
+  project,
+  trigger,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+  onSuccess,
+}: EditProjectDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const { toast } = useToast()
   const [updateProject, { isLoading }] = useUpdateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
+
+  // Determine if we're using controlled or uncontrolled open state
+  const isControlled = controlledOpen !== undefined && setControlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = isControlled ? setControlledOpen : setInternalOpen
 
   const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
     value: category.id.toString(),
@@ -89,7 +103,7 @@ export function EditProjectDialog({ project, trigger }: EditProjectDialogProps) 
     },
   })
 
-  // Reset form when project changes
+  // Reset form when project changes or dialog opens
   useEffect(() => {
     if (project && open) {
       form.reset({
@@ -126,6 +140,11 @@ export function EditProjectDialog({ project, trigger }: EditProjectDialogProps) 
       })
 
       setOpen(false)
+
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess()
+      }
     } catch (error) {
       console.error("Failed to update project:", error)
       toast({
@@ -142,13 +161,7 @@ export function EditProjectDialog({ project, trigger }: EditProjectDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
-            <Edit className="mr-2 h-4 w-4" /> Edit Project
-          </Button>
-        )}
-      </DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
