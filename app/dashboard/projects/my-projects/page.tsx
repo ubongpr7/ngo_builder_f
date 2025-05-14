@@ -28,31 +28,31 @@ export default function UserProjects() {
     switch (role) {
       case "manager":
         return (
-          <Badge className="bg-blue-500">
+          <Badge className="bg-blue-50">
             <Crown className="h-3 w-3 mr-1" /> 
           </Badge>
         )
       case "official":
         return (
-          <Badge className="bg-purple-500">
+          <Badge className="bg-purple-50">
             <Star className="h-3 w-3 mr-1" /> 
           </Badge>
         )
       case "creator":
         return (
-          <Badge className="bg-green-500">
+          <Badge className="bg-green-50">
             <FileText className="h-3 w-3 mr-1" /> 
           </Badge>
         )
       case "team_member":
         return (
-          <Badge className="bg-amber-500">
+          <Badge className="bg-amber-50">
             <Users className="h-3 w-3 mr-1" /> 
           </Badge>
         )
       default:
         return (
-          <Badge className="bg-gray-500">
+          <Badge className="bg-gray-50">
             <User className="h-3 w-3 mr-1" /> 
           </Badge>
         )
