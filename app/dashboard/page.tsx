@@ -110,7 +110,7 @@ export default function DashboardPage() {
         {/* Budget Card */}
         <DashboardCard
           title="Budget"
-          value={projectsLoading ? "—" : projectStats.totalBudget.toString()}
+          value={projectsLoading ? "—" : Math.round(projectStats.totalBudget).toString()}
           description={`${formatCurrency(projectStats.totalSpent)} spent`}
           icon={<DollarSign className="h-4 w-4 text-black" />}
           trend={{
