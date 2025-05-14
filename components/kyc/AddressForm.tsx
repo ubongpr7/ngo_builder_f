@@ -168,7 +168,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             options={countryOptions}
             value={countryOptions.find((option) => option.value === formData.country?.toString())}
             onChange={(option) =>
-              updateFormData({ country: option && "value" in option ? Number(option.value) : null })
+              updateFormData({ country: option ? Number(option.value) : null })
             }
             placeholder={isLoadingCountries ? "Loading countries..." : "Select your country"}
             isDisabled={isLoadingCountries}
@@ -187,7 +187,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             options={regionOptions}
             value={regionOptions.find((option) => option.value === formData.region?.toString())}
             onChange={(option) =>
-              updateFormData({ region: option && "value" in option ? Number(option.value) : null })
+              updateFormData({ region: option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingRegions ? "Loading regions..." : !formData.country ? "Select country first" : "Select region"
@@ -208,7 +208,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             options={subregionOptions}
             value={subregionOptions.find((option) => option.value === formData.subregion?.toString())}
             onChange={(option) =>
-              updateFormData({ subregion: option && "value" in option ? Number(option.value) : null })
+              updateFormData({ subregion: option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingSubregions
@@ -233,7 +233,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
             options={cityOptions}
             value={cityOptions.find((option) => option.value === formData.city?.toString())}
             onChange={(option) =>
-              updateFormData({ city: option && "value" in option ? Number(option.value) : null })
+              updateFormData({ city: option ? Number(option.value) : null })
             }
             placeholder={
               isLoadingCities ? "Loading cities..." : !formData.subregion ? "Select subregion first" : "Select city"
