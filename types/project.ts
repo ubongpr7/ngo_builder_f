@@ -28,6 +28,7 @@ export interface Project {
   title: string
   description: string | null
   start_date: string | null
+  completion_percentage?: number
   end_date: string | null
   created_by: UserData
   created_at: string
