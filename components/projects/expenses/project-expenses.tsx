@@ -65,8 +65,9 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   } = useGetExpensesByProjectQuery(
     projectId,
   )
+  
 
-  const { data: statistics } = useGetExpenseStatisticsQuery(projectId)
+  const { data: statistics,refetch: refetchStatistics, isLoading: isLoadingStatistics } = useGetExpenseStatisticsQuery(projectId)
 
   const [approveExpense] = useApproveExpenseMutation()
   const [rejectExpense] = useRejectExpenseMutation()
@@ -82,7 +83,10 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
     if (activeTab === "all") return matchesSearch
     return matchesSearch && expense.status.toLowerCase() === activeTab.toLowerCase()
   })
-
+  const refresh = () => {
+    refetch()
+    refetchStatistics()
+  }
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -115,7 +119,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         title: "Expense Approved",
         description: "The expense has been approved successfully.",
       })
-      refetch()
+      refresh()
     } catch (error) {
       console.error("Failed to approve expense:", error)
       toast({
@@ -140,7 +144,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         title: "Expense Reimbursed",
         description: "The expense has been marked as reimbursed.",
       })
-      refetch()
+      refresh()
     } catch (error) {
       console.error("Failed to reimburse expense:", error)
       toast({
@@ -411,7 +415,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         projectId={projectId}
         open={addExpenseOpen}
         onOpenChange={setAddExpenseOpen}
-        onSuccess={refetch}
+        onSuccess={refresh}
       />
 
       {selectedExpense && (
@@ -421,27 +425,27 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
             expense={selectedExpense}
             open={editExpenseOpen}
             onOpenChange={setEditExpenseOpen}
-            onSuccess={refetch}
+            onSuccess={refresh}
           />
           <ApproveExpenseDialog
           expense={selectedExpense}
           open={approveExpenseOpen}
           onOpenChange={setApproveExpenseOpen}
-          onSuccess={refetch}
+          onSuccess={refresh}
         />
 
           <RejectExpenseDialog
             expense={selectedExpense}
             isOpen={rejectExpenseOpen}
             onClose={() => setRejectExpenseOpen(false)}
-            onSuccess={refetch}
+            onSuccess={refresh}
           />
 
           <ReimburseExpenseDialog
             expense={selectedExpense}
             open={reimburseExpenseOpen}
             onOpenChange={setReimburseExpenseOpen}
-            onSuccess={refetch}
+            onSuccess={refresh}
           />
 
           <ViewReceiptDialog expense={selectedExpense} open={viewReceiptOpen} onOpenChange={setViewReceiptOpen} />
