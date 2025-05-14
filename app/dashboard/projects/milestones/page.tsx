@@ -1,130 +1,119 @@
 "use client"
 
-import { useState } from "react"
-import { Search, Plus, Calendar, CheckCircle, AlertCircle, MapPin } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState, useMemo } from "react"
+import { Search, Plus, Calendar, CheckCircle, AlertCircle, Clock, Filter } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
-
-interface Milestone {
-  id: string
-  title: string
-  description: string
-  status: "Upcoming" | "In Progress" | "Completed" | "Delayed"
-  dueDate: string
-  project: string
-  progress: number
-  tasks: {
-    total: number
-    completed: number
-  }
-}
+import { Skeleton } from "@/components/ui/skeleton"
+import { useGetUserMilestonesQuery } from "@/redux/features/projects/milestoneApiSlice"
+import Link from "next/link"
+import { formatDistanceToNow } from "date-fns"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
 export default function MilestonesPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("all")
+  const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({})
 
-  // Sample milestones data
-  const milestones: Milestone[] = [
-    {
-      id: "milestone-1",
-      title: "Workshop Preparation Phase",
-      description: "Complete all preparation tasks for the digital skills workshop",
-      status: "In Progress",
-      dueDate: "2025-06-01",
-      project: "Digital Skills Workshop",
-      progress: 65,
-      tasks: {
-        total: 12,
-        completed: 8,
-      },
-    },
-    {
-      id: "milestone-2",
-      title: "Initial Health Screenings",
-      description: "Complete first round of community health screenings",
-      status: "Completed",
-      dueDate: "2025-05-15",
-      project: "Community Health Outreach",
-      progress: 100,
-      tasks: {
-        total: 8,
-        completed: 8,
-      },
-    },
-    {
-      id: "milestone-3",
-      title: "Entrepreneur Selection",
-      description: "Select first cohort of women entrepreneurs for the program",
-      status: "Upcoming",
-      dueDate: "2025-06-10",
-      project: "Women Entrepreneurship Program",
-      progress: 0,
-      tasks: {
-        total: 5,
-        completed: 0,
-      },
-    },
-    {
-      id: "milestone-4",
-      title: "Workshop Execution",
-      description: "Conduct the digital skills training workshops",
-      status: "Upcoming",
-      dueDate: "2025-06-15",
-      project: "Digital Skills Workshop",
-      progress: 0,
-      tasks: {
-        total: 10,
-        completed: 0,
-      },
-    },
-    {
-      id: "milestone-5",
-      title: "Health Education Sessions",
-      description: "Deliver health education sessions to community members",
-      status: "Delayed",
-      dueDate: "2025-05-20",
-      project: "Community Health Outreach",
-      progress: 30,
-      tasks: {
-        total: 10,
-        completed: 3,
-      },
-    },
-  ]
+  // Fetch milestones data
+  const { data: milestones, isLoading, error } = useGetUserMilestonesQuery()
 
-  // Filter milestones based on search query and active tab
-  const filteredMilestones = milestones.filter((milestone) => {
-    const matchesSearch =
-      milestone.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      milestone.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      milestone.project.toLowerCase().includes(searchQuery.toLowerCase())
+  // Toggle project expansion
+  const toggleProject = (projectId: string) => {
+    setExpandedProjects((prev) => ({
+      ...prev,
+      [projectId]: !prev[projectId],
+    }))
+  }
 
-    if (activeTab === "all") return matchesSearch
-    if (activeTab === "upcoming") return matchesSearch && milestone.status === "Upcoming"
-    if (activeTab === "in-progress") return matchesSearch && milestone.status === "In Progress"
-    if (activeTab === "completed") return matchesSearch && milestone.status === "Completed"
-    if (activeTab === "delayed") return matchesSearch && milestone.status === "Delayed"
+  // Group and filter milestones
+  const groupedMilestones = useMemo(() => {
+    if (!milestones) return {}
 
-    return matchesSearch
-  })
+    // Filter milestones based on search query and active tab
+    const filteredMilestones = milestones.filter((milestone) => {
+      const matchesSearch =
+        milestone.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        milestone.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        false ||
+        milestone.project_details?.title.toLowerCase().includes(searchQuery.toLowerCase())
+
+      if (activeTab === "all") return matchesSearch
+      if (activeTab === "not_started") return matchesSearch && milestone.status === "pending"
+      if (activeTab === "in_progress") return matchesSearch && milestone.status === "in_progress"
+      if (activeTab === "completed") return matchesSearch && milestone.status === "completed"
+      if (activeTab === "delayed") return matchesSearch && milestone.status === "delayed"
+      if (activeTab === "overdue") return matchesSearch && milestone.is_overdue
+
+      return matchesSearch
+    })
+
+    // Group by project
+    const byProject: Record<string, any> = {}
+
+    filteredMilestones.forEach((milestone) => {
+      const projectId = milestone.project.toString()
+      const projectTitle = milestone.project_details?.title || `Project ${projectId}`
+
+      if (!byProject[projectId]) {
+        byProject[projectId] = {
+          id: projectId,
+          title: projectTitle,
+          milestones: {
+            not_started: [],
+            in_progress: [],
+            completed: [],
+            delayed: [],
+            overdue: [],
+          },
+        }
+      }
+
+      // Add milestone to appropriate status group
+      const status = milestone.is_overdue ? "overdue" : milestone.status
+      byProject[projectId].milestones[status].push(milestone)
+    })
+
+    return byProject
+  }, [milestones, searchQuery, activeTab])
 
   // Get status badge color
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, isOverdue: boolean) => {
+    if (isOverdue) return "bg-red-500 text-white"
+
     switch (status) {
-      case "Upcoming":
+      case "not_started":
         return "bg-blue-200 text-blue-800"
-      case "In Progress":
+      case "in_progress":
         return "bg-blue-500 text-white"
-      case "Completed":
+      case "completed":
         return "bg-green-500 text-white"
-      case "Delayed":
-        return "bg-red-500 text-white"
+      case "delayed":
+        return "bg-orange-500 text-white"
       default:
         return "bg-gray-200 text-gray-800"
+    }
+  }
+
+  // Format status for display
+  const formatStatus = (status: string, isOverdue: boolean) => {
+    if (isOverdue) return "Overdue"
+
+    switch (status) {
+      case "not_started":
+        return "Not Started"
+      case "in_progress":
+        return "In Progress"
+      case "completed":
+        return "Completed"
+      case "delayed":
+        return "Delayed"
+      default:
+        return status
     }
   }
 
@@ -137,12 +126,66 @@ export default function MilestonesPage() {
     return "bg-red-500"
   }
 
+  // Format due date
+  const formatDueDate = (dateString: string) => {
+    if (!dateString) return "No due date"
+
+    const date = new Date(dateString)
+    return `${date.toLocaleDateString()} (${formatDistanceToNow(date, { addSuffix: true })})`
+  }
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <Skeleton className="h-12 w-full mb-6" />
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="mb-6">
+            <CardHeader>
+              <Skeleton className="h-6 w-48 mb-2" />
+            </CardHeader>
+            <CardContent>
+              {[1, 2].map((j) => (
+                <div key={j} className="mb-4">
+                  <Skeleton className="h-24 w-full rounded-md" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-10">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
+          <h3 className="mt-2 text-lg font-medium text-gray-900">Error loading milestones</h3>
+          <p className="mt-1 text-gray-500">There was a problem loading your milestones. Please try again later.</p>
+          <Button className="mt-4" onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Milestone Tracking</h1>
-          <p className="text-gray-600">Track key milestones across all projects</p>
+          <p className="text-gray-600">Track key milestones across all your projects</p>
         </div>
         <Button className="bg-green-600 hover:bg-green-700">
           <Plus className="mr-2 h-4 w-4" /> New Milestone
@@ -161,64 +204,140 @@ export default function MilestonesPage() {
           />
         </div>
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 w-full md:w-auto">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full md:w-auto">
             <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-            <TabsTrigger value="in-progress">In Progress</TabsTrigger>
+            <TabsTrigger value="not_started">Not Started</TabsTrigger>
+            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
             <TabsTrigger value="delayed">Delayed</TabsTrigger>
+            <TabsTrigger value="overdue">Overdue</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        {filteredMilestones.length > 0 ? (
-          filteredMilestones.map((milestone) => (
-            <Card key={milestone.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-xl font-semibold">{milestone.title}</h3>
-                    <p className="text-gray-600">{milestone.description}</p>
+      {Object.keys(groupedMilestones).length > 0 ? (
+        Object.values(groupedMilestones).map((project: any) => (
+          <Collapsible
+            key={project.id}
+            className="mb-6"
+            open={expandedProjects[project.id] !== false} // Default to open
+            onOpenChange={() => toggleProject(project.id)}
+          >
+            <Card>
+              <CollapsibleTrigger className="w-full text-left">
+                <CardHeader className="flex flex-row items-center justify-between py-4">
+                  <CardTitle className="text-xl font-bold">{project.title}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{Object.values(project.milestones).flat().length} Milestones</Badge>
+                    <Button variant="ghost" size="sm">
+                      <Filter className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Badge className={`mt-2 md:mt-0 ${getStatusColor(milestone.status)}`}>{milestone.status}</Badge>
-                </div>
+                </CardHeader>
+              </CollapsibleTrigger>
 
-                <div className="mb-4">
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Progress</span>
-                    <span className="text-sm font-medium">{milestone.progress}%</span>
-                  </div>
-                  <Progress value={milestone.progress} className={getProgressColor(milestone.progress)} />
-                </div>
+              <CollapsibleContent>
+                <CardContent className="pt-0">
+                  {/* Status sections */}
+                  {(["not_started", "in_progress", "delayed", "overdue", "completed"] as const).map((status) => {
+                    const statusMilestones = project.milestones[status]
+                    if (statusMilestones.length === 0) return null
 
-                <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span>{milestone.project}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>Due: {new Date(milestone.dueDate).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="h-4 w-4 mr-1" />
-                    <span>
-                      {milestone.tasks.completed} of {milestone.tasks.total} tasks completed
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
+                    return (
+                      <div key={status} className="mb-6 last:mb-0">
+                        <h3 className="text-lg font-semibold mb-3">
+                          {status === "not_started"
+                            ? "Not Started"
+                            : status === "in_progress"
+                              ? "In Progress"
+                              : status === "overdue"
+                                ? "Overdue"
+                                : status.charAt(0).toUpperCase() + status.slice(1)}
+                          <Badge variant="outline" className="ml-2">
+                            {statusMilestones.length}
+                          </Badge>
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-4">
+                          {statusMilestones.map((milestone: any) => (
+                            <Card key={milestone.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                              <CardContent className="p-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                                  <div>
+                                    <h3 className="text-lg font-semibold">{milestone.title}</h3>
+                                    <p className="text-gray-600 text-sm line-clamp-2">
+                                      {milestone.description || "No description provided"}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    className={`mt-2 md:mt-0 ${getStatusColor(milestone.status, milestone.is_overdue)}`}
+                                  >
+                                    {formatStatus(milestone.status, milestone.is_overdue)}
+                                  </Badge>
+                                </div>
+
+                                <div className="mb-4">
+                                  <div className="flex justify-between mb-1">
+                                    <span className="text-sm font-medium">Progress</span>
+                                    <span className="text-sm font-medium">{milestone.completion_percentage}%</span>
+                                  </div>
+                                  <Progress
+                                    value={milestone.completion_percentage}
+                                    className={getProgressColor(milestone.completion_percentage)}
+                                  />
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-500">
+                                  <div className="flex items-center">
+                                    <Calendar className="h-4 w-4 mr-1" />
+                                    <span>Due: {formatDueDate(milestone.due_date)}</span>
+                                  </div>
+                                  {milestone.days_remaining !== undefined && (
+                                    <div className="flex items-center">
+                                      <Clock className="h-4 w-4 mr-1" />
+                                      <span>
+                                        {milestone.days_remaining > 0
+                                          ? `${milestone.days_remaining} days remaining`
+                                          : milestone.days_remaining === 0
+                                            ? "Due today"
+                                            : `${Math.abs(milestone.days_remaining)} days overdue`}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {milestone.assigned_to && milestone.assigned_to.length > 0 && (
+                                    <div className="flex items-center">
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      <span>{milestone.assigned_to.length} assignees</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-4 flex justify-end">
+                                  <Link href={`/dashboard/projects/${milestone.project}/milestones/${milestone.id}`}>
+                                    <Button variant="outline" size="sm">
+                                      View Details
+                                    </Button>
+                                  </Link>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </CardContent>
+              </CollapsibleContent>
             </Card>
-          ))
-        ) : (
-          <div className="text-center py-10">
-            <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No milestones found</h3>
-            <p className="mt-1 text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
-          </div>
-        )}
-      </div>
+          </Collapsible>
+        ))
+      ) : (
+        <div className="text-center py-10">
+          <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-lg font-medium text-gray-900">No milestones found</h3>
+          <p className="mt-1 text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+        </div>
+      )}
     </div>
   )
 }

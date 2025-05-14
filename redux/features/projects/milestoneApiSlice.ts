@@ -182,7 +182,11 @@ export const milestoneApiSlice = apiSlice.injectEndpoints({
           ? `/${project_api}/milestones/statistics/?project_id=${projectId}`
           : `/${project_api}/milestones/statistics/`,
     }),
+    getUserMilestones: builder.query<ProjectMilestone[], void>({
+      query: () => "/project_api/milestones/user-milestones/",
+    }),
   }),
+
 })
 
 export const {
@@ -208,4 +212,6 @@ export const {
 
   // Statistics
   useGetMilestoneStatisticsQuery,
+
+  useGetUserMilestonesQuery,
 } = milestoneApiSlice

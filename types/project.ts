@@ -307,6 +307,12 @@ export interface ProjectMilestone {
   project: number
   title: string
   description: string
+  project_details?: {
+    id: number
+    title: string
+    description: string
+    budget: number
+  }
   due_date: string
   completion_date?: string
   status: "pending" | "in_progress" | "completed" | "delayed" | "cancelled"

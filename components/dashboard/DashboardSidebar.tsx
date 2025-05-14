@@ -198,31 +198,6 @@ export default function DashboardSidebar() {
               </NavItem>
             </NavSection>
 
-            {/* Tasks Section - Role-based
-            <NavSection title="Tasks" name="tasks" icon={ListTodo}>
-              
-              <NavItem href="/dashboard/tasks" icon={ClipboardList}>
-                All Tasks
-              </NavItem>
-
-              <NavItem href="/dashboard/tasks/my-tasks" icon={CheckSquare}>
-                My Tasks
-              </NavItem>
-
-              
-              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/dashboard/tasks/overdue" icon={Clock}>
-                  Overdue Tasks
-                </NavItem>
-              )}
-
-              {(userRoles.isProjectManager || userRoles.isCeo || userRoles.isDBExecutive) && (
-                <NavItem href="/dashboard/tasks/blocked" icon={AlertTriangle}>
-                  Blocked Tasks
-                </NavItem>
-              )}
-            </NavSection>
-             */}
             {/* Only show Inventory section to specific roles */}
             {(userRoles.isDBAdmin && userRoles.isDBExecutive && userRoles.isCeo) && (
               <NavSection title="Inventory" name="inventory" icon={Package}>

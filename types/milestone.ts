@@ -7,6 +7,13 @@ export interface Milestone {
   due_date: string | null
   created_at: string
   updated_at: string
+  project_details: {
+    id: number
+    title: string
+    description: string
+    budget: number
+    status: string
+  }
 }
 
 export interface CreateMilestoneRequest {
