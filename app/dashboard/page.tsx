@@ -58,7 +58,6 @@ export default function DashboardPage() {
     if (expensesLoading || !expenseStats?.total_expenses) return 0
 
     const approved = expenseStats.total_expenses.approved || 0
-    const reimbursed = expenseStats.total_expenses.reimbursed || 0
     const total = expenseStats.total_expenses.total || 1 
     return Math.round(((approved) / total) * 100)
   }
