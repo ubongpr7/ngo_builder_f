@@ -172,7 +172,7 @@ export default function ProjectDetail() {
             
 
           {/* Edit Project Dialog */}
-          {(project &&(userRoles &&(userRoles.user_id === project.manager_details?.id || userRoles.is_DB_admin))) && (
+          {(project &&(userRoles && userRoles.kyc_status==='approved' &&(userRoles.user_id === project.manager_details?.id || userRoles.is_DB_admin))) && (
             <EditProjectDialog
               project={project}
               open={editProjectOpen}
