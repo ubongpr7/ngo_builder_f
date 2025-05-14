@@ -439,8 +439,8 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
 
           <ReimburseExpenseDialog
             expense={selectedExpense}
-            isOpen={reimburseExpenseOpen}
-            onClose={() => setReimburseExpenseOpen(false)}
+            open={reimburseExpenseOpen}
+            onOpenChange={setReimburseExpenseOpen}
             onSuccess={refetch}
           />
 
