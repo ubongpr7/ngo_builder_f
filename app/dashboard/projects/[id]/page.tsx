@@ -32,7 +32,9 @@ export default function ProjectDetail() {
     customCheck:(user) => user.user_id === project?.manager_details?.id,
   })
   const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
-    
+  const isTeamMember = usePermissions(userRoles,{ requiredRoles:[],requireKYC:true,
+    customCheck:(user) => !!project?.team_members?.some((member) => member?.id === user.user_id),
+  })
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -241,11 +243,11 @@ export default function ProjectDetail() {
         </TabsContent>
 
         <TabsContent value="milestones" className="space-y-4">
-          <ProjectMilestones projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
+          <ProjectMilestones projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
         </TabsContent>
 
         <TabsContent value="updates" className="space-y-4">
-          <ProjectUpdates projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} />
+          <ProjectUpdates projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
         </TabsContent>
 
         <TabsContent value="expenses" className="space-y-4">

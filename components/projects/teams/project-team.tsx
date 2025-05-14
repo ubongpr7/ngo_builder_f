@@ -52,9 +52,10 @@ interface ProjectTeamProps {
   projectId: number
   isManager?: boolean
   is_DB_admin?: boolean
+  isTeamMember?: boolean
 }
 
-export function ProjectTeam({ projectId, isManager, is_DB_admin }: ProjectTeamProps) {
+export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectTeamProps) {
   const { data: teamMembers = [], isLoading, refetch } = useGetProjectTeamQuery(projectId)
   const [deleteTeamMember, { isLoading: isDeleting }] = useDeleteTeamMemberMutation()
   const [changeRole, { isLoading: isChangingRole }] = useChangeTeamMemberRoleMutation()
@@ -334,10 +335,13 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin }: ProjectTeamPr
                     <Mail className="mr-2 h-4 w-4" />
                     Contact
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => openRoleDialog(member)}>
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Edit Role
-                  </Button>
+                  {isManager && (
+                    <Button variant="outline" size="sm" onClick={() => openRoleDialog(member)}>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Edit Role
+                    </Button>
+
+                  )}
                 </CardFooter>
               </Card>
             )

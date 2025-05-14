@@ -37,9 +37,10 @@ interface ProjectUpdatesProps {
   projectId: number
   isManager?: boolean
   is_DB_admin?: boolean
+  isTeamMember?: boolean
 }
 
-export function ProjectUpdates({ projectId, isManager, is_DB_admin }: ProjectUpdatesProps) {
+export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectUpdatesProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")

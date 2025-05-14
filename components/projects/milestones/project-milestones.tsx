@@ -40,9 +40,10 @@ interface ProjectMilestonesProps {
   projectId: number
   isManager?: boolean
   is_DB_admin?: boolean
+  isTeamMember?: boolean
 }
 
-export function ProjectMilestones({ projectId, isManager, is_DB_admin }: ProjectMilestonesProps) {
+export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMember  }: ProjectMilestonesProps) {
   const { data: milestones = [], isLoading, refetch } = useGetMilestonesByProjectQuery(projectId)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
@@ -148,7 +149,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
             <BarChart className="mr-2 h-4 w-4" />
             {showStats ? "Hide Statistics" : "Show Statistics"}
           </Button>
-          {(isManager || is_DB_admin) && (
+          {(isManager || is_DB_admin || isTeamMember) && (
             <AddEditMilestoneDialog
               projectId={projectId}
               onSuccess={handleSuccess}
@@ -197,7 +198,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                 ? "No milestones match your search criteria. Try a different search term."
                 : "No milestones have been created for this project yet."}
             </p>
-            {(isManager || is_DB_admin )&& (
+            {(isManager || is_DB_admin || isTeamMember )&& (
               <AddEditMilestoneDialog
                 projectId={projectId}
                 onSuccess={handleSuccess}
@@ -287,6 +288,8 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                 )}
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
+              {(isManager || is_DB_admin || isTeamMember) && (
+                  
                 <AssignUsersMilestoneDialog
                   milestone={milestone}
                   onSuccess={handleSuccess}
@@ -298,6 +301,8 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                   }
                   projectId={projectId}
                 />
+              )}
+              {(isManager || is_DB_admin || isTeamMember) && (
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -331,7 +336,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                     )}
 
                     <DropdownMenuSeparator />
-                    {(isManager || is_DB_admin) && (
 
                       <AddEditMilestoneDialog
                         projectId={projectId}
@@ -344,7 +348,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                           </DropdownMenuItem>
                         }
                       />
-                    )}
 
                     <DeleteMilestoneDialog
                       milestone={milestone}
@@ -361,7 +364,10 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin }: Project
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>
+              )}
+
               </CardFooter>
+
             </Card>
           ))}
         </div>
