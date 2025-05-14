@@ -239,7 +239,7 @@ export default function DashboardSidebar() {
             </NavSection>
              */}
             {/* Only show Inventory section to specific roles */}
-            {(userRoles.isDBAdmin || userRoles.isDBExecutive || userRoles.isCeo) && (
+            {(userRoles.isDBAdmin && userRoles.isDBExecutive && userRoles.isCeo) && (
               <NavSection title="Inventory" name="inventory" icon={Package}>
                 <NavItem href="/dashboard/inventory" icon={BarChart3}>
                   Overview
