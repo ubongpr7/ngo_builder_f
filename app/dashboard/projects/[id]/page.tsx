@@ -30,7 +30,7 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState("overview")
   const {data:userRoles} = useGetLoggedInProfileRolesQuery()
   const isManager = usePermissions(userRoles,{ requiredRoles:['is_ceo'],requireKYC:true,
-    // customCheck:(user) => user.user_id === project?.manager_details?.id,
+    customCheck:(user) => user.user_id === project?.manager_details?.id,
   })
   const is_DB_admin = usePermissions(userRoles,{ requiredRoles:['is_DB_admin'],requireKYC:true,})
   const isTeamMember = usePermissions(userRoles,{ requiredRoles:[],requireKYC:true,
@@ -158,7 +158,7 @@ export default function ProjectDetail() {
         </div>
         <div className="flex flex-wrap gap-2">
           
-          {isManager || is_DB_admin && (
+           {/*isManager || is_DB_admin && (*/}
             <EditProjectDialog 
               project={project} 
               trigger={
@@ -168,7 +168,6 @@ export default function ProjectDetail() {
                 </Button>
               }
             />
-          )}
         </div>
       </div>
 
