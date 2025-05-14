@@ -167,20 +167,7 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
-          <Button variant="outline">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Add Comment
-          </Button>
 
-          {/* Edit Project Button - Only show for managers and admins */}
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setEditProjectOpen(true)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Project
-            </Button>
 
           {/* Edit Project Dialog */}
           {project && (
