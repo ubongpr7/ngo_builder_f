@@ -222,36 +222,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions Section */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/dashboard/projects/new">
-            <Button variant="outline" className="w-full justify-start">
-              <FileText className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </Link>
-          <Link href="/dashboard/expenses/new">
-            <Button variant="outline" className="w-full justify-start">
-              <DollarSign className="mr-2 h-4 w-4" />
-              Add Expense
-            </Button>
-          </Link>
-          <Link href="/dashboard/updates/new">
-            <Button variant="outline" className="w-full justify-start">
-              <Clock className="mr-2 h-4 w-4" />
-              Daily Update
-            </Button>
-          </Link>
-          <Link href="/dashboard/team">
-            <Button variant="outline" className="w-full justify-start">
-              <Users className="mr-2 h-4 w-4" />
-              Manage Team
-            </Button>
-          </Link>
-        </div>
-      </div>
     </div>
   )
 }
