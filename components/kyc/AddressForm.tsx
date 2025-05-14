@@ -84,6 +84,25 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
       }))
     : []
 
+  // Get placeholder text based on parent field state and loading state
+  const getRegionPlaceholder = () => {
+    if (isLoadingRegions) return "Loading regions..."
+    if (!formData.country) return "Select country first"
+    return "Select region"
+  }
+
+  const getSubregionPlaceholder = () => {
+    if (isLoadingSubregions) return "Loading subregions..."
+    if (!formData.region) return "Select region first"
+    return "Select subregion"
+  }
+
+  const getCityPlaceholder = () => {
+    if (isLoadingCities) return "Loading cities..."
+    if (!formData.subregion) return "Select subregion first"
+    return "Select city"
+  }
+
   // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -165,7 +184,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
                 city: null,
               })
             }}
-            placeholder={isLoadingCountries ? "Loading countries..." : "Select your country"}
+            placeholder={isLoadingCountries ? "Loading countries..." : "Select country"}
             isDisabled={isLoadingCountries}
             error={errors.country}
             isSearchable
@@ -188,9 +207,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
                 city: null,
               })
             }}
-            placeholder={
-              isLoadingRegions ? "Loading regions..." : !formData.country ? "Select country first" : "Select region"
-            }
+            placeholder={getRegionPlaceholder()}
             isDisabled={isLoadingRegions || !formData.country}
             error={errors.region}
             isSearchable
@@ -212,13 +229,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
                 city: null,
               })
             }}
-            placeholder={
-              isLoadingSubregions
-                ? "Loading subregions..."
-                : !formData.region
-                  ? "Select region first"
-                  : "Select subregion"
-            }
+            placeholder={getSubregionPlaceholder()}
             isDisabled={isLoadingSubregions || !formData.region}
             error={errors.subregion}
             isSearchable
@@ -238,9 +249,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
                 city: option ? Number(option.value) : null,
               })
             }}
-            placeholder={
-              isLoadingCities ? "Loading cities..." : !formData.subregion ? "Select subregion first" : "Select city"
-            }
+            placeholder={getCityPlaceholder()}
             isDisabled={isLoadingCities || !formData.subregion}
             error={errors.city}
             isSearchable
