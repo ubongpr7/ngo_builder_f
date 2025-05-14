@@ -259,30 +259,33 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                     <Badge className={getRoleBadgeColor(member.role)}>
                       {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                     </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => openRoleDialog(member)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Change Role
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openExtendDialog(member)}>
-                          <Clock className="mr-2 h-4 w-4" />
-                          {member.end_date ? "Change End Date" : "Add End Date"}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteMember(member.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Remove Member
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {isManager && (
+                    
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => openRoleDialog(member)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Change Role
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openExtendDialog(member)}>
+                            <Clock className="mr-2 h-4 w-4" />
+                            {member.end_date ? "Change End Date" : "Add End Date"}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteMember(member.id)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Remove Member
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
