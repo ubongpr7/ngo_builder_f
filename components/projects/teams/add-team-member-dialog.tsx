@@ -34,7 +34,21 @@ const formSchema = z.object({
     required_error: "Please select a join date",
   }),
   end_date: z.date().optional(),
-})
+
+}).refine((data) => {
+  // If end_date is provided, it must be after join_date
+  if (data.end_date && data.join_date) {
+    return data.end_date >= data.join_date;
+  }
+  return true; 
+}, {
+  message: "End date cannot be earlier than join date",
+  path: ["end_date"],
+});
+
+
+
+
 
 interface AddTeamMemberDialogProps {
   projectId: number
