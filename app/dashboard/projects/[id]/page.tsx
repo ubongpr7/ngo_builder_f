@@ -169,10 +169,7 @@ export default function ProjectDetail() {
         <div className="flex flex-wrap gap-2">
 
           {/* Edit Project Button - Only show for managers and admins */}
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setEditProjectOpen(true)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Project
-            </Button>
+            
 
           {/* Edit Project Dialog */}
           {project && (

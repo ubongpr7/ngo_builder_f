@@ -126,10 +126,13 @@ export function EditProjectDialog({
     try {
       // Format dates to ISO string format (YYYY-MM-DD)
       const formattedData = {
-        ...data,
         id: project.id,
-        start_date: format(data.start_date, "yyyy-MM-dd"),
-        target_end_date: format(data.target_end_date, "yyyy-MM-dd"),
+        data:{
+          ...data,
+          start_date: format(data.start_date, "yyyy-MM-dd"),
+          target_end_date: format(data.target_end_date, "yyyy-MM-dd"),
+
+        }
       }
 
       await updateProject(formattedData).unwrap()
