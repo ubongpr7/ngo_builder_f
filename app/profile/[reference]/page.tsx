@@ -66,7 +66,7 @@ export default function ProfilePage() {
     if (!profile) return []
 
     // Use profile_data for roles
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     const roles = []
     if (profileData.is_standard_member) roles.push("Standard Member")
@@ -124,7 +124,7 @@ export default function ProfilePage() {
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     if (profileData.is_kyc_verified) {
       return {
@@ -225,23 +225,8 @@ export default function ProfilePage() {
                   {getInitials(profileData)}
                 </AvatarFallback>
               </Avatar>
-
-              {/* Verification badge on avatar
-              {verification.isVerified && (
-                <div className="absolute -top-50 -right-0 bg-white rounded-full p-0.5 shadow-md">
-                  <Shield className="h-5 w-5 text-green-600" />
-                </div>
-              )}
-               */}
-
               <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                <ProfileImageUploaderButton
-                  absolute={false}
-                  onSuccess={() => refetch()}
-                  profileId={profileData.id}
-                  userId={userProfile.id}
-                  currentImage={profileData.profile_image}
-                />
+                
               </div>
             </div>
             <CardTitle className="text-xl sm:text-2xl font-bold">
