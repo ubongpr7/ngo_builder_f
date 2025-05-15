@@ -274,7 +274,7 @@ export default function KYCFormContainer({
     }
 
     // Check roles completion - only for unverified users
-    if (!isKycVerified ) {
+    if (isKycVerified ) {
       completedSteps.push(3)
     }
 
