@@ -41,7 +41,7 @@ export default function ProfilePage() {
     if (!profile) return 0
 
     // Use profile_data for completeness calculation
-    const profileData = profile.profile_data || profile
+    const profileData = profile
 
     const requiredFields = [
       profileData.first_name,
@@ -67,7 +67,7 @@ export default function ProfilePage() {
     if (!profile) return []
 
     // Use profile_data for roles
-    const profileData = profile.profile_data || profile
+    const profileData = profile
 
     const roles = []
     if (profileData.is_standard_member) roles.push("Standard Member")
@@ -92,7 +92,16 @@ export default function ProfilePage() {
   }
 
   // Format address
-  const formatAddress = (address: AddressFormData) => {
+  interface Address {
+    street_number?: string
+    street?: string
+    city?: string | { name: string }
+    subregion?: string | { name: string }
+    region?: string | { name: string }
+    country?: string | { name: string }
+    postal_code?: string
+  }
+  const formatAddress = (address:Address) => {
     if (!address) return "No address provided"
 
     const parts = []

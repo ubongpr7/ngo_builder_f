@@ -89,9 +89,17 @@ export default function ProfilePage() {
 
     return roles
   }
+  interface Address {
+    street_number?: string
+    street?: string
+    city?: string | { name: string }
+    subregion?: string | { name: string }
+    region?: string | { name: string }
+    country?: string | { name: string }
+    postal_code?: string
+  }
 
-  // Format address
-  const formatAddress = (address: AddressFormData) => {
+  const formatAddress = (address: Address) => {
     if (!address) return "No address provided"
 
     const parts = []
