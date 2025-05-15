@@ -265,18 +265,16 @@ export default function KYCFormContainer({
   useEffect(() => {
     const completedSteps: number[] = []
 
-    // Check personal info completion
     if (formState.personalInfo.first_name && formState.personalInfo.last_name && formState.personalInfo.date_of_birth) {
       completedSteps.push(isKycVerified ? 1 : 1)
     }
 
-    // Check expertise completion
     if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
       completedSteps.push(isKycVerified ? 2 : 2)
     }
 
     // Check roles completion - only for unverified users
-    if (!isKycVerified && userProfile?.is_project_manager !== undefined) {
+    if (!isKycVerified ) {
       completedSteps.push(3)
     }
 
