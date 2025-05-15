@@ -176,7 +176,6 @@ export function UserProfileDialog({
       }
     }
 
-    // If the user has submitted KYC but not yet verified
     if (
       profileData?.id_document_type &&
       profileData?.id_document_number &&
