@@ -120,7 +120,6 @@ export default function ProfilePage() {
     return parts.join(", ")
   }
 
-  // Get initials for avatar fallback
   const getInitials = (profile: UserProfile) => {
     if (!profile) return "U"
 
@@ -130,7 +129,6 @@ export default function ProfilePage() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "U"
   }
 
-  // Get verification status
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 

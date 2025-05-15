@@ -15,7 +15,7 @@ export interface CustomField {
   name: string
   type: "text" | "number" | "date" | "select" | "boolean"
   value: string | number | boolean | Date | null
-  options?: string[] // For select type
+  options?: string[]
 }
 
 export interface MaintenanceRecord {
