@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { useGetPreviewInProfileRolesQuery, useGetUserLoggedInProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -82,7 +81,6 @@ export default function ProfilePage() {
     if (profileData.is_regional_head) roles.push("Regional Head")
     if (profileData.is_project_manager) roles.push("Project Manager")
 
-    // If role_summary exists, use it instead
     if (profileData.role_summary && profileData.role_summary.length > 0) {
       return profileData.role_summary
     }
@@ -202,11 +200,12 @@ export default function ProfilePage() {
   }
 
   if (error) {
+    
     return (
       <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle></AlertTitle>
           <AlertDescription>Failed to load profile data. Please try again later.</AlertDescription>
         </Alert>
       </div>
