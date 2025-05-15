@@ -134,7 +134,7 @@ export default function ProfilePage() {
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     if (profileData.is_kyc_verified) {
       return {
@@ -275,7 +275,6 @@ export default function ProfilePage() {
                 </Badge>
               ))}
 
-              {/* Enhanced verification badge */}
               <VerificationBadge
                 isVerified={verification.isVerified}
                 verificationStatus={verification.status}
@@ -434,7 +433,7 @@ export default function ProfilePage() {
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item) => (
+                      {profileData.expertise_details.map((item: { id: number; name: string }) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>
