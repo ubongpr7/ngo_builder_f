@@ -19,9 +19,8 @@ import { useParams } from "next/navigation"
 
 export default function ProfilePage() {
   const { reference } = useParams()
-    const userReference = Number(reference)
   const [isEditing, setIsEditing] = useState(false)
-  const { data: userProfile, isLoading, error, refetch } = useGetPreviewInProfileRolesQuery(userReference)
+  const { data: userProfile, isLoading, error, refetch } = useGetPreviewInProfileRolesQuery(reference)
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Not available"
@@ -41,7 +40,7 @@ export default function ProfilePage() {
   const calculateProfileCompleteness = (profile: UserProfile) => {
     if (!profile) return 0
 
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     const requiredFields = [
       profileData.first_name,
