@@ -18,7 +18,7 @@ export const userProfileReading = apiSlice.injectEndpoints({
   }),
   
   getPreviewInProfileRoles: builder.query({
-    query: (reference) => `/${management_api}/user-profiles/${reference}/`,
+    query: (reference) => `/${management_api}/preview-profiles/${reference}/`,
   }),
 
 }),
