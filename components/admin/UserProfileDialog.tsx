@@ -63,7 +63,7 @@ export function UserProfileDialog({
     if (!profile) return 0
 
     // Use profile_data for completeness calculation
-    const profileData = profile?.profile_data || profile
+    const profileData = profile
 
     const requiredFields = [
       profileData?.first_name,
@@ -89,7 +89,7 @@ export function UserProfileDialog({
     if (!profile) return []
 
     // Use profile_data for roles
-    const profileData = profile.profile_data || profile
+    const profileData = profile
 
     const roles = []
     if (profileData?.is_standard_member) roles.push("Standard Member")
@@ -112,9 +112,16 @@ export function UserProfileDialog({
 
     return roles
   }
-
-  // Format address
-  const formatAddress = (address: AddressFormData) => {
+  interface Address {
+    street_number?: string
+    street?: string
+    city?: string | { name: string }
+    subregion?: string | { name: string }
+    region?: string | { name: string }
+    country?: string | { name: string }
+    postal_code?: string
+  }
+  const formatAddress = (address:Address ) => {
     if (!address) return "No address provided"
 
     const parts = []
@@ -147,7 +154,7 @@ export function UserProfileDialog({
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
-    const profileData = profile.profile_data || profile
+    const profileData = profile 
 
     if (profileData?.is_kyc_verified) {
       return {
@@ -179,7 +186,6 @@ export function UserProfileDialog({
       return { isVerified: false, status: "pending" }
     }
 
-    // If the user's verification was rejected
     if (profileData?.kyc_rejection_reason) {
       return {
         isVerified: false,
@@ -188,17 +194,14 @@ export function UserProfileDialog({
       }
     }
 
-    // Default: not verified
     return { isVerified: false, status: "unverified" }
   }
 
-  // Handle dialog close
   const handleClose = () => {
     setIsOpen(false)
     setActiveTab("personal")
   }
 
-  // Check if KYC documents are complete
   const hasCompletedKYC = (profile: UserProfile) => {
     if (!profile) return false
 
@@ -457,7 +460,7 @@ export function UserProfileDialog({
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData?.expertise_details && profileData?.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData?.expertise_details.map((item) => (
+                      {profileData?.expertise_details.map((item:{ name: string , id: number }) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item?.name}
                         </Badge>

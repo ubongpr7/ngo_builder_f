@@ -61,32 +61,25 @@ export default function KYCVerificationPage() {
     )
   }
 
-  // Fetch KYC stats
   const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
 
-  // Fetch KYC submissions based on active tab
   const { data: profiles, isLoading: isLoadingProfiles, refetch } = useGetKYCSubmissionsByStatusQuery(activeTab)
 
-  // Search functionality
   const { data: searchResults, isLoading: isLoadingSearch } = useSearchKYCSubmissionsQuery(searchTerm, {
     skip: !searchTerm,
   })
 
-  // Mutations for verification actions
   const [verifyKYC, { isLoading: isVerifying }] = useVerifyKYCMutation()
   const [bulkVerifyKYC, { isLoading: isBulkVerifying }] = useBulkVerifyKYCMutation()
   const [sendKYCReminder, { isLoading: isSendingReminder }] = useSendKYCReminderMutation()
 
-  // Get display data based on search or active tab
   const displayProfiles = searchTerm ? searchResults : profiles
 
-  // Reset selected profiles when tab changes or profiles change
   useEffect(() => {
     setSelectedProfiles([])
     setSelectAll(false)
   }, [activeTab, profiles])
 
-  // Handle tab change
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     setSearchTerm("")
@@ -112,7 +105,6 @@ export default function KYCVerificationPage() {
     }
   }
 
-  // Handle individual profile selection for bulk actions
   const handleProfileSelection = (profileId: number, checked: boolean) => {
     if (checked) {
       setSelectedProfiles([...selectedProfiles, profileId])
@@ -122,12 +114,10 @@ export default function KYCVerificationPage() {
     }
   }
 
-  // Handle verification change
   const handleVerificationChange = () => {
     refetch()
   }
 
-  // Handle sending KYC reminder
   const handleSendReminder = async (userId: number) => {
     try {
       const response = await sendKYCReminder(userId).unwrap()
@@ -145,19 +135,15 @@ export default function KYCVerificationPage() {
     }
   }
 
-  // Handle edit profile button click
   const handleEditProfile = (profileId: number) => {
     setSelectedProfileForEdit(profileId)
     setShowVerificationDialog(true)
   }
 
-  // Handle verification success
   const handleVerificationSuccess = (profileData: any) => {
     setEditedProfileData(profileData)
-    // The dialog will automatically switch to the edit view
   }
 
-  // Handle profile edit completion
   const handleProfileEditComplete = () => {
     setShowVerificationDialog(false)
     setSelectedProfileForEdit(null)
@@ -170,7 +156,6 @@ export default function KYCVerificationPage() {
     })
   }
 
-  // Handle bulk action dialog
   const handleBulkActionDialog = (action: "approve" | "reject" | "flag" | "mark_scammer") => {
     if (selectedProfiles.length === 0) {
       toast({
@@ -204,7 +189,6 @@ export default function KYCVerificationPage() {
     setShowBulkDialog(true)
   }
 
-  // Handle bulk action submission
   const handleBulkAction = async () => {
     if (bulkAction === "") return
 
@@ -244,7 +228,6 @@ export default function KYCVerificationPage() {
     }
   }
 
-  // Handle individual verification actions
   const handleVerification = async (
     profileId: number,
     action: "approve" | "reject" | "flag" | "mark_scammer",
@@ -275,13 +258,11 @@ export default function KYCVerificationPage() {
     }
   }
 
-  // Format date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A"
     return new Date(dateString).toLocaleDateString()
   }
 
-  // Get initials for avatar
   const getInitials = (name: string) => {
     return name
       ?.split(" ")
@@ -290,7 +271,6 @@ export default function KYCVerificationPage() {
       ?.toUpperCase()
   }
 
-  // Get status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
