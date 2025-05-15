@@ -267,50 +267,42 @@ export default function KYCFormContainer({
 
     // Check personal info completion
     if (formState.personalInfo.first_name && formState.personalInfo.last_name && formState.personalInfo.date_of_birth) {
-      completedSteps.push(1)
+      completedSteps.push(isKycVerified ? 1 : 1)
     }
 
     // Check expertise completion
     if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
-      completedSteps.push(2)
+      completedSteps.push(isKycVerified ? 2 : 2)
     }
 
-    // For verified users, automatically mark step 3 as completed since it's skipped
-    if (isKycVerified) {
-      completedSteps.push(3)
-    }
-    // For unverified users, check roles completion
-    else if (userProfile?.is_project_manager !== undefined) {
+    // Check roles completion - only for unverified users
+    if (!isKycVerified && userProfile?.is_project_manager !== undefined) {
       completedSteps.push(3)
     }
 
     // Check professional info completion
     if (userProfile?.industry) {
-      completedSteps.push(isKycVerified ? 4 : 4)
+      completedSteps.push(isKycVerified ? 3 : 4)
     }
 
     // Check address completion
     if (formState.address.country && formState.address.city) {
-      completedSteps.push(isKycVerified ? 5 : 5)
+      completedSteps.push(isKycVerified ? 4 : 5)
     }
 
     // Check contact info completion
     if (formState.contactInfo.phone_number) {
-      completedSteps.push(isKycVerified ? 6 : 6)
+      completedSteps.push(isKycVerified ? 5 : 6)
     }
 
-    // For verified users, automatically mark step 7 as completed since it's skipped
-    if (isKycVerified) {
-      completedSteps.push(7)
-    }
-    // For unverified users, check identity verification completion
-    else if (userProfile?.id_document_type && userProfile?.id_document_number) {
+    // Check identity verification completion - only for unverified users
+    if (!isKycVerified && userProfile?.id_document_type && userProfile?.id_document_number) {
       completedSteps.push(7)
     }
 
     // Check profile image completion
     if (userProfile?.profile_image) {
-      completedSteps.push(isKycVerified ? 8 : 8)
+      completedSteps.push(isKycVerified ? 6 : 8)
     }
 
     // Update form state with completed steps
@@ -405,25 +397,25 @@ export default function KYCFormContainer({
     <div className="container mx-auto py-6 sm:py-10 px-4">
       <Card className="max-w-4xl mx-auto">
         <CardHeader className="text-center px-4 sm:px-6">
-          <CardTitle className="text-xl sm:text-2xl"> Profile Update</CardTitle>
-        
+          <CardTitle className="text-xl sm:text-2xl"> Profile Settings</CardTitle>
+          
           {isKycVerified && (
             <Alert className="mt-4 bg-blue-50 border border-blue-200">
               <AlertCircle className="h-4 w-4 text-blue-500" />
               <span className="ml-2 text-sm text-blue-700">
-                Update profile information,
+                Update  Profile Information
               </span>
             </Alert>
           )}
 
           <div className="sm:hidden mt-6">
             <div className="flex justify-center gap-8 mb-2 items-start">
-              {Array.from({ length: isKycVerified ? 3 : 5 }).map((_, index) => {
-                const stepNumber = index + 1
-                return (
-                  <div key={stepNumber} className="flex flex-col items-center">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full 
+              {isKycVerified
+                ? // For verified users, show only the steps we need
+                  [1, 2, 3, 4, 5].map((stepNumber) => (
+                    <div key={stepNumber} className="flex flex-col items-center">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full 
                       ${
                         isStepCompleted(stepNumber)
                           ? "bg-green-600 text-white"
@@ -431,23 +423,38 @@ export default function KYCFormContainer({
                             ? "bg-green-100 border-2 border-green-600 text-green-600"
                             : "bg-gray-100 text-gray-400"
                       }`}
-                    >
-                      {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                      >
+                        {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                      </div>
+                      <span className="text-xs mt-1">Step {stepNumber}</span>
                     </div>
-                    <span className="text-xs mt-1">
-                      {isKycVerified && stepNumber > 2 ? `Step ${stepNumber + 1}` : `Step ${stepNumber}`}
-                    </span>
-                  </div>
-                )
-              })}
+                  ))
+                : // For unverified users, show all steps
+                  [1, 2, 3, 4, 5].map((stepNumber) => (
+                    <div key={stepNumber} className="flex flex-col items-center">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full 
+                      ${
+                        isStepCompleted(stepNumber)
+                          ? "bg-green-600 text-white"
+                          : formState.currentStep === stepNumber
+                            ? "bg-green-100 border-2 border-green-600 text-green-600"
+                            : "bg-gray-100 text-gray-400"
+                      }`}
+                      >
+                        {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                      </div>
+                      <span className="text-xs mt-1">Step {stepNumber}</span>
+                    </div>
+                  ))}
             </div>
             <div className="flex justify-left gap-5">
-              {Array.from({ length: isKycVerified ? 3 : 3 }).map((_, index) => {
-                const stepNumber = isKycVerified ? index + 4 : index + 6
-                return (
-                  <div key={stepNumber} className="flex flex-col items-center ml-2">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full 
+              {isKycVerified
+                ? // Just one more step for verified users
+                  [6].map((stepNumber) => (
+                    <div key={stepNumber} className="flex flex-col items-center ml-2">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full 
                       ${
                         isStepCompleted(stepNumber)
                           ? "bg-green-600 text-white"
@@ -455,40 +462,36 @@ export default function KYCFormContainer({
                             ? "bg-green-100 border-2 border-green-600 text-green-600"
                             : "bg-gray-100 text-gray-400"
                       }`}
-                    >
-                      {isStepCompleted(stepNumber) ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : isKycVerified ? (
-                        stepNumber - 1
-                      ) : (
-                        stepNumber
-                      )}
+                      >
+                        {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                      </div>
+                      <span className="text-xs mt-1">Step {stepNumber}</span>
                     </div>
-                    <span className="text-xs mt-1">
-                      {isKycVerified ? `Step ${stepNumber - 1}` : `Step ${stepNumber}`}
-                    </span>
-                  </div>
-                )
-              })}
+                  ))
+                : // Last three steps for unverified users
+                  [6, 7, 8].map((stepNumber) => (
+                    <div key={stepNumber} className="flex flex-col items-center ml-2">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full 
+                      ${
+                        isStepCompleted(stepNumber)
+                          ? "bg-green-600 text-white"
+                          : formState.currentStep === stepNumber
+                            ? "bg-green-100 border-2 border-green-600 text-green-600"
+                            : "bg-gray-100 text-gray-400"
+                      }`}
+                      >
+                        {isStepCompleted(stepNumber) ? <CheckCircle className="h-4 w-4" /> : stepNumber}
+                      </div>
+                      <span className="text-xs mt-1">Step {stepNumber}</span>
+                    </div>
+                  ))}
             </div>
           </div>
 
           <div className="hidden sm:flex justify-between items-center mt-6 px-2">
             {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
               const stepNumber = index + 1
-
-              // For verified users, we need to adjust the display
-              const displayNumber = isKycVerified
-                ? stepNumber <= 2
-                  ? stepNumber
-                  : stepNumber > 3
-                    ? stepNumber - 1
-                    : null
-                : stepNumber
-
-              // Skip rendering step 3 for verified users
-              if (isKycVerified && stepNumber === 3) return null
-
               return (
                 <div key={stepNumber} className="flex flex-col items-center">
                   <div
@@ -501,9 +504,9 @@ export default function KYCFormContainer({
                           : "bg-gray-100 text-gray-400"
                     }`}
                   >
-                    {isStepCompleted(stepNumber) ? <CheckCircle className="h-5 w-5" /> : displayNumber}
+                    {isStepCompleted(stepNumber) ? <CheckCircle className="h-5 w-5" /> : stepNumber}
                   </div>
-                  <span className="text-xs mt-1">Step {displayNumber}</span>
+                  <span className="text-xs mt-1">Step {stepNumber}</span>
                 </div>
               )
             })}
