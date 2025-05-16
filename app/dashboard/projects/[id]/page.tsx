@@ -92,7 +92,7 @@ export default function ProjectDetail() {
     // Calculate based on budget utilization if available
     if (project.funds_spent && project.budget) {
       const budgetProgress = (project.funds_spent / project.budget) * 100
-      return Math.min(budgetProgress, 100)
+      return Math.min(budgetProgress, 100).toFixed(2)
     }
 
     // Calculate based on timeline
