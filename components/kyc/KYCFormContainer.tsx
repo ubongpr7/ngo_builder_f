@@ -68,7 +68,7 @@ export default function KYCFormContainer({
   )
 
   // Check if user is KYC verified
-  const isKycVerified = userProfile?.is_kyc_verified
+  const isKycVerified = userProfile?.is_kyc_verified && userProfile?.kyc_status === "approved"
 
   // Determine total steps and step order based on verification status
   const TOTAL_STEPS = isKycVerified ? 6 : 8
@@ -258,7 +258,7 @@ export default function KYCFormContainer({
     if (step === 6) return 5 // contact-info becomes 5
     if (step === 8) return 6 // profile-image becomes 6
 
-    return 0 // Invalid step for verified users (roles or identity-verification)
+    return 0
   }
 
   // Calculate completed steps and set current step
@@ -280,7 +280,7 @@ export default function KYCFormContainer({
     }
 
     // Check professional info completion
-    if (userProfile?.industry) {
+    if (formState.professionalInfo.organization && formState.professionalInfo.position && formState.professionalInfo?.industry) {
       completedSteps.push(isKycVerified ? 3 : 4)
     }
 
