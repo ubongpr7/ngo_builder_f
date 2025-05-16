@@ -192,9 +192,12 @@ export default function DashboardSidebar() {
               <NavItem href="/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
               </NavItem>
-              <NavItem href="/dashboard/projects/propose" icon={FileText}>
-                  Assets
-                </NavItem>
+              { (userRoles.isCeo && userRoles.isKycVerified) && (
+                <NavItem href="/dashboard/projects/propose" icon={FileText}>
+                    Submit Project Proposal
+                  </NavItem>
+
+              )}
                 
 
             </NavSection>
