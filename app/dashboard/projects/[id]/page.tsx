@@ -183,15 +183,7 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
-
-          <Button variant="outline">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Add Comment
-          </Button>
+          
 
 
           {/* Show approval buttons for admins when project is submitted */}
