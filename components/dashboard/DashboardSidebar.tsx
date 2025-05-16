@@ -198,6 +198,11 @@ export default function DashboardSidebar() {
                   </NavItem>
 
               )}
+              {userRoles.isDBAdmin&& (
+                <NavItem href="/dashboard/projects/submitted" icon={Users}>
+                  Submitted Projects
+                </NavItem>
+              )}
                 
 
             </NavSection>
