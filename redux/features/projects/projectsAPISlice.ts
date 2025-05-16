@@ -61,7 +61,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 
         const queryString = queryParams.toString()
         return {
-          url: `/projects/${queryString ? `?${queryString}` : ""}`,
+          url: `/${projects_api}/projects/${queryString ? `?${queryString}` : ""}`,
           method: "GET",
         }
       },
