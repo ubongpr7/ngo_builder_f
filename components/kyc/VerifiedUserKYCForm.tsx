@@ -315,14 +315,12 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
         <CardHeader className="text-center px-4 sm:px-6">
           <CardTitle className="text-xl sm:text-2xl">Profile Settings</CardTitle>
           <CardDescription className="text-sm sm:text-base">Update your profile information</CardDescription>
-
-          <Alert className="mt-4 bg-blue-50 border border-blue-200">
-            <AlertCircle className="h-4 w-4 text-blue-500" />
-            <span className="ml-2 text-sm text-blue-700">
-              Your KYC status is approved. You can update your profile information, but you cannot change your roles or
-              identity verification details.
-            </span>
-          </Alert>
+          <div className="mt-4">
+            <Alert variant="info" className="text-sm">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Please ensure all information is accurate and up-to-date.
+            </Alert>
+          </div>
 
           {/* Mobile step indicators */}
           <div className="sm:hidden mt-6">

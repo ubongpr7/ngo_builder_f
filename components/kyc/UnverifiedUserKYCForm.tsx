@@ -326,12 +326,14 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
     <div className="container mx-auto py-6 sm:py-10 px-4">
       <Card className="max-w-4xl mx-auto">
         <CardHeader className="text-center px-4 sm:px-6">
-          <CardTitle className="text-xl sm:text-2xl">Complete Your Profile</CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Please provide your information to complete your membership registration
-          </CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Profile Settings</CardTitle>
+          <div className="mt-4">
+            <Alert variant="info" className="text-sm">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Please ensure all information is accurate and up-to-date.
+            </Alert>
+          </div>
 
-          {/* Mobile step indicators */}
           <div className="sm:hidden mt-6">
             <div className="flex justify-center gap-8 mb-2 items-start">
               {[1, 2, 3, 4, 5].map((stepNumber) => (

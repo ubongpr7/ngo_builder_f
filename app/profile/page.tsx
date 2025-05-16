@@ -213,7 +213,6 @@ export default function ProfilePage() {
     )
   }
 
-  // Extract profile data, handling both direct and nested structures
   const profile = userProfile
   const profileData = profile.profile_data || profile
   const completeness = calculateProfileCompleteness(profile)
