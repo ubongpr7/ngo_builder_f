@@ -149,7 +149,7 @@ export default function ProjectDetail() {
   const progress = calculateProgress()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mt-1 mb-2">
       {/* Project Header */}
       <div className="flex flex-col lg:flex-row justify-between gap-4">
         <div>
