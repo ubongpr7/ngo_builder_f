@@ -15,15 +15,12 @@ interface AdminProjectProposalsProps {
   limit?: number
 }
 
-export function AdminProjectProposals({ limit }: AdminProjectProposalsProps) {
+export default function AdminProjectProposals() {
   const { toast } = useToast()
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const isAdmin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
-
   const [processingIds, setProcessingIds] = useState<number[]>([])
-
-  // Fetch only submitted projects
-  const { data: projects = [], isLoading, refetch } = useGetProjectsQuery({ status: "submitted", limit })
+  const { data: projects = [], isLoading, refetch } = useGetProjectsQuery({ status: "submitted", limit: 10 })
   const [updateProject] = useUpdateProjectMutation()
 
   if (!isAdmin) {
