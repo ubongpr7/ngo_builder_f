@@ -216,10 +216,10 @@ export default function DashboardPage() {
                         <div className="flex gap-4">
                           <div className="text-black bg-purple-100 p-2 rounded text-center min-w-[60px]">
                             <div className="text-sm font-bold">
-                              {formatDate( project?.start_date?.toString()).split(" ")[0]}
+                              {formatDate(project.created_at || project.start_date).split(" ")[0]}
                             </div>
                             <div className="text-xl font-bold">
-                              {formatDate(project?.start_date?.toString()).split(" ")[1]}
+                              {formatDate(project.created_at || project.start_date).split(" ")[1]}
                             </div>
                           </div>
                           <div>
