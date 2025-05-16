@@ -280,7 +280,7 @@ export default function KYCFormContainer({
     }
 
     // Check professional info completion
-    if (formState.professionalInfo.organization && formState.professionalInfo.position && formState.professionalInfo?.industry) {
+    if (formState.professionalInfo.industry) {
       completedSteps.push(isKycVerified ? 3 : 4)
     }
 
