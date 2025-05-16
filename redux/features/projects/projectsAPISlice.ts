@@ -7,7 +7,14 @@ import type {
   ProjectStatistics, 
   UpdateStatistics 
 } from "@/types/project"
-
+interface GetProjectsParams {
+  status?: string
+  limit?: number
+  page?: number
+  search?: string
+  category?: string
+  manager?: string
+}
 const projects_api = "project_api"
 
 export const projectsApiSlice = apiSlice.injectEndpoints({
@@ -39,6 +46,26 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
     }),
     getAllProjects: builder.query({
       query: () => `/${projects_api}/projects/`,
+    }),
+    getProjects: builder.query<Project[], GetProjectsParams>({
+      query: (params) => {
+        // Build query string from params
+        const queryParams = new URLSearchParams()
+
+        if (params.status) queryParams.append("status", params.status)
+        if (params.limit) queryParams.append("limit", params.limit.toString())
+        if (params.page) queryParams.append("page", params.page.toString())
+        if (params.search) queryParams.append("search", params.search)
+        if (params.category) queryParams.append("category", params.category)
+        if (params.manager) queryParams.append("manager", params.manager)
+
+        const queryString = queryParams.toString()
+        return {
+          url: `/projects/${queryString ? `?${queryString}` : ""}`,
+          method: "GET",
+        }
+      },
+      
     }),
 
     getProjectById: builder.query<Project, number>({
@@ -137,21 +164,7 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${projects_api}/updates/${id}/`,
     }),
 
-    createProjectUpdate: builder.mutation({
-      query: (data) => ({
-        url: `/${projects_api}/updates/`,
-        method: "POST",
-        body: data,
-      }),
-    }),
 
-    updateProjectUpdate: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/${projects_api}/updates/${id}/`,
-        method: "PATCH",
-        body: data,
-      }),
-    }),
 
     deleteProjectUpdate: builder.mutation({
       query: (id) => ({
@@ -232,18 +245,6 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
 
 
     
-    getProjectExpenses: builder.query({
-      query: (projectId) => `/projects/${projectId}/expenses`,
-    }),
-    getProjectAssets: builder.query({
-      query: (projectId) => `/projects/${projectId}/assets`,
-    }),
-    getProjectComments: builder.query({
-      query: (projectId) => `/projects/${projectId}/comments`,
-    }),
-    getProjectDocuments: builder.query<any[], string | string[]>({
-      query: (projectId) => `/projects/${projectId}/documents`,
-    }),
 
   }),
 })
@@ -258,7 +259,7 @@ export const {
   useGetManagedProjectsQuery,
   useGetProjectsCategoriesQuery,
   useGetProjectStatisticsQuery,
-  
+  useGetProjectsQuery, 
   // Project mutations
   useCreateProjectMutation,
   useUpdateProjectMutation,
@@ -278,8 +279,6 @@ export const {
   useGetProjectUpdateSummaryQuery,
   
   // Project update mutations
-  useCreateProjectUpdateMutation,
-  useUpdateProjectUpdateMutation,
   useDeleteProjectUpdateMutation,
   
   // Project media queries
@@ -295,10 +294,4 @@ export const {
   useDeleteProjectMediaMutation,
   useBulkUploadMediaMutation,
 
-  // Project team, milestones, expenses, assets, comments, documents queries
-  useGetProjectExpensesQuery,
-  useGetProjectAssetsQuery,
-  useGetProjectCommentsQuery,
-  useGetProjectDocumentsQuery,
-  
 } = projectsApiSlice

@@ -192,6 +192,10 @@ export default function DashboardSidebar() {
               <NavItem href="/dashboard/projects/milestones" icon={Calendar}>
                 Milestones
               </NavItem>
+              <NavItem href="/dashboard/projects/propose" icon={FileText}>
+                  Assets
+                </NavItem>
+                
 
             </NavSection>
 
@@ -203,6 +207,7 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/inventory/assets" icon={Package}>
                   Assets
                 </NavItem>
+                
                 
               </NavSection>
             )}
