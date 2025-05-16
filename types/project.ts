@@ -27,9 +27,9 @@ export interface Project {
   id: number
   title: string
   description: string | null
-  start_date: string | null
+  start_date: string | ''
   completion_percentage?: number
-  end_date: string | null
+  end_date: string | ''
   created_by: UserData
   created_at: string
   days_remaining: number
@@ -61,7 +61,7 @@ export interface Project {
   manager?: ProjectUser
   tasks?: Task[]
   milestones?: Milestone[]
-  status: "planned" | "in_progress" | "completed" | "on_hold" | "cancelled"
+  status: "planned" | "in_progress" | "active" | "completed" | "on_hold" | "cancelled"| "waiting_for_approval"| "submitted"
   is_overbudget?: boolean
 }
 

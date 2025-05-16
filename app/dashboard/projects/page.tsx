@@ -35,6 +35,7 @@ export default function ProjectManagement() {
       const statusMap: Record<string, string> = {
         active: "active",
         planning: "upcoming",
+        submitted: "waiting_for_approval",
         on_hold: "upcoming",
         completed: "completed",
         cancelled: "completed",
@@ -82,7 +83,9 @@ export default function ProjectManagement() {
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="waiting_for_approval">Waiting for Approval</TabsTrigger>
             <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

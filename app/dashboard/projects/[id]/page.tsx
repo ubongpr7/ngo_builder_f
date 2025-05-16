@@ -7,13 +7,27 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Calendar, MapPin, FileText, Briefcase, AlertTriangle, MessageSquare, Loader2, Edit } from "lucide-react"
+import {
+  Calendar,
+  MapPin,
+  FileText,
+  Briefcase,
+  AlertTriangle,
+  MessageSquare,
+  Loader2,
+  Edit,
+  CheckCircle,
+  XCircle,
+} from "lucide-react"
 
 import { ProjectOverview } from "@/components/projects/project-overview"
 import { ProjectTeam } from "@/components/projects/teams/project-team"
 import { ProjectMilestones } from "@/components/projects/milestones/project-milestones"
 import { ProjectUpdates } from "@/components/projects/updates/project-updates"
 import { ProjectExpenses } from "@/components/projects/expenses/project-expenses"
+// import { ProjectAssets } from "@/components/projects/project-assets"
+// import { ProjectComments } from "@/components/projects/project-comments"
+// import { ProjectDocuments } from "@/components/projects/project-documents"
 
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
@@ -73,7 +87,7 @@ export default function ProjectDetail() {
   // Calculate project progress
   const calculateProgress = () => {
     if (project.status === "completed") return 100
-    if (project.status === "planned" || project.status === "cancelled") return 0
+    if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
 
     // Calculate based on budget utilization if available
     if (project.funds_spent && project.budget) {
@@ -108,6 +122,8 @@ export default function ProjectDetail() {
         return "bg-gray-100 text-gray-800 border-gray-300"
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-300"
+      case "submitted":
+        return "bg-purple-100 text-purple-800 border-purple-300"
       default:
         return "bg-gray-100 text-gray-800 border-gray-300"
     }
@@ -167,21 +183,49 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button variant="outline">
+            <FileText className="mr-2 h-4 w-4" />
+            Export Report
+          </Button>
 
-          {/* Edit Project Button - Only show for managers and admins */}
-            
+          <Button variant="outline">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            Add Comment
+          </Button>
 
-          {/* Edit Project Dialog */}
-          {(project &&(userRoles && userRoles.kyc_status==='approved' &&(userRoles.user_id === project.manager_details?.id || userRoles.is_DB_admin))) && (
-            <EditProjectDialog
-              project={project}
-              open={editProjectOpen}
-              onOpenChange={setEditProjectOpen}
-              onSuccess={refreshProject}
-            />
+          {/* Only show Edit button for non-submitted projects or for admins */}
+          {((project.status !== "submitted" && isManager) || is_DB_admin) && (
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setEditProjectOpen(true)}>
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Project
+            </Button>
+          )}
+
+          {/* Show approval buttons for admins when project is submitted */}
+          {project.status === "submitted" && is_DB_admin && (
+            <>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Approve
+              </Button>
+              <Button className="bg-red-600 hover:bg-red-700 text-white">
+                <XCircle className="mr-2 h-4 w-4" />
+                Reject
+              </Button>
+            </>
           )}
         </div>
       </div>
+
+      {/* Edit Project Dialog */}
+      {project && (isManager || is_DB_admin) && (
+        <EditProjectDialog
+          project={project}
+          open={editProjectOpen}
+          onOpenChange={setEditProjectOpen}
+          onSuccess={refreshProject}
+        />
+      )}
 
       {/* Progress Card */}
       <Card>
@@ -198,7 +242,9 @@ export default function ProjectDetail() {
                   ? "Project completed"
                   : project.status === "planned"
                     ? "Project in planning phase"
-                    : `${progress}% complete based on timeline and budget`}
+                    : project.status === "submitted"
+                      ? "Project proposal awaiting approval"
+                      : `${progress}% complete based on timeline and budget`}
               </p>
             </div>
 
@@ -229,6 +275,60 @@ export default function ProjectDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {project.status === "submitted" && (
+        <div className="bg-purple-50 border border-purple-200 rounded-md p-4 flex items-start">
+          <div className="flex-shrink-0">
+            <svg
+              className="h-5 w-5 text-purple-600"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3 flex-1">
+            <h3 className="text-sm font-medium text-purple-800">Project Proposal Submitted</h3>
+            <div className="mt-1 text-sm text-purple-700">
+              <p>
+                This project proposal is awaiting administrative approval. Once approved, you'll be able to start
+                planning and implementation.
+              </p>
+            </div>
+            {is_DB_admin && (
+              <div className="mt-4">
+                <div className="flex space-x-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                    onClick={() => {
+                      // Handle approval logic here
+                    }}
+                  >
+                    Approve Proposal
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-300 text-red-700 hover:bg-red-50"
+                    onClick={() => {
+                      // Handle rejection logic here
+                    }}
+                  >
+                    Reject Proposal
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Project Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -277,7 +377,7 @@ export default function ProjectDetail() {
             isTeamMember={isTeamMember}
           />
         </TabsContent>
-        {/*}
+        {/* Commented out tabs
         <TabsContent value="assets" className="space-y-4">
           <ProjectAssets projectId={projectId} />
         </TabsContent>
