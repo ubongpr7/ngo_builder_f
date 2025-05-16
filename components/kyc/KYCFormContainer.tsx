@@ -70,7 +70,6 @@ export default function KYCFormContainer({
   // Check if user is KYC verified
   const isKycVerified = userProfile?.is_kyc_verified && userProfile?.kyc_status === "approved"
 
-  // Determine total steps and step order based on verification status
   const TOTAL_STEPS = isKycVerified ? 6 : 8
   const STEP_ORDER = isKycVerified ? STEP_ORDER_VERIFIED : STEP_ORDER_UNVERIFIED
 
@@ -262,88 +261,105 @@ export default function KYCFormContainer({
   }
 
   // Calculate completed steps and set current step
-// Update the useEffect to use formState for professional info check
-useEffect(() => {
-  const completedSteps: number[] = [];
+  useEffect(() => {
+    const completedSteps: number[] = []
 
-  if (formState.personalInfo.first_name && formState.personalInfo.last_name && formState.personalInfo.date_of_birth) {
-    completedSteps.push(1); // Always step 1
-  }
-
-  if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
-    completedSteps.push(2); // Always step 2
-  }
-
-  // Check roles completion - only for unverified users and if roles are selected
-  if (!isKycVerified) {
-    const hasRoles = Object.values(formState.roles).some(role => role);
-    if (hasRoles) {
-      completedSteps.push(3);
-    }
-  }
-
-  // Check professional info completion based on formState
-  if (formState.professionalInfo.industry) {
-    completedSteps.push(isKycVerified ? 3 : 4);
-  }
-
-  // Check address completion
-  if (formState.address.country && formState.address.city) {
-    completedSteps.push(isKycVerified ? 4 : 5);
-  }
-
-  // Check contact info completion
-  if (formState.contactInfo.phone_number) {
-    completedSteps.push(isKycVerified ? 5 : 6);
-  }
-
-  // Check identity verification completion - only for unverified users
-  if (!isKycVerified && formState.identityVerification.id_document_type && formState.identityVerification.id_document_number) {
-    completedSteps.push(7);
-  }
-
-  // Check profile image completion based on userProfile (updated after refetch)
-  if (userProfile?.profile_image) {
-    completedSteps.push(isKycVerified ? 6 : 8);
-  }
-
-  // Update form state with completed steps
-  setFormState((prev) => {
-    const nextIncompleteStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS);
-    if (nextIncompleteStep !== prev.currentStep) {
-      setActiveTab(STEP_ORDER[nextIncompleteStep]);
-    }
-    return {
-      ...prev,
-      completedSteps,
-      currentStep: nextIncompleteStep,
-    };
-  });
-}, [formState, userProfile, isKycVerified, TOTAL_STEPS]);
-
-// Correct handleStepComplete navigation
-const handleStepComplete = (step: number) => {
-  setFormState((prev) => {
-    const completedSteps = [...prev.completedSteps];
-    if (!completedSteps.includes(step)) {
-      completedSteps.push(step);
+    if (formState.personalInfo.first_name && formState.personalInfo.last_name && formState.personalInfo.date_of_birth) {
+      completedSteps.push(isKycVerified ? 1 : 1)
     }
 
-    let nextStep = step < TOTAL_STEPS ? step + 1 : step;
-
-    if (!isKycVerified) {
-      setActiveTab(STEP_ORDER_UNVERIFIED[nextStep]);
-    } else {
-      setActiveTab(STEP_ORDER_VERIFIED[nextStep]);
+    if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
+      completedSteps.push(isKycVerified ? 2 : 2)
     }
 
-    return {
-      ...prev,
-      currentStep: nextStep,
-      completedSteps,
-    };
-  });
-};
+    if (!isKycVerified ) {
+      completedSteps.push(3)
+      
+    }
+
+    // Check professional info completion
+    if (formState.professionalInfo?.industry) {
+      completedSteps.push(isKycVerified ? 3 : 4)
+    }
+    // if (formState.professionalInfo?.industry && isKycVerified) {
+    //   completedSteps.push( 3 )
+    // }
+
+    // Check address completion
+    if (formState.address.country && formState.address.city) {
+      completedSteps.push(isKycVerified ? 4 : 5)
+    }
+
+    // Check contact info completion
+    if (formState.contactInfo.phone_number) {
+      completedSteps.push(isKycVerified ? 5 : 6)
+    }
+
+    // Check identity verification completion - only for unverified users
+    if (!isKycVerified && userProfile?.id_document_type && userProfile?.id_document_number) {
+      completedSteps.push(7)
+    }
+
+    // Check profile image completion
+    if (userProfile?.profile_image) {
+      completedSteps.push(isKycVerified ? 6 : 8)
+    }
+
+    // Update form state with completed steps
+    setFormState((prev) => {
+      const nextIncompleteStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
+
+      // Only update active tab if it's a new step
+      if (nextIncompleteStep !== prev.currentStep) {
+        setActiveTab(STEP_ORDER[nextIncompleteStep])
+      }
+
+      return {
+        ...prev,
+        completedSteps,
+        currentStep: nextIncompleteStep,
+      }
+    })
+  }, [
+    formState.personalInfo,
+    formState.expertise,
+    formState.address,
+    formState.contactInfo,
+    userProfile,
+    isKycVerified,
+    TOTAL_STEPS,
+  ])
+
+  // Handle step complete
+  const handleStepComplete = (step: number) => {
+    setFormState((prev) => {
+      const completedSteps = [...prev.completedSteps]
+      if (!completedSteps.includes(step)) {
+        completedSteps.push(step)
+      }
+
+      // Determine next step based on verification status
+      let nextStep = step < TOTAL_STEPS ? step + 1 : step
+
+      // For non-verified users, ensure we're using the correct step order
+      if (!isKycVerified) {
+        setActiveTab(STEP_ORDER_UNVERIFIED[nextStep])
+      } else {
+        // For verified users, we need to map the step to the verified step order
+        // Skip roles (3) and identity verification (7) steps
+        if (nextStep === 3) nextStep = 4 // Skip roles
+        if (nextStep === 7) nextStep = 8 // Skip identity verification
+        setActiveTab(STEP_ORDER_VERIFIED[mapStepForVerifiedUser(nextStep)])
+      }
+
+      return {
+        ...prev,
+        currentStep: nextStep,
+        completedSteps,
+      }
+    })
+  }
+
   // Update form data
   const updateFormData = (section: keyof KYCFormState, data: any) => {
     setFormState((prev) => ({
