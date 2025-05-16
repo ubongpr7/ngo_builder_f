@@ -194,7 +194,7 @@ export default function DashboardSidebar() {
               </NavItem>
               { (userRoles.isCeo && userRoles.isKycVerified) && (
                 <NavItem href="/dashboard/projects/propose" icon={FileText}>
-                    Submit Project Proposal
+                    Propose New Project
                   </NavItem>
 
               )}
