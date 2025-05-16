@@ -193,13 +193,6 @@ export default function ProjectDetail() {
             Add Comment
           </Button>
 
-          {/* Only show Edit button for non-submitted projects or for admins */}
-          {((project.status !== "submitted" && isManager) || is_DB_admin) && (
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setEditProjectOpen(true)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Project
-            </Button>
-          )}
 
           {/* Show approval buttons for admins when project is submitted */}
           {project.status === "submitted" && is_DB_admin && (
