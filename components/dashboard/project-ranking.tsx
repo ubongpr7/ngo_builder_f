@@ -17,7 +17,6 @@ interface ProjectRankingProps {
 
 export function ProjectRanking({ projects, isLoading = false, onRefresh }: ProjectRankingProps) {
   const rankedProjects = rankProjectsByMilestones(projects)
-  console.log("Ranked Projects", projects)
 
   return (
     <Card>

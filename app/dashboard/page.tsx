@@ -20,7 +20,7 @@ import { AnalyticsSection } from "@/components/dashboard/analytics-section"
 export default function DashboardPage() {
   // Fetch data from our API endpoints
   const { data: projectStatistics, isLoading: statsLoading, refetch: refreshStats } = useGetProjectStatisticsQuery()
-
+  console.log("Project Statistics", projectStatistics)
   const { data: projectsData, isLoading: projectsLoading } = useGetAllProjectsQuery("")
   const { data: milestoneStats, isLoading: milestonesLoading } = useGetMilestoneStatisticsQuery()
   const { data: expenseStats, isLoading: expensesLoading } = useGetExpenseStatisticsQuery()
