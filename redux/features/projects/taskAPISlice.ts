@@ -6,11 +6,11 @@ const task_api = "task_api"
 export const taskApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Basic CRUD operations
-    getAllTasks: builder.query<Task[], void>({
+    getAllTasks: builder.query({
       query: () => `/${task_api}/tasks/`,
     }),
 
-    getTaskById: builder.query<Task, number>({
+    getTaskById: builder.query({
       query: (id) => `/${task_api}/tasks/${id}/`,
     }),
 
@@ -30,7 +30,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    deleteTask: builder.mutation<void, number>({
+    deleteTask: builder.mutation({
       query: (id) => ({
         url: `/${task_api}/tasks/${id}/`,
         method: "DELETE",
@@ -38,24 +38,24 @@ export const taskApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Filtered queries
-    getTasksByProject: builder.query<Task[], number>({
+    getTasksByProject: builder.query({
       query: (projectId) => `/${task_api}/tasks/by_project/?project_id=${projectId}`,
     }),
 
-    getTasksByMilestone: builder.query<Task[], number>({
+    getTasksByMilestone: builder.query({
       query: (milestoneId) => `/${task_api}/tasks/by_milestone/?milestone_id=${milestoneId}`,
     }),
 
-    getTasksByUser: builder.query<Task[], number | void>({
+    getTasksByUser: builder.query({
       query: (userId) =>
         userId ? `/${task_api}/tasks/by_user/?user_id=${userId}` : `/${task_api}/tasks/by_user/`,
     }),
 
-    getSubtasks: builder.query<Task[], number>({
+    getSubtasks: builder.query({
       query: (parentId) => `/${task_api}/tasks/?parent_id=${parentId}`,
     }),
 
-    getTopLevelTasks: builder.query<Task[], number | void>({
+    getTopLevelTasks: builder.query({
       query: (projectId) => {
         let url = `/${task_api}/tasks/?parent_id=null`
         if (projectId) {
@@ -200,7 +200,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Task tree (hierarchical view)
-    getTaskTree: builder.query<Task[], number | void>({
+    getTaskTree: builder.query({
       query: (projectId) => {
         let url = `/${task_api}/tasks/tree/`
         if (projectId) {

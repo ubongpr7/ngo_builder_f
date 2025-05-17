@@ -22,7 +22,7 @@ interface SelectOption {
 }
 
 export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarProps) {
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [localFilters, setLocalFilters] = useState<any>(currentFilters)
 
   // Status options for react-select
@@ -62,7 +62,7 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
 
   const applyFilters = () => {
     onFilterChange(localFilters)
-    setOpen(false)
+    setIsOpen(false)
   }
 
   const resetFilters = () => {
@@ -72,11 +72,11 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
     }
     setLocalFilters(baseFilters)
     onFilterChange(baseFilters)
-    setOpen(false)
+    setIsOpen(false)
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
           <Filter className="h-4 w-4 mr-1" /> Filter
