@@ -34,10 +34,10 @@ import {
   useUpdateTaskMutation,
   useDeleteTaskMutation,
 } from "@/redux/features/projects/taskAPISlice"
-import { CreateTaskDialog } from "./create-task-dialog"
-import { EditTaskDialog } from "./edit-task-dialog"
-import { AssignUsersDialog } from "./assign-users-dialog"
-import { TaskFilterBar } from "./task-filter-bar"
+import { CreateTaskDialog } from "../task/create-task-dialog"
+import { EditTaskDialog } from "../task/edit-task-dialog"
+import { AssignUsersDialog } from "../task/assign-users-dialog"
+import { TaskFilterBar } from "../task//task-filter-bar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
