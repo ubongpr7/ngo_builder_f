@@ -410,7 +410,7 @@ export default function ProfilePage() {
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item) => (
+                      {profileData.expertise_details.map((item:{name:string, id:number}) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>
