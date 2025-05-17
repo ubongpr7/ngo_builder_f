@@ -1,4 +1,4 @@
-import { UserProfile } from "@/components/interfaces/profile"
+import type { UserProfile } from "@/components/interfaces/profile"
 import { apiSlice } from "../../services/apiSlice"
 
 const management_api = "profile_api"
@@ -84,6 +84,16 @@ export interface VerifyEditCodeResponse {
   profile: UserProfile
 }
 
+// Geographic filter interface
+export interface GeoFilterParams {
+  country_id?: number
+  region_id?: number
+  subregion_id?: number
+  geo_search?: string
+  kyc_status?: string
+  search?: string
+}
+
 export const kycApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getKYCStats: builder.query<KYCStats, void>({
@@ -119,7 +129,15 @@ export const kycApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Get KYC documents for a specific profile
+    // Filter KYC submissions by geographic data
+    filterKYCSubmissions: builder.query<KYCProfile[], GeoFilterParams>({
+      query: (params) => ({
+        url: `/${management_api}/user-profiles/`,
+        method: "GET",
+        params,
+      }),
+    }),
+
     getKYCDocuments: builder.query<KYCDocuments, number>({
       query: (profileId) => ({
         url: `/${management_api}/user-profiles/${profileId}/kyc_documents/`,
@@ -144,11 +162,11 @@ export const kycApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-      sendKYCReminder: builder.mutation<{ success: boolean; message: string }, number>({
-        query: (profileId) => ({
-          url: `/${management_api}/user-profiles/${profileId}/send_kyc_reminder/`,
-          method: "POST",
-        }),
+    sendKYCReminder: builder.mutation<{ success: boolean; message: string }, number>({
+      query: (profileId) => ({
+        url: `/${management_api}/user-profiles/${profileId}/send_kyc_reminder/`,
+        method: "POST",
+      }),
     }),
     requestEditCode: builder.mutation<RequestEditCodeResponse, number>({
       query: (profileId) => ({
@@ -164,7 +182,6 @@ export const kycApiSlice = apiSlice.injectEndpoints({
       }),
     }),
   }),
-
 })
 
 export const {
@@ -172,12 +189,11 @@ export const {
   useGetAllKYCSubmissionsQuery,
   useGetKYCSubmissionsByStatusQuery,
   useSearchKYCSubmissionsQuery,
+  useFilterKYCSubmissionsQuery,
   useGetKYCDocumentsQuery,
   useVerifyKYCMutation,
   useBulkVerifyKYCMutation,
   useSendKYCReminderMutation,
   useRequestEditCodeMutation,
   useVerifyEditCodeMutation,
-  
 } = kycApiSlice
-
