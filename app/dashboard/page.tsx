@@ -57,6 +57,16 @@ export default function KYCVerificationPage() {
   const [selectedProfileForEdit, setSelectedProfileForEdit] = useState<number | null>(null)
   const [editedProfileData, setEditedProfileData] = useState<any>(null)
 
+  // Local state for tab counts to ensure they update immediately
+  const [localStats, setLocalStats] = useState<{
+    pending: number
+    approved: number
+    rejected: number
+    flagged: number
+    scammer: number
+    total: number
+  } | null>(null)
+
   // Geographic filtering state
   const [showFilters, setShowFilters] = useState(false)
   const [geoSearch, setGeoSearch] = useState("")
@@ -121,7 +131,14 @@ export default function KYCVerificationPage() {
     ]
   }, [subregions])
 
-  const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
+  const { data: kycStats, isLoading: isLoadingStats, refetch: refetchStats } = useGetKYCStatsQuery()
+
+  // Initialize local stats from API data
+  useEffect(() => {
+    if (kycStats && !localStats) {
+      setLocalStats(kycStats)
+    }
+  }, [kycStats, localStats])
 
   // Build filter params
   const filterParams = useMemo<GeoFilterParams>(() => {
@@ -189,6 +206,8 @@ export default function KYCVerificationPage() {
     } else {
       refetchByStatus()
     }
+    // Always refetch stats to update tab counts
+    refetchStats()
   }
 
   useEffect(() => {
@@ -256,6 +275,29 @@ export default function KYCVerificationPage() {
 
   const handleVerificationChange = () => {
     refetch()
+  }
+
+  // Update local stats when a verification status changes
+  const updateLocalStats = (fromStatus: string, toStatus: string, count = 1) => {
+    if (!localStats) return
+
+    const newStats = { ...localStats }
+
+    // Decrease count from original status
+    if (fromStatus === "pending") newStats.pending -= count
+    else if (fromStatus === "approved") newStats.approved -= count
+    else if (fromStatus === "rejected") newStats.rejected -= count
+    else if (fromStatus === "flagged") newStats.flagged -= count
+    else if (fromStatus === "scammer") newStats.scammer -= count
+
+    // Increase count in new status
+    if (toStatus === "pending") newStats.pending += count
+    else if (toStatus === "approved") newStats.approved += count
+    else if (toStatus === "rejected") newStats.rejected += count
+    else if (toStatus === "flagged") newStats.flagged += count
+    else if (toStatus === "scammer") newStats.scammer += count
+
+    setLocalStats(newStats)
   }
 
   const handleSendReminder = async (userId: number) => {
@@ -346,6 +388,17 @@ export default function KYCVerificationPage() {
         reason: bulkReason,
       }).unwrap()
 
+      // Update local stats for bulk actions
+      if (activeTab === "pending" && bulkAction === "approve") {
+        updateLocalStats("pending", "approved", selectedProfiles.length)
+      } else if (activeTab === "pending" && bulkAction === "reject") {
+        updateLocalStats("pending", "rejected", selectedProfiles.length)
+      } else if (activeTab === "pending" && bulkAction === "flag") {
+        updateLocalStats("pending", "flagged", selectedProfiles.length)
+      } else if (activeTab === "pending" && bulkAction === "mark_scammer") {
+        updateLocalStats("pending", "scammer", selectedProfiles.length)
+      }
+
       toast({
         title: "Success",
         description: response.message,
@@ -379,6 +432,19 @@ export default function KYCVerificationPage() {
           reason,
         },
       }).unwrap()
+
+      // Update local stats immediately
+      if (activeTab === "pending") {
+        if (action === "approve") {
+          updateLocalStats("pending", "approved")
+        } else if (action === "reject") {
+          updateLocalStats("pending", "rejected")
+        } else if (action === "flag") {
+          updateLocalStats("pending", "flagged")
+        } else if (action === "mark_scammer") {
+          updateLocalStats("pending", "scammer")
+        }
+      }
 
       toast({
         title: "Success",
@@ -466,6 +532,10 @@ export default function KYCVerificationPage() {
       cursor: "pointer",
     }),
   }
+
+  // Use local stats if available, otherwise use API stats
+  const displayStats = localStats ||
+    kycStats || { pending: 0, approved: 0, rejected: 0, flagged: 0, scammer: 0, total: 0 }
 
   return (
     <div className="container mx-auto py-10 px-4">
@@ -665,13 +735,13 @@ export default function KYCVerificationPage() {
       <Tabs defaultValue="pending" value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-8">
           <TabsTrigger value="pending">
-            Pending {!isLoadingStats && <Badge className="ml-2 bg-yellow-500">{kycStats?.pending || 0}</Badge>}
+            Pending {!isLoadingStats && <Badge className="ml-2 bg-yellow-500">{displayStats.pending || 0}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="approved">
-            Verified {!isLoadingStats && <Badge className="ml-2 bg-green-500">{kycStats?.approved || 0}</Badge>}
+            Verified {!isLoadingStats && <Badge className="ml-2 bg-green-500">{displayStats.approved || 0}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            Rejected {!isLoadingStats && <Badge className="ml-2 bg-red-500">{kycStats?.rejected || 0}</Badge>}
+            Rejected {!isLoadingStats && <Badge className="ml-2 bg-red-500">{displayStats.rejected || 0}</Badge>}
           </TabsTrigger>
         </TabsList>
 
@@ -894,6 +964,9 @@ export default function KYCVerificationPage() {
                                           action: "approve",
                                         },
                                       }).unwrap()
+
+                                      // Update local stats immediately
+                                      updateLocalStats("pending", "approved")
 
                                       toast({
                                         title: "Success",
