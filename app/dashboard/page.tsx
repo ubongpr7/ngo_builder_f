@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag, Mail, Edit, Filter, X } from "lucide-react"
+import Select from "react-select"
 import {
   useGetKYCStatsQuery,
   useGetKYCSubmissionsByStatusQuery,
@@ -35,8 +36,13 @@ import {
 import { useGetCountriesQuery, useGetRegionsQuery, useGetSubregionsQuery } from "@/redux/features/common/typeOF"
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
 import { VerificationCodeDialog } from "@/components/admin/VerificationCodeDialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+
+// Define option type for react-select
+interface SelectOption {
+  value: string
+  label: string
+}
 
 export default function KYCVerificationPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -80,6 +86,40 @@ export default function KYCVerificationPage() {
   const { data: subregions } = useGetSubregionsQuery(selectedRegion || 0, {
     skip: !selectedRegion,
   })
+
+  // Convert data to react-select options
+  const countryOptions: SelectOption[] = useMemo(() => {
+    if (!countries) return []
+    return [
+      { value: "all", label: "All Countries" },
+      ...countries.map((country) => ({
+        value: country.id.toString(),
+        label: country.name,
+      })),
+    ]
+  }, [countries])
+
+  const regionOptions: SelectOption[] = useMemo(() => {
+    if (!regions) return []
+    return [
+      { value: "all", label: "All Regions" },
+      ...regions.map((region) => ({
+        value: region.id.toString(),
+        label: region.name,
+      })),
+    ]
+  }, [regions])
+
+  const subregionOptions: SelectOption[] = useMemo(() => {
+    if (!subregions) return []
+    return [
+      { value: "all", label: "All Subregions" },
+      ...subregions.map((subregion) => ({
+        value: subregion.id.toString(),
+        label: subregion.name,
+      })),
+    ]
+  }, [subregions])
 
   const { data: kycStats, isLoading: isLoadingStats } = useGetKYCStatsQuery()
 
@@ -390,6 +430,43 @@ export default function KYCVerificationPage() {
 
   const isLoading = isLoadingProfiles || isLoadingSearch || isLoadingFiltered
 
+  // Custom styles for react-select
+  const selectStyles = {
+    control: (base: any) => ({
+      ...base,
+      minHeight: "36px",
+      borderRadius: "0.375rem",
+      borderColor: "#e2e8f0",
+      boxShadow: "none",
+      "&:hover": {
+        borderColor: "#cbd5e1",
+      },
+    }),
+    valueContainer: (base: any) => ({
+      ...base,
+      padding: "0 8px",
+    }),
+    input: (base: any) => ({
+      ...base,
+      margin: "0",
+      padding: "0",
+    }),
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+    dropdownIndicator: (base: any) => ({
+      ...base,
+      padding: "4px",
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#e2e8f0" : "transparent",
+      color: state.isSelected ? "white" : "inherit",
+      padding: "8px 12px",
+      cursor: "pointer",
+    }),
+  }
+
   return (
     <div className="container mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-6">KYC Verification Dashboard</h1>
@@ -440,42 +517,46 @@ export default function KYCVerificationPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Country</label>
                 <Select
-                  value={selectedCountry?.toString() || ""}
-                  onValueChange={(value) => setSelectedCountry(value ? Number.parseInt(value) : null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    {countries?.map((country) => (
-                      <SelectItem key={country.id} value={country.id.toString()}>
-                        {country.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  options={countryOptions}
+                  value={countryOptions.find((option) =>
+                    selectedCountry ? option.value === selectedCountry.toString() : option.value === "all",
+                  )}
+                  onChange={(option) => {
+                    if (option) {
+                      setSelectedCountry(option.value === "all" ? null : Number(option.value))
+                    } else {
+                      setSelectedCountry(null)
+                    }
+                  }}
+                  placeholder="Select country"
+                  isClearable
+                  styles={selectStyles}
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                />
               </div>
 
               {selectedCountry && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Region/State</label>
                   <Select
-                    value={selectedRegion?.toString() || ""}
-                    onValueChange={(value) => setSelectedRegion(value ? Number.parseInt(value) : null)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Regions</SelectItem>
-                      {regions?.map((region) => (
-                        <SelectItem key={region.id} value={region.id.toString()}>
-                          {region.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={regionOptions}
+                    value={regionOptions.find((option) =>
+                      selectedRegion ? option.value === selectedRegion.toString() : option.value === "all",
+                    )}
+                    onChange={(option) => {
+                      if (option) {
+                        setSelectedRegion(option.value === "all" ? null : Number(option.value))
+                      } else {
+                        setSelectedRegion(null)
+                      }
+                    }}
+                    placeholder="Select region"
+                    isClearable
+                    styles={selectStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
                 </div>
               )}
 
@@ -483,21 +564,23 @@ export default function KYCVerificationPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Subregion</label>
                   <Select
-                    value={selectedSubregion?.toString() || ""}
-                    onValueChange={(value) => setSelectedSubregion(value ? Number.parseInt(value) : null)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subregion" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Subregions</SelectItem>
-                      {subregions?.map((subregion) => (
-                        <SelectItem key={subregion.id} value={subregion.id.toString()}>
-                          {subregion.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={subregionOptions}
+                    value={subregionOptions.find((option) =>
+                      selectedSubregion ? option.value === selectedSubregion.toString() : option.value === "all",
+                    )}
+                    onChange={(option) => {
+                      if (option) {
+                        setSelectedSubregion(option.value === "all" ? null : Number(option.value))
+                      } else {
+                        setSelectedSubregion(null)
+                      }
+                    }}
+                    placeholder="Select subregion"
+                    isClearable
+                    styles={selectStyles}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                  />
                 </div>
               )}
 
