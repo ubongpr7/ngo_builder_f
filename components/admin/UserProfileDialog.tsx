@@ -13,9 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail, Shield, X, AlertCircle } from "lucide-react"
+import { AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail, X, AlertCircle } from "lucide-react"
 import type { UserProfile } from "@/components/interfaces/profile"
-import type { AddressFormData } from "@/components/interfaces/kyc-forms"
 import { VerificationBadge } from "@/components/profile/VerificationBadge"
 
 interface UserProfileDialogProps {
@@ -121,7 +120,7 @@ export function UserProfileDialog({
     country?: string | { name: string }
     postal_code?: string
   }
-  const formatAddress = (address:Address ) => {
+  const formatAddress = (address: Address) => {
     if (!address) return "No address provided"
 
     const parts = []
@@ -157,40 +156,52 @@ export function UserProfileDialog({
     const profileData = profile
 
     // Check for is_verified first (main verification flag)
-    if (profileData.is_verified === true) {
+    if (profileData?.is_verified === true) {
       return {
         isVerified: true,
-        status: "verified",
-        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
+        status: "approved",
+        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
       }
     }
 
     // Then check is_kyc_verified as a fallback
-    if (profileData.is_kyc_verified === true) {
+    if (profileData?.is_kyc_verified) {
       return {
         isVerified: true,
-        status: "verified",
-        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
+        status: "approved",
+        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
       }
     }
 
-    // If the user has submitted KYC but not yet verified
+    // Check for kyc_status field first (new field)
+    if (profileData?.kyc_status) {
+      return {
+        isVerified: profileData?.kyc_status?.status === "approved",
+        status: profileData?.kyc_status?.status,
+        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
+        submitted_date: profileData?.kyc_status?.submitted_date
+          ? formatDate(profileData?.kyc_status?.submitted_date)
+          : null,
+      }
+    }
+
     if (
-      profileData.kyc_status?.status === "pending" ||
-      (profileData.id_document_type &&
-        profileData.id_document_number &&
-        profileData.id_document_image_front &&
-        profileData.selfie_image)
+      profileData?.id_document_type &&
+      profileData?.id_document_number &&
+      profileData?.id_document_image_front &&
+      profileData?.selfie_image
     ) {
       return { isVerified: false, status: "pending" }
     }
 
-    // If the user's verification was rejected
-    if (profileData.kyc_rejection_reason) {
-      return { isVerified: false, status: "rejected" }
+    if (profileData?.kyc_rejection_reason) {
+      return {
+        isVerified: false,
+        status: "rejected",
+        reason: profileData?.kyc_rejection_reason,
+      }
     }
 
-    // Default: not verified
     return { isVerified: false, status: "unverified" }
   }
 
@@ -266,6 +277,12 @@ export function UserProfileDialog({
     const completeness = calculateProfileCompleteness(profile.profile_data || profile)
     const roleBadges = getRoleBadges(profile)
     const verification = getVerificationStatus(profile)
+
+    console.log("UserProfileDialog - Verification status:", {
+      is_verified: profileData?.is_verified,
+      is_kyc_verified: profileData?.is_kyc_verified,
+      verification: verification,
+    })
 
     return (
       <Card className="overflow-hidden border-0 shadow-none">
@@ -457,7 +474,7 @@ export function UserProfileDialog({
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData?.expertise_details && profileData?.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData?.expertise_details.map((item:{ name: string , id: number }) => (
+                      {profileData?.expertise_details.map((item: { name: string; id: number }) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item?.name}
                         </Badge>
