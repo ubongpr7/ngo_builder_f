@@ -35,6 +35,7 @@ import { UpdateMilestoneStatusDialog } from "./update-milestone-status-dialog"
 import { CompleteMilestoneDialog } from "./complete-milestone-dialog"
 import { DeleteMilestoneDialog } from "./delete-milestone-dialog"
 import { MilestoneStatistics } from "./milestone-statistics"
+import { TaskList } from "../task/taskList"
 
 interface ProjectMilestonesProps {
   projectId: number
@@ -43,7 +44,7 @@ interface ProjectMilestonesProps {
   isTeamMember?: boolean
 }
 
-export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMember  }: ProjectMilestonesProps) {
+export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectMilestonesProps) {
   const { data: milestones = [], isLoading, refetch } = useGetMilestonesByProjectQuery(projectId)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
@@ -160,7 +161,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                 </Button>
               }
             />
-
           )}
         </div>
       </div>
@@ -198,7 +198,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                 ? "No milestones match your search criteria. Try a different search term."
                 : "No milestones have been created for this project yet."}
             </p>
-            {(isManager || is_DB_admin || isTeamMember )&& (
+            {(isManager || is_DB_admin || isTeamMember) && (
               <AddEditMilestoneDialog
                 projectId={projectId}
                 onSuccess={handleSuccess}
@@ -209,7 +209,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </Button>
                 }
               />
-
             )}
           </CardContent>
         </Card>
@@ -286,56 +285,63 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     <p className="text-sm text-gray-700">{milestone.notes}</p>
                   </div>
                 )}
+
+                {/* Task List Component */}
+                <TaskList
+                  milestoneId={milestone.id}
+                  projectId={projectId}
+                  isManager={isManager}
+                  is_DB_admin={is_DB_admin}
+                  isTeamMember={isTeamMember}
+                />
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-              {(isManager || is_DB_admin || isTeamMember) && (
-                  
-                <AssignUsersMilestoneDialog
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  trigger={
-                    <Button variant="outline" size="sm">
-                      <Users className="mr-2 h-4 w-4" />
-                      Assign Users
-                    </Button>
-                  }
-                  projectId={projectId}
-                />
-              )}
-              {(isManager || is_DB_admin || isTeamMember) && (
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <UpdateMilestoneStatusDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Flag className="mr-2 h-4 w-4" />
-                          Update Status
-                        </DropdownMenuItem>
-                      }
-                    />
-
-                    {milestone.status !== "completed" && (
-                      <CompleteMilestoneDialog
+                {(isManager || is_DB_admin || isTeamMember) && (
+                  <AssignUsersMilestoneDialog
+                    milestone={milestone}
+                    onSuccess={handleSuccess}
+                    trigger={
+                      <Button variant="outline" size="sm">
+                        <Users className="mr-2 h-4 w-4" />
+                        Assign Users
+                      </Button>
+                    }
+                    projectId={projectId}
+                  />
+                )}
+                {(isManager || is_DB_admin || isTeamMember) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <UpdateMilestoneStatusDialog
                         milestone={milestone}
                         onSuccess={handleSuccess}
                         trigger={
                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                            Mark Complete
+                            <Flag className="mr-2 h-4 w-4" />
+                            Update Status
                           </DropdownMenuItem>
                         }
                       />
-                    )}
 
-                    <DropdownMenuSeparator />
+                      {milestone.status !== "completed" && (
+                        <CompleteMilestoneDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                              Mark Complete
+                            </DropdownMenuItem>
+                          }
+                        />
+                      )}
+
+                      <DropdownMenuSeparator />
 
                       <AddEditMilestoneDialog
                         projectId={projectId}
@@ -349,25 +355,23 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                         }
                       />
 
-                    <DeleteMilestoneDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Milestone
-                        </DropdownMenuItem>
-                      }
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
+                      <DeleteMilestoneDialog
+                        milestone={milestone}
+                        onSuccess={handleSuccess}
+                        trigger={
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Milestone
+                          </DropdownMenuItem>
+                        }
+                      />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </CardFooter>
-
             </Card>
           ))}
         </div>

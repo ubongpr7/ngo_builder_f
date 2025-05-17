@@ -1,71 +1,124 @@
-import type { UserData } from "./project"
-import type { Project } from "./project"
-import type { Milestone } from "./milestone"
+export interface User {
+  id: number
+  username: string
+  email: string
+  first_name: string
+  last_name: string
+  profile_image?: string
+}
 
-export type TaskStatus = "todo" | "in_progress" | "review" | "completed" | "blocked"
-export type TaskPriority = "low" | "medium" | "high" | "urgent"
-
+export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'completed' | 'blocked' | 'cancelled'
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TaskType = 'feature' | 'bug' | 'improvement' | 'documentation' | 'research' | 'other'
 export interface Task {
   id: number
   title: string
-  description: string
-  project: number | Project
-  milestone: number | Milestone | null
-  parent: number | null
-  assigned_to: UserData[]
-  created_by: UserData
-  status: TaskStatus
-  priority: TaskPriority
-  start_date: string | null
-  due_date: string | null
-  completion_date: string | null
-  estimated_hours: number | null
-  actual_hours: number | null
-  notes: string | null
+  description?: string
+  milestone_id: number
+  milestone?: {
+    id: number
+    title: string
+  }
+  project_id?: number
+  project?: {
+    id: number
+    title: string
+  }
+  parent_id?: number
+  parent_details?: {
+    id: number
+    title: string
+  }
+  status: string
+  priority: string
+  task_type: string
+  start_date?: string
+  due_date?: string
+  completion_date?: string
+  completion_percentage?: number
+  estimated_hours?: number
+  actual_hours?: number
+  assigned_to?: {
+    id: number
+    first_name: string
+    last_name: string
+    profile_image?: string
+  }[]
+  created_by?: {
+    id: number
+    first_name: string
+    last_name: string
+  }
   created_at: string
   updated_at: string
-  is_completed: boolean
-  is_overdue: boolean
-  has_subtasks: boolean
-  completion_percentage: number
-  is_unblocked: boolean
-  level: number
+  tags?: string
+  is_overdue?: boolean
+  days_until_due?: number
   subtasks?: Task[]
+  comments_count?: number
+  attachments_count?: number
   dependencies?: Task[]
-  blocked_by?: Task[]
+  dependents?: Task[]
 }
 
-export interface CreateTaskRequest {
-  title: string
-  description: string
-  project: number
-  milestone?: number | null
-  parent?: number | null
-  assigned_to_ids?: number[]
-  status?: TaskStatus
-  priority?: TaskPriority
-  start_date?: string | null
-  due_date?: string | null
-  estimated_hours?: number | null
-  actual_hours?: number | null
-  notes?: string | null
-  dependency_ids?: number[]
+export interface TaskComment {
+  id: number
+  task: number
+  user: User
+  content: string
+  created_at: string
+  updated_at: string
 }
 
-export interface UpdateTaskRequest {
-  title?: string
+export interface TaskAttachment {
+  id: number
+  task: number
+  file: string
+  filename: string
+  uploaded_by: User
+  uploaded_at: string
+}
+
+export interface TaskTimeLog {
+  id: number
+  task: number
+  user: User
+  minutes: number
   description?: string
-  project?: number
-  milestone?: number | null
-  parent?: number | null
-  assigned_to_ids?: number[]
+  logged_at: string
+}
+
+export interface TaskStatistics {
+  total: number
+  completed: number
+  in_progress: number
+  todo: number
+  blocked: number
+  overdue: number
+  completion_rate: number
+  by_priority: Record<TaskPriority, number>
+  by_type: Record<TaskType, number>
+  recent_activity: {
+    id: number
+    title: string
+    status: TaskStatus
+    updated_at: string
+  }[]
+}
+
+export interface TaskFilterParams {
+  projectId?: number
+  milestoneId?: number
   status?: TaskStatus
   priority?: TaskPriority
-  start_date?: string | null
-  due_date?: string | null
-  completion_date?: string | null
-  estimated_hours?: number | null
-  actual_hours?: number | null
-  notes?: string | null
-  dependency_ids?: number[]
+  taskType?: TaskType
+  assignedTo?: number
+  createdBy?: number
+  dueDateStart?: string
+  dueDateEnd?: string
+  isOverdue?: boolean
+  isCompleted?: boolean
+  tags?: string[]
+  search?: string
+  parent?: number | null
 }
