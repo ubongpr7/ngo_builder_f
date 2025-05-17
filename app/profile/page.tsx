@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error, refetch } = useGetUserLoggedInProfileDetailsQuery("")
 
-  // Format date
+
   const formatDate = (dateString: string) => {
     if (!dateString) return "Not available"
 
@@ -36,12 +36,10 @@ export default function ProfilePage() {
     }
   }
 
-  // Calculate profile completeness
   const calculateProfileCompleteness = (profile: UserProfile) => {
     if (!profile) return 0
 
-    // Use profile_data for completeness calculation
-    const profileData = profile
+    const profileData = profile 
 
     const requiredFields = [
       profileData.first_name,
@@ -67,7 +65,7 @@ export default function ProfilePage() {
     if (!profile) return []
 
     // Use profile_data for roles
-    const profileData = profile
+    const profileData = profile 
 
     const roles = []
     if (profileData.is_standard_member) roles.push("Standard Member")
@@ -83,15 +81,12 @@ export default function ProfilePage() {
     if (profileData.is_regional_head) roles.push("Regional Head")
     if (profileData.is_project_manager) roles.push("Project Manager")
 
-    // If role_summary exists, use it instead
     if (profileData.role_summary && profileData.role_summary.length > 0) {
       return profileData.role_summary
     }
 
     return roles
   }
-
-  // Format address
   interface Address {
     street_number?: string
     street?: string
@@ -101,7 +96,8 @@ export default function ProfilePage() {
     country?: string | { name: string }
     postal_code?: string
   }
-  const formatAddress = (address:Address) => {
+
+  const formatAddress = (address: Address) => {
     if (!address) return "No address provided"
 
     const parts = []
@@ -120,6 +116,7 @@ export default function ProfilePage() {
     return parts.join(", ")
   }
 
+  // Get initials for avatar fallback
   const getInitials = (profile: UserProfile) => {
     if (!profile) return "U"
 
@@ -129,6 +126,7 @@ export default function ProfilePage() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "U"
   }
 
+  // Get verification status
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
@@ -202,19 +200,21 @@ export default function ProfilePage() {
   }
 
   if (error) {
+    
     return (
       <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle></AlertTitle>
           <AlertDescription>Failed to load profile data. Please try again later.</AlertDescription>
         </Alert>
       </div>
     )
   }
 
+  // Extract profile data, handling both direct and nested structures
   const profile = userProfile
-  const profileData = profile
+  const profileData = profile.profile_data || profile
   const completeness = calculateProfileCompleteness(profile)
   const roleBadges = getRoleBadges(profile)
   const verification = getVerificationStatus(profile)
@@ -223,12 +223,6 @@ export default function ProfilePage() {
     <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
       <Card className="overflow-hidden">
         <CardHeader className="relative pb-0">
-          <div className="absolute right-4 top-4 z-10">
-            <Link href="/profile/update" className="text-sm flex items-center text-gray-500 hover:text-gray-700">
-              <Edit className="h-3.5 w-3.5 mr-1" />
-              <span>Edit Profile</span>
-            </Link>
-          </div>
 
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-3">
@@ -238,23 +232,8 @@ export default function ProfilePage() {
                   {getInitials(profileData)}
                 </AvatarFallback>
               </Avatar>
-
-              {/* Verification badge on avatar
-              {verification.isVerified && (
-                <div className="absolute -top-50 -right-0 bg-white rounded-full p-0.5 shadow-md">
-                  <Shield className="h-5 w-5 text-green-600" />
-                </div>
-              )}
-               */}
-
               <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                <ProfileImageUploaderButton
-                  absolute={false}
-                  onSuccess={() => refetch()}
-                  profileId={profileData.id}
-                  userId={userProfile.id}
-                  currentImage={profileData.profile_image}
-                />
+                
               </div>
             </div>
             <CardTitle className="text-xl sm:text-2xl font-bold">
@@ -272,6 +251,7 @@ export default function ProfilePage() {
                 </Badge>
               ))}
 
+              {/* Enhanced verification badge */}
               <VerificationBadge
                 isVerified={verification.isVerified}
                 verificationStatus={verification.status}
@@ -430,7 +410,7 @@ export default function ProfilePage() {
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item: { id: number; name: string }) => (
+                      {profileData.expertise_details.map((item) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>

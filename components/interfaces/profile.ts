@@ -168,7 +168,7 @@ export interface UserProfile {
   created_at: string
   updated_at?: string
   user_id: number
-  // profile_data?: UserProfile
+  profile_data?: UserProfile
 }
 
 // Helper type for profile completeness calculation
