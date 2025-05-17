@@ -34,14 +34,13 @@ import {
   useUpdateTaskMutation,
   useDeleteTaskMutation,
 } from "@/redux/features/projects/taskAPISlice"
-import { CreateTaskDialog } from "./create-task-dialog"
-import { EditTaskDialog } from "./edit-task-dialog"
 import { AssignUsersDialog } from "./assign-users-dialog"
 import { TaskFilterBar } from "./task-filter-bar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDistanceToNow } from "date-fns"
+import { AddEditTaskDialog } from "./add-edit-task-dialog"
 
 interface TaskListProps {
   milestoneId: number
@@ -60,18 +59,14 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   })
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
   const [showAssignDialog, setShowAssignDialog] = useState(false)
-  const [showEditDialog, setShowEditDialog] = useState(false)
 
   const {
     data: tasks = [],
     isLoading,
     refetch,
   } = useGetTasksByMilestoneQuery(
-    {
-      milestoneId: milestoneId, // Fixed the typo from "milestonedId" to "milestoneId"
-      filterParams: filterParams,
-    },
-    { refetchOnMountOrArgChange: true },
+    { milestoneId, filterParams },
+    { refetchOnMountOrArgChange: true }
   )
   const [updateTask] = useUpdateTaskMutation()
   const [deleteTask] = useDeleteTaskMutation()
@@ -79,54 +74,30 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Filter tasks based on active tab
   const filteredTasks = tasks.filter((task) => {
     if (activeTab === "all") return true
-    if (activeTab === "todo") return task.status === "todo"
-    if (activeTab === "in_progress") return task.status === "in_progress"
-    if (activeTab === "review") return task.status === "review"
-    if (activeTab === "completed") return task.status === "completed"
-    if (activeTab === "blocked") return task.status === "blocked"
-    return true
+    return task.status === activeTab
   })
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case "todo":
-        return "bg-gray-100 text-gray-800 border-gray-300"
-      case "in_progress":
-        return "bg-blue-100 text-blue-800 border-blue-300"
-      case "review":
-        return "bg-purple-100 text-purple-800 border-purple-300"
-      case "completed":
-        return "bg-green-100 text-green-800 border-green-300"
-      case "blocked":
-        return "bg-red-100 text-red-800 border-red-300"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300"
+      case "todo": return "bg-gray-100 text-gray-800 border-gray-300"
+      case "in_progress": return "bg-blue-100 text-blue-800 border-blue-300"
+      case "review": return "bg-purple-100 text-purple-800 border-purple-300"
+      case "completed": return "bg-green-100 text-green-800 border-green-300"
+      case "blocked": return "bg-red-100 text-red-800 border-red-300"
+      default: return "bg-gray-100 text-gray-800 border-gray-300"
     }
   }
 
   // Get priority badge color
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
-      case "low":
-        return "bg-green-100 text-green-800 border-green-300"
-      case "medium":
-        return "bg-blue-100 text-blue-800 border-blue-300"
-      case "high":
-        return "bg-orange-100 text-orange-800 border-orange-300"
-      case "urgent":
-        return "bg-red-100 text-red-800 border-red-300"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300"
+      case "low": return "bg-green-100 text-green-800 border-green-300"
+      case "medium": return "bg-blue-100 text-blue-800 border-blue-300"
+      case "high": return "bg-orange-100 text-orange-800 border-orange-300"
+      case "urgent": return "bg-red-100 text-red-800 border-red-300"
+      default: return "bg-gray-100 text-gray-800 border-gray-300"
     }
-  }
-
-  // Format status for display
-  const formatStatus = (status: string) => {
-    return status
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ")
   }
 
   // Handle task status change
@@ -151,39 +122,11 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     }
   }
 
-  // Handle filter change
-  const handleFilterChange = (newFilters: any) => {
-    setFilterParams({
-      ...filterParams,
-      ...newFilters,
-    })
-  }
-
-  // Get initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-  }
-
   // Format due date
   const formatDueDate = (dueDate: string) => {
     if (!dueDate) return "No due date"
-
     const date = new Date(dueDate)
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-
-    if (date.toDateString() === today.toDateString()) {
-      return "Today"
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return "Tomorrow"
-    } else {
-      return formatDistanceToNow(date, { addSuffix: true })
-    }
+    return formatDistanceToNow(date, { addSuffix: true })
   }
 
   // Check if task is overdue
@@ -206,28 +149,22 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
             <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="all">All ({tasks.length})</TabsTrigger>
-                <TabsTrigger value="todo">To Do ({tasks.filter((t) => t.status === "todo").length})</TabsTrigger>
-                <TabsTrigger value="in_progress">
-                  In Progress ({tasks.filter((t) => t.status === "in_progress").length})
-                </TabsTrigger>
-                <TabsTrigger value="review">Review ({tasks.filter((t) => t.status === "review").length})</TabsTrigger>
-                <TabsTrigger value="completed">
-                  Completed ({tasks.filter((t) => t.status === "completed").length})
-                </TabsTrigger>
-                <TabsTrigger value="blocked">
-                  Blocked ({tasks.filter((t) => t.status === "blocked").length})
-                </TabsTrigger>
+                <TabsTrigger value="todo">To Do ({tasks.filter(t => t.status === "todo").length})</TabsTrigger>
+                <TabsTrigger value="in_progress">In Progress ({tasks.filter(t => t.status === "in_progress").length})</TabsTrigger>
+                <TabsTrigger value="review">Review ({tasks.filter(t => t.status === "review").length})</TabsTrigger>
+                <TabsTrigger value="completed">Completed ({tasks.filter(t => t.status === "completed").length})</TabsTrigger>
+                <TabsTrigger value="blocked">Blocked ({tasks.filter(t => t.status === "blocked").length})</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
           <div className="flex justify-between items-center">
-            <TaskFilterBar onFilterChange={handleFilterChange} currentFilters={{ ...filterParams }} />
+            <TaskFilterBar onFilterChange={setFilterParams} currentFilters={filterParams} />
 
             {(isManager || is_DB_admin || isTeamMember) && (
-              <CreateTaskDialog
+              <AddEditTaskDialog
                 milestoneId={milestoneId}
-                onTaskCreated={() => refetch()}
+                onSuccess={refetch}
                 trigger={
                   <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                     <Plus className="mr-2 h-4 w-4" />
@@ -254,9 +191,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     : "No tasks have been created for this milestone yet."}
                 </p>
                 {(isManager || is_DB_admin || isTeamMember) && (
-                  <CreateTaskDialog
+                  <AddEditTaskDialog
                     milestoneId={milestoneId}
-                    onTaskCreated={() => refetch()}
+                    onSuccess={refetch}
                     trigger={
                       <Button className="bg-green-600 hover:bg-green-700 text-white">
                         <Plus className="mr-2 h-4 w-4" />
@@ -289,9 +226,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                         </div>
                         <div className="space-y-1 flex-1">
                           <div className="flex items-center">
-                            <h4
-                              className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
-                            >
+                            <h4 className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}>
                               {task.title}
                             </h4>
                           </div>
@@ -299,7 +234,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                           {task.description && <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>}
 
                           <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge className={getStatusBadgeColor(task.status)}>{formatStatus(task.status)}</Badge>
+                            <Badge className={getStatusBadgeColor(task.status)}>
+                              {task.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Badge>
 
                             {task.priority && (
                               <Badge className={getPriorityBadgeColor(task.priority)}>
@@ -328,7 +265,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       </div>
 
                       <div className="flex items-center space-x-2">
-                        {task.assigned_to && task.assigned_to.length > 0 && (
+                        {task.assigned_to?.length > 0 && (
                           <TooltipProvider>
                             <div className="flex -space-x-2">
                               {task.assigned_to.slice(0, 3).map((user) => (
@@ -337,7 +274,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                                     <Avatar className="h-7 w-7 border-2 border-white">
                                       <AvatarImage src={user.profile_image || "/placeholder.svg"} />
                                       <AvatarFallback className="text-xs">
-                                        {getInitials(`${user.first_name} ${user.last_name}`)}
+                                        {`${user.first_name?.[0]}${user.last_name?.[0]}`}
                                       </AvatarFallback>
                                     </Avatar>
                                   </TooltipTrigger>
@@ -363,54 +300,24 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedTaskId(task.id)
-                                  setShowAssignDialog(true)
-                                }}
-                              >
+                              <DropdownMenuItem onClick={() => { setSelectedTaskId(task.id); setShowAssignDialog(true) }}>
                                 <Users className="mr-2 h-4 w-4" />
                                 Assign Users
                               </DropdownMenuItem>
 
                               <DropdownMenuSeparator />
 
-                              <DropdownMenuItem onClick={() => handleStatusChange(task.id, "todo")}>
-                                <Square className="mr-2 h-4 w-4" />
-                                Mark as To Do
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={() => handleStatusChange(task.id, "in_progress")}>
-                                <Clock className="mr-2 h-4 w-4 text-blue-500" />
-                                Mark as In Progress
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={() => handleStatusChange(task.id, "review")}>
-                                <AlertTriangle className="mr-2 h-4 w-4 text-purple-500" />
-                                Mark for Review
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={() => handleStatusChange(task.id, "completed")}>
-                                <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                Mark as Completed
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={() => handleStatusChange(task.id, "blocked")}>
-                                <AlertTriangle className="mr-2 h-4 w-4 text-red-500" />
-                                Mark as Blocked
-                              </DropdownMenuItem>
-
-                              <DropdownMenuSeparator />
-
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedTaskId(task.id)
-                                  setShowEditDialog(true)
-                                }}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Task
-                              </DropdownMenuItem>
+                              <AddEditTaskDialog
+                                milestoneId={milestoneId}
+                                task={task}
+                                onSuccess={refetch}
+                                trigger={
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Task
+                                  </DropdownMenuItem>
+                                }
+                              />
 
                               <DropdownMenuItem
                                 onClick={() => handleDeleteTask(task.id)}
@@ -425,17 +332,15 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       </div>
                     </div>
 
-                    {task.completion_percentage !== undefined &&
-                      task.completion_percentage > 0 &&
-                      task.status !== "completed" && (
-                        <div className="mt-3 space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>Progress</span>
-                            <span>{task.completion_percentage}%</span>
-                          </div>
-                          <Progress value={task.completion_percentage} className="h-1" />
+                    {task.completion_percentage > 0 && task.status !== "completed" && (
+                      <div className="mt-3 space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span>Progress</span>
+                          <span>{task.completion_percentage}%</span>
                         </div>
-                      )}
+                        <Progress value={task.completion_percentage} className="h-1" />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -450,23 +355,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
             onClose={() => setShowAssignDialog(false)}
             taskId={selectedTaskId}
             projectId={projectId}
-            currentAssignees={tasks.find((t) => t.id === selectedTaskId)?.assigned_to?.map((u) => u.id) || []}
+            currentAssignees={tasks.find(t => t.id === selectedTaskId)?.assigned_to?.map(u => u.id) || []}
             onUsersAssigned={() => {
               refetch()
               setShowAssignDialog(false)
-            }}
-          />
-        )}
-
-        {/* Edit Task Dialog */}
-        {selectedTaskId && (
-          <EditTaskDialog
-            open={showEditDialog}
-            onClose={() => setShowEditDialog(false)}
-            taskId={selectedTaskId}
-            onTaskUpdated={() => {
-              refetch()
-              setShowEditDialog(false)
             }}
           />
         )}

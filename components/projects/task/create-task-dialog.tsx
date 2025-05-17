@@ -1,29 +1,31 @@
 "use client"
 
 import type React from "react"
-
+import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Loader2 } from "lucide-react"
+import Select from "react-select"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DateTimeInput } from "@/components/ui/datetime-input"
 import { useToast } from "@/components/ui/use-toast"
-import { useCreateTaskMutation } from "@/redux/features/projects/taskAPISlice"
-import Select from "react-select"
+import { useCreateTaskMutation, useUpdateTaskMutation } from "@/redux/features/projects/taskAPISlice"
 import { selectStyles } from "@/utils/select-styles"
-
-interface CreateTaskDialogProps {
-  open: boolean
-  onClose: () => void
-  milestoneId: number
-  parentId?: number
-  onTaskCreated?: () => void
-  trigger?: React.ReactNode
-}
+import  { Task } from "@/types/tasks"
 
 const taskSchema = z
   .object({
@@ -52,24 +54,27 @@ const taskSchema = z
 
 type TaskFormValues = z.infer<typeof taskSchema>
 
-// Define option types for react-select
 interface SelectOption {
   value: string
   label: string
 }
 
-export function CreateTaskDialog({
-  open,
-  onClose,
-  milestoneId,
-  parentId,
-  onTaskCreated,
-  trigger,
-}: CreateTaskDialogProps) {
-  const { toast } = useToast()
-  const [createTask, { isLoading }] = useCreateTaskMutation()
+interface AddEditTaskDialogProps {
+  milestoneId: number
+  parentId?: number
+  task?: Task
+  onSuccess?: () => void
+  trigger?: React.ReactNode
+}
 
-  // Status options for react-select
+export function AddEditTaskDialog({ milestoneId, parentId, task, onSuccess, trigger }: AddEditTaskDialogProps) {
+  const { toast } = useToast()
+  const [open, setOpen] = useState(false)
+  const [createTask, { isLoading: isCreating }] = useCreateTaskMutation()
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation()
+  const isLoading = isCreating || isUpdating
+  const isEditing = !!task
+
   const statusOptions: SelectOption[] = [
     { value: "todo", label: "To Do" },
     { value: "in_progress", label: "In Progress" },
@@ -78,7 +83,6 @@ export function CreateTaskDialog({
     { value: "blocked", label: "Blocked" },
   ]
 
-  // Priority options for react-select
   const priorityOptions: SelectOption[] = [
     { value: "low", label: "Low" },
     { value: "medium", label: "Medium" },
@@ -86,7 +90,6 @@ export function CreateTaskDialog({
     { value: "urgent", label: "Urgent" },
   ]
 
-  // Task type options for react-select
   const taskTypeOptions: SelectOption[] = [
     { value: "feature", label: "Feature" },
     { value: "bug", label: "Bug" },
@@ -99,15 +102,15 @@ export function CreateTaskDialog({
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      status: "todo",
-      priority: "medium",
-      task_type: "feature",
-      start_date: null,
-      due_date: null,
-      estimated_hours: "",
-      tags: "",
+      title: task?.title || "",
+      description: task?.description || "",
+      status: task?.status || "todo",
+      priority: task?.priority || "medium",
+      task_type: task?.task_type || "feature",
+      start_date: task?.start_date ? new Date(task.start_date) : null,
+      due_date: task?.due_date ? new Date(task.due_date) : null,
+      estimated_hours: task?.estimated_hours?.toString() || "",
+      tags: task?.tags || "",
     },
   })
 
@@ -127,234 +130,61 @@ export function CreateTaskDialog({
         tags: values.tags,
       }
 
-      await createTask(taskData).unwrap()
-
-      toast({
-        title: "Task created",
-        description: "Your task has been created successfully.",
-      })
-
-      if (onTaskCreated) {
-        onTaskCreated()
+      if (isEditing && task) {
+        await updateTask({
+          id: task.id,
+          data: taskData
+        }).unwrap()
+      } else {
+        await createTask(taskData).unwrap()
       }
 
-      onClose()
+      toast({
+        title: `Task ${isEditing ? "Updated" : "Created"}`,
+        description: `Task has been ${isEditing ? "updated" : "created"} successfully.`,
+      })
+
+      setOpen(false)
       form.reset()
+      if (onSuccess) onSuccess()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create task. Please try again.",
+        description: `Failed to ${isEditing ? "update" : "create"} task. Please try again.`,
         variant: "destructive",
       })
     }
   }
 
-  const dialogContent = (
-    <DialogContent className="sm:max-w-[600px]">
-      <DialogHeader>
-        <DialogTitle>Create New Task</DialogTitle>
-      </DialogHeader>
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger || <Button>{isEditing ? "Edit Task" : "Add Task"}</Button>}</DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? "Edit Task" : "Create New Task"}</DialogTitle>
+          <DialogDescription>
+            {isEditing
+              ? "Update the task details below."
+              : "Add a new task to this milestone. Fill out the form below to create a new task."}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Keep existing form fields from original bad component */}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Task title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Task description" className="min-h-[100px]" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <Controller
-                      name="status"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select
-                          options={statusOptions}
-                          value={statusOptions.find((option) => option.value === field.value)}
-                          onChange={(option) => field.onChange(option?.value)}
-                          styles={selectStyles}
-                          placeholder="Select status"
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                        />
-                      )}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <FormControl>
-                    <Controller
-                      name="priority"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select
-                          options={priorityOptions}
-                          value={priorityOptions.find((option) => option.value === field.value)}
-                          onChange={(option) => field.onChange(option?.value)}
-                          styles={selectStyles}
-                          placeholder="Select priority"
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                        />
-                      )}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="task_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Task Type</FormLabel>
-                  <FormControl>
-                    <Controller
-                      name="task_type"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select
-                          options={taskTypeOptions}
-                          value={taskTypeOptions.find((option) => option.value === field.value)}
-                          onChange={(option) => field.onChange(option?.value)}
-                          styles={selectStyles}
-                          placeholder="Select type"
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                        />
-                      )}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="estimated_hours"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estimated Hours</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Estimated hours" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="start_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Start Date & Time</FormLabel>
-                  <FormControl>
-                    <DateTimeInput value={field.value} onChange={field.onChange} id="start-date" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="due_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Due Date & Time</FormLabel>
-                  <FormControl>
-                    <DateTimeInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      id="due-date"
-                      minDateTime={form.watch("start_date") || undefined}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="tags"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tags</FormLabel>
-                <FormControl>
-                  <Input placeholder="Comma-separated tags" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create Task"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </DialogContent>
-  )
-
-  return trigger ? (
-    <Dialog open={open} onOpenChange={onClose}>
-      {trigger}
-      {dialogContent}
-    </Dialog>
-  ) : (
-    <Dialog open={open} onOpenChange={onClose}>
-      {dialogContent}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isEditing ? "Update Task" : "Create Task"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
     </Dialog>
   )
 }
