@@ -42,7 +42,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatDistanceToNow } from "date-fns"
-import { Task } from "@/types/tasks"
 
 interface TaskListProps {
   milestoneId: number
@@ -67,11 +66,18 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     data: tasks = [],
     isLoading,
     refetch,
-  } = useGetTasksByMilestoneQuery({ milestonedId: milestoneId, filterParams:filterParams }, { refetchOnMountOrArgChange: true })
+  } = useGetTasksByMilestoneQuery(
+    {
+      milestoneId: milestoneId, // Fixed the typo from "milestonedId" to "milestoneId"
+      filterParams: filterParams,
+    },
+    { refetchOnMountOrArgChange: true },
+  )
   const [updateTask] = useUpdateTaskMutation()
   const [deleteTask] = useDeleteTaskMutation()
 
-  const filteredTasks = tasks.filter((task:Task) => {
+  // Filter tasks based on active tab
+  const filteredTasks = tasks.filter((task) => {
     if (activeTab === "all") return true
     if (activeTab === "todo") return task.status === "todo"
     if (activeTab === "in_progress") return task.status === "in_progress"
@@ -126,7 +132,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Handle task status change
   const handleStatusChange = async (taskId: number, newStatus: string) => {
     try {
-      await updateTask({ id: taskId, data: { status: newStatus} }).unwrap()
+      await updateTask({ id: taskId, status: newStatus }).unwrap()
       refetch()
     } catch (error) {
       console.error("Failed to update task status:", error)
