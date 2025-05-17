@@ -3,7 +3,7 @@
 import { DashboardCard } from "@/components/ui/dashboard-card"
 import { FileText, DollarSign, CheckCircle, AlertTriangle, ClipboardCheck } from "lucide-react"
 import Link from "next/link"
-import { useGetAllProjectsQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetAllProjectsQuery, useGetProjectStatisticsQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetMilestoneStatisticsQuery } from "@/redux/features/projects/milestoneApiSlice"
 import { useGetExpenseStatisticsQuery } from "@/redux/features/projects/expenseApiSlice"
 import { useGetRecentUpdatesQuery } from "@/redux/features/projects/updateApiSlice"
@@ -15,9 +15,12 @@ import type { Project } from "@/types/project"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { usePermissions } from "@/components/permissionHander"
 import { Badge } from "@/components/ui/badge"
+import { AnalyticsSection } from "@/components/dashboard/analytics-section"
 
 export default function DashboardPage() {
   // Fetch data from our API endpoints
+  const { data: projectStatistics, isLoading: statsLoading, refetch: refreshStats } = useGetProjectStatisticsQuery()
+
   const { data: projectsData, isLoading: projectsLoading } = useGetAllProjectsQuery("")
   const { data: milestoneStats, isLoading: milestonesLoading } = useGetMilestoneStatisticsQuery()
   const { data: expenseStats, isLoading: expensesLoading } = useGetExpenseStatisticsQuery()
@@ -26,6 +29,16 @@ export default function DashboardPage() {
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
 
   const projects = projectsData as Project[]
+
+  // Set up auto-refresh for real-time data
+  useEffect(() => {
+    // Refresh data every 30 seconds
+    const interval = setInterval(() => {
+      refreshStats()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [refreshStats])
 
   // Calculate project statistics
   const [projectStats, setProjectStats] = useState({
@@ -181,6 +194,14 @@ export default function DashboardPage() {
           }}
         />
       </div>
+
+      {/* Analytics Section */}
+      <AnalyticsSection
+        projectStatistics={projectStatistics}
+        projects={projects || []}
+        isLoading={statsLoading || projectsLoading}
+        onRefresh={refreshStats}
+      />
 
       {/* Project Proposals Section - Only visible to admins */}
       {is_DB_admin && projectStats.submitted > 0 && (
