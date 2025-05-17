@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -23,7 +23,30 @@ interface SelectOption {
 
 export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [localFilters, setLocalFilters] = useState<any>(currentFilters)
+  const [filters, setFilters] = useState({
+    status: currentFilters.status || null,
+    priority: currentFilters.priority || null,
+    taskType: currentFilters.taskType || null,
+    dueDateStart: currentFilters.dueDateStart ? new Date(currentFilters.dueDateStart) : null,
+    dueDateEnd: currentFilters.dueDateEnd ? new Date(currentFilters.dueDateEnd) : null,
+    isOverdue: currentFilters.isOverdue || false,
+    isCompleted: currentFilters.isCompleted || false,
+    assignedToId: currentFilters.assignedToId || null,
+  })
+
+  // Update local filters when currentFilters change
+  useEffect(() => {
+    setFilters({
+      status: currentFilters.status || null,
+      priority: currentFilters.priority || null,
+      taskType: currentFilters.taskType || null,
+      dueDateStart: currentFilters.dueDateStart ? new Date(currentFilters.dueDateStart) : null,
+      dueDateEnd: currentFilters.dueDateEnd ? new Date(currentFilters.dueDateEnd) : null,
+      isOverdue: currentFilters.isOverdue || false,
+      isCompleted: currentFilters.isCompleted || false,
+      assignedToId: currentFilters.assignedToId || null,
+    })
+  }, [currentFilters])
 
   // Status options for react-select
   const statusOptions: SelectOption[] = [
@@ -54,14 +77,51 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
   ]
 
   const handleFilterChange = (key: string, value: any) => {
-    setLocalFilters((prev: any) => {
-      const newFilters = { ...prev, [key]: value }
-      return newFilters
-    })
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
   }
 
   const applyFilters = () => {
-    onFilterChange(localFilters)
+    const appliedFilters = {
+      projectId: currentFilters.projectId,
+      milestoneId: currentFilters.milestoneId,
+    }
+
+    if (filters.status) {
+      appliedFilters.status = filters.status
+    }
+
+    if (filters.priority) {
+      appliedFilters.priority = filters.priority
+    }
+
+    if (filters.taskType) {
+      appliedFilters.taskType = filters.taskType
+    }
+
+    if (filters.dueDateStart) {
+      appliedFilters.dueDateStart = filters.dueDateStart.toISOString()
+    }
+
+    if (filters.dueDateEnd) {
+      appliedFilters.dueDateEnd = filters.dueDateEnd.toISOString()
+    }
+
+    if (filters.isOverdue) {
+      appliedFilters.isOverdue = true
+    }
+
+    if (filters.isCompleted) {
+      appliedFilters.isCompleted = true
+    }
+
+    if (filters.assignedToId) {
+      appliedFilters.assignedToId = filters.assignedToId
+    }
+
+    onFilterChange(appliedFilters)
     setIsOpen(false)
   }
 
@@ -70,7 +130,18 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
       projectId: currentFilters.projectId,
       milestoneId: currentFilters.milestoneId,
     }
-    setLocalFilters(baseFilters)
+
+    setFilters({
+      status: null,
+      priority: null,
+      taskType: null,
+      dueDateStart: null,
+      dueDateEnd: null,
+      isOverdue: false,
+      isCompleted: false,
+      assignedToId: null,
+    })
+
     onFilterChange(baseFilters)
     setIsOpen(false)
   }
@@ -90,8 +161,8 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
             <Label>Status</Label>
             <Select
               options={statusOptions}
-              value={localFilters.status ? statusOptions.find((option) => option.value === localFilters.status) : null}
-              onChange={(option) => handleFilterChange("status", option?.value)}
+              value={filters.status ? statusOptions.find((option) => option.value === filters.status) : null}
+              onChange={(option) => handleFilterChange("status", option?.value || null)}
               styles={selectStyles}
               placeholder="Select status"
               isClearable
@@ -104,10 +175,8 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
             <Label>Priority</Label>
             <Select
               options={priorityOptions}
-              value={
-                localFilters.priority ? priorityOptions.find((option) => option.value === localFilters.priority) : null
-              }
-              onChange={(option) => handleFilterChange("priority", option?.value)}
+              value={filters.priority ? priorityOptions.find((option) => option.value === filters.priority) : null}
+              onChange={(option) => handleFilterChange("priority", option?.value || null)}
               styles={selectStyles}
               placeholder="Select priority"
               isClearable
@@ -120,10 +189,8 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
             <Label>Task Type</Label>
             <Select
               options={taskTypeOptions}
-              value={
-                localFilters.taskType ? taskTypeOptions.find((option) => option.value === localFilters.taskType) : null
-              }
-              onChange={(option) => handleFilterChange("taskType", option?.value)}
+              value={filters.taskType ? taskTypeOptions.find((option) => option.value === filters.taskType) : null}
+              onChange={(option) => handleFilterChange("taskType", option?.value || null)}
               styles={selectStyles}
               placeholder="Select type"
               isClearable
@@ -138,18 +205,18 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
               <div>
                 <Label className="text-xs">From</Label>
                 <DateTimeInput
-                  value={localFilters.dueDateStart ? new Date(localFilters.dueDateStart) : undefined}
-                  onChange={(date) => handleFilterChange("dueDateStart", date ? date.toISOString() : undefined)}
+                  value={filters.dueDateStart}
+                  onChange={(date) => handleFilterChange("dueDateStart", date)}
                   id="due-date-start"
                 />
               </div>
               <div>
                 <Label className="text-xs">To</Label>
                 <DateTimeInput
-                  value={localFilters.dueDateEnd ? new Date(localFilters.dueDateEnd) : undefined}
-                  onChange={(date) => handleFilterChange("dueDateEnd", date ? date.toISOString() : undefined)}
+                  value={filters.dueDateEnd}
+                  onChange={(date) => handleFilterChange("dueDateEnd", date)}
                   id="due-date-end"
-                  minDateTime={localFilters.dueDateStart ? new Date(localFilters.dueDateStart) : undefined}
+                  minDateTime={filters.dueDateStart || undefined}
                 />
               </div>
             </div>
@@ -158,8 +225,8 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
           <div className="flex items-center space-x-2">
             <Checkbox
               id="overdue"
-              checked={localFilters.isOverdue}
-              onCheckedChange={(checked) => handleFilterChange("isOverdue", checked === true ? true : undefined)}
+              checked={filters.isOverdue}
+              onCheckedChange={(checked) => handleFilterChange("isOverdue", checked === true)}
             />
             <Label htmlFor="overdue">Show overdue tasks only</Label>
           </div>
@@ -167,8 +234,8 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
           <div className="flex items-center space-x-2">
             <Checkbox
               id="completed"
-              checked={localFilters.isCompleted}
-              onCheckedChange={(checked) => handleFilterChange("isCompleted", checked === true ? true : undefined)}
+              checked={filters.isCompleted}
+              onCheckedChange={(checked) => handleFilterChange("isCompleted", checked === true)}
             />
             <Label htmlFor="completed">Show completed tasks only</Label>
           </div>
