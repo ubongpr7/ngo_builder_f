@@ -265,7 +265,7 @@ export function UserProfileDialog({
     // Extract profile data, handling both direct and nested structures
     const profile = userProfile
     const profileData = profile.profile_data || profile
-    const completeness = calculateProfileCompleteness(profile)
+    const completeness = calculateProfileCompleteness(profile.profile_data || profile)
     const roleBadges = getRoleBadges(profile)
     const verification = getVerificationStatus(profile)
 
