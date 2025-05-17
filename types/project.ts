@@ -61,7 +61,7 @@ export interface Project {
   manager?: ProjectUser
   tasks?: Task[]
   milestones?: Milestone[]
-  status: "planned" | "in_progress" | "active" | "completed" | "on_hold" | "cancelled"| "waiting_for_approval"| "submitted"
+  status: "planned" | "in_progress" | "active" | "completed" |"planning" | "on_hold" | "cancelled"| "waiting_for_approval"| "submitted"
   is_overbudget?: boolean
   milestones_count?: number
   task_count?: number

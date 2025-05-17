@@ -54,13 +54,13 @@ export default function DashboardPage() {
   useEffect(() => {
     if (projects) {
       const active = projects.filter(
-        (p) => p.status === "planned" || p.status === "in_progress" || p.status === "active",
+        (p) => p.status === "planned" || p.status === "in_progress" || p.status === "active" || p.status === "planning",
       ).length
-      const completed = projects.filter((p) => p.status === "completed").length
-      const submitted = projects.filter((p) => p.status === "submitted").length
+      const completed =projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed").length
+      const submitted = projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted").length
       const overbudget = projects.filter((p) => p.is_overbudget).length
       const totalBudget = projects.reduce((sum, p) => Number(sum) + (Number(p.budget) || 0), 0)
-      const totalSpent = projects.reduce((sum, p) => Number(sum) + (Number(p.funds_spent) || 0), 0)
+      const totalSpent = projectStatistics?.budget_stats.total_spent || 0
 
       setProjectStats({
         total: projects.length,
