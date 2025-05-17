@@ -171,7 +171,182 @@ export function AddEditTaskDialog({ milestoneId, parentId, task, onSuccess, trig
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Keep existing form fields from original bad component */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Task title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Task description" className="min-h-[100px]" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <FormControl>
+                    <Controller
+                      name="status"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select
+                          options={statusOptions}
+                          value={statusOptions.find((option) => option.value === field.value)}
+                          onChange={(option) => field.onChange(option?.value)}
+                          styles={selectStyles}
+                          placeholder="Select status"
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Priority</FormLabel>
+                  <FormControl>
+                    <Controller
+                      name="priority"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select
+                          options={priorityOptions}
+                          value={priorityOptions.find((option) => option.value === field.value)}
+                          onChange={(option) => field.onChange(option?.value)}
+                          styles={selectStyles}
+                          placeholder="Select priority"
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="task_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Task Type</FormLabel>
+                  <FormControl>
+                    <Controller
+                      name="task_type"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Select
+                          options={taskTypeOptions}
+                          value={taskTypeOptions.find((option) => option.value === field.value)}
+                          onChange={(option) => field.onChange(option?.value)}
+                          styles={selectStyles}
+                          placeholder="Select type"
+                          className="react-select-container"
+                          classNamePrefix="react-select"
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="estimated_hours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estimated Hours</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="Estimated hours" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="start_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Start Date & Time</FormLabel>
+                  <FormControl>
+                    <DateTimeInput value={field.value} onChange={field.onChange} id="start-date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="due_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date & Time</FormLabel>
+                  <FormControl>
+                    <DateTimeInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      id="due-date"
+                      minDateTime={form.watch("start_date") || undefined}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="tags"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                  <Input placeholder="Comma-separated tags" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
