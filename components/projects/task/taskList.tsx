@@ -226,8 +226,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
             {(isManager || is_DB_admin || isTeamMember) && (
               <CreateTaskDialog
-                open={false}
-                onClose={() => {}}
                 milestoneId={milestoneId}
                 onTaskCreated={() => refetch()}
                 trigger={
@@ -257,8 +255,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                 </p>
                 {(isManager || is_DB_admin || isTeamMember) && (
                   <CreateTaskDialog
-                    open={false}
-                    onClose={() => {}}
                     milestoneId={milestoneId}
                     onTaskCreated={() => refetch()}
                     trigger={
