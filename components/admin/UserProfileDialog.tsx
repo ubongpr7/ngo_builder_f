@@ -154,45 +154,43 @@ export function UserProfileDialog({
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
-    const profileData = profile 
+    const profileData = profile
 
-    if (profileData?.is_kyc_verified) {
+    // Check for is_verified first (main verification flag)
+    if (profileData.is_verified === true) {
       return {
         isVerified: true,
-        status: "approved",
-        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
+        status: "verified",
+        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
       }
     }
 
-    // Check for kyc_status field first (new field)
-    if (profileData?.kyc_status) {
+    // Then check is_kyc_verified as a fallback
+    if (profileData.is_kyc_verified === true) {
       return {
-        isVerified: profileData?.kyc_status?.status === "approved",
-        status: profileData?.kyc_status?.status,
-        date: profileData?.kyc_verification_date ? formatDate(profileData?.kyc_verification_date) : null,
-        submitted_date: profileData?.kyc_status?.submitted_date
-          ? formatDate(profileData?.kyc_status?.submitted_date)
-          : null,
+        isVerified: true,
+        status: "verified",
+        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
       }
     }
 
+    // If the user has submitted KYC but not yet verified
     if (
-      profileData?.id_document_type &&
-      profileData?.id_document_number &&
-      profileData?.id_document_image_front &&
-      profileData?.selfie_image
+      profileData.kyc_status?.status === "pending" ||
+      (profileData.id_document_type &&
+        profileData.id_document_number &&
+        profileData.id_document_image_front &&
+        profileData.selfie_image)
     ) {
       return { isVerified: false, status: "pending" }
     }
 
-    if (profileData?.kyc_rejection_reason) {
-      return {
-        isVerified: false,
-        status: "rejected",
-        reason: profileData?.kyc_rejection_reason,
-      }
+    // If the user's verification was rejected
+    if (profileData.kyc_rejection_reason) {
+      return { isVerified: false, status: "rejected" }
     }
 
+    // Default: not verified
     return { isVerified: false, status: "unverified" }
   }
 

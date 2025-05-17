@@ -18,7 +18,6 @@ import { ProfileImageUploaderButton } from "@/components/kyc/ProfileImageUploade
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error, refetch } = useGetUserLoggedInProfileDetailsQuery("")
-  console.log("User profile data:", userProfile)
 
   // Add this helper function near the top of your component
   const getDisplayValue = (field: any, defaultValue = "Not provided"): string => {
@@ -247,12 +246,6 @@ export default function ProfilePage() {
   const roleBadges = getRoleBadges(profile)
   const verification = getVerificationStatus(profile)
 
-  // Add debugging for verification status
-  console.log("Verification status:", {
-    is_verified: profileData.is_verified,
-    is_kyc_verified: profileData.is_kyc_verified,
-    verification: verification,
-  })
 
   return (
     <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
