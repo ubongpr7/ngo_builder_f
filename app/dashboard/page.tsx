@@ -48,6 +48,7 @@ export default function DashboardPage() {
     overbudget: 0,
     totalBudget: 0,
     totalSpent: 0,
+    averageBudget: 0,
   })
 
   useEffect(() => {
@@ -58,7 +59,13 @@ export default function DashboardPage() {
       const completed =projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed").length
       const submitted = projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted").length
       const overbudget = projects.filter((p) => p.is_overbudget).length
-      const totalBudget = projects.reduce((sum, p) => Number(sum) + (Number(p.budget) || 0), 0)
+      const totalBudget =projectStatistics?.budget_stats.total_budget || 
+        projects.reduce((sum, p) => {
+          if (['cancelled', 'submitted', 'rejected'].includes(p.status)) {
+            return sum;
+          }
+          return Number(sum) + (Number(p.budget) || 0);
+        }, 0);
       const totalSpent = projectStatistics?.budget_stats.total_spent || 0
 
       setProjectStats({
@@ -69,9 +76,10 @@ export default function DashboardPage() {
         overbudget,
         totalBudget,
         totalSpent,
+        averageBudget: totalBudget / active,
       })
     }
-  }, [projects])
+  }, [projects, projectStatistics])
 
   const budgetUtilization =
     projectStats.totalBudget > 0 ? (projectStats.totalSpent / projectStats.totalBudget) * 100 : 0
@@ -174,7 +182,7 @@ export default function DashboardPage() {
           description={`${formatCurrency(projectStats.totalSpent)} spent`}
           icon={<DollarSign className="h-4 w-4 text-black" />}
           trend={{
-            value: budgetUtilization,
+            value: Number(budgetUtilization.toFixed(2)),
             isPositive: budgetUtilization <= 90,
             label: "utilization",
           }}
