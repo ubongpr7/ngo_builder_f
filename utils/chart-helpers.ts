@@ -108,24 +108,37 @@ export function timelineToChartData(timelineStats: any = {}) {
 }
 
 // Rank projects by milestone completion
-export function rankProjectsByMilestones(projects: Project[] = []) {
+
+export function rankProjectsByMilestones(projects: Project[] = []): Project[] {
   if (!projects.length) return []
 
   return [...projects]
-    .filter((p) => p.milestones_count && p.milestones_completed_count)
+    .filter(p => {
+      const milestonesCount = Number(p.milestones_count || 0)
+      const completedCount = Number(p.milestones_completed_count || 0)
+      return milestonesCount > 0 && completedCount >= 0
+    })
     .sort((a, b) => {
-      // Calculate completion percentage
-      const aPercentage = a.milestones_completed_count / a.milestones_count
-      const bPercentage = b.milestones_completed_count / b.milestones_count
+      const aTotal = Number(a.milestones_count || 0)
+      const aCompleted = Number(a.milestones_completed_count || 0)
+      const bTotal = Number(b.milestones_count || 0)
+      const bCompleted = Number(b.milestones_completed_count || 0)
 
-      // Sort by percentage, then by absolute number of completed milestones
+      // Calculate completion percentages safely
+      const aPercentage = aTotal > 0 ? (aCompleted / aTotal) : 0
+      const bPercentage = bTotal > 0 ? (bCompleted / bTotal) : 0
+
+      // Primary sort by percentage completion (descending)
       if (bPercentage !== aPercentage) {
         return bPercentage - aPercentage
       }
-      return (b.milestones_completed_count || 0) - (a.milestones_completed_count || 0)
+      
+      // Secondary sort by total completed milestones (descending)
+      return bCompleted - aCompleted
     })
-    .slice(0, 5) // Top 5 projects
+    .slice(0, 10)
 }
+
 
 // Format budget data for chart
 export function formatBudgetData(budgetStats: any = {}) {
