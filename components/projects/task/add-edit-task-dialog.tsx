@@ -130,7 +130,7 @@ export function AddEditTaskDialog({ milestoneId, parentId, task, onSuccess, trig
         tags: values.tags,
       }
 
-      if (isEditing && task) {
+      if (task) {
         await updateTask({
           id: task.id,
           data: taskData
