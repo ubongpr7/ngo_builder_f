@@ -12,6 +12,7 @@ import { MilestoneDetail } from "@/components/projects/milestones/milestone-deta
 import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
+import Link from "next/link"
 
 export default function MilestoneDetailPage() {
   const params = useParams()
@@ -34,28 +35,33 @@ export default function MilestoneDetailPage() {
     <div className="container mx-auto py-8 px-4">
       {/* Breadcrumbs */}
       <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/projects">Projects</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`/dashboard/projects/${projectId}`}>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/dashboard">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/dashboard/projects">Projects</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href={`/dashboard/projects/${projectId}`}>
               {project?.title.slice(0, 20)}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink>Milestone</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <MilestoneDetail milestoneId={milestoneId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink>Milestone</BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+      <MilestoneDetail milestoneId={milestoneId} projectId={projectId} isManager={isManager} is_DB_admin={is_DB_admin} isTeamMember={isTeamMember} />
     </div>
   )
 }

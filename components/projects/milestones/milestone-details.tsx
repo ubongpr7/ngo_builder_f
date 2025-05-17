@@ -47,12 +47,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface MilestoneDetailProps {
   milestoneId: number
+  projectId: number
   isManager: boolean
   is_DB_admin: boolean
   isTeamMember: boolean
 }
 
-export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember }: MilestoneDetailProps) {
+export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,isTeamMember }: MilestoneDetailProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [showStats, setShowStats] = useState(false)
 
@@ -250,7 +251,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                 <DropdownMenuSeparator />
 
                 <AddEditMilestoneDialog
-                  projectId={milestone.project?.id}
+                  projectId={projectId}
                   milestone={milestone}
                   onSuccess={handleSuccess}
                   trigger={
@@ -264,13 +265,14 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                 <AssignUsersMilestoneDialog
                   milestone={milestone}
                   onSuccess={handleSuccess}
+                  
                   trigger={
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <Users className="mr-2 h-4 w-4" />
                       Assign Users
                     </DropdownMenuItem>
                   }
-                  projectId={milestone.project?.id}
+                  projectId={projectId}
                 />
 
                 <DropdownMenuSeparator />
@@ -279,7 +281,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                   milestone={milestone}
                   onSuccess={() => {
                     // Navigate back to project page after deletion
-                    window.location.href = `/dashboard/projects/${milestone.project?.id}`
+                    window.location.href = `/dashboard/projects/${projectId}`
                   }}
                   trigger={
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600 focus:text-red-600">
@@ -469,7 +471,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                             Manage Team
                           </Button>
                         }
-                        projectId={milestone.project?.id}
+                        projectId={projectId}
                       />
                     )}
                   </CardFooter>
@@ -494,7 +496,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
               {/* Task List Component */}
               <TaskList
                 milestoneId={milestoneId}
-                projectId={milestone.project?.id}
+                projectId={projectId}
                 isManager={isManager}
                 is_DB_admin={is_DB_admin}
                 isTeamMember={isTeamMember}
@@ -551,7 +553,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                           Assign Team Members
                         </Button>
                       }
-                      projectId={milestone.project?.id}
+                      projectId={projectId}
                     />
                   )}
                 </div>
@@ -568,7 +570,7 @@ export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember
                       Manage Team Members
                     </Button>
                   }
-                  projectId={milestone.project?.id}
+                  projectId={projectId}
                 />
               </CardFooter>
             )}
