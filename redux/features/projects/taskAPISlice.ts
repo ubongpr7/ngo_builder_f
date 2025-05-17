@@ -41,11 +41,24 @@ export const taskApiSlice = apiSlice.injectEndpoints({
     getTasksByProject: builder.query({
       query: (projectId) => `/${task_api}/tasks/by_project/?project_id=${projectId}`,
     }),
-
     getTasksByMilestone: builder.query({
-      query: ({milestoneId,filterParams}) => `/${task_api}/tasks/by_milestone/?milestone_id=${milestoneId}`,
-    }),
+      query: ({ milestoneId, filterParams = {} }) => {
+        // Build query string from filter params
+        const params = new URLSearchParams()
+        params.append("milestone_id", milestoneId.toString())
 
+        // Add any additional filter parameters if they exist
+        if (filterParams) {
+          Object.entries(filterParams).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              params.append(key, value.toString())
+            }
+          })
+        }
+
+        return `/tasks/by_milestone/?${params.toString()}`
+      },
+    }),
     getTasksByUser: builder.query({
       query: (userId) =>
         userId ? `/${task_api}/tasks/by_user/?user_id=${userId}` : `/${task_api}/tasks/by_user/`,
