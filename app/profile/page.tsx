@@ -9,18 +9,31 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
-import { Edit, AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail, Shield } from "lucide-react"
+import { AlertTriangle, ExternalLink, Linkedin, Link2, Phone, Mail, Shield } from "lucide-react"
 import type { UserProfile } from "@/components/interfaces/profile"
-import type { AddressFormData } from "@/components/interfaces/kyc-forms"
 import Link from "next/link"
-import { ProfileImageUploaderButton } from "@/components/kyc/ProfileImageUploaderButton"
 import { VerificationBadge } from "@/components/profile/VerificationBadge"
+import { ProfileImageUploaderButton } from "@/components/kyc/ProfileImageUploaderButton"
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const { data: userProfile, isLoading, error, refetch } = useGetUserLoggedInProfileDetailsQuery("")
-  console.log(userProfile)
+  console.log("User profile data:", userProfile)
 
+  // Add this helper function near the top of your component
+  const getDisplayValue = (field: any, defaultValue = "Not provided"): string => {
+    if (field === null || field === undefined) return defaultValue
+
+    if (typeof field === "object" && field.name) {
+      return field.name
+    }
+
+    if (typeof field === "number") {
+      return "Information available" // For IDs without corresponding name data
+    }
+
+    return field.toString() || defaultValue
+  }
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Not available"
@@ -40,7 +53,7 @@ export default function ProfilePage() {
   const calculateProfileCompleteness = (profile: UserProfile) => {
     if (!profile) return 0
 
-    const profileData = profile 
+    const profileData = profile
 
     const requiredFields = [
       profileData.first_name,
@@ -66,7 +79,7 @@ export default function ProfilePage() {
     if (!profile) return []
 
     // Use profile_data for roles
-    const profileData = profile 
+    const profileData = profile
 
     const roles = []
     if (profileData.is_standard_member) roles.push("Standard Member")
@@ -107,11 +120,16 @@ export default function ProfilePage() {
       parts.push(`${streetNumber}${address.street}`)
     }
 
-    if (address.city) parts.push(typeof address.city === "object" ? address.city.name : address.city)
-    if (address.subregion)
-      parts.push(typeof address.subregion === "object" ? address.subregion.name : address.subregion)
-    if (address.region) parts.push(typeof address.region === "object" ? address.region.name : address.region)
-    if (address.country) parts.push(typeof address.country === "object" ? address.country.name : address.country)
+    // Helper function to extract name from object or use string directly
+    const getName = (field: any): string => {
+      if (!field) return ""
+      return typeof field === "object" && field.name ? field.name : field.toString()
+    }
+
+    if (address.city) parts.push(getName(address.city))
+    if (address.subregion) parts.push(getName(address.subregion))
+    if (address.region) parts.push(getName(address.region))
+    if (address.country) parts.push(getName(address.country))
     if (address.postal_code) parts.push(address.postal_code)
 
     return parts.join(", ")
@@ -131,9 +149,19 @@ export default function ProfilePage() {
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
 
-    const profileData = profile 
+    const profileData = profile
 
-    if (profileData.is_kyc_verified) {
+    // Check for is_verified first (main verification flag)
+    if (profileData.is_verified === true) {
+      return {
+        isVerified: true,
+        status: "verified",
+        date: profileData.kyc_verification_date ? formatDate(profileData.kyc_verification_date) : null,
+      }
+    }
+
+    // Then check is_kyc_verified as a fallback
+    if (profileData.is_kyc_verified === true) {
       return {
         isVerified: true,
         status: "verified",
@@ -201,7 +229,6 @@ export default function ProfilePage() {
   }
 
   if (error) {
-    
     return (
       <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
         <Alert variant="destructive">
@@ -220,11 +247,17 @@ export default function ProfilePage() {
   const roleBadges = getRoleBadges(profile)
   const verification = getVerificationStatus(profile)
 
+  // Add debugging for verification status
+  console.log("Verification status:", {
+    is_verified: profileData.is_verified,
+    is_kyc_verified: profileData.is_kyc_verified,
+    verification: verification,
+  })
+
   return (
     <div className="container max-w-3xl mx-auto py-4 px-4 sm:py-6 sm:px-6">
       <Card className="overflow-hidden">
         <CardHeader className="relative pb-0">
-
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-3">
               <Avatar className="h-24 w-24 border-2 border-white shadow-sm">
@@ -233,8 +266,15 @@ export default function ProfilePage() {
                   {getInitials(profileData)}
                 </AvatarFallback>
               </Avatar>
+              
               <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
-                
+                <ProfileImageUploaderButton
+                  absolute={false}
+                  onSuccess={() => refetch()}
+                  profileId={profileData.id}
+                  userId={userProfile.id}
+                  currentImage={profileData.profile_image}
+                />
               </div>
             </div>
             <CardTitle className="text-xl sm:text-2xl font-bold">
@@ -311,18 +351,15 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-md p-3">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Gender</h3>
-                  <p className="text-sm capitalize">{profileData.sex || "Not provided"}</p>
-                </div>
-
-                {profileData.disability && (
+                {profileData.disabled && (
                   <div className="bg-gray-50 rounded-md p-3">
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">Disability</h3>
                     <p className="text-sm">
                       {typeof profileData.disability === "object"
                         ? profileData.disability.name
-                        : profileData.disability}
+                        : typeof profileData.disability === "number"
+                          ? "Yes" // Just show "Yes" if it's a number ID without the name
+                          : profileData.disability || "Yes"}
                     </p>
                   </div>
                 )}
@@ -378,10 +415,14 @@ export default function ProfilePage() {
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Industry</h3>
                   <p className="text-sm">
                     {profileData.industry_details
-                      ? profileData.industry_details.name
+                      ? typeof profileData.industry_details === "object"
+                        ? profileData.industry_details.name
+                        : profileData.industry_details
                       : typeof profileData.industry === "object"
                         ? profileData.industry.name
-                        : "Not provided"}
+                        : typeof profileData.industry === "number"
+                          ? "Industry information available" // Just indicate info exists if it's an ID
+                          : profileData.industry || "Not provided"}
                   </p>
                 </div>
 
@@ -411,7 +452,7 @@ export default function ProfilePage() {
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
                   {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item:{id:number,name:string}) => (
+                      {profileData.expertise_details.map((item: { id: number; name: string }) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>
