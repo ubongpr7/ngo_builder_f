@@ -126,6 +126,7 @@ export default function ProfilePage() {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "U"
   }
 
+
   // Get verification status
   const getVerificationStatus = (profile: UserProfile) => {
     if (!profile) return { isVerified: false, status: "unverified" }
@@ -212,7 +213,6 @@ export default function ProfilePage() {
     )
   }
 
-  // Extract profile data, handling both direct and nested structures
   const profile = userProfile
   const profileData = profile.profile_data || profile
   const completeness = calculateProfileCompleteness(profile)

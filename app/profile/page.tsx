@@ -214,7 +214,7 @@ export default function ProfilePage() {
   }
 
   const profile = userProfile
-  const profileData = profile.profile_data || profile
+  const profileData = profile
   const completeness = calculateProfileCompleteness(profile)
   const roleBadges = getRoleBadges(profile)
   const verification = getVerificationStatus(profile)
