@@ -13,7 +13,6 @@ import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
 
-
 export default function MilestoneDetailPage() {
   const params = useParams()
   const projectId = Number(params.id)
@@ -45,11 +44,13 @@ export default function MilestoneDetailPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href={`/dashboard/projects/${projectId}}`}>{project?.title.slice(0, 20)}</BreadcrumbLink>
+            <BreadcrumbLink href={`/dashboard/projects/${projectId}`}>
+              {project?.title.slice(0, 20)}
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink>Milestone/BreadcrumbLink>
+            <BreadcrumbLink>Milestone</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
