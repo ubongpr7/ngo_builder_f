@@ -63,6 +63,10 @@ export interface Project {
   milestones?: Milestone[]
   status: "planned" | "in_progress" | "active" | "completed" | "on_hold" | "cancelled"| "waiting_for_approval"| "submitted"
   is_overbudget?: boolean
+  milestone_count?: number
+  task_count?: number
+  milestone_competed_count?: number
+  task_completed_count?: number
 }
 
 export interface CreateProjectRequest {
