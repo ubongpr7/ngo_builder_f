@@ -56,7 +56,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
           })
         }
 
-        return `/tasks/by_milestone/?${params.toString()}`
+        return `/${task_api}/tasks/by_milestone/?${params.toString()}`
       },
     }),
     getTasksByUser: builder.query({
