@@ -47,9 +47,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 interface MilestoneDetailProps {
   milestoneId: number
+  isManager: boolean
+  is_DB_admin: boolean
+  isTeamMember: boolean
 }
 
-export function MilestoneDetail({ milestoneId }: MilestoneDetailProps) {
+export function MilestoneDetail({ milestoneId,isManager,is_DB_admin,isTeamMember }: MilestoneDetailProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [showStats, setShowStats] = useState(false)
 
@@ -62,10 +65,6 @@ export function MilestoneDetail({ milestoneId }: MilestoneDetailProps) {
     refetchOnMountOrArgChange: true,
   })
 
-  // Check user permissions
-  const isManager = milestone?.project?.is_manager || false
-  const is_DB_admin = milestone?.project?.is_DB_admin || false
-  const isTeamMember = milestone?.project?.is_team_member || false
   const canEdit = isManager || is_DB_admin || isTeamMember
 
   // Get status badge color
