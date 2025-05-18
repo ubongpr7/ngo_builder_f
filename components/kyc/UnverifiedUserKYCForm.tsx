@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { CheckCircle } from "lucide-react"
+import { AlertCircle, CheckCircle } from "lucide-react"
 import type { KYCFormState } from "../interfaces/kyc-forms"
 import PersonalInfoForm from "./PersonalInfoForm"
 import AddressForm from "./AddressForm"
@@ -19,6 +19,7 @@ import { useGetAddressByIdQuery } from "@/redux/features/profile/profileRelatedA
 import { ProfileImageUploader } from "./ProfileImageUploader"
 import { useGetUserProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import type { KYCFormContainerProps } from "./types"
+import { Alert } from "../ui/alert"
 
 // Step order for unverified users
 const STEP_ORDER: Record<number, string> = {
@@ -328,7 +329,7 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
         <CardHeader className="text-center px-4 sm:px-6">
           <CardTitle className="text-xl sm:text-2xl">Profile Settings</CardTitle>
           <div className="mt-4">
-            <Alert variant="info" className="text-sm">
+            <Alert variant="default" className="text-sm">
               <AlertCircle className="h-4 w-4 mr-2" />
               Please ensure all information is accurate and up-to-date.
             </Alert>

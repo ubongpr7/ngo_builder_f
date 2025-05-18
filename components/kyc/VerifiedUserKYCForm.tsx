@@ -316,7 +316,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
           <CardTitle className="text-xl sm:text-2xl">Profile Settings</CardTitle>
           <CardDescription className="text-sm sm:text-base">Update your profile information</CardDescription>
           <div className="mt-4">
-            <Alert variant="info" className="text-sm">
+            <Alert variant="default" className="text-sm">
               <AlertCircle className="h-4 w-4 mr-2" />
               Please ensure all information is accurate and up-to-date.
             </Alert>
