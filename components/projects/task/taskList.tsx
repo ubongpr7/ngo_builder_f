@@ -66,6 +66,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     { milestoneId, filterParams },
     { refetchOnMountOrArgChange: true }
   )
+  console.log(tasks)
   const [updateTask] = useUpdateTaskMutation()
   const [deleteTask] = useDeleteTaskMutation()
 
@@ -266,7 +267,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                         {task.assigned_to?.length > 0 && (
                           <TooltipProvider>
                             <div className="flex -space-x-2">
-                              {task.assigned_to.slice(0, 3).map((user) => (
+                              {task?.assigned_to.slice(0, 3)?.map((user) => (
                                 <Tooltip key={user.id}>
                                   <TooltipTrigger asChild>
                                     <Avatar className="h-7 w-7 border-2 border-white">
