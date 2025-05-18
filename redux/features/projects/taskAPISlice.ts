@@ -14,7 +14,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${task_api}/tasks/${id}/`,
     }),
 
-    createTask: builder.mutation<Task, Partial<Task>>({
+    createTask: builder.mutation({
       query: (data) => ({
         url: `/${task_api}/tasks/`,
         method: "POST",
@@ -22,7 +22,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    updateTask: builder.mutation<Task, { id: number; data: Partial<Task> }>({
+    updateTask: builder.mutation({
       query: ({ id, data }) => ({
         url: `/${task_api}/tasks/${id}/`,
         method: "PATCH",
