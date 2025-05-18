@@ -204,7 +204,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
             </Card>
           ) : (
             <div className="space-y-2">
-              {filteredTasks.map((task) => (
+              {filteredTasks?.map((task) => (
                 <Card key={task.id} className={`border ${task.status === "completed" ? "bg-gray-50" : ""}`}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
