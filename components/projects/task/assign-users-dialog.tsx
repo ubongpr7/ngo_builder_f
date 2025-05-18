@@ -47,7 +47,6 @@ export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }:
 
   const [assignUsers, { isLoading }] = useAssignUsersToTaskMutation()
 
-  // Get currently assigned users
   const assignedUserIds = task?.assigned_to?.map((user: any) => user.id.toString()) || []
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -103,11 +102,7 @@ export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }:
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent
-        className="sm:max-w-[500px] max-h-[90vh] overflow-hidden flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()} // Prevent closing when clicking dropdown
-        onInteractOutside={(e) => e.preventDefault()} // Prevent interaction with outside elements
-      >
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assign Users to Task</DialogTitle>
           <DialogDescription>
@@ -117,13 +112,12 @@ export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }:
         </DialogHeader>
 
         <div className="relative mb-4">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search users..."
             className="pl-8"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            autoComplete="off"
           />
         </div>
 
@@ -144,7 +138,7 @@ export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }:
                       ) : filteredUsers.length === 0 ? (
                         <p className="text-center py-4 text-gray-500">No users found</p>
                       ) : (
-                        <div className="max-h-[300px] overflow-y-auto space-y-2 flex-1 border border-gray-200 rounded-md p-2">
+                        <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-md p-2">
                           {filteredUsers.map((user: any) => (
                             <div key={user.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-md">
                               <input
@@ -182,7 +176,7 @@ export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }:
               )}
             />
 
-            <DialogFooter className="sticky bottom-0 pt-2 bg-white border-t mt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>

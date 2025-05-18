@@ -75,7 +75,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   })
   const [expandedTasks, setExpandedTasks] = useState<Record<number, boolean>>({})
   const [hierarchicalTasks, setHierarchicalTasks] = useState<Task[]>([])
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
 
   const {
     data: tasks = [],
@@ -325,27 +324,19 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                 )}
 
                 {(isManager || is_DB_admin || isTeamMember) && (
-                  <DropdownMenu onOpenChange={(open) => setOpenDropdownId(open ? task.id : null)}>
+                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="z-50">
+                    <DropdownMenuContent align="end">
                       <AssignUsersDialog
                         task={task}
                         projectId={projectId}
-                        onUsersAssigned={() => {
-                          setOpenDropdownId(null)
-                          refetch()
-                        }}
+                        onUsersAssigned={refetch}
                         trigger={
-                          <DropdownMenuItem
-                            onSelect={(e) => {
-                              e.preventDefault()
-                              setOpenDropdownId(null)
-                            }}
-                          >
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <Users className="mr-2 h-4 w-4" />
                             Assign Users
                           </DropdownMenuItem>
@@ -355,17 +346,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       <AddEditTaskDialog
                         milestoneId={milestoneId}
                         parentId={task.id}
-                        onSuccess={() => {
-                          setOpenDropdownId(null)
-                          refetch()
-                        }}
+                        onSuccess={refetch}
                         trigger={
-                          <DropdownMenuItem
-                            onSelect={(e) => {
-                              e.preventDefault()
-                              setOpenDropdownId(null)
-                            }}
-                          >
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <Plus className="mr-2 h-4 w-4" />
                             Add Subtask
                           </DropdownMenuItem>
@@ -377,17 +360,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       <AddEditTaskDialog
                         milestoneId={milestoneId}
                         task={task}
-                        onSuccess={() => {
-                          setOpenDropdownId(null)
-                          refetch()
-                        }}
+                        onSuccess={refetch}
                         trigger={
-                          <DropdownMenuItem
-                            onSelect={(e) => {
-                              e.preventDefault()
-                              setOpenDropdownId(null)
-                            }}
-                          >
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Task
                           </DropdownMenuItem>
@@ -395,10 +370,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       />
 
                       <DropdownMenuItem
-                        onClick={() => {
-                          handleDeleteTask(task.id)
-                          setOpenDropdownId(null)
-                        }}
+                        onClick={() => handleDeleteTask(task.id)}
                         className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />

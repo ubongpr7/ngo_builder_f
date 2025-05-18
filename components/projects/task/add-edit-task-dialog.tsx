@@ -154,7 +154,7 @@ export function AddEditTaskDialog({ milestoneId, task, parentId, onSuccess, trig
       }
 
       if (isEditing) {
-        await updateTask({ id: task.id, ...taskData }).unwrap()
+        await updateTask({ id: task.id, data:taskData }).unwrap()
         toast({
           title: "Task updated",
           description: "Your task has been updated successfully.",
@@ -185,44 +185,63 @@ export function AddEditTaskDialog({ milestoneId, task, parentId, onSuccess, trig
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <div onClick={() => setOpen(true)}>{trigger}</div>
-      <DialogContent
-        className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()} // Prevent closing when clicking dropdown
-        onInteractOutside={(e) => e.preventDefault()} // Prevent interaction with outside elements
-      >
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Task" : parentId ? "Add Subtask" : "Create New Task"}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 flex flex-col">
-            <div className="space-y-4 overflow-y-auto pr-2 flex-1">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Task title" {...field} autoComplete="off" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Task title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Task description" className="min-h-[100px]" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="description"
+                name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>Status</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Task description"
-                        className="min-h-[100px]"
-                        {...field}
-                        autoComplete="off"
+                      <Controller
+                        name="status"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Select
+                            options={statusOptions}
+                            value={statusOptions.find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option?.value)}
+                            styles={selectStyles}
+                            placeholder="Select status"
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                          />
+                        )}
                       />
                     </FormControl>
                     <FormMessage />
@@ -230,188 +249,158 @@ export function AddEditTaskDialog({ milestoneId, task, parentId, onSuccess, trig
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <FormControl>
-                        <Controller
-                          name="status"
-                          control={form.control}
-                          render={({ field }) => (
-                            <Select
-                              options={statusOptions}
-                              value={statusOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
-                              placeholder="Select status"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <Controller
+                        name="priority"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Select
+                            options={priorityOptions}
+                            value={priorityOptions.find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option?.value)}
+                            styles={selectStyles}
+                            placeholder="Select priority"
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                          />
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <FormControl>
-                        <Controller
-                          name="priority"
-                          control={form.control}
-                          render={({ field }) => (
-                            <Select
-                              options={priorityOptions}
-                              value={priorityOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
-                              placeholder="Select priority"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="task_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Task Type</FormLabel>
+                    <FormControl>
+                      <Controller
+                        name="task_type"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Select
+                            options={taskTypeOptions}
+                            value={taskTypeOptions.find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option?.value)}
+                            styles={selectStyles}
+                            placeholder="Select type"
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                          />
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="task_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Task Type</FormLabel>
-                      <FormControl>
-                        <Controller
-                          name="task_type"
-                          control={form.control}
-                          render={({ field }) => (
-                            <Select
-                              options={taskTypeOptions}
-                              value={taskTypeOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
-                              placeholder="Select type"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="parent_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parent Task</FormLabel>
-                      <FormControl>
-                        <Controller
-                          name="parent_id"
-                          control={form.control}
-                          render={({ field }) => (
-                            <Select
-                              options={getParentTaskOptions()}
-                              value={getParentTaskOptions().find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
-                              placeholder="Select parent task"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              isDisabled={!!parentId} // Disable if parentId is provided
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date & Time</FormLabel>
-                      <FormControl>
-                        <DateTimeInput value={field.value} onChange={field.onChange} id="start-date" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="due_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Due Date & Time</FormLabel>
-                      <FormControl>
-                        <DateTimeInput
-                          value={field.value}
-                          onChange={field.onChange}
-                          id="due-date"
-                          minDateTime={form.watch("start_date") || undefined}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="estimated_hours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estimated Hours</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="Estimated hours" {...field} autoComplete="off" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Comma-separated tags" {...field} autoComplete="off" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="parent_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Parent Task</FormLabel>
+                    <FormControl>
+                      <Controller
+                        name="parent_id"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Select
+                            options={getParentTaskOptions()}
+                            value={getParentTaskOptions().find((option) => option.value === field.value)}
+                            onChange={(option) => field.onChange(option?.value)}
+                            styles={selectStyles}
+                            placeholder="Select parent task"
+                            className="react-select-container"
+                            classNamePrefix="react-select"
+                            isDisabled={!!parentId} // Disable if parentId is provided
+                          />
+                        )}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <DialogFooter className="sticky bottom-0 pt-2 bg-white border-t mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="start_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Date & Time</FormLabel>
+                    <FormControl>
+                      <DateTimeInput value={field.value} onChange={field.onChange} id="start-date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="due_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Due Date & Time</FormLabel>
+                    <FormControl>
+                      <DateTimeInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        id="due-date"
+                        minDateTime={form.watch("start_date") || undefined}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="estimated_hours"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estimated Hours</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Estimated hours" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Comma-separated tags" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
