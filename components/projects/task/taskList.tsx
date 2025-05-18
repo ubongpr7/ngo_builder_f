@@ -67,6 +67,9 @@ interface TaskListProps {
   isTeamMember?: boolean
 }
 
+// Dialog types for centralized dialog management
+type DialogType = "assign" | "add" | "edit" | null
+
 export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTeamMember }: TaskListProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [filterParams, setFilterParams] = useState({
@@ -76,6 +79,12 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   const [expandedTasks, setExpandedTasks] = useState<Record<number, boolean>>({})
   const [hierarchicalTasks, setHierarchicalTasks] = useState<Task[]>([])
 
+  // Centralized dialog state management
+  const [dialogType, setDialogType] = useState<DialogType>(null)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [parentTaskId, setParentTaskId] = useState<number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   const {
     data: tasks = [],
     isLoading,
@@ -84,6 +93,30 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   const [updateTask] = useUpdateTaskMutation()
   const [deleteTask] = useDeleteTaskMutation()
+
+  // Function to open a specific dialog with task data
+  const openDialog = (type: DialogType, task?: Task, parentId?: number) => {
+    setDialogType(type)
+    setSelectedTask(task || null)
+    setParentTaskId(parentId || null)
+    setDialogOpen(true)
+  }
+
+  // Function to close the dialog
+  const closeDialog = () => {
+    setDialogOpen(false)
+    setTimeout(() => {
+      setDialogType(null)
+      setSelectedTask(null)
+      setParentTaskId(null)
+    }, 300) // Wait for dialog animation to complete
+  }
+
+  // Handle dialog success
+  const handleDialogSuccess = () => {
+    closeDialog()
+    refetch()
+  }
 
   // Build hierarchical task structure
   useEffect(() => {
@@ -331,43 +364,22 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <AssignUsersDialog
-                        task={task}
-                        projectId={projectId}
-                        onUsersAssigned={refetch}
-                        trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Users className="mr-2 h-4 w-4" />
-                            Assign Users
-                          </DropdownMenuItem>
-                        }
-                      />
+                      <DropdownMenuItem onClick={() => openDialog("assign", task)}>
+                        <Users className="mr-2 h-4 w-4" />
+                        Assign Users
+                      </DropdownMenuItem>
 
-                      <AddEditTaskDialog
-                        milestoneId={milestoneId}
-                        parentId={task.id}
-                        onSuccess={refetch}
-                        trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Subtask
-                          </DropdownMenuItem>
-                        }
-                      />
+                      <DropdownMenuItem onClick={() => openDialog("add", null, task.id)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Subtask
+                      </DropdownMenuItem>
 
                       <DropdownMenuSeparator />
 
-                      <AddEditTaskDialog
-                        milestoneId={milestoneId}
-                        task={task}
-                        onSuccess={refetch}
-                        trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Task
-                          </DropdownMenuItem>
-                        }
-                      />
+                      <DropdownMenuItem onClick={() => openDialog("edit", task)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit Task
+                      </DropdownMenuItem>
 
                       <DropdownMenuItem
                         onClick={() => handleDeleteTask(task.id)}
@@ -406,6 +418,38 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   return (
     <div className="space-y-4">
+      {/* Centralized dialogs */}
+      {dialogType === "assign" && selectedTask && (
+        <AssignUsersDialog
+          open={dialogOpen}
+          onClose={closeDialog}
+          taskId={selectedTask.id}
+          projectId={projectId}
+          currentAssignees={selectedTask.assigned_to?.map((user) => user.id) || []}
+          onUsersAssigned={handleDialogSuccess}
+        />
+      )}
+
+      {dialogType === "add" && (
+        <AddEditTaskDialog
+          open={dialogOpen}
+          onClose={closeDialog}
+          milestoneId={milestoneId}
+          parentId={parentTaskId}
+          onSuccess={handleDialogSuccess}
+        />
+      )}
+
+      {dialogType === "edit" && selectedTask && (
+        <AddEditTaskDialog
+          open={dialogOpen}
+          onClose={closeDialog}
+          milestoneId={milestoneId}
+          task={selectedTask}
+          onSuccess={handleDialogSuccess}
+        />
+      )}
+
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All Tasks ({tasks.length})</TabsTrigger>
@@ -420,16 +464,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         <TaskFilterBar onFilterChange={setFilterParams} currentFilters={filterParams} />
 
         {(isManager || is_DB_admin || isTeamMember) && (
-          <AddEditTaskDialog
-            milestoneId={milestoneId}
-            onSuccess={refetch}
-            trigger={
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Add New Task
-              </Button>
-            }
-          />
+          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => openDialog("add")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add New Task
+          </Button>
         )}
       </div>
 
@@ -449,16 +487,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                 : "No tasks have been created for this milestone yet."}
             </p>
             {(isManager || is_DB_admin || isTeamMember) && (
-              <AddEditTaskDialog
-                milestoneId={milestoneId}
-                onSuccess={refetch}
-                trigger={
-                  <Button className="bg-green-600 hover:bg-green-700 text-white">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add First Task
-                  </Button>
-                }
-              />
+              <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => openDialog("add")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add First Task
+              </Button>
             )}
           </CardContent>
         </Card>
