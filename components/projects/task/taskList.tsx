@@ -57,8 +57,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     projectId,
     milestoneId,
   })
-  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null)
-  const [showAssignDialog, setShowAssignDialog] = useState(false)
 
   const {
     data: tasks = [],
@@ -300,10 +298,17 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { setSelectedTaskId(task.id); setShowAssignDialog(true) }}>
-                                <Users className="mr-2 h-4 w-4" />
-                                Assign Users
-                              </DropdownMenuItem>
+                              <AssignUsersDialog
+                                task={task}
+                                projectId={projectId}
+                                onUsersAssigned={refetch}
+                                trigger={
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Assign Users
+                                  </DropdownMenuItem>
+                                }
+                              />
 
                               <DropdownMenuSeparator />
 
@@ -347,21 +352,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
             </div>
           )}
         </div>
-
-        {/* Assign Users Dialog */}
-        {selectedTaskId && (
-          <AssignUsersDialog
-            open={showAssignDialog}
-            onClose={() => setShowAssignDialog(false)}
-            taskId={selectedTaskId}
-            projectId={projectId}
-            currentAssignees={tasks.find(t => t.id === selectedTaskId)?.assigned_to?.map(u => u.id) || []}
-            onUsersAssigned={() => {
-              refetch()
-              setShowAssignDialog(false)
-            }}
-          />
-        )}
       </CollapsibleContent>
     </Collapsible>
   )
