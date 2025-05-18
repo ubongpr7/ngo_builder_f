@@ -19,14 +19,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { DateTimeInput } from "@/components/ui/datetime-input"
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
-import {
-  useCreateTaskMutation,
-  useUpdateTaskMutation,
-  useGetTasksByMilestoneQuery,
-} from "@/redux/features/projects/taskAPISlice"
-import Select from "react-select"
-import { selectStyles } from "@/utils/select-styles"
-import { Task } from "@/types/tasks"
+import { useCreateTaskMutation, useUpdateTaskMutation } from "@/redux/features/projects/taskAPISlice"
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 
 interface AddEditTaskDialogProps {
   open: boolean
@@ -44,7 +38,6 @@ const taskSchema = z
     status: z.string().default("todo"),
     priority: z.string().default("medium"),
     task_type: z.string().default("feature"),
-    parent_id: z.number().nullable().optional(),
     start_date: z.date().optional().nullable(),
     due_date: z.date().optional().nullable(),
     estimated_hours: z.string().optional(),
@@ -65,24 +58,20 @@ const taskSchema = z
 
 type TaskFormValues = z.infer<typeof taskSchema>
 
-// Define option types for react-select
-interface SelectOption {
-  value: string | number
-  label: string
-}
-
 export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, onSuccess }: AddEditTaskDialogProps) {
   const { toast } = useToast()
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation()
   const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation()
-  const { data: tasks = [] } = useGetTasksByMilestoneQuery({ milestoneId, filterParams: {} }, { skip: !open })
 
   const isLoading = isCreating || isUpdating
   const isEditing = !!task
-  const dialogTitle = isEditing ? "Edit Task" : parentId ? "Add Subtask" : "Create New Task"
+  const isSubtask = !!parentId
+
+  const dialogTitle = isEditing ? "Edit Task" : isSubtask ? "Add Subtask" : "Create New Task"
+
   const dialogDescription = isEditing
     ? "Update the details of this task."
-    : parentId
+    : isSubtask
       ? "Add a new subtask to the parent task."
       : "Create a new task for this milestone."
 
@@ -113,26 +102,6 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
     { value: "other", label: "Other" },
   ]
 
-  // Generate parent task options
-  const getParentTaskOptions = (): SelectOption[] => {
-    // Filter out the current task (if editing) and any of its children
-    const isChildOf = (potentialChild: any, parentId: number): boolean => {
-      if (potentialChild.id === parentId) return true
-      if (potentialChild.parent_id === parentId) return true
-      return false
-    }
-
-    const eligibleTasks = tasks.filter((t:Task) => !isEditing || (t.id !== task.id && !isChildOf(t, task.id)))
-
-    return [
-      { value: null, label: "No Parent (Root Task)" },
-      ...eligibleTasks.map((t:Task) => ({
-        value: t.id,
-        label: t.title,
-      })),
-    ]
-  }
-
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -141,7 +110,6 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
       status: "todo",
       priority: "medium",
       task_type: "feature",
-      parent_id: null,
       start_date: null,
       due_date: null,
       estimated_hours: "",
@@ -158,14 +126,13 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
         status: task?.status || "todo",
         priority: task?.priority || "medium",
         task_type: task?.task_type || "feature",
-        parent_id: task?.parent_id || parentId || null,
         start_date: task?.start_date ? new Date(task.start_date) : null,
         due_date: task?.due_date ? new Date(task.due_date) : null,
         estimated_hours: task?.estimated_hours?.toString() || "",
         tags: task?.tags || "",
       })
     }
-  }, [open, task, parentId, form])
+  }, [open, task, form])
 
   const onSubmit = async (values: TaskFormValues) => {
     try {
@@ -173,7 +140,8 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
         title: values.title,
         description: values.description || "",
         milestone_id: milestoneId,
-        parent_id: values.parent_id,
+        // Set parent_id based on context - if editing, keep the original parent_id, if adding subtask use parentId
+        parent_id: isEditing ? task.parent_id : parentId || null,
         status: values.status,
         priority: values.priority,
         task_type: values.task_type,
@@ -184,7 +152,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
       }
 
       if (isEditing) {
-        await updateTask({ id: task.id, data:taskData }).unwrap()
+        await updateTask({ id: task.id, ...taskData }).unwrap()
         toast({
           title: "Task updated",
           description: "Your task has been updated successfully.",
@@ -200,6 +168,8 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
       if (onSuccess) {
         onSuccess()
       }
+
+      onClose()
     } catch (error) {
       toast({
         title: "Error",
@@ -211,7 +181,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>{dialogDescription}</DialogDescription>
@@ -265,16 +235,12 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
                           name="status"
                           control={form.control}
                           render={({ field }) => (
-                            <Select
+                            <ReactSelectField
                               options={statusOptions}
                               value={statusOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
+                              onChange={(option: any) => field.onChange(option?.value)}
                               placeholder="Select status"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              menuPortalTarget={document.body}
-                              menuPosition="fixed"
+                              inputId="task-status"
                             />
                           )}
                         />
@@ -295,16 +261,12 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
                           name="priority"
                           control={form.control}
                           render={({ field }) => (
-                            <Select
+                            <ReactSelectField
                               options={priorityOptions}
                               value={priorityOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
+                              onChange={(option: any) => field.onChange(option?.value)}
                               placeholder="Select priority"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              menuPortalTarget={document.body}
-                              menuPosition="fixed"
+                              inputId="task-priority"
                             />
                           )}
                         />
@@ -325,47 +287,12 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
                           name="task_type"
                           control={form.control}
                           render={({ field }) => (
-                            <Select
+                            <ReactSelectField
                               options={taskTypeOptions}
                               value={taskTypeOptions.find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
+                              onChange={(option: any) => field.onChange(option?.value)}
                               placeholder="Select type"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              menuPortalTarget={document.body}
-                              menuPosition="fixed"
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="parent_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parent Task</FormLabel>
-                      <FormControl>
-                        <Controller
-                          name="parent_id"
-                          control={form.control}
-                          render={({ field }) => (
-                            <Select
-                              options={getParentTaskOptions()}
-                              value={getParentTaskOptions().find((option) => option.value === field.value)}
-                              onChange={(option) => field.onChange(option?.value)}
-                              styles={selectStyles}
-                              placeholder="Select parent task"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              isDisabled={!!parentId} // Disable if parentId is provided
-                              menuPortalTarget={document.body}
-                              menuPosition="fixed"
+                              inputId="task-type"
                             />
                           )}
                         />
