@@ -4,7 +4,14 @@ import { useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -72,6 +79,12 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
 
   const isLoading = isCreating || isUpdating
   const isEditing = !!task
+  const dialogTitle = isEditing ? "Edit Task" : parentId ? "Add Subtask" : "Create New Task"
+  const dialogDescription = isEditing
+    ? "Update the details of this task."
+    : parentId
+      ? "Add a new subtask to the parent task."
+      : "Create a new task for this milestone."
 
   // Status options for react-select
   const statusOptions: SelectOption[] = [
@@ -171,7 +184,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
       }
 
       if (isEditing) {
-        await updateTask({ id: task.id, data:taskData }).unwrap()
+        await updateTask({ id: task.id, ...taskData }).unwrap()
         toast({
           title: "Task updated",
           description: "Your task has been updated successfully.",
@@ -197,13 +210,11 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Task" : parentId ? "Add Subtask" : "Create New Task"}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

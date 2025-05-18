@@ -1,7 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
@@ -52,7 +59,7 @@ export function AssignUsersDialog({
   // Filter users based on search query
   const filteredUsers = users.filter((user: User) => {
     const fullName = `${user.first_name} ${user.last_name}`.toLowerCase()
-    const email = user.email.toLowerCase()
+    const email = user.email?.toLowerCase() || ""
     const query = searchQuery.toLowerCase()
 
     return fullName.includes(query) || email.includes(query)
@@ -87,13 +94,13 @@ export function AssignUsersDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto flex flex-col"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Assign Users to Task</DialogTitle>
+          <DialogDescription>
+            Select the users you want to assign to this task. They will be responsible for completing it.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative mb-4">

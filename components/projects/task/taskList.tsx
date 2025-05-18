@@ -48,7 +48,7 @@ interface Task {
   task_type?: string
   due_date?: string
   completion_percentage: number
-  assigned_to?: Array<{
+  assigned_to: Array<{
     id: number
     first_name: string
     last_name: string
@@ -105,11 +105,12 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Function to close the dialog
   const closeDialog = () => {
     setDialogOpen(false)
+    // Use a short timeout to ensure the dialog is fully closed before resetting state
     setTimeout(() => {
       setDialogType(null)
       setSelectedTask(null)
       setParentTaskId(null)
-    }, 300) // Wait for dialog animation to complete
+    }, 100)
   }
 
   // Handle dialog success
@@ -329,7 +330,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
               </div>
 
               <div className="flex items-center space-x-2">
-                {task?.assigned_to?.length > 0 && (
+                {task.assigned_to?.length > 0 && (
                   <TooltipProvider>
                     <div className="flex -space-x-2">
                       {task?.assigned_to.slice(0, 3)?.map((user) => (
@@ -453,9 +454,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All Tasks ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="todo">Pending ({tasks.filter((t) => t.status === "todo").length})</TabsTrigger>
+          <TabsTrigger value="todo">Pending ({tasks.filter((t:Task) => t.status === "todo").length})</TabsTrigger>
           <TabsTrigger value="completed">
-            Completed ({tasks.filter((t) => t.status === "completed").length})
+            Completed ({tasks.filter((t:Task) => t.status === "completed").length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
