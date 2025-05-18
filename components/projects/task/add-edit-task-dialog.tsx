@@ -199,7 +199,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col"
+        className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto flex flex-col"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
