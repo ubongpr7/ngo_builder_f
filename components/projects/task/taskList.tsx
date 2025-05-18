@@ -329,7 +329,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
               </div>
 
               <div className="flex items-center space-x-2">
-                {task.assigned_to?.length > 0 && (
+                {task?.assigned_to?.length > 0 && (
                   <TooltipProvider>
                     <div className="flex -space-x-2">
                       {task?.assigned_to.slice(0, 3)?.map((user) => (

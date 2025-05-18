@@ -171,7 +171,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
       }
 
       if (isEditing) {
-        await updateTask({ id: task.id, ...taskData }).unwrap()
+        await updateTask({ id: task.id, data:taskData }).unwrap()
         toast({
           title: "Task updated",
           description: "Your task has been updated successfully.",
