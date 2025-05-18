@@ -1,73 +1,75 @@
 "use client"
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Loader2, Search } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Form, FormControl, FormItem, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
-
 import { useAssignUsersToTaskMutation } from "@/redux/features/projects/taskAPISlice"
-import Select from "react-select"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-import { selectStyles } from "@/utils/select-styles"
+const formSchema = z.object({
+  userIds: z.array(z.string()).min(0),
+})
 
 interface AssignUsersDialogProps {
-  open: boolean
-  onClose: () => void
-  taskId: number
+  task: any
   projectId: number
-  currentAssignees: number[]
   onUsersAssigned?: () => void
+  trigger: React.ReactNode
 }
 
-interface UserOption {
-  value: string
-  label: string
-}
-
-export function AssignUsersDialog({
-  open,
-  onClose,
-  taskId,
-  projectId,
-  currentAssignees,
-  onUsersAssigned,
-}: AssignUsersDialogProps) {
+export function AssignUsersDialog({ task, projectId, onUsersAssigned, trigger }: AssignUsersDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const { toast } = useToast()
-  const [selectedUsers, setSelectedUsers] = useState<UserOption[]>(
-    currentAssignees.map((id) => ({ value: id.toString(), label: "" })),
-  )
 
-  const { data: users, isLoading: isLoadingUsers } = useGetProjectTeamMembersQuery(projectId)
-  const [assignUsers, { isLoading }] = useAssignUsersToTaskMutation()
-
-  // Convert users to options for react-select
-  const userOptions: UserOption[] = users
-    ? users.map((user:{id:number,first_name:string,last_name:string}) => ({
-        value: user.id.toString(),
-        label: `${user.first_name} ${user.last_name}`,
-      }))
-    : []
-
-  // Update selectedUsers with proper labels when users data is loaded
-  useState(() => {
-    if (users && currentAssignees.length > 0) {
-      const updatedSelectedUsers = currentAssignees.map((id) => {
-        const user = users.find((u:{id:number,first_name:string,last_name:string}) => u.id === id)
-        return {
-          value: id.toString(),
-          label: user ? `${user.first_name} ${user.last_name}` : `User ${id}`,
-        }
-      })
-      setSelectedUsers(updatedSelectedUsers)
-    }
+  const { data: users = [], isLoading: isLoadingUsers } = useGetProjectTeamMembersQuery(projectId, {
+    skip: !open,
   })
 
-  const handleAssign = async () => {
+  const [assignUsers, { isLoading }] = useAssignUsersToTaskMutation()
+
+  const assignedUserIds = task?.assigned_to?.map((user: any) => user.id.toString()) || []
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      userIds: assignedUserIds,
+    },
+  })
+
+  // Reset form when dialog opens with current assignees
+  useEffect(() => {
+    if (open && task?.assigned_to) {
+      form.reset({
+        userIds: task.assigned_to.map((user: any) => user.id.toString()),
+      })
+    }
+  }, [open, task, form])
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       await assignUsers({
-        taskId,
-        userIds: selectedUsers.map((option) => Number.parseInt(option.value)),
+        id: task.id,
+        userIds: values.userIds.map((id) => Number.parseInt(id)),
       }).unwrap()
 
       toast({
@@ -75,11 +77,8 @@ export function AssignUsersDialog({
         description: "Users have been assigned to the task successfully.",
       })
 
-      if (onUsersAssigned) {
-        onUsersAssigned()
-      }
-
-      onClose()
+      setOpen(false)
+      if (onUsersAssigned) onUsersAssigned()
     } catch (error) {
       toast({
         title: "Error",
@@ -89,38 +88,105 @@ export function AssignUsersDialog({
     }
   }
 
+  // Filter users based on search query
+  const filteredUsers = users.filter((user: any) => {
+    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase()
+    return fullName.includes(searchQuery.toLowerCase()) || user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
+  // Get initials for avatar
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase()
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assign Users to Task</DialogTitle>
+          <DialogDescription>
+            Select users to assign to the task "{task?.title}". These users will be responsible for completing this
+            task.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          {isLoadingUsers ? (
-            <div className="text-center py-4">Loading users...</div>
-          ) : (
-            <Select
-              isMulti
-              options={userOptions}
-              value={selectedUsers}
-              onChange={(selected) => setSelectedUsers(selected as UserOption[])}
-              placeholder="Select users to assign"
-              styles={selectStyles}
-              className="react-select-container"
-              classNamePrefix="react-select"
-            />
-          )}
+        <div className="relative mb-4">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search users..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleAssign} disabled={isLoading}>
-            {isLoading ? "Assigning..." : "Assign Users"}
-          </Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <Controller
+              control={form.control}
+              name="userIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="space-y-2">
+                      {isLoadingUsers ? (
+                        <div className="flex items-center justify-center p-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span className="ml-2">Loading users...</span>
+                        </div>
+                      ) : filteredUsers.length === 0 ? (
+                        <p className="text-center py-4 text-gray-500">No users found</p>
+                      ) : (
+                        <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-md p-2">
+                          {filteredUsers.map((user: any) => (
+                            <div key={user.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-md">
+                              <input
+                                type="checkbox"
+                                id={`user-${user.id}`}
+                                value={user.id.toString()}
+                                checked={field.value.includes(user.id.toString())}
+                                onChange={(e) => {
+                                  const value = e.target.value
+                                  const newValues = e.target.checked
+                                    ? [...field.value, value]
+                                    : field.value.filter((id) => id !== value)
+                                  field.onChange(newValues)
+                                }}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                              />
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={user.profile_image || ""} />
+                                <AvatarFallback>{getInitials(user.first_name, user.last_name)}</AvatarFallback>
+                              </Avatar>
+                              <label htmlFor={`user-${user.id}`} className="flex-1 text-sm cursor-pointer">
+                                <div className="font-medium">
+                                  {user.first_name} {user.last_name}
+                                </div>
+                                <div className="text-xs text-gray-500">{user.email}</div>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Assign Users
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
