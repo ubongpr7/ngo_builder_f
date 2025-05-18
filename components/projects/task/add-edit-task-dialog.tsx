@@ -181,7 +181,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>{dialogDescription}</DialogDescription>
