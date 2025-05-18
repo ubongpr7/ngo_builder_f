@@ -201,7 +201,7 @@ export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,
           </div>
           <p className="text-gray-500">
             Part of project:{" "}
-            <Link href={`/dashboard/projects/${milestone.project?.id}`} className="text-blue-600 hover:underline">
+            <Link href={`/dashboard/projects/${projectId}`} className="text-blue-600 hover:underline">
               {milestone.project?.title}
             </Link>
           </p>
@@ -209,7 +209,7 @@ export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,
 
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link href={`/dashboard/projects/${milestone.project?.id}`}>
+            <Link href={`/dashboard/projects/${projectId}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Project
             </Link>
