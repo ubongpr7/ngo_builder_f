@@ -51,7 +51,7 @@ DropdownMenu.displayName = "DropdownMenu"
 const useDropdownMenu = () => {
   const context = React.useContext(DropdownMenuContext)
   if (context === undefined) {
-    throw new Error("useDropdownMenu must be used within a DropdownMenu")
+    return { setOpen: () => {} } // Provide a no-op function if context is not available
   }
   return context
 }
@@ -126,21 +126,26 @@ const DropdownMenuItem = React.forwardRef<
     inset?: boolean
     closeOnClick?: boolean
   }
->(({ className, inset, closeOnClick = true, onClick, ...props }, ref) => {
+>(({ className, inset, closeOnClick = true, onSelect, ...props }, ref) => {
   const { setOpen } = useDropdownMenu()
 
-  const handleClick = React.useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (onClick) {
-        onClick(e)
+  // Use onSelect instead of onClick to ensure the action is executed
+  const handleSelect = React.useCallback(
+    (event: Event) => {
+      // Call the original onSelect if it exists
+      if (onSelect) {
+        onSelect(event)
       }
 
-      // Close the dropdown menu if closeOnClick is true
-      if (closeOnClick && !e.defaultPrevented) {
-        setOpen(false)
+      // Only close if closeOnClick is true and the event wasn't prevented
+      if (closeOnClick && !event.defaultPrevented) {
+        // Use setTimeout to ensure the action completes before closing
+        setTimeout(() => {
+          setOpen(false)
+        }, 0)
       }
     },
-    [onClick, closeOnClick, setOpen],
+    [onSelect, closeOnClick, setOpen],
   )
 
   return (
@@ -152,7 +157,7 @@ const DropdownMenuItem = React.forwardRef<
         inset && "pl-8",
         className,
       )}
-      onClick={handleClick}
+      onSelect={handleSelect}
       {...props}
     />
   )
@@ -162,24 +167,46 @@ DropdownMenuItem.displayName = "DropdownMenuItem"
 const DropdownMenuCheckboxItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
->(({ className, children, checked, ...props }, ref) => (
-  <DropdownMenuPrimitive.CheckboxItem
-    ref={ref}
-    className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
-      "focus:bg-blue-100 dark:focus:bg-blue-900 focus:text-blue-900 dark:focus:text-blue-100",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    checked={checked}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <Check className="h-4 w-4" />
-    </span>
-    {children}
-  </DropdownMenuPrimitive.CheckboxItem>
-))
+>(({ className, children, checked, ...props }, ref) => {
+  const { setOpen } = useDropdownMenu()
+
+  const handleSelect = React.useCallback(
+    (event: Event) => {
+      // Call the original onSelect if it exists
+      if (props.onSelect) {
+        props.onSelect(event)
+      }
+
+      // Close the dropdown after the action completes
+      if (!event.defaultPrevented) {
+        setTimeout(() => {
+          setOpen(false)
+        }, 0)
+      }
+    },
+    [props.onSelect, setOpen],
+  )
+
+  return (
+    <DropdownMenuPrimitive.CheckboxItem
+      ref={ref}
+      className={cn(
+        "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
+        "focus:bg-blue-100 dark:focus:bg-blue-900 focus:text-blue-900 dark:focus:text-blue-100",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className,
+      )}
+      checked={checked}
+      onSelect={handleSelect}
+      {...props}
+    >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <Check className="h-4 w-4" />
+      </span>
+      {children}
+    </DropdownMenuPrimitive.CheckboxItem>
+  )
+})
 DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName
 
 const DropdownMenuRadioItem = React.forwardRef<
@@ -188,10 +215,22 @@ const DropdownMenuRadioItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { setOpen } = useDropdownMenu()
 
-  const handleSelect = React.useCallback(() => {
-    // Close the dropdown menu when a radio item is selected
-    setOpen(false)
-  }, [setOpen])
+  const handleSelect = React.useCallback(
+    (event: Event) => {
+      // Call the original onSelect if it exists
+      if (props.onSelect) {
+        props.onSelect(event)
+      }
+
+      // Close the dropdown after the action completes
+      if (!event.defaultPrevented) {
+        setTimeout(() => {
+          setOpen(false)
+        }, 0)
+      }
+    },
+    [props.onSelect, setOpen],
+  )
 
   return (
     <DropdownMenuPrimitive.RadioItem
