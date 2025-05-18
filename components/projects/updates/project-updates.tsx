@@ -449,10 +449,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditUpdate(update)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Update
-                                </DropdownMenuItem>
+                                
                                 <DropdownMenuItem onClick={() => toggleUpdateExpansion(update.id)}>
                                   <Eye className="mr-2 h-4 w-4" />
                                   {isExpanded ? "Collapse" : "Expand"}
