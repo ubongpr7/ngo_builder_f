@@ -30,6 +30,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useToast } from "@/components/ui/use-toast"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { AddUpdateDialog } from "./add-update-dialog"
 import { EditUpdateDialog } from "./edit-update-dialog"
@@ -42,6 +43,7 @@ import {
   useGetUpdateStatisticsQuery,
   useDeleteUpdateMutation,
 } from "@/redux/features/projects/updateApiSlice"
+import { UpdateTimelineView } from "./update-timeline-view"
 import { UpdateGalleryView } from "./update-gallery-view"
 
 interface ProjectUpdatesProps {
@@ -79,10 +81,10 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
   // Filter updates based on search term and date filter
   const filteredUpdates = updates.filter((update) => {
     const matchesSearch =
-      update?.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (update?.challenges && update?.challenges.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (update?.achievements && update?.achievements.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (update?.next_steps && update?.next_steps.toLowerCase().includes(searchTerm.toLowerCase()))
+      update.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (update.challenges && update.challenges.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (update.achievements && update.achievements.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (update.next_steps && update.next_steps.toLowerCase().includes(searchTerm.toLowerCase()))
 
     // Apply date filter
     if (dateFilter !== "all") {
@@ -431,24 +433,37 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                           )}
                           {(isManager || isTeamMember) && (
                             <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => toggleUpdateExpansion(update.id)}
-                              >
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">{isExpanded ? "Collapse" : "Expand"}</span>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                                onClick={() => handleDeleteUpdate(update)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
-                              </Button>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => toggleUpdateExpansion(update.id)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">{isExpanded ? "Collapse" : "Expand"}</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                      onClick={() => handleDeleteUpdate(update)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Delete</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           )}
                         </div>
@@ -523,22 +538,37 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                                 </div>
                                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                                   <div className="flex gap-1">
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8 text-white"
-                                      onClick={() => handleViewMedia(media)}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-8 w-8 text-white"
-                                      onClick={() => handleDownloadMedia(media)}
-                                    >
-                                      <Download className="h-4 w-4" />
-                                    </Button>
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-8 w-8 text-white"
+                                            onClick={() => handleViewMedia(media)}
+                                          >
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">View</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-8 w-8 text-white"
+                                            onClick={() => handleDownloadMedia(media)}
+                                          >
+                                            <Download className="h-4 w-4" />
+                                          </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">Download</TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
                                   </div>
                                 </div>
                                 {media.caption && (
@@ -599,6 +629,14 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
             </div>
           )}
 
+          {viewMode === "timeline" && (
+            <UpdateTimelineView
+              updates={sortedUpdates}
+              onViewMedia={handleViewMedia}
+              onEditUpdate={handleEditUpdate}
+              onDeleteUpdate={handleDeleteUpdate}
+            />
+          )}
 
           {viewMode === "gallery" && <UpdateGalleryView projectId={projectId} onViewMedia={handleViewMedia} />}
         </>
