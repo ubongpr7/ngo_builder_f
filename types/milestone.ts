@@ -3,7 +3,14 @@ export interface Milestone {
   id: number
   title: string
   description: string | null
-  project: number 
+  project: {
+    id:number
+    title: string
+    description: string
+    budget: number
+    status: string
+  } 
+  piority: string
   due_date: string | null
   created_at: string
   updated_at: string

@@ -308,7 +308,15 @@ export interface ProjectComment {
 
 export interface ProjectMilestone {
   id: number
-  project: number
+  project: {
+    id: number
+    title: string
+    description: string
+  }
+  tasks_count:number
+  completed_tasks_count:number
+  external_links:string
+  start_date: string
   title: string
   description: string
   project_details?: {
@@ -328,6 +336,18 @@ export interface ProjectMilestone {
     first_name: string
     last_name: string
     email: string
+    profile_image?: string
+    role: string
+
+  }>
+  documents?: Array<{
+    id: number
+    name: string
+    file: string
+    file_type: string
+    uploaded_by:string
+    upload_date:string
+
   }>
   dependencies?: Array<{
     id: number
@@ -335,6 +355,22 @@ export interface ProjectMilestone {
     status: string
     due_date: string
   }>
+  comments: Array<{
+    id: number
+    content: string
+    created_at: string
+    updated_at: string
+    user: {
+      id: number
+      username: string
+      first_name: string
+      last_name: string
+      email: string
+      profile_image?: string
+    
+    }
+  }>
+
   deliverables?: string
   notes?: string
   created_at: string

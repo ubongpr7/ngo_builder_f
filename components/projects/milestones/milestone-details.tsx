@@ -13,7 +13,6 @@ import {
   Clock,
   AlertTriangle,
   Users,
-  MoreHorizontal,
   Trash2,
   Edit,
   Calendar,
@@ -28,13 +27,6 @@ import {
   Upload,
   PlusCircle,
 } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useGetMilestoneByIdQuery } from "@/redux/features/projects/milestoneApiSlice"
 import { TaskList } from "../task/taskList"
 import { AddEditMilestoneDialog } from "./add-edit-milestone-dialog"
@@ -53,7 +45,13 @@ interface MilestoneDetailProps {
   isTeamMember: boolean
 }
 
-export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,isTeamMember }: MilestoneDetailProps) {
+export function MilestoneDetail({
+  milestoneId,
+  projectId,
+  isManager,
+  is_DB_admin,
+  isTeamMember,
+}: MilestoneDetailProps) {
   const [activeTab, setActiveTab] = useState("overview")
   const [showStats, setShowStats] = useState(false)
 
@@ -65,7 +63,7 @@ export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,
   } = useGetMilestoneByIdQuery(milestoneId, {
     refetchOnMountOrArgChange: true,
   })
-
+  
   const canEdit = isManager || is_DB_admin || isTeamMember
 
   // Get status badge color
@@ -207,7 +205,7 @@ export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button asChild variant="outline">
             <Link href={`/dashboard/projects/${projectId}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -216,82 +214,126 @@ export function MilestoneDetail({ milestoneId, projectId, isManager,is_DB_admin,
           </Button>
 
           {canEdit && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <MoreHorizontal className="h-4 w-4 mr-1" />
-                  Actions
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <UpdateMilestoneStatusDialog
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  trigger={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Flag className="mr-2 h-4 w-4" />
-                      Update Status
-                    </DropdownMenuItem>
-                  }
-                />
+            <TooltipProvider>
+              <div className="flex items-center gap-2">
+                {/* Update Status Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <UpdateMilestoneStatusDialog
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700"
+                        >
+                          <Flag className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Update Status</p>
+                  </TooltipContent>
+                </Tooltip>
 
+                {/* Mark Complete Button - Only show if not completed */}
                 {milestone.status !== "completed" && (
-                  <CompleteMilestoneDialog
-                    milestone={milestone}
-                    onSuccess={handleSuccess}
-                    trigger={
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                        Mark Complete
-                      </DropdownMenuItem>
-                    }
-                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CompleteMilestoneDialog
+                        milestone={milestone}
+                        onSuccess={handleSuccess}
+                        trigger={
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 rounded-full bg-green-50 text-green-600 border-green-200 hover:bg-green-100 hover:text-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Mark Complete</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
 
-                <DropdownMenuSeparator />
+                {/* Edit Milestone Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AddEditMilestoneDialog
+                      projectId={projectId}
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100 hover:text-amber-700"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Edit Milestone</p>
+                  </TooltipContent>
+                </Tooltip>
 
-                <AddEditMilestoneDialog
-                  projectId={projectId}
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  trigger={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit Milestone
-                    </DropdownMenuItem>
-                  }
-                />
+                {/* Assign Users Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AssignUsersMilestoneDialog
+                      milestone={milestone}
+                      onSuccess={handleSuccess}
+                      projectId={projectId}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-purple-50 text-purple-600 border-purple-200 hover:bg-purple-100 hover:text-purple-700"
+                        >
+                          <Users className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Assign Users</p>
+                  </TooltipContent>
+                </Tooltip>
 
-                <AssignUsersMilestoneDialog
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  
-                  trigger={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Users className="mr-2 h-4 w-4" />
-                      Assign Users
-                    </DropdownMenuItem>
-                  }
-                  projectId={projectId}
-                />
-
-                <DropdownMenuSeparator />
-
-                <DeleteMilestoneDialog
-                  milestone={milestone}
-                  onSuccess={() => {
-                    // Navigate back to project page after deletion
-                    window.location.href = `/dashboard/projects/${projectId}`
-                  }}
-                  trigger={
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600 focus:text-red-600">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Milestone
-                    </DropdownMenuItem>
-                  }
-                />
-              </DropdownMenuContent>
-            </DropdownMenu>
+                {/* Delete Milestone Button */}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DeleteMilestoneDialog
+                      milestone={milestone}
+                      onSuccess={() => {
+                        // Navigate back to project page after deletion
+                        window.location.href = `/dashboard/projects/${projectId}`
+                      }}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Milestone</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
           )}
         </div>
       </div>
