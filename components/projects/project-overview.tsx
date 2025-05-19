@@ -82,7 +82,7 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
               <div className="flex items-center space-x-3">
                 <Avatar>
                   <AvatarImage
-                    src={`/abstract-geometric-shapes.png?height=40&width=40&query=${encodeURIComponent(project.manager_details.username)}`}
+                    src={`${project.manager_details.profile_image}`}
                   />
                   <AvatarFallback>
                     {project.manager_details.first_name?.[0]}
