@@ -8,17 +8,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Search,
   Calendar,
-  FileText,
   DollarSign,
   CheckCircle,
   XCircle,
   AlertTriangle,
   Loader2,
-  Receipt,
-  Filter,
+  Edit,
+  PlusCircle,
+  Eye,
 } from "lucide-react"
 import { AddExpenseDialog } from "./add-expense-dialog"
 import { EditExpenseDialog } from "./edit-expense-dialog"
@@ -58,16 +59,13 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const [selectedExpense, setSelectedExpense] = useState<any>(null)
 
   // API queries and mutations
-  const {
-    data: expenses = [],
-    isLoading,
-    refetch,
-  } = useGetExpensesByProjectQuery(
-    projectId,
-  )
-  
+  const { data: expenses = [], isLoading, refetch } = useGetExpensesByProjectQuery(projectId)
 
-  const { data: statistics,refetch: refetchStatistics, isLoading: isLoadingStatistics } = useGetExpenseStatisticsQuery(projectId)
+  const {
+    data: statistics,
+    refetch: refetchStatistics,
+    isLoading: isLoadingStatistics,
+  } = useGetExpenseStatisticsQuery(projectId)
 
   const [approveExpense] = useApproveExpenseMutation()
   const [rejectExpense] = useRejectExpenseMutation()
@@ -83,10 +81,12 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
     if (activeTab === "all") return matchesSearch
     return matchesSearch && expense.status.toLowerCase() === activeTab.toLowerCase()
   })
+
   const refresh = () => {
     refetch()
     refetchStatistics()
   }
+
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -209,18 +209,29 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         </div>
         {(isManager || isTeamMember) && (
           <div className="flex gap-2">
-         
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setAddExpenseOpen(true)}>
-              <Receipt className="mr-2 h-4 w-4" />
-              Add Expense
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => setAddExpenseOpen(true)}
+                    size="sm"
+                  >
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Add Expense</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add new expense</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-
         )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search expenses..."
@@ -230,7 +241,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
           />
         </div>
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList className="overflow-x-auto">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="approved">Approved</TabsTrigger>
@@ -243,7 +254,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
       {/* Summary Card */}
       <Card>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div className="space-y-1">
               <div className="text-sm text-gray-500">Total Expenses</div>
               <div className="text-2xl font-bold">${statistics?.total_expenses?.total?.toLocaleString() || "0.00"}</div>
@@ -280,10 +291,22 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                 ? "No expenses match your search criteria. Try different search terms or filters."
                 : "No expenses have been recorded for this project yet."}
             </p>
-            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setAddExpenseOpen(true)}>
-              <Receipt className="mr-2 h-4 w-4" />
-              Record First Expense
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => setAddExpenseOpen(true)}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Record First Expense
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Add new expense</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardContent>
         </Card>
       ) : (
@@ -291,7 +314,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
           {filteredExpenses.map((expense) => (
             <Card key={expense.id}>
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                   <div>
                     <CardTitle>{expense.title}</CardTitle>
                     <CardDescription>
@@ -302,12 +325,10 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div className="flex items-center space-x-3">
                     <Avatar>
-                      <AvatarImage
-                        src={`${expense.incurred_by_details?.profile_image}`}
-                      />
+                      <AvatarImage src={`${expense.incurred_by_details?.profile_image}`} />
                       <AvatarFallback>
                         {expense.incurred_by_details?.first_name?.[0] || ""}
                         {expense.incurred_by_details?.last_name?.[0] || ""}
@@ -342,17 +363,32 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                   {expense.approved_by_details && (
                     <div className="flex items-center text-gray-500">
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      By: {expense.approved_by_details.first_name} {expense.approved_by_details.last_name} ({expense.approved_by_details.email})
+                      By: {expense.approved_by_details.first_name} {expense.approved_by_details.last_name} (
+                      {expense.approved_by_details.email})
                     </div>
                   )}
                 </div>
 
                 {expense.receipt && (
                   <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-gray-500" />
-                    <button onClick={() => handleViewReceipt(expense)} className="text-blue-600 hover:underline">
-                      View Receipt
-                    </button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-0 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            onClick={() => handleViewReceipt(expense)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Receipt
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View receipt image</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 )}
 
@@ -364,46 +400,79 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                 )}
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                {(expense.status === "pending" && is_DB_admin) && (
-                  <>
+                <TooltipProvider>
+                  {expense.status === "pending" && is_DB_admin && (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 rounded-full border-green-500 text-green-600 hover:bg-green-50"
+                            onClick={() => handleApproveWithNotes(expense)}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Approve expense</p>
+                        </TooltipContent>
+                      </Tooltip>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-green-500 text-green-600 hover:bg-green-50"
-                      onClick={() => handleApproveWithNotes(expense)}
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-500 text-red-600 hover:bg-red-50"
-                      onClick={() => handleQuickReject(expense)}
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-                {(expense.status === "approved" && isManager) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                    onClick={() => handleReimburseWithNotes(expense)}
-                  >
-                    <DollarSign className="mr-2 h-4 w-4" />
-                    Mark Reimbursed
-                  </Button>
-                )}
-                {(isManager  || isTeamMember) && (
-                  <Button variant="outline" size="sm" onClick={() => handleEditExpense(expense)}>
-                    Edit
-                  </Button>
-
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 rounded-full border-red-500 text-red-600 hover:bg-red-50"
+                            onClick={() => handleQuickReject(expense)}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Reject expense</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </>
                   )}
+
+                  {expense.status === "approved" && isManager && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full border-blue-500 text-blue-600 hover:bg-blue-50"
+                          onClick={() => handleReimburseWithNotes(expense)}
+                        >
+                          <DollarSign className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Mark as reimbursed</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {(isManager || isTeamMember) && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full border-amber-500 text-amber-600 hover:bg-amber-50"
+                          onClick={() => handleEditExpense(expense)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit expense</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </TooltipProvider>
               </CardFooter>
             </Card>
           ))}
@@ -428,11 +497,11 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
             onSuccess={refresh}
           />
           <ApproveExpenseDialog
-          expense={selectedExpense}
-          open={approveExpenseOpen}
-          onOpenChange={setApproveExpenseOpen}
-          onSuccess={refresh}
-        />
+            expense={selectedExpense}
+            open={approveExpenseOpen}
+            onOpenChange={setApproveExpenseOpen}
+            onSuccess={refresh}
+          />
 
           <RejectExpenseDialog
             expense={selectedExpense}
@@ -451,8 +520,6 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
           <ViewReceiptDialog expense={selectedExpense} open={viewReceiptOpen} onOpenChange={setViewReceiptOpen} />
         </>
       )}
-
-      
     </div>
   )
 }

@@ -112,8 +112,12 @@ export interface ProjectUpdate {
     id: number
     title: string
   }
-  date?:string
-  summary?: string
+  summary: string
+  next_steps: string
+  achievements: string
+  challenges:string
+  date: string
+  funds_spent_today:number  
   submitted_by_details?: ProjectUser
   attachments?: {
     id: number
@@ -124,6 +128,14 @@ export interface ProjectUpdate {
   comments_count?: number
   created_at: string
   updated_at: string
+  media_files:Array<{
+    media_type:string
+    file:string
+    file_url:string
+    caption:string
+    uploaded_at:string
+    
+  }>
 }
 
 
@@ -167,6 +179,10 @@ export interface UpdateStatistics {
     project__title: string;
     count: number;
   }>;
+  
+  updates_this_week: number;
+  updates_this_month: number;
+  updates_this_year: number;
   total_funds_spent: number;
   updates_by_user: Array<{
     submitted_by__username: string;

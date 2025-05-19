@@ -7,26 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Search,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Loader2,
-  Flag,
-  Users,
-  MoreHorizontal,
-  Trash2,
-  Edit,
-  BarChart,
-} from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Search, CheckCircle, Clock, AlertTriangle, Loader2, Flag, Users, Trash2, Edit, BarChart } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { useGetMilestonesByProjectQuery } from "@/redux/features/projects/milestoneApiSlice"
 import { AddEditMilestoneDialog } from "./add-edit-milestone-dialog"
@@ -43,7 +25,7 @@ interface ProjectMilestonesProps {
   isTeamMember?: boolean
 }
 
-export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMember  }: ProjectMilestonesProps) {
+export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectMilestonesProps) {
   const { data: milestones = [], isLoading, refetch } = useGetMilestonesByProjectQuery(projectId)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
@@ -144,10 +126,10 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
           <h2 className="text-xl font-semibold mb-1">Project Milestones</h2>
           <p className="text-gray-500">Track key milestones and deliverables</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setShowStats(!showStats)} className={showStats ? "bg-blue-50" : ""}>
             <BarChart className="mr-2 h-4 w-4" />
-            {showStats ? "Hide Statistics" : "Show Statistics"}
+            <span className="hidden sm:inline">{showStats ? "Hide Statistics" : "Show Statistics"}</span>
           </Button>
           {(isManager || is_DB_admin || isTeamMember) && (
             <AddEditMilestoneDialog
@@ -156,11 +138,11 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
               trigger={
                 <Button className="bg-green-600 hover:bg-green-700 text-white">
                   <Flag className="mr-2 h-4 w-4" />
-                  Add Milestone
+                  <span className="hidden sm:inline">Add Milestone</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               }
             />
-
           )}
         </div>
       </div>
@@ -168,17 +150,17 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
       {showStats && <MilestoneStatistics projectId={projectId} />}
 
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Search milestones..."
-            className="pl-8"
+            className="pl-8 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Tabs defaultValue="all" className="w-full md:w-auto" onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList className="w-full md:w-auto overflow-x-auto">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="pending">Pending</TabsTrigger>
             <TabsTrigger value="in_progress">In Progress</TabsTrigger>
@@ -198,7 +180,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                 ? "No milestones match your search criteria. Try a different search term."
                 : "No milestones have been created for this project yet."}
             </p>
-            {(isManager || is_DB_admin || isTeamMember )&& (
+            {(isManager || is_DB_admin || isTeamMember) && (
               <AddEditMilestoneDialog
                 projectId={projectId}
                 onSuccess={handleSuccess}
@@ -209,7 +191,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </Button>
                 }
               />
-
             )}
           </CardContent>
         </Card>
@@ -218,12 +199,12 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
           {filteredMilestones.map((milestone) => (
             <Card key={milestone.id}>
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
                   <div>
                     <CardTitle>{milestone.title}</CardTitle>
                     <CardDescription>Due: {new Date(milestone.due_date).toLocaleDateString()}</CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Badge className={getPriorityBadgeColor(milestone.priority)}>
                       {milestone.priority?.charAt(0).toUpperCase() + milestone.priority?.slice(1)}
                     </Badge>
@@ -234,7 +215,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
               <CardContent>
                 <p className="text-gray-700 mb-4">{milestone.description}</p>
 
-                <div className="flex justify-between items-center text-sm mb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm mb-2 gap-2">
                   <div className="flex items-center">
                     <Clock className="mr-2 h-4 w-4 text-gray-500" />
                     {getDaysRemaining(milestone.due_date, milestone.completion_date, milestone.status)}
@@ -287,87 +268,206 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex justify-end gap-2">
               {(isManager || is_DB_admin || isTeamMember) && (
-                  
-                <AssignUsersMilestoneDialog
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  trigger={
-                    <Button variant="outline" size="sm">
-                      <Users className="mr-2 h-4 w-4" />
-                      Assign Users
-                    </Button>
-                  }
-                  projectId={projectId}
-                />
-              )}
-              {(isManager || is_DB_admin || isTeamMember) && (
+                <CardFooter className="flex flex-wrap justify-end gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                        >
+                          <Flag className="h-4 w-4" />
+                          <span className="sr-only">Update Status</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Update Status</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <UpdateMilestoneStatusDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Flag className="mr-2 h-4 w-4" />
-                          Update Status
-                        </DropdownMenuItem>
-                      }
-                    />
+                  <UpdateMilestoneStatusDialog
+                    milestone={milestone}
+                    onSuccess={handleSuccess}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="sm:hidden bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                      >
+                        <Flag className="mr-2 h-4 w-4" />
+                        Status
+                      </Button>
+                    }
+                  />
 
-                    {milestone.status !== "completed" && (
+                  {milestone.status !== "completed" && (
+                    <>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <CompleteMilestoneDialog
+                              milestone={milestone}
+                              onSuccess={handleSuccess}
+                              trigger={
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-9 w-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                  <span className="sr-only">Mark Complete</span>
+                                </Button>
+                              }
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Mark Complete</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
                       <CompleteMilestoneDialog
                         milestone={milestone}
                         onSuccess={handleSuccess}
                         trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                            Mark Complete
-                          </DropdownMenuItem>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="sm:hidden bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Complete
+                          </Button>
                         }
                       />
-                    )}
+                    </>
+                  )}
 
-                    <DropdownMenuSeparator />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AddEditMilestoneDialog
+                          projectId={projectId}
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700"
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Edit Milestone</span>
+                            </Button>
+                          }
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit Milestone</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
-                      <AddEditMilestoneDialog
-                        projectId={projectId}
-                        milestone={milestone}
-                        onSuccess={handleSuccess}
-                        trigger={
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Milestone
-                          </DropdownMenuItem>
-                        }
-                      />
+                  <AddEditMilestoneDialog
+                    projectId={projectId}
+                    milestone={milestone}
+                    onSuccess={handleSuccess}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="sm:hidden bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700"
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                    }
+                  />
 
-                    <DeleteMilestoneDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <DropdownMenuItem
-                          onSelect={(e) => e.preventDefault()}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Milestone
-                        </DropdownMenuItem>
-                      }
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AssignUsersMilestoneDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700"
+                            >
+                              <Users className="h-4 w-4" />
+                              <span className="sr-only">Assign Users</span>
+                            </Button>
+                          }
+                          projectId={projectId}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Assign Users</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <AssignUsersMilestoneDialog
+                    milestone={milestone}
+                    onSuccess={handleSuccess}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="sm:hidden bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Assign
+                      </Button>
+                    }
+                    projectId={projectId}
+                  />
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DeleteMilestoneDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete Milestone</span>
+                            </Button>
+                          }
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete Milestone</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <DeleteMilestoneDialog
+                    milestone={milestone}
+                    onSuccess={handleSuccess}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="sm:hidden bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    }
+                  />
+                </CardFooter>
               )}
-
-              </CardFooter>
-
             </Card>
           ))}
         </div>
