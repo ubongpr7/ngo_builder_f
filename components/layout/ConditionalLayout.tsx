@@ -28,7 +28,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     <div className="text-gray-900 bg-gray-50 flex min-h-screen flex-col">
       {isAuthenticated ? <AuthenticatedHeader /> : <Header />}
       <main className="flex-1">{children}</main>
-      {isAuthenticated ? <AuthenticatedFooter /> : <Footer />}
+      {isAuthenticated ? <div></div> : <Footer />}
     </div>
   )
 }
