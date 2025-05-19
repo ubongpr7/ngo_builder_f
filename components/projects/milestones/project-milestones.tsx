@@ -21,6 +21,7 @@ import {
   BarChart,
   ExternalLink,
 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { useGetMilestonesByProjectQuery } from "@/redux/features/projects/milestoneApiSlice"
 import { AddEditMilestoneDialog } from "./add-edit-milestone-dialog"
@@ -283,17 +284,24 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
               {(isManager || is_DB_admin || isTeamMember) && (
                 <CardFooter className="flex flex-wrap justify-end gap-2">
                   {/* Link to milestone detail page */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700"
-                    asChild
-                  >
-                    <Link href={`/dashboard/projects/${projectId}/milestones/${milestone.id}`}>
-                      <ExternalLink className="h-4 w-4" />
-                      <span className="sr-only">View Details</span>
-                    </Link>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700"
+                          asChild
+                        >
+                          <Link href={`/dashboard/projects/${projectId}/milestones/${milestone.id}`}>
+                            <ExternalLink className="h-4 w-4" />
+                            <span className="sr-only">View Details</span>
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View Details</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <Button variant="outline" size="sm" className="sm:hidden" asChild>
                     <Link href={`/dashboard/projects/${projectId}/milestones/${milestone.id}`}>
@@ -302,20 +310,27 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     </Link>
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
-                    onClick={() => {
-                      const dialog = document.getElementById(
-                        `update-status-dialog-${milestone.id}`,
-                      ) as HTMLDialogElement
-                      if (dialog) dialog.showModal()
-                    }}
-                  >
-                    <Flag className="h-4 w-4" />
-                    <span className="sr-only">Update Status</span>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                          onClick={() => {
+                            const dialog = document.getElementById(
+                              `update-status-dialog-${milestone.id}`,
+                            ) as HTMLDialogElement
+                            if (dialog) dialog.showModal()
+                          }}
+                        >
+                          <Flag className="h-4 w-4" />
+                          <span className="sr-only">Update Status</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Update Status</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <UpdateMilestoneStatusDialog
                     milestone={milestone}
@@ -334,18 +349,27 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
 
                   {milestone.status !== "completed" && (
                     <>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-9 w-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                        onClick={() => {
-                          const dialog = document.getElementById(`complete-dialog-${milestone.id}`) as HTMLDialogElement
-                          if (dialog) dialog.showModal()
-                        }}
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        <span className="sr-only">Mark Complete</span>
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-9 w-9 rounded-full bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
+                              onClick={() => {
+                                const dialog = document.getElementById(
+                                  `complete-dialog-${milestone.id}`,
+                                ) as HTMLDialogElement
+                                if (dialog) dialog.showModal()
+                              }}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="sr-only">Mark Complete</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Mark Complete</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
 
                       <CompleteMilestoneDialog
                         milestone={milestone}
@@ -364,18 +388,25 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     </>
                   )}
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700"
-                    onClick={() => {
-                      const dialog = document.getElementById(`edit-dialog-${milestone.id}`) as HTMLDialogElement
-                      if (dialog) dialog.showModal()
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                    <span className="sr-only">Edit Milestone</span>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700"
+                          onClick={() => {
+                            const dialog = document.getElementById(`edit-dialog-${milestone.id}`) as HTMLDialogElement
+                            if (dialog) dialog.showModal()
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Edit Milestone</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit Milestone</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <AddEditMilestoneDialog
                     projectId={projectId}
@@ -393,18 +424,25 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     }
                   />
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700"
-                    onClick={() => {
-                      const dialog = document.getElementById(`assign-dialog-${milestone.id}`) as HTMLDialogElement
-                      if (dialog) dialog.showModal()
-                    }}
-                  >
-                    <Users className="h-4 w-4" />
-                    <span className="sr-only">Assign Users</span>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700"
+                          onClick={() => {
+                            const dialog = document.getElementById(`assign-dialog-${milestone.id}`) as HTMLDialogElement
+                            if (dialog) dialog.showModal()
+                          }}
+                        >
+                          <Users className="h-4 w-4" />
+                          <span className="sr-only">Assign Users</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Assign Users</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <AssignUsersMilestoneDialog
                     milestone={milestone}
@@ -422,18 +460,25 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     projectId={projectId}
                   />
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
-                    onClick={() => {
-                      const dialog = document.getElementById(`delete-dialog-${milestone.id}`) as HTMLDialogElement
-                      if (dialog) dialog.showModal()
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete Milestone</span>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
+                          onClick={() => {
+                            const dialog = document.getElementById(`delete-dialog-${milestone.id}`) as HTMLDialogElement
+                            if (dialog) dialog.showModal()
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete Milestone</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete Milestone</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   <DeleteMilestoneDialog
                     milestone={milestone}

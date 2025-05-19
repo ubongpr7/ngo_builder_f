@@ -63,7 +63,7 @@ export function MilestoneDetail({
   } = useGetMilestoneByIdQuery(milestoneId, {
     refetchOnMountOrArgChange: true,
   })
-  
+
   const canEdit = isManager || is_DB_admin || isTeamMember
 
   // Get status badge color
@@ -206,12 +206,21 @@ export function MilestoneDetail({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/dashboard/projects/${projectId}`}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Project
-            </Link>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="outline">
+                  <Link href={`/dashboard/projects/${projectId}`}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Project
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Return to project</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {canEdit && (
             <TooltipProvider>
@@ -504,17 +513,26 @@ export function MilestoneDetail({
                   </CardContent>
                   <CardFooter>
                     {canEdit && (
-                      <AssignUsersMilestoneDialog
-                        milestone={milestone}
-                        onSuccess={handleSuccess}
-                        trigger={
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Users className="mr-2 h-4 w-4" />
-                            Manage Team
-                          </Button>
-                        }
-                        projectId={projectId}
-                      />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <AssignUsersMilestoneDialog
+                              milestone={milestone}
+                              onSuccess={handleSuccess}
+                              trigger={
+                                <Button variant="outline" size="sm" className="w-full">
+                                  <Users className="mr-2 h-4 w-4" />
+                                  Manage Team
+                                </Button>
+                              }
+                              projectId={projectId}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Add or remove team members</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </CardFooter>
                 </Card>
@@ -528,10 +546,19 @@ export function MilestoneDetail({
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Tasks</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)}>
-                  <BarChart className="mr-2 h-4 w-4" />
-                  {showStats ? "Hide Statistics" : "Show Statistics"}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)}>
+                        <BarChart className="mr-2 h-4 w-4" />
+                        {showStats ? "Hide Statistics" : "Show Statistics"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{showStats ? "Hide task statistics" : "Show task statistics"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardHeader>
             <CardContent>
@@ -586,34 +613,52 @@ export function MilestoneDetail({
                   <h3 className="text-lg font-medium mb-2">No Team Members Assigned</h3>
                   <p className="text-gray-500 mb-4">There are no team members assigned to this milestone yet.</p>
                   {canEdit && (
-                    <AssignUsersMilestoneDialog
-                      milestone={milestone}
-                      onSuccess={handleSuccess}
-                      trigger={
-                        <Button>
-                          <Users className="mr-2 h-4 w-4" />
-                          Assign Team Members
-                        </Button>
-                      }
-                      projectId={projectId}
-                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AssignUsersMilestoneDialog
+                            milestone={milestone}
+                            onSuccess={handleSuccess}
+                            trigger={
+                              <Button>
+                                <Users className="mr-2 h-4 w-4" />
+                                Assign Team Members
+                              </Button>
+                            }
+                            projectId={projectId}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Add team members to this milestone</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
               )}
             </CardContent>
             {canEdit && milestone.assigned_to && milestone.assigned_to.length > 0 && (
               <CardFooter>
-                <AssignUsersMilestoneDialog
-                  milestone={milestone}
-                  onSuccess={handleSuccess}
-                  trigger={
-                    <Button variant="outline">
-                      <Users className="mr-2 h-4 w-4" />
-                      Manage Team Members
-                    </Button>
-                  }
-                  projectId={projectId}
-                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AssignUsersMilestoneDialog
+                        milestone={milestone}
+                        onSuccess={handleSuccess}
+                        trigger={
+                          <Button variant="outline">
+                            <Users className="mr-2 h-4 w-4" />
+                            Manage Team Members
+                          </Button>
+                        }
+                        projectId={projectId}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add or remove team members</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </CardFooter>
             )}
           </Card>
@@ -628,10 +673,19 @@ export function MilestoneDetail({
                   <CardDescription>Files and documents related to this milestone</CardDescription>
                 </div>
                 {canEdit && (
-                  <Button>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Document
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button>
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Document
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Upload a new document</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </CardHeader>
@@ -670,10 +724,19 @@ export function MilestoneDetail({
                   <h3 className="text-lg font-medium mb-2">No Documents</h3>
                   <p className="text-gray-500 mb-4">There are no documents attached to this milestone yet.</p>
                   {canEdit && (
-                    <Button>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload First Document
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload First Document
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Upload your first document</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
               )}
@@ -725,10 +788,19 @@ export function MilestoneDetail({
                     placeholder="Add a comment..."
                   ></textarea>
                   <div className="mt-2 flex justify-end">
-                    <Button>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Comment
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Comment
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Post your comment</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               )}
