@@ -7,16 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
   AlertTriangle,
   Users,
-  MoreHorizontal,
   Edit,
   Trash2,
   Plus,
@@ -357,40 +349,73 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                   </TooltipProvider>
                 )}
 
+                {/* Action buttons with tooltips - replacing dropdown menu */}
                 {(isManager || is_DB_admin || isTeamMember) && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => openDialog("assign", task)}>
-                        <Users className="mr-2 h-4 w-4" />
-                        Assign Users
-                      </DropdownMenuItem>
+                  <div className="flex space-x-1">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => openDialog("assign", task)}
+                          >
+                            <Users className="h-4 w-4 text-blue-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Assign Users</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                      <DropdownMenuItem onClick={() => openDialog("add", null, task.id)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Subtask
-                      </DropdownMenuItem>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => openDialog("add", null, task.id)}
+                          >
+                            <Plus className="h-4 w-4 text-green-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Add Subtask</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                      <DropdownMenuSeparator />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => openDialog("edit", task)}
+                          >
+                            <Edit className="h-4 w-4 text-amber-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Edit Task</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                      <DropdownMenuItem onClick={() => openDialog("edit", task)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Task
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Task
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-full"
+                            onClick={() => handleDeleteTask(task.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Delete Task</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 )}
               </div>
             </div>
@@ -454,9 +479,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All Tasks ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="todo">Pending ({tasks.filter((t:Task) => t.status === "todo").length})</TabsTrigger>
+          <TabsTrigger value="todo">Pending ({tasks.filter((t: Task) => t.status === "todo").length})</TabsTrigger>
           <TabsTrigger value="completed">
-            Completed ({tasks.filter((t:Task) => t.status === "completed").length})
+            Completed ({tasks.filter((t: Task) => t.status === "completed").length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
