@@ -1,72 +1,69 @@
 "use client"
 
 import type React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
 
 interface ChartContainerProps {
   title: string
-  description?: string
-  isLoading?: boolean
-  trend?: {
-    value: number
-    isPositive: boolean
-    label: string
-  }
-  className?: string
-  onRefresh?: () => void
   children: React.ReactNode
+  isLoading: boolean
+  onRefresh?: () => void
+  className?: string
+  height?: string
+  icon?: React.ReactNode
 }
 
 export function ChartContainer({
   title,
-  description,
-  isLoading = false,
-  trend,
-  className = "",
-  onRefresh,
   children,
+  isLoading,
+  onRefresh,
+  className,
+  height = "h-[300px]",
+  icon,
 }: ChartContainerProps) {
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
-          <CardTitle className="text-base font-medium">{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </div>
-
-        <div className="flex items-center space-x-2">
-          {trend && (
-            <div
-              className={`flex items-center text-xs font-medium ${
-                trend.isPositive ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {trend.isPositive ? (
-                <ArrowUpRight className="mr-1 h-3 w-3" />
-              ) : (
-                <ArrowDownRight className="mr-1 h-3 w-3" />
-              )}
-              {trend.value.toFixed(1)}% {trend.label}
-            </div>
-          )}
-
-          {onRefresh && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRefresh} title="Refresh data">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
+    <Card className={cn("overflow-hidden transition-all duration-300 hover:shadow-md", className)}>
+      <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-md font-medium flex items-center gap-2">
+          {icon && <span className="text-muted-foreground">{icon}</span>}
+          {title}
+        </CardTitle>
+        {onRefresh && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full hover:bg-gray-100"
+                  onClick={onRefresh}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                  <span className="sr-only">Refresh</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh chart data</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-2">
         {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-[200px] w-full" />
+          <div className={cn("w-full flex items-center justify-center", height)}>
+            <Skeleton className="w-full h-full rounded-md" />
           </div>
         ) : (
-          children
+          <div className={cn("w-full", height)}>{children}</div>
         )}
       </CardContent>
     </Card>

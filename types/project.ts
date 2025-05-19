@@ -136,6 +136,7 @@ export interface ProjectUpdate {
     uploaded_at:string
     
   }>
+  project_id:string
 }
 
 

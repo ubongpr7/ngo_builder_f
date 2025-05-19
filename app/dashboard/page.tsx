@@ -1,7 +1,7 @@
 "use client"
 
 import { DashboardCard } from "@/components/ui/dashboard-card"
-import { FileText, DollarSign, CheckCircle, AlertTriangle, ClipboardCheck } from "lucide-react"
+import { FileText, DollarSign, CheckCircle, AlertTriangle, ClipboardCheck, RefreshCw } from "lucide-react"
 import Link from "next/link"
 import { useGetAllProjectsQuery, useGetProjectStatisticsQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetMilestoneStatisticsQuery } from "@/redux/features/projects/milestoneApiSlice"
@@ -16,28 +16,66 @@ import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readPr
 import { usePermissions } from "@/components/permissionHander"
 import { Badge } from "@/components/ui/badge"
 import { AnalyticsSection } from "@/components/dashboard/analytics-section"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function DashboardPage() {
-  // Fetch data from our API endpoints
-  const { data: projectStatistics, isLoading: statsLoading, refetch: refreshStats } = useGetProjectStatisticsQuery()
-  const { data: projectsData, isLoading: projectsLoading } = useGetAllProjectsQuery("")
-  const { data: milestoneStats, isLoading: milestonesLoading } = useGetMilestoneStatisticsQuery()
-  const { data: expenseStats, isLoading: expensesLoading } = useGetExpenseStatisticsQuery()
-  const { data: recentUpdates, isLoading: updatesLoading } = useGetRecentUpdatesQuery()
+  const {
+    data: projectStatistics,
+    isLoading: statsLoading,
+    refetch: refreshStats,
+    isFetching: isRefreshingStats,
+  } = useGetProjectStatisticsQuery()
+
+  const {
+    data: projectsData,
+    isLoading: projectsLoading,
+    refetch: refreshProjects,
+    isFetching: isRefreshingProjects,
+  } = useGetAllProjectsQuery("")
+
+  const {
+    data: milestoneStats,
+    isLoading: milestonesLoading,
+    refetch: refreshMilestones,
+    isFetching: isRefreshingMilestones,
+  } = useGetMilestoneStatisticsQuery()
+
+  const {
+    data: expenseStats,
+    isLoading: expensesLoading,
+    refetch: refreshExpenses,
+    isFetching: isRefreshingExpenses,
+  } = useGetExpenseStatisticsQuery()
+
+  const {
+    data: recentUpdates,
+    isLoading: updatesLoading,
+    refetch: refreshUpdates,
+    isFetching: isRefreshingUpdates,
+  } = useGetRecentUpdatesQuery()
+
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
 
   const projects = projectsData as Project[]
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Function to refresh all data
+  const refreshAllData = async () => {
+    setIsRefreshing(true)
+    await Promise.all([refreshStats(), refreshProjects(), refreshMilestones(), refreshExpenses(), refreshUpdates()])
+    setIsRefreshing(false)
+  }
 
   // Set up auto-refresh for real-time data
   useEffect(() => {
-    // Refresh data every 30 seconds
+    // Refresh data every 60 seconds
     const interval = setInterval(() => {
-      refreshStats()
-    }, 30000)
+      refreshAllData()
+    }, 60000)
 
     return () => clearInterval(interval)
-  }, [refreshStats])
+  }, [])
 
   // Calculate project statistics
   const [projectStats, setProjectStats] = useState({
@@ -56,16 +94,19 @@ export default function DashboardPage() {
       const active = projects.filter(
         (p) => p.status === "planned" || p.status === "in_progress" || p.status === "active" || p.status === "planning",
       ).length
-      const completed =projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed").length
-      const submitted = projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted").length
+      const completed =
+        projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed").length
+      const submitted =
+        projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted").length
       const overbudget = projects.filter((p) => p.is_overbudget).length
-      const totalBudget =projectStatistics?.budget_stats.total_budget || 
+      const totalBudget =
+        projectStatistics?.budget_stats.total_budget ||
         projects.reduce((sum, p) => {
-          if (['cancelled', 'submitted', 'rejected'].includes(p.status)) {
-            return sum;
+          if (["cancelled", "submitted", "rejected"].includes(p.status)) {
+            return sum
           }
-          return Number(sum) + (Number(p.budget) || 0);
-        }, 0);
+          return Number(sum) + (Number(p.budget) || 0)
+        }, 0)
       const totalSpent = projectStatistics?.budget_stats.total_spent || 0
 
       setProjectStats({
@@ -124,9 +165,39 @@ export default function DashboardPage() {
     }
   }
 
+  // Check if any data is currently being refreshed
+  const isAnyDataRefreshing =
+    isRefreshing ||
+    isRefreshingStats ||
+    isRefreshingProjects ||
+    isRefreshingMilestones ||
+    isRefreshingExpenses ||
+    isRefreshingUpdates
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">Project Management Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Project Management Dashboard</h1>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshAllData}
+                disabled={isAnyDataRefreshing}
+                className="transition-all duration-200 hover:bg-gray-100"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isAnyDataRefreshing ? "animate-spin" : ""}`} />
+                {isAnyDataRefreshing ? "Refreshing..." : "Refresh Data"}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Refresh all dashboard data</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Projects Card */}
@@ -140,6 +211,7 @@ export default function DashboardPage() {
             isPositive: true,
             label: "completion rate",
           }}
+          isLoading={projectsLoading || isRefreshingProjects}
         />
 
         {/* Proposals Card - Only visible to admins */}
@@ -155,6 +227,7 @@ export default function DashboardPage() {
               label: "pending review",
             }}
             className="border-l-4 border-purple-500"
+            isLoading={projectsLoading || isRefreshingProjects}
           />
         )}
 
@@ -173,6 +246,7 @@ export default function DashboardPage() {
             isPositive: true,
             label: "completed",
           }}
+          isLoading={milestonesLoading || isRefreshingMilestones}
         />
 
         {/* Budget Card */}
@@ -186,6 +260,7 @@ export default function DashboardPage() {
             isPositive: budgetUtilization <= 90,
             label: "utilization",
           }}
+          isLoading={projectsLoading || statsLoading || isRefreshingStats || isRefreshingProjects}
         />
 
         {/* Expenses Card */}
@@ -199,6 +274,7 @@ export default function DashboardPage() {
             isPositive: true,
             label: "processed",
           }}
+          isLoading={expensesLoading || isRefreshingExpenses}
         />
       </div>
 
@@ -207,7 +283,8 @@ export default function DashboardPage() {
         projectStatistics={projectStatistics}
         projects={projects || []}
         isLoading={statsLoading || projectsLoading}
-        onRefresh={refreshStats}
+        isRefreshing={isRefreshingStats || isRefreshingProjects}
+        onRefresh={refreshAllData}
       />
 
       {/* Project Proposals Section - Only visible to admins */}
@@ -220,9 +297,9 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
             <div className="space-y-4">
-              {projectsLoading ? (
+              {projectsLoading || isRefreshingProjects ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex gap-4 border-b pb-4">
@@ -240,7 +317,7 @@ export default function DashboardPage() {
                   .slice(0, 3)
                   .map((project) => (
                     <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                      <div className="flex justify-between items-center border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2">
+                      <div className="flex justify-between items-center border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
                         <div className="flex gap-4">
                           <div className="text-black bg-purple-100 p-2 rounded text-center min-w-[60px]">
                             <div className="text-sm font-bold">
@@ -263,11 +340,13 @@ export default function DashboardPage() {
                   ))
               )}
 
-              {!projectsLoading && projects.filter((project) => project.status === "submitted").length === 0 && (
-                <div className="text-center py-4 text-gray-500">
-                  <p>No project proposals awaiting review</p>
-                </div>
-              )}
+              {!projectsLoading &&
+                !isRefreshingProjects &&
+                projects.filter((project) => project.status === "submitted").length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>No project proposals awaiting review</p>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -275,15 +354,18 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Recent Project Updates */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Recent Updates</h2>
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold">Recent Updates</h2>
+              {isRefreshingUpdates && <RefreshCw className="ml-2 h-4 w-4 animate-spin text-gray-400" />}
+            </div>
             <Link href="/dashboard/projects" className="text-sm text-blue-600 hover:underline">
               View all projects
             </Link>
           </div>
 
-          {updatesLoading ? (
+          {updatesLoading || isRefreshingUpdates ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="border-b pb-4">
@@ -296,23 +378,25 @@ export default function DashboardPage() {
           ) : recentUpdates && recentUpdates.length > 0 ? (
             <div className="space-y-4">
               {recentUpdates.slice(0, 3).map((update) => (
-                <div key={update.id} className="border-b pb-4">
-                  <h3 className="font-medium">{update.project_details?.title || "Project Update"}</h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">{update.summary}</p>
-                  <div className="flex justify-between mt-1">
-                    <p className="text-xs text-gray-500">
-                      By {update.submitted_by_details?.first_name || "User"}{" "}
-                      {update.submitted_by_details?.last_name || ""}
-                    </p>
-                    <p className="text-xs text-gray-500">{formatDate(update.date || "")}</p>
+                <Link href={`/dashboard/projects/${update.project_id}`} key={update.id}>
+                  <div className="border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
+                    <h3 className="font-medium">{update.project_details?.title || "Project Update"}</h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">{update.summary}</p>
+                    <div className="flex justify-between mt-1">
+                      <p className="text-xs text-gray-500">
+                        By {update.submitted_by_details?.first_name || "User"}{" "}
+                        {update.submitted_by_details?.last_name || ""}
+                      </p>
+                      <p className="text-xs text-gray-500">{formatDate(update.date || "")}</p>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
               <p>No recent updates found</p>
-              <Button variant="outline" className="mt-2" asChild>
+              <Button variant="outline" className="mt-2 hover:bg-gray-100" asChild>
                 <Link href="/dashboard/projects">Add Project Update</Link>
               </Button>
             </div>
@@ -320,15 +404,18 @@ export default function DashboardPage() {
         </div>
 
         {/* Upcoming Milestones */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Upcoming Milestones</h2>
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold">Upcoming Milestones</h2>
+              {isRefreshingMilestones && <RefreshCw className="ml-2 h-4 w-4 animate-spin text-gray-400" />}
+            </div>
             <Link href="/dashboard/projects" className="text-sm text-blue-600 hover:underline">
               View all milestones
             </Link>
           </div>
 
-          {milestonesLoading ? (
+          {milestonesLoading || isRefreshingMilestones ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-4 border-b pb-4">
@@ -347,7 +434,7 @@ export default function DashboardPage() {
                 .slice(0, 3)
                 .map((project) => (
                   <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
-                    <div className="flex gap-4 border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2">
+                    <div className="flex gap-4 border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
                       <div className="text-black bg-[#FDD65B] p-2 rounded text-center min-w-[60px]">
                         <div className="text-sm font-bold">{formatDate(project.target_end_date).split(" ")[0]}</div>
                         <div className="text-xl font-bold">{formatDate(project.target_end_date).split(" ")[1]}</div>
@@ -365,7 +452,7 @@ export default function DashboardPage() {
           ) : (
             <div className="text-center py-8 text-gray-500">
               <p>No upcoming milestones found</p>
-              <Button variant="outline" className="mt-2" asChild>
+              <Button variant="outline" className="mt-2 hover:bg-gray-100" asChild>
                 <Link href="/dashboard/projects">Add Project</Link>
               </Button>
             </div>

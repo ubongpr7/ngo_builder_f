@@ -32,10 +32,8 @@ const calculateProgress = (project: Project) => {
   if (project.status === "completed") return 100
   if (project.status === "planned" || project.status === "cancelled") return 0
 
-  // Calculate based on budget utilization if available
   if (project.budget_utilization) return Math.min(project.budget_utilization, 100)
 
-  // Calculate based on timeline
   const today = new Date()
   const startDate = project.start_date ? new Date(project.start_date) : new Date()
   const endDate = new Date(project.target_end_date || Date.now())
@@ -86,7 +84,7 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <Users className="mr-2 h-4 w-4" />
-            {project.officials?.length || 0} team members
+            {project.team_members?.length || 0} team members
           </div>
 
           {project.status !== "planning" && (

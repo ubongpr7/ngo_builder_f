@@ -41,7 +41,6 @@ export function TaskFilterDialog({ open, onOpenChange, initialFilters, onApply, 
     isCompleted: initialFilters.isCompleted || false,
   })
 
-  // Update filters when dialog opens or initialFilters change
   useEffect(() => {
     if (open) {
       setFilters({
