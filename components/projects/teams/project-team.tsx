@@ -7,19 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Search,
-  UserPlus,
-  Mail,
-  Calendar,
-  Briefcase,
-  AlertTriangle,
-  Loader2,
-  MoreVertical,
-  Trash2,
-  Edit,
-  Clock,
-} from "lucide-react"
+import { Search, UserPlus, Mail, Calendar, AlertTriangle, Loader2, Trash2, Edit, Clock } from "lucide-react"
 import { format } from "date-fns"
 
 import {
@@ -29,14 +17,6 @@ import {
   useExtendTeamMembershipMutation,
 } from "@/redux/features/projects/teamMemberApiSlice"
 import { AddTeamMemberDialog } from "./add-team-member-dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -120,8 +100,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
       try {
         await deleteTeamMember(id).unwrap()
         refetch()
-      } catch (error) {
-      }
+      } catch (error) {}
     }
   }
 
@@ -145,8 +124,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
 
       setRoleDialogOpen(false)
       refetch()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   const openExtendDialog = (member: any) => {
@@ -165,8 +143,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
       }).unwrap()
       setExtendDialogOpen(false)
       refetch()
-    } catch (error) {
-    }
+    } catch (error) {}
   }
 
   if (isLoading) {
@@ -185,7 +162,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
           <h2 className="text-xl font-semibold mb-1">Project Team</h2>
           <p className="text-gray-500">Manage team members assigned to this project</p>
         </div>
-        {(isManager|| is_DB_admin) && (
+        {(isManager || is_DB_admin) && (
           <AddTeamMemberDialog
             projectId={projectId}
             onSuccess={refetch}
@@ -196,7 +173,6 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
               </Button>
             }
           />
-
         )}
       </div>
 
@@ -233,7 +209,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                 ? "No team members match your search criteria. Try a different search term."
                 : "No team members have been assigned to this project yet."}
             </p>
-            {(isManager|| is_DB_admin) && (
+            {(isManager || is_DB_admin) && (
               <AddTeamMemberDialog
                 projectId={projectId}
                 onSuccess={refetch}
@@ -244,8 +220,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                   </Button>
                 }
               />
-              )
-            }
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -260,31 +235,35 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                       {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                     </Badge>
                     {isManager && (
-                    
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => openRoleDialog(member)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Change Role
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openExtendDialog(member)}>
-                            <Clock className="mr-2 h-4 w-4" />
-                            {member.end_date ? "Change End Date" : "Add End Date"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteMember(member.id)}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Remove Member
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => openRoleDialog(member)}
+                          title="Change Role"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => openExtendDialog(member)}
+                          title={member.end_date ? "Change End Date" : "Add End Date"}
+                        >
+                          <Clock className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteMember(member.id)}
+                          title="Remove Member"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </CardHeader>
@@ -338,13 +317,20 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                     <Mail className="mr-2 h-4 w-4" />
                     Contact
                   </Button>
-                  {isManager && (
-                    <Button variant="outline" size="sm" onClick={() => openRoleDialog(member)}>
-                      <Briefcase className="mr-2 h-4 w-4" />
-                      Edit Role
-                    </Button>
-
-                  )}
+                  <div className="flex gap-2">
+                    {isManager && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => openRoleDialog(member)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Role
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => openExtendDialog(member)}>
+                          <Clock className="mr-2 h-4 w-4" />
+                          {member.end_date ? "End Date" : "Set End"}
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             )
