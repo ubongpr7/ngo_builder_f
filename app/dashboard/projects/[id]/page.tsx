@@ -59,6 +59,7 @@ export default function ProjectDetail() {
   const refreshProject = () => {
     refetch()
   }
+  const [updateProject] = useUpdateProjectMutation()
   
   const handleApprove = async (projectId: number) => {
     try {
@@ -77,7 +78,7 @@ export default function ProjectDetail() {
       })
     }
   }
-  const [updateProject] = useUpdateProjectMutation()
+
 
   const handleReject = async (projectId: number) => {
     try {
@@ -95,7 +96,7 @@ export default function ProjectDetail() {
         variant: "destructive",
       })
     
-  }
+  }}
 
 
   if (isLoading) {
@@ -229,15 +230,13 @@ export default function ProjectDetail() {
             <>
               <Button onClick={ ()=>{
                 handleApprove(project.id)
-              }
-              } className="bg-green-600 hover:bg-green-700 text-white">
+              }} className="bg-green-600 hover:bg-green-700 text-white">
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>
               <Button onClick={ ()=>{
                 handleReject(project.id)
-              }
-              } 
+              }} 
               className="bg-red-600 hover:bg-red-700 text-white">
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
