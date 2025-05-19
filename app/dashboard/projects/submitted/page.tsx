@@ -49,7 +49,7 @@ export default function AdminProjectProposals() {
   const handleApprove = async (projectId: number) => {
     try {
       setProcessingIds((prev) => [...prev, projectId])
-      await updateProject({ id: projectId, status: "planning" }).unwrap()
+      await updateProject({ id: projectId, data:{status: "planning" }}).unwrap()
       toast({
         title: "Project approved",
         description: "The project proposal has been approved and is now in planning status.",
@@ -70,7 +70,7 @@ export default function AdminProjectProposals() {
   const handleReject = async (projectId: number) => {
     try {
       setProcessingIds((prev) => [...prev, projectId])
-      await updateProject({ id: projectId, status: "cancelled" }).unwrap()
+      await updateProject({ id: projectId, data:{status: "cancelled"} }).unwrap()
       toast({
         title: "Project rejected",
         description: "The project proposal has been rejected.",

@@ -26,14 +26,17 @@ import { ProjectMilestones } from "@/components/projects/milestones/project-mile
 import { ProjectUpdates } from "@/components/projects/updates/project-updates"
 import { ProjectExpenses } from "@/components/projects/expenses/project-expenses"
 
-import { useGetProjectByIdQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetProjectByIdQuery, useUpdateProjectMutation } from "@/redux/features/projects/projectsAPISlice"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { usePermissions } from "@/components/permissionHander"
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
+    const { toast } = useToast()
+  
   const { data: project, isLoading, isError, refetch } = useGetProjectByIdQuery(projectId)
   const [activeTab, setActiveTab] = useState("overview")
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
@@ -56,6 +59,44 @@ export default function ProjectDetail() {
   const refreshProject = () => {
     refetch()
   }
+  
+  const handleApprove = async (projectId: number) => {
+    try {
+      await updateProject({ id: projectId, data:{status: "planning" }}).unwrap()
+      toast({
+        title: "Project approved",
+        description: "The project proposal has been approved and is now in planning status.",
+      })
+      refetch()
+    } catch (error) {
+      console.error("Failed to approve project:", error)
+      toast({
+        title: "Error",
+        description: "Failed to approve project. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+  const [updateProject] = useUpdateProjectMutation()
+
+  const handleReject = async (projectId: number) => {
+    try {
+      await updateProject({ id: projectId, data:{status: "cancelled"} }).unwrap()
+      toast({
+        title: "Project rejected",
+        description: "The project proposal has been rejected.",
+      })
+      refetch()
+    } catch (error) {
+      console.error("Failed to reject project:", error)
+      toast({
+        title: "Error",
+        description: "Failed to reject project. Please try again.",
+        variant: "destructive",
+      })
+    
+  }
+
 
   if (isLoading) {
     return (
@@ -186,11 +227,18 @@ export default function ProjectDetail() {
           {/* Show approval buttons for admins when project is submitted */}
           {project.status === "submitted" && is_DB_admin && (
             <>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={ ()=>{
+                handleApprove(project.id)
+              }
+              } className="bg-green-600 hover:bg-green-700 text-white">
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={ ()=>{
+                handleReject(project.id)
+              }
+              } 
+              className="bg-red-600 hover:bg-red-700 text-white">
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
               </Button>
@@ -290,7 +338,7 @@ export default function ProjectDetail() {
                     variant="outline"
                     className="border-purple-300 text-purple-700 hover:bg-purple-50"
                     onClick={() => {
-                      // Handle approval logic here
+                      handleApprove(project.id)
                     }}
                   >
                     Approve Proposal
@@ -300,7 +348,7 @@ export default function ProjectDetail() {
                     variant="outline"
                     className="border-red-300 text-red-700 hover:bg-red-50"
                     onClick={() => {
-                      // Handle rejection logic here
+                      handleReject(project.id)
                     }}
                   >
                     Reject Proposal
