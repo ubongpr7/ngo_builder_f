@@ -36,6 +36,7 @@ import { CompleteMilestoneDialog } from "./complete-milestone-dialog"
 import { DeleteMilestoneDialog } from "./delete-milestone-dialog"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { MilestoneDocuments } from "./milestone-documents"
 
 interface MilestoneDetailProps {
   milestoneId: number
@@ -667,83 +668,8 @@ export function MilestoneDetail({
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Documents</CardTitle>
-                  <CardDescription>Files and documents related to this milestone</CardDescription>
-                </div>
-                {canEdit && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Upload Document
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Upload a new document</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {milestone.documents && milestone.documents?.length > 0 ? (
-                <div className="space-y-4">
-                  {milestone.documents?.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-blue-500 mr-3" />
-                        <div>
-                          <p className="font-medium">{doc.name}</p>
-                          <p className="text-xs text-gray-500">
-                            Uploaded by {doc.uploaded_by} on {formatDate(doc.upload_date)}
-                          </p>
-                        </div>
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Download</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Documents</h3>
-                  <p className="text-gray-500 mb-4">There are no documents attached to this milestone yet.</p>
-                  {canEdit && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Upload First Document
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Upload your first document</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <MilestoneDocuments milestoneId={milestoneId} projectId={projectId} />
+        
         </TabsContent>
 
         <TabsContent value="comments" className="mt-6">
