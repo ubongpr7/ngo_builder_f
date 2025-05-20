@@ -132,8 +132,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Build hierarchical task structure
   useEffect(() => {
     if (tasks && tasks.length > 0) {
-      console.log("Raw tasks from API:", tasks)
-
       // Create a set to track which task IDs are subtasks
       const subtaskIds = new Set<number>()
 
@@ -146,30 +144,52 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         }
       })
 
-      // Get only root tasks (those that are not subtasks)
-      const rootTasks = tasks.filter((task:Task) => !subtaskIds.has(task.id))
-      console.log("Root tasks:", rootTasks)
+      // Create a map of all tasks for easy lookup
+      const taskMap = new Map<number, Task>()
 
-      // Process the hierarchy (no need to rebuild it, just use what the API gives us)
-      const processHierarchy = (taskList: Task[], level = 0) => {
+      // Add all tasks to the map
+      tasks.forEach((task: Task) => {
+        taskMap.set(task.id, {
+          ...task,
+          subtasks: task.subtasks || [],
+          level: 0,
+        })
+      })
+
+      // Process subtasks recursively to ensure proper nesting
+      const processSubtasks = (taskList: Task[]) => {
         return taskList?.map((task) => {
-          // Set the level for this task
-          task.level = level
-
-          // Process subtasks recursively if they exist
-          if (task.subtasks && task.subtasks.length > 0) {
-            task.subtasks = processHierarchy(task.subtasks, level + 1)
-          } else {
+          // Ensure subtasks array exists
+          if (!task.subtasks) {
             task.subtasks = []
+          }
+
+          // Process each subtask recursively
+          if (task.subtasks.length > 0) {
+            // Enhance each subtask with its full data from the taskMap
+            task.subtasks = task.subtasks?.map((subtask) => {
+              const fullSubtask = taskMap.get(subtask.id)
+              if (fullSubtask) {
+                // Set the level based on parent's level
+                fullSubtask.level = (task.level || 0) + 1
+                return fullSubtask
+              }
+              return subtask
+            })
+
+            // Process this task's subtasks recursively
+            task.subtasks = processSubtasks(task.subtasks)
           }
 
           return task
         })
       }
 
-      // Process the hierarchy starting with root tasks
-      const processedTasks = processHierarchy(rootTasks)
-      console.log("Processed tasks:", processedTasks)
+      // Get only root tasks (those that are not subtasks)
+      const rootTasks = tasks.filter((task: Task) => !subtaskIds.has(task.id))
+
+      // Process the entire hierarchy
+      const processedTasks = processSubtasks(rootTasks)
 
       // Sort tasks at each level by priority and due date
       const sortTasks = (taskList: Task[]) => {
@@ -218,7 +238,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       // Initialize expanded state for all parent tasks
       const newExpandedState: Record<number, boolean> = {}
       tasks.forEach((task: Task) => {
-        if (task.subtasks && task.subtasks.length > 0) {
+        if (taskMap.get(task.id)?.subtasks?.length) {
           newExpandedState[task.id] = expandedTasks[task.id] ?? true // Preserve existing state or default to expanded
         }
       })
@@ -413,7 +433,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     )}
                   </button>
                 ) : (
-                  <div className="w-6\"></div> 
+                  <div className="w-6\"></div>
                 )}
 
                 <div className="pt-0.5">
@@ -545,6 +565,8 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                               e.stopPropagation()
                               openDialog("add", null, task.id)
                             }}
+                            // Only show for top-level tasks (level === 0)
+                            style={{ display: level === 0 ? 'flex' : 'none' }}
                           >
                             <Plus className="h-4 w-4 text-green-600" />
                           </Button>
