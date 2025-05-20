@@ -190,7 +190,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         const sortedTasks = sortTasks(taskList)
 
         // Sort each child list recursively
-        return sortedTasks.map((task) => {
+        return sortedTasks?.map((task) => {
           if (task.children && task.children.length > 0) {
             task.children = sortHierarchy(task.children)
           }
@@ -473,7 +473,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                 {task.assigned_to?.length > 0 && (
                   <TooltipProvider>
                     <div className="flex -space-x-2">
-                      {task.assigned_to.slice(0, 3).map((user) => (
+                      {task.assigned_to.slice(0, 3)?.map((user) => (
                         <Tooltip key={user.id}>
                           <TooltipTrigger asChild>
                             <Avatar className="h-7 w-7 border-2 border-white">
@@ -594,7 +594,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         {/* Render children if expanded */}
         {hasChildren && isExpanded && (
           <div className="subtasks ml-6 pl-4 border-l-2 border-gray-200">
-            {task.children.map((childTask) => renderTask(childTask, level + 1))}
+            {task.children?.map((childTask) => renderTask(childTask, level + 1))}
           </div>
         )}
       </div>
@@ -703,7 +703,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
               Refreshing tasks...
             </div>
           )}
-          {filteredTasks.map((task) => renderTask(task))}
+          {filteredTasks?.map((task) => renderTask(task))}
         </div>
       )}
     </div>
