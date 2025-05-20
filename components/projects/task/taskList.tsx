@@ -132,43 +132,54 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Build hierarchical task structure
   useEffect(() => {
     if (tasks && tasks.length > 0) {
+      console.log("Raw tasks from API:", tasks)
+
+      // Create a map to store all tasks by ID for easy lookup
       const taskMap = new Map<number, Task>()
-      const rootTasks: Task[] = []
 
-      // First pass: create a map of all tasks and identify root tasks
+      // First pass: Add all tasks to the map with their full data
       tasks.forEach((task: Task) => {
-        // Store the task in the map with an empty subtasks array if it doesn't already have one
-        taskMap.set(task.id, {
+        // Ensure subtasks array exists
+        const taskWithSubtasks = {
           ...task,
-          subtasks: task.subtasks || [],
+          subtasks: [],
           level: 0,
-        })
+        }
+        taskMap.set(task.id, taskWithSubtasks)
+      })
 
-        // If this is a root task (no parent), add it to rootTasks
-        if (!task.parent_id) {
-          rootTasks.push(taskMap.get(task.id)!)
+      // Second pass: Process the subtasks recursively
+      const processSubtasks = (task: Task) => {
+        if (!task.subtasks) return
+
+        // For each subtask in the current task
+        task.subtasks.forEach((subtask: Task) => {
+          // Get the full subtask data from the map
+          const fullSubtask = taskMap.get(subtask.id)
+
+          if (fullSubtask) {
+            // Set the level based on parent's level
+            fullSubtask.level = (task.level || 0) + 1
+
+            // Process this subtask's subtasks recursively
+            processSubtasks(fullSubtask)
+          }
+        })
+      }
+
+      // Process all tasks
+      tasks.forEach((task: Task) => {
+        const fullTask = taskMap.get(task.id)
+        if (fullTask) {
+          processSubtasks(fullTask)
         }
       })
 
-      // Second pass: build the hierarchy using parent_id relationships
-      tasks.forEach((task: Task) => {
-        if (task.parent_id && taskMap.has(task.parent_id)) {
-          // This is a child task
-          const parent = taskMap.get(task.parent_id)!
-          const child = taskMap.get(task.id)!
-
-          // Set the level based on parent's level
-          child.level = parent.level! + 1
-
-          // Add this task to its parent's subtasks
-          if (!parent.subtasks) {
-            parent.subtasks = []
-          }
-
-          // Only add if not already in the subtasks array
-          if (!parent.subtasks.some((subtask) => subtask.id === task.id)) {
-            parent.subtasks.push(child)
-          }
+      // Find root tasks (those with no parent)
+      const rootTasks: Task[] = []
+      taskMap.forEach((task) => {
+        if (!task.parent_id) {
+          rootTasks.push(task)
         }
       })
 
@@ -198,29 +209,17 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         })
       }
 
-      // Sort root tasks and their subtasks recursively
-      const sortHierarchy = (taskList: Task[]) => {
-        // Sort this level
-        const sortedTasks = sortTasks(taskList)
+      // Sort root tasks
+      const sortedRootTasks = sortTasks(rootTasks)
 
-        // Sort each subtask list recursively
-        return sortedTasks?.map((task) => {
-          if (task.subtasks && task.subtasks.length > 0) {
-            task.subtasks = sortHierarchy(task.subtasks)
-          }
-          return task
-        })
-      }
-
-      // Apply sorting to the hierarchy
-      const sortedRootTasks = sortHierarchy(rootTasks)
+      console.log("Hierarchical tasks:", sortedRootTasks)
       setHierarchicalTasks(sortedRootTasks)
 
       // Initialize expanded state for all parent tasks
       const newExpandedState: Record<number, boolean> = {}
-      tasks.forEach((task: Task) => {
-        if (taskMap.get(task.id)?.subtasks?.length) {
-          newExpandedState[task.id] = expandedTasks[task.id] ?? true // Preserve existing state or default to expanded
+      taskMap.forEach((task, id) => {
+        if (task.subtasks && task.subtasks.length > 0) {
+          newExpandedState[id] = expandedTasks[id] ?? true // Preserve existing state or default to expanded
         }
       })
       setExpandedTasks(newExpandedState)
@@ -394,7 +393,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
     return (
       <div key={task.id} className="task-item">
-        <Card 
+        <Card
           className={`border mb-2 ${task.status === "completed" ? "bg-gray-50" : ""} hover:shadow-sm transition-shadow`}
           onClick={() => hasSubtasks && toggleTaskExpansion(task.id)}
         >
@@ -416,7 +415,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                   ) : (
                     <div className="w-6\"></div>
                   )}
-                  
+
                   <div className="pt-0.5">
                     {task.status === "completed" ? (
                       <CheckSquare
@@ -431,15 +430,13 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     )}
                   </div>
                 </div>
-                
+
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center">
-                    <h4 
-                      className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
-                    >
+                    <h4 className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}>
                       {task.title}
                     </h4>
-                    
+
                     {hasSubtasks && (
                       <span className="ml-2 text-xs text-gray-500">
                         ({taskCompletion?.completed}/{taskCompletion?.total})
@@ -447,9 +444,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     )}
                   </div>
 
-                  {task.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
-                  )}
+                  {task.description && <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>}
 
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Badge className={getStatusBadgeColor(task.status)}>
@@ -490,11 +485,14 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                         <Tooltip key={user.id}>
                           <TooltipTrigger asChild>
                             <Avatar className="h-7 w-7 border-2 border-white">
-                              <AvatarImage 
-                                src={user.profile_image || `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name)}`} 
+                              <AvatarImage
+                                src={
+                                  user.profile_image ||
+                                  `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name)}`
+                                }
                               />
                               <AvatarFallback className="text-xs">
-                                {`${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`}
+                                {`${user.first_name?.[0] || ""}${user.last_name?.[0] || ""}`}
                               </AvatarFallback>
                             </Avatar>
                           </TooltipTrigger>
