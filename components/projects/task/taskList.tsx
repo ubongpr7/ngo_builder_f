@@ -115,8 +115,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   // Function to close the dialog
   const closeDialog = () => {
     setDialogOpen(false)
-    // Use a short timeout to ensure the dialog is fully closed before resetting state
-    setTimeout(() => {
+      setTimeout(() => {
       setDialogType(null)
       setSelectedTask(null)
       setParentTaskId(null)
@@ -233,7 +232,6 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     }
   }, [tasks])
 
-  // Filter tasks based on active tab
   const filterTasksByStatus = (taskList: Task[]): Task[] => {
     if (activeTab === "all") return taskList
 
@@ -373,7 +371,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   const renderTask = (task: Task, level = 0) => {
     const hasSubtasks = task.subtasks && task.subtasks.length > 0
     const isExpanded = expandedTasks[task.id] || false
-    const canEdit = isManager || is_DB_admin || isTeamMember
+    const canEdit = isManager  || isTeamMember
 
     // Calculate completion for this task and all subtasks
     const getTaskCompletion = (taskItem: Task): { total: number; completed: number } => {
@@ -421,7 +419,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     <div className="w-6\"></div> 
                   )}
 
-                  <div className="pt-0.5">
+                  {(isTeamMember || isManager) && (
+                    <div className="pt-0.5">
+                    
                     {task.status === "completed" ? (
                       <CheckSquare
                         className="h-5 w-5 text-green-500 cursor-pointer"
@@ -434,6 +434,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       />
                     )}
                   </div>
+                  )}
                 </div>
                 
                 <div className="space-y-1 flex-1">
