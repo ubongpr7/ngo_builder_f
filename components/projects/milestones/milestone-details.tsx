@@ -64,7 +64,7 @@ export function MilestoneDetail({
     refetchOnMountOrArgChange: true,
   })
 
-  const canEdit = isManager || is_DB_admin || isTeamMember
+  const canEdit = isManager  || isTeamMember
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {

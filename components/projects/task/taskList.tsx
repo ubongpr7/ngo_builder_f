@@ -497,7 +497,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                           <TooltipTrigger asChild>
                             <Avatar className="h-7 w-7 border-2 border-white">
                               <AvatarImage 
-                                src={user.profile_image || `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name)}`} 
+                                src={user?.profile_image} 
                               />
                               <AvatarFallback className="text-xs">
                                 {`${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`}
