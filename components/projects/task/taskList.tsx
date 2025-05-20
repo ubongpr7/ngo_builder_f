@@ -58,8 +58,8 @@ interface Task {
     status: string
   } | null
   subtasks?: Task[]
-  children?: Task[]
   level?: number
+  children?: Task[]
 }
 
 interface TaskListProps {
@@ -135,26 +135,40 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       const taskMap = new Map<number, Task>()
       const rootTasks: Task[] = []
 
-      // First pass: create a map of all tasks
+      // First pass: create a map of all tasks and identify root tasks
       tasks.forEach((task: Task) => {
-        taskMap.set(task.id, { ...task, children: [], level: 0 })
+        // Store the task in the map with an empty subtasks array if it doesn't already have one
+        taskMap.set(task.id, {
+          ...task,
+          subtasks: task.subtasks || [],
+          level: 0,
+        })
+
+        // If this is a root task (no parent), add it to rootTasks
+        if (!task.parent_id) {
+          rootTasks.push(taskMap.get(task.id)!)
+        }
       })
 
-      // Second pass: build the hierarchy
+      // Second pass: build the hierarchy using parent_id relationships
       tasks.forEach((task: Task) => {
-        const taskWithChildren = taskMap.get(task.id)
-        if (!taskWithChildren) return
-
         if (task.parent_id && taskMap.has(task.parent_id)) {
           // This is a child task
-          const parent = taskMap.get(task.parent_id)
-          if (parent && parent.children) {
-            taskWithChildren.level = (parent.level || 0) + 1
-            parent.children.push(taskWithChildren)
+          const parent = taskMap.get(task.parent_id)!
+          const child = taskMap.get(task.id)!
+
+          // Set the level based on parent's level
+          child.level = parent.level! + 1
+
+          // Add this task to its parent's subtasks
+          if (!parent.subtasks) {
+            parent.subtasks = []
           }
-        } else {
-          // This is a root task
-          rootTasks.push(taskWithChildren)
+
+          // Only add if not already in the subtasks array
+          if (!parent.subtasks.some((subtask) => subtask.id === task.id)) {
+            parent.subtasks.push(child)
+          }
         }
       })
 
@@ -184,15 +198,15 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         })
       }
 
-      // Sort root tasks and their children recursively
+      // Sort root tasks and their subtasks recursively
       const sortHierarchy = (taskList: Task[]) => {
         // Sort this level
         const sortedTasks = sortTasks(taskList)
 
-        // Sort each child list recursively
+        // Sort each subtask list recursively
         return sortedTasks?.map((task) => {
-          if (task.children && task.children.length > 0) {
-            task.children = sortHierarchy(task.children)
+          if (task.subtasks && task.subtasks.length > 0) {
+            task.subtasks = sortHierarchy(task.subtasks)
           }
           return task
         })
@@ -205,7 +219,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       // Initialize expanded state for all parent tasks
       const newExpandedState: Record<number, boolean> = {}
       tasks.forEach((task: Task) => {
-        if (taskMap.get(task.id)?.children?.length) {
+        if (taskMap.get(task.id)?.subtasks?.length) {
           newExpandedState[task.id] = expandedTasks[task.id] ?? true // Preserve existing state or default to expanded
         }
       })
@@ -223,11 +237,11 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       // Check if this task matches the filter
       const taskMatches = task.status === activeTab
 
-      // If task has children, recursively filter them
-      if (task.children && task.children.length > 0) {
-        task.children = filterTasksByStatus([...task.children])
-        // Include this task if it matches OR if any of its children match
-        return taskMatches || task.children.length > 0
+      // If task has subtasks, recursively filter them
+      if (task.subtasks && task.subtasks.length > 0) {
+        task.subtasks = filterTasksByStatus([...task.subtasks])
+        // Include this task if it matches OR if any of its subtasks match
+        return taskMatches || task.subtasks.length > 0
       }
 
       return taskMatches
@@ -339,8 +353,8 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         if (task.status === "completed") {
           completed++
         }
-        if (task.children && task.children.length > 0) {
-          countRecursive(task.children)
+        if (task.subtasks && task.subtasks.length > 0) {
+          countRecursive(task.subtasks)
         }
       })
     }
@@ -351,9 +365,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   const taskCounts = countTasks(hierarchicalTasks)
 
-  // Recursive function to render tasks and their children
+  // Recursive function to render tasks and their subtasks
   const renderTask = (task: Task, level = 0) => {
-    const hasChildren = task.children && task.children.length > 0
+    const hasSubtasks = task.subtasks && task.subtasks.length > 0
     const isExpanded = expandedTasks[task.id] || false
     const canEdit = isManager || is_DB_admin || isTeamMember
 
@@ -362,8 +376,8 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       let total = 1
       let completed = taskItem.status === "completed" ? 1 : 0
 
-      if (taskItem.children && taskItem.children.length > 0) {
-        taskItem.children.forEach((child) => {
+      if (taskItem.subtasks && taskItem.subtasks.length > 0) {
+        taskItem.subtasks.forEach((child) => {
           const childCounts = getTaskCompletion(child)
           total += childCounts.total
           completed += childCounts.completed
@@ -373,7 +387,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       return { total, completed }
     }
 
-    const taskCompletion = hasChildren ? getTaskCompletion(task) : null
+    const taskCompletion = hasSubtasks ? getTaskCompletion(task) : null
     const completionPercentage = taskCompletion
       ? Math.round((taskCompletion.completed / taskCompletion.total) * 100)
       : task.completion_percentage
@@ -382,13 +396,13 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       <div key={task.id} className="task-item">
         <Card 
           className={`border mb-2 ${task.status === "completed" ? "bg-gray-50" : ""} hover:shadow-sm transition-shadow`}
-          onClick={() => hasChildren && toggleTaskExpansion(task.id)}
+          onClick={() => hasSubtasks && toggleTaskExpansion(task.id)}
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3 flex-1">
                 <div className="flex items-center">
-                  {hasChildren ? (
+                  {hasSubtasks ? (
                     <button
                       onClick={(e) => toggleTaskExpansion(task.id, e)}
                       className="p-1 rounded-sm hover:bg-gray-100 mr-1"
@@ -400,7 +414,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                       )}
                     </button>
                   ) : (
-                    <div className="w-6\"></div> 
+                    <div className="w-6\"></div>
                   )}
                   
                   <div className="pt-0.5">
@@ -422,12 +436,11 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                   <div className="flex items-center">
                     <h4 
                       className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
-                      style={{ paddingLeft: `${level * 0}px` }} // Additional indentation based on level
                     >
                       {task.title}
                     </h4>
                     
-                    {hasChildren && (
+                    {hasSubtasks && (
                       <span className="ml-2 text-xs text-gray-500">
                         ({taskCompletion?.completed}/{taskCompletion?.total})
                       </span>
@@ -591,10 +604,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
           </CardContent>
         </Card>
 
-        {/* Render children if expanded */}
-        {hasChildren && isExpanded && (
+        {/* Render subtasks if expanded */}
+        {hasSubtasks && isExpanded && (
           <div className="subtasks ml-6 pl-4 border-l-2 border-gray-200">
-            {task.children?.map((childTask) => renderTask(childTask, level + 1))}
+            {task.subtasks?.map((subtask) => renderTask(subtask, level + 1))}
           </div>
         )}
       </div>
