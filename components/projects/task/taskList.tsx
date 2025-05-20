@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import {
   useGetTasksByMilestoneQuery,
-  useUpdateTaskMutation,
+  useUpdateTaskStatusMutation,
   useDeleteTaskMutation,
 } from "@/redux/features/projects/taskAPISlice"
 import { AssignUsersDialog } from "./assign-users-dialog"
@@ -96,7 +96,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     isFetching,
   } = useGetTasksByMilestoneQuery({ milestoneId, filterParams }, { refetchOnMountOrArgChange: true })
 
-  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation()
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskStatusMutation()
   const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation()
 
   // Set mounted state to prevent hydration issues
@@ -304,14 +304,13 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     }
   }
 
-  // Handle task status change
   const handleStatusChange = async (taskId: number, newStatus: string, event?: React.MouseEvent) => {
     if (event) {
       event.stopPropagation()
     }
 
     try {
-      await updateTask({ id: taskId, status: newStatus }).unwrap()
+      await updateTask({ id: taskId, data:{status: newStatus} }).unwrap()
       refetch()
     } catch (error) {
       console.error("Failed to update task status:", error)

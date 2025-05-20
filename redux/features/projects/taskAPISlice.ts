@@ -231,11 +231,11 @@ export const taskApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    updateTaskStatus: builder.mutation<void, { id: number; status: string }>({
-      query: ({ id, status }) => ({
+    updateTaskStatus: builder.mutation({
+      query: ({ id, data }) => ({
         url: `/${task_api}/tasks/${id}/update_status/`,
         method: "POST",
-        body: { status },
+        body: data,
       }),
     }),
 
