@@ -147,24 +147,25 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       })
 
       // Get only root tasks (those that are not subtasks)
-      const rootTasks = tasks.filter((task:Task) => !subtaskIds.has(task.id))
+      const rootTasks = tasks.filter((task: Task) => !subtaskIds.has(task.id))
       console.log("Root tasks:", rootTasks)
 
-      // Process the hierarchy (no need to rebuild it, just use what the API gives us)
-      const processHierarchy = (taskList: Task[], level = 0) => {
-        return taskList?.map((task) => {
-          // Set the level for this task
-          task.level = level
+      const processHierarchy = (taskList: Task[], level = 0): Task[] => {
+        return (
+          taskList?.map((task) => {
+            // Create a new object with all properties from the original task
+            const newTask = { ...task, level }
 
-          // Process subtasks recursively if they exist
-          if (task.subtasks && task.subtasks.length > 0) {
-            task.subtasks = processHierarchy(task.subtasks, level + 1)
-          } else {
-            task.subtasks = []
-          }
+            // Process subtasks recursively if they exist
+            if (task.subtasks && task.subtasks.length > 0) {
+              newTask.subtasks = processHierarchy(task.subtasks, level + 1)
+            } else {
+              newTask.subtasks = []
+            }
 
-          return task
-        })
+            return newTask
+          }) || []
+        )
       }
 
       // Process the hierarchy starting with root tasks
@@ -176,7 +177,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         // Sort by priority (high to low) then by due date (earliest first)
         const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 }
 
-        return taskList.sort((a, b) => {
+        return [...taskList].sort((a, b) => {
           // First sort by priority
           const aPriority = a.priority ? priorityOrder[a.priority as keyof typeof priorityOrder] || 999 : 999
           const bPriority = b.priority ? priorityOrder[b.priority as keyof typeof priorityOrder] || 999 : 999
@@ -198,17 +199,21 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       }
 
       // Sort root tasks and their subtasks recursively
-      const sortHierarchy = (taskList: Task[]) => {
+      const sortHierarchy = (taskList: Task[]): Task[] => {
         // Sort this level
         const sortedTasks = sortTasks(taskList)
 
         // Sort each subtask list recursively
-        return sortedTasks?.map((task) => {
-          if (task.subtasks && task.subtasks.length > 0) {
-            task.subtasks = sortHierarchy(task.subtasks)
-          }
-          return task
-        })
+        return (
+          sortedTasks?.map((task) => {
+            if (task.subtasks && task.subtasks.length > 0) {
+              const newTask = { ...task }
+              newTask.subtasks = sortHierarchy(task.subtasks)
+              return newTask
+            }
+            return task
+          }) || []
+        )
       }
 
       // Apply sorting to the hierarchy
@@ -238,9 +243,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
       // If task has subtasks, recursively filter them
       if (task.subtasks && task.subtasks.length > 0) {
-        task.subtasks = filterTasksByStatus([...task.subtasks])
+        const newTask = { ...task }
+        newTask.subtasks = filterTasksByStatus([...task.subtasks])
         // Include this task if it matches OR if any of its subtasks match
-        return taskMatches || task.subtasks.length > 0
+        return taskMatches || newTask.subtasks.length > 0
       }
 
       return taskMatches
@@ -347,7 +353,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     let completed = 0
 
     const countRecursive = (tasks: Task[]) => {
-      tasks.forEach((task) => {
+      tasks?.forEach((task) => {
         total++
         if (task.status === "completed") {
           completed++
@@ -376,7 +382,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       let completed = taskItem.status === "completed" ? 1 : 0
 
       if (taskItem.subtasks && taskItem.subtasks.length > 0) {
-        taskItem.subtasks.forEach((child) => {
+        taskItem.subtasks?.forEach((child) => {
           const childCounts = getTaskCompletion(child)
           total += childCounts.total
           completed += childCounts.completed
@@ -410,15 +416,15 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                         <ChevronDown className="h-4 w-4 text-gray-600" />
                       ) : (
                         <ChevronRight className="h-4 w-4 text-gray-600" />
-                    )}
-                  </button>
-                ) : (
-                  <div className="w-6\"></div> 
-                )}
+                      )}
+                    </button>
+                  ) : (
+                    <div className="w-6\"></div> 
+                  )}
 
-                <div className="pt-0.5">
-                  {task.status === "completed" ? (
-                    <CheckSquare
+                  <div className="pt-0.5">
+                    {task.status === "completed" ? (
+                      <CheckSquare
                         className="h-5 w-5 text-green-500 cursor-pointer"
                         onClick={(e) => handleStatusChange(task.id, "todo", e)}
                       />
