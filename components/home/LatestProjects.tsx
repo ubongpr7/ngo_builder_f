@@ -50,7 +50,7 @@ export default function LatestProjects() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((project) => (
+          {projects?.map((project) => (
             <Card key={project.id} className="overflow-hidden">
               <div className="relative h-48">
                 <Image src={project.image || "/placeholder.svg"} alt={project.title} fill className="object-cover" />

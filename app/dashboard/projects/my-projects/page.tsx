@@ -82,7 +82,7 @@ export default function UserProjects() {
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">My Projects</h1>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6]?.map((i) => (
             <Card key={i}>
               <CardHeader className="pb-2">
                 <Skeleton className="h-6 w-3/4 mb-2" />
@@ -119,24 +119,24 @@ export default function UserProjects() {
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList>
-          <TabsTrigger value="all">All Projects ({projectsByRole.all.length})</TabsTrigger>
-          {projectsByRole.manager.length > 0 && (
-            <TabsTrigger value="manager">Managing ({projectsByRole.manager.length})</TabsTrigger>
+          <TabsTrigger value="all">All Projects ({projectsByRole.all?.length})</TabsTrigger>
+          {projectsByRole.manager?.length > 0 && (
+            <TabsTrigger value="manager">Managing ({projectsByRole.manager?.length})</TabsTrigger>
           )}
-          {projectsByRole.official.length > 0 && (
-            <TabsTrigger value="official">Official ({projectsByRole.official.length})</TabsTrigger>
+          {projectsByRole.official?.length > 0 && (
+            <TabsTrigger value="official">Official ({projectsByRole.official?.length})</TabsTrigger>
           )}
-          {projectsByRole.creator.length > 0 && (
-            <TabsTrigger value="creator">Created ({projectsByRole.creator.length})</TabsTrigger>
+          {projectsByRole.creator?.length > 0 && (
+            <TabsTrigger value="creator">Created ({projectsByRole.creator?.length})</TabsTrigger>
           )}
-          {projectsByRole.team_member.length > 0 && (
-            <TabsTrigger value="team_member">Team Member ({projectsByRole.team_member.length})</TabsTrigger>
+          {projectsByRole.team_member?.length > 0 && (
+            <TabsTrigger value="team_member">Team Member ({projectsByRole.team_member?.length})</TabsTrigger>
           )}
         </TabsList>
 
-        {Object.entries(projectsByRole).map(([role, roleProjects]) => (
+        {Object.entries(projectsByRole)?.map(([role, roleProjects]) => (
           <TabsContent key={role} value={role} className="mt-6">
-            {roleProjects.length === 0 ? (
+            {roleProjects?.length === 0 ? (
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-gray-500 text-center">No projects found.</p>
@@ -144,7 +144,7 @@ export default function UserProjects() {
               </Card>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {roleProjects.map((project) => (
+                {roleProjects?.map((project) => (
                   <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
                     <Card className="h-full hover:shadow-md transition-shadow">
                       <CardHeader className="pb-2">

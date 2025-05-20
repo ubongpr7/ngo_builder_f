@@ -69,8 +69,8 @@ export default function ProfilePage() {
 
     const completedFields = requiredFields.filter(
       (field) => field !== null && field !== undefined && field !== "",
-    ).length
-    return Math.round((completedFields / requiredFields.length) * 100)
+    )?.length
+    return Math.round((completedFields / requiredFields?.length) * 100)
   }
 
   // Get role badges
@@ -94,7 +94,7 @@ export default function ProfilePage() {
     if (profileData.is_regional_head) roles.push("Regional Head")
     if (profileData.is_project_manager) roles.push("Project Manager")
 
-    if (profileData.role_summary && profileData.role_summary.length > 0) {
+    if (profileData.role_summary && profileData.role_summary?.length > 0) {
       return profileData.role_summary
     }
 
@@ -214,7 +214,7 @@ export default function ProfilePage() {
             <div className="space-y-6">
               {Array(3)
                 .fill(0)
-                .map((_, i) => (
+                ?.map((_, i) => (
                   <div key={i} className="space-y-3">
                     <Skeleton className="h-5 w-32" />
                     <Skeleton className="h-6 w-full" />
@@ -262,7 +262,6 @@ export default function ProfilePage() {
               
               <div className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 cursor-pointer shadow-md">
                 <ProfileImageUploaderButton
-                  absolute={false}
                   onSuccess={() => refetch()}
                   profileId={profileData.id}
                   userId={userProfile.id}
@@ -279,7 +278,7 @@ export default function ProfilePage() {
             </CardDescription>
 
             <div className="flex flex-wrap justify-center gap-1.5 mt-3">
-              {roleBadges.map((role) => (
+              {roleBadges?.map((role) => (
                 <Badge key={role} variant="secondary" className="font-medium text-xs px-2 py-0.5">
                   {role}
                 </Badge>
@@ -443,9 +442,9 @@ export default function ProfilePage() {
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
-                  {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
+                  {profileData.expertise_details && profileData.expertise_details?.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {profileData.expertise_details.map((item: { id: number; name: string }) => (
+                      {profileData.expertise_details?.map((item: { id: number; name: string }) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">
                           {item.name}
                         </Badge>

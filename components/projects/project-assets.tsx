@@ -76,7 +76,7 @@ export function ProjectAssets({ projectId }: ProjectAssetsProps) {
         </Tabs>
       </div>
 
-      {filteredAssets.length === 0 ? (
+      {filteredAssets?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />

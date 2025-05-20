@@ -52,8 +52,8 @@ export default function UpcomingMaintenance() {
 
   return (
     <div className="space-y-4">
-      {maintenanceItems.length > 0 ? (
-        maintenanceItems.map((item) => (
+      {maintenanceItems?.length > 0 ? (
+        maintenanceItems?.map((item) => (
           <div key={item.id} className="flex items-start justify-between border-b pb-3">
             <div className="space-y-1">
               <div className="flex items-center space-x-2">

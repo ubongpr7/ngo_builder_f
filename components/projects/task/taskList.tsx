@@ -113,7 +113,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   // Build hierarchical task structure
   useEffect(() => {
-    if (tasks && tasks.length > 0) {
+    if (tasks && tasks?.length > 0) {
       const taskMap = new Map<number, Task>()
       const rootTasks: Task[] = []
 
@@ -160,10 +160,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       const taskMatches = task.status === activeTab
 
       // If task has children, recursively filter them
-      if (task.children && task.children.length > 0) {
+      if (task.children && task.children?.length > 0) {
         task.children = filterTasksByStatus(task.children)
         // Include this task if it matches OR if any of its children match
-        return taskMatches || task.children.length > 0
+        return taskMatches || task.children?.length > 0
       }
 
       return taskMatches
@@ -251,7 +251,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   // Recursive function to render tasks and their children
   const renderTask = (task: Task, level = 0) => {
-    const hasChildren = task.children && task.children.length > 0
+    const hasChildren = task.children && task.children?.length > 0
     const isExpanded = expandedTasks[task.id] || false
 
     return (
@@ -340,9 +340,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                           </TooltipContent>
                         </Tooltip>
                       ))}
-                      {task.assigned_to.length > 3 && (
+                      {task.assigned_to?.length > 3 && (
                         <Avatar className="h-7 w-7 border-2 border-white bg-gray-200">
-                          <AvatarFallback className="text-xs">+{task.assigned_to.length - 3}</AvatarFallback>
+                          <AvatarFallback className="text-xs">+{task.assigned_to?.length - 3}</AvatarFallback>
                         </Avatar>
                       )}
                     </div>
@@ -435,7 +435,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         {/* Render children if expanded */}
         {hasChildren && isExpanded && (
           <div className="subtasks pl-4 border-l-2 border-gray-200 ml-4">
-            {task.children!.map((childTask) => renderTask(childTask, level + 1))}
+            {task.children!?.map((childTask) => renderTask(childTask, level + 1))}
           </div>
         )}
       </div>
@@ -478,10 +478,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All Tasks ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="todo">Pending ({tasks.filter((t: Task) => t.status === "todo").length})</TabsTrigger>
+          <TabsTrigger value="all">All Tasks ({tasks?.length})</TabsTrigger>
+          <TabsTrigger value="todo">Pending ({tasks.filter((t: Task) => t.status === "todo")?.length})</TabsTrigger>
           <TabsTrigger value="completed">
-            Completed ({tasks.filter((t: Task) => t.status === "completed").length})
+            Completed ({tasks.filter((t: Task) => t.status === "completed")?.length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
@@ -502,7 +502,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
           <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
           <p className="text-gray-500">Loading tasks...</p>
         </div>
-      ) : filteredTasks.length === 0 ? (
+      ) : filteredTasks?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
@@ -521,7 +521,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">{filteredTasks.map((task) => renderTask(task))}</div>
+        <div className="space-y-2">{filteredTasks?.map((task) => renderTask(task))}</div>
       )}
     </div>
   )

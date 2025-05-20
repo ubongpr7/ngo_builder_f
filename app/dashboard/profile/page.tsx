@@ -56,7 +56,7 @@ export default function ProfilePage() {
                 <AvatarFallback>
                   {user.name
                     .split(" ")
-                    .map((n) => n[0])
+                    ?.map((n) => n[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                   <div>
                     <h3 className="font-medium text-gray-500 mb-1">Areas of Expertise</h3>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {user.expertise.map((item) => (
+                      {user.expertise?.map((item) => (
                         <Badge key={item} variant="outline">
                           {item}
                         </Badge>
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                   <div>
                     <h3 className="font-medium text-gray-500 mb-1">Roles</h3>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {user.roles.map((role) => (
+                      {user.roles?.map((role) => (
                         <Badge key={role} variant="outline">
                           {role}
                         </Badge>

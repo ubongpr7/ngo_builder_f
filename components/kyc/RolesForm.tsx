@@ -53,16 +53,16 @@ export default function RolesForm({
       ([key, value]) => key !== "is_standard_member" && value === true,
     )
 
-    if (selectedRoles.length === 0 && !formData.is_standard_member) {
+    if (selectedRoles?.length === 0 && !formData.is_standard_member) {
       newErrors.roles = "Please select at least one role or choose Standard Member"
     }
 
-    if (selectedRoles.length > 2) {
+    if (selectedRoles?.length > 2) {
       newErrors.roles = "Please select at most 2 roles"
     }
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors)?.length === 0
   }
 
   const handleRoleChange = (role: keyof RolesFormData, checked: boolean) => {
@@ -164,19 +164,19 @@ export default function RolesForm({
           {/* Leadership Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Leadership Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.leadership.map((key) => renderCheckbox(key as keyof RolesFormData))}
+            {roleGroups.leadership?.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Staff Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Staff Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.staff.map((key) => renderCheckbox(key as keyof RolesFormData))}
+            {roleGroups.staff?.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Support Roles */}
           <h3 className="text-sm font-medium text-gray-700 mb-2">Support Roles</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 bg-white p-3 rounded-md border">
-            {roleGroups.support.map((key) => renderCheckbox(key as keyof RolesFormData))}
+            {roleGroups.support?.map((key) => renderCheckbox(key as keyof RolesFormData))}
           </div>
 
           {/* Other Roles */}

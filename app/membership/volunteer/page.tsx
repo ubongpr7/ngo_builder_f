@@ -224,7 +224,7 @@ function VolunteerOpportunityCard({
         <div>
           <h4 className="font-medium mb-2">Required Skills:</h4>
           <ul className="list-disc pl-5 space-y-1">
-            {skills.map((skill, index) => (
+            {skills?.map((skill, index) => (
               <li key={index} className="text-sm text-gray-600">
                 {skill}
               </li>

@@ -179,7 +179,7 @@ export default function TeamsPage() {
   const getInitials = (name: string) => {
     return name
       .split(" ")
-      .map((part) => part[0])
+      ?.map((part) => part[0])
       .join("")
       .toUpperCase()
       .substring(0, 2)
@@ -219,8 +219,8 @@ export default function TeamsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {filteredTeams.length > 0 ? (
-          filteredTeams.map((team) => (
+        {filteredTeams?.length > 0 ? (
+          filteredTeams?.map((team) => (
             <Card key={team.id} className="overflow-hidden hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="mb-4">
@@ -229,7 +229,7 @@ export default function TeamsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {team.projects.map((project, index) => (
+                  {team.projects?.map((project, index) => (
                     <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                       {project}
                     </Badge>
@@ -244,9 +244,9 @@ export default function TeamsPage() {
                   </div>
                 </div>
 
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members ({team.members.length})</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members ({team.members?.length})</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {team.members.map((member) => (
+                  {team.members?.map((member) => (
                     <div key={member.id} className="flex items-start p-3 border rounded-md bg-gray-50">
                       <Avatar className="h-10 w-10 mr-3">
                         {member.profileImage ? (

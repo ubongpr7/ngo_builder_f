@@ -199,7 +199,7 @@ export function CustomDatePicker({
                 <SelectValue placeholder={year.toString()} />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
-                {years.map((y) => (
+                {years?.map((y) => (
                   <SelectItem key={y} value={y.toString()}>
                     {y}
                   </SelectItem>
@@ -230,7 +230,7 @@ export function CustomDatePicker({
                 <SelectValue placeholder={months[month]} />
               </SelectTrigger>
               <SelectContent>
-                {months.map((m, i) => (
+                {months?.map((m, i) => (
                   <SelectItem key={m} value={i.toString()}>
                     {m}
                   </SelectItem>

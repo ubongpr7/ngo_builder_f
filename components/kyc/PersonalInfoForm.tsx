@@ -111,7 +111,7 @@ export default function PersonalInfoForm({
     }
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors)?.length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -143,7 +143,7 @@ export default function PersonalInfoForm({
 
   // Convert disabilities to select options
   const disabilityOptions: SelectOption[] = disabilities
-    ? disabilities.map((disability: Disability) => ({
+    ? disabilities?.map((disability: Disability) => ({
         value: disability.id.toString(),
         label: disability.description ? `${disability.name} (${disability.description})` : disability.name,
       }))

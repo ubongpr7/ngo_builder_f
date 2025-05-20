@@ -54,7 +54,7 @@ export function ProjectCard({ project }: { project: Project }) {
     <Card className="overflow-hidden">
       <div className="relative h-48">
         <Image
-          src={project.image_url || `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(project.title)}`}
+          src={ `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(project.title)}`}
           alt={project.title}
           fill
           className="object-cover"
@@ -68,7 +68,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <CardHeader>
         <CardTitle>{project.title}</CardTitle>
         <CardDescription>
-          {project.description?.length > 120 ? `${project?.description.substring(0, 120)}...` : project.description}
+          {project?.description?.length||0 > 120 ? `${project?.description?.substring(0, 120)}...` : project.description}
         </CardDescription>
       </CardHeader>
       <CardContent>

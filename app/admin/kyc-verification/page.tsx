@@ -102,7 +102,7 @@ export default function KYCVerificationPage() {
     if (!countries) return []
     return [
       { value: "all", label: "All Countries" },
-      ...countries.map((country) => ({
+      ...countries?.map((country) => ({
         value: country.id.toString(),
         label: country.name,
       })),
@@ -113,7 +113,7 @@ export default function KYCVerificationPage() {
     if (!regions) return []
     return [
       { value: "all", label: "All Regions" },
-      ...regions.map((region) => ({
+      ...regions?.map((region) => ({
         value: region.id.toString(),
         label: region.name,
       })),
@@ -124,7 +124,7 @@ export default function KYCVerificationPage() {
     if (!subregions) return []
     return [
       { value: "all", label: "All Subregions" },
-      ...subregions.map((subregion) => ({
+      ...subregions?.map((subregion) => ({
         value: subregion.id.toString(),
         label: subregion.name,
       })),
@@ -254,10 +254,10 @@ export default function KYCVerificationPage() {
       if (activeTab === "pending") {
         const completedProfileIds = displayProfiles
           .filter((profile) => hasCompletedKYC(profile))
-          .map((profile) => profile.id)
+          ?.map((profile) => profile.id)
         setSelectedProfiles(completedProfileIds)
       } else {
-        setSelectedProfiles(displayProfiles.map((profile) => profile.id))
+        setSelectedProfiles(displayProfiles?.map((profile) => profile.id))
       }
     } else {
       setSelectedProfiles([])
@@ -339,7 +339,7 @@ export default function KYCVerificationPage() {
   }
 
   const handleBulkActionDialog = (action: "approve" | "reject" | "flag" | "mark_scammer") => {
-    if (selectedProfiles.length === 0) {
+    if (selectedProfiles?.length === 0) {
       toast({
         title: "No profiles selected",
         description: "Please select at least one profile to perform this action.",
@@ -355,10 +355,10 @@ export default function KYCVerificationPage() {
         return profile ? !hasCompletedKYC(profile) : true
       })
 
-      if (incompleteProfiles.length > 0) {
+      if (incompleteProfiles?.length > 0) {
         toast({
           title: "Incomplete KYC Documents",
-          description: `${incompleteProfiles.length} selected profile(s) have incomplete KYC documents and cannot be approved.`,
+          description: `${incompleteProfiles?.length} selected profile(s) have incomplete KYC documents and cannot be approved.`,
           variant: "destructive",
         })
         return
@@ -390,13 +390,13 @@ export default function KYCVerificationPage() {
 
       // Update local stats for bulk actions
       if (activeTab === "pending" && bulkAction === "approve") {
-        updateLocalStats("pending", "approved", selectedProfiles.length)
+        updateLocalStats("pending", "approved", selectedProfiles?.length)
       } else if (activeTab === "pending" && bulkAction === "reject") {
-        updateLocalStats("pending", "rejected", selectedProfiles.length)
+        updateLocalStats("pending", "rejected", selectedProfiles?.length)
       } else if (activeTab === "pending" && bulkAction === "flag") {
-        updateLocalStats("pending", "flagged", selectedProfiles.length)
+        updateLocalStats("pending", "flagged", selectedProfiles?.length)
       } else if (activeTab === "pending" && bulkAction === "mark_scammer") {
-        updateLocalStats("pending", "scammer", selectedProfiles.length)
+        updateLocalStats("pending", "scammer", selectedProfiles?.length)
       }
 
       toast({
@@ -746,7 +746,7 @@ export default function KYCVerificationPage() {
         </TabsList>
 
         {/* Select All Checkbox */}
-        {displayProfiles && displayProfiles.length > 0 && activeTab === "pending" && (
+        {displayProfiles && displayProfiles?.length > 0 && activeTab === "pending" && (
           <div className="mb-4 flex items-center">
             <Checkbox
               id="select-all"
@@ -761,10 +761,10 @@ export default function KYCVerificationPage() {
         )}
 
         {/* Bulk Actions */}
-        {selectedProfiles.length > 0 && (
+        {selectedProfiles?.length > 0 && (
           <div className="mb-4 p-3 bg-gray-100 rounded-md flex items-center justify-between">
             <div>
-              <span className="font-medium">{selectedProfiles.length} profiles selected</span>
+              <span className="font-medium">{selectedProfiles?.length} profiles selected</span>
             </div>
             <div className="flex space-x-2">
               <Button
@@ -855,7 +855,7 @@ export default function KYCVerificationPage() {
         {isLoading ? (
           // Loading state
           <div className="grid gap-4">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3]?.map((i) => (
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -878,8 +878,8 @@ export default function KYCVerificationPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {displayProfiles && displayProfiles.length > 0 ? (
-              displayProfiles.map((profile) => {
+            {displayProfiles && displayProfiles?.length > 0 ? (
+              displayProfiles?.map((profile) => {
                 const hasKYC = hasCompletedKYC(profile)
 
                 return (

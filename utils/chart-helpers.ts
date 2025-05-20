@@ -92,7 +92,7 @@ export function categoryToChartData(categoryCounts: Record<string, number> = {})
     data.push(count)
   })
 
-  return { labels, data, colors: colors.slice(0, labels.length) }
+  return { labels, data, colors: colors.slice(0, labels?.length) }
 }
 
 // Convert timeline stats to chart data
@@ -110,7 +110,7 @@ export function timelineToChartData(timelineStats: any = {}) {
 // Rank projects by milestone completion
 
 export function rankProjectsByMilestones(projects: Project[] = []): Project[] {
-  if (!projects.length) return []
+  if (!projects?.length) return []
 
   return [...projects]
     .filter(p => {

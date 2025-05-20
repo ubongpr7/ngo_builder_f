@@ -89,7 +89,7 @@ export function UpdateMilestoneStatusDialog({ milestone, onSuccess, trigger }: U
                       <option value="" disabled>
                         Select status
                       </option>
-                      {statusOptions.map((option) => (
+                      {statusOptions?.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>

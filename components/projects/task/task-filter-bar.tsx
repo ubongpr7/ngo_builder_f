@@ -36,7 +36,7 @@ export function TaskFilterBar({ onFilterChange, currentFilters }: TaskFilterBarP
   const activeFilterCount = Object.keys(currentFilters).filter(
     (key) =>
       key !== "projectId" && key !== "milestoneId" && currentFilters[key] !== undefined && currentFilters[key] !== null,
-  ).length
+  )?.length
 
   return (
     <>

@@ -145,7 +145,7 @@ export function MilestoneDetail({
     if (!name) return "?"
     return name
       .split(" ")
-      .map((n) => n[0])
+      ?.map((n) => n[0])
       .join("")
       .toUpperCase()
   }
@@ -422,7 +422,7 @@ export function MilestoneDetail({
                     <div>
                       <h3 className="text-sm font-medium text-gray-500 mb-1">External Links</h3>
                       <div className="space-y-2">
-                        {milestone.external_links.split(",").map((link, index) => (
+                        {milestone.external_links.split(",")?.map((link, index) => (
                           <div key={index} className="flex items-center">
                             <LinkIcon className="h-4 w-4 mr-2 text-gray-500" />
                             <a
@@ -487,7 +487,7 @@ export function MilestoneDetail({
               </Card>
 
               {/* Team Card */}
-              {milestone.assigned_to && milestone.assigned_to.length > 0 && (
+              {milestone.assigned_to && milestone.assigned_to?.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Team Members</CardTitle>
@@ -495,7 +495,7 @@ export function MilestoneDetail({
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {milestone.assigned_to.map((user) => (
+                      {milestone.assigned_to?.map((user) => (
                         <div key={user.id} className="flex items-center gap-3">
                           <Avatar>
                             <AvatarImage src={user.profile_image || ""} />
@@ -581,9 +581,9 @@ export function MilestoneDetail({
               <CardDescription>People assigned to this milestone</CardDescription>
             </CardHeader>
             <CardContent>
-              {milestone.assigned_to && milestone.assigned_to.length > 0 ? (
+              {milestone.assigned_to && milestone.assigned_to?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {milestone.assigned_to.map((user) => (
+                  {milestone.assigned_to?.map((user) => (
                     <Card key={user.id} className="overflow-hidden">
                       <CardContent className="p-0">
                         <div className="flex items-center p-4">
@@ -637,7 +637,7 @@ export function MilestoneDetail({
                 </div>
               )}
             </CardContent>
-            {canEdit && milestone.assigned_to && milestone.assigned_to.length > 0 && (
+            {canEdit && milestone.assigned_to && milestone.assigned_to?.length > 0 && (
               <CardFooter>
                 <TooltipProvider>
                   <Tooltip>
@@ -690,9 +690,9 @@ export function MilestoneDetail({
               </div>
             </CardHeader>
             <CardContent>
-              {milestone.documents && milestone.documents.length > 0 ? (
+              {milestone.documents && milestone.documents?.length > 0 ? (
                 <div className="space-y-4">
-                  {milestone.documents.map((doc, index) => (
+                  {milestone.documents?.map((doc, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                       <div className="flex items-center">
                         <FileText className="h-5 w-5 text-blue-500 mr-3" />
@@ -751,9 +751,9 @@ export function MilestoneDetail({
               <CardDescription>Discussions about this milestone</CardDescription>
             </CardHeader>
             <CardContent>
-              {milestone.comments && milestone.comments.length > 0 ? (
+              {milestone.comments && milestone.comments?.length > 0 ? (
                 <div className="space-y-4">
-                  {milestone.comments.map((comment, index) => (
+                  {milestone.comments?.map((comment, index) => (
                     <div key={index} className="p-4 border rounded-md">
                       <div className="flex items-center mb-2">
                         <Avatar className="h-8 w-8 mr-2">

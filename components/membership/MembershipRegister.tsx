@@ -27,7 +27,7 @@ export default function MembershipRegister() {
   const [registerUser, { isLoading }] = useRegisterMutation()
 
   // Password validation criteria
-  const hasMinLength = password.length >= 8
+  const hasMinLength = password?.length >= 8
   const hasUppercase = /[A-Z]/.test(password)
   const hasLowercase = /[a-z]/.test(password)
   const hasNumber = /[0-9]/.test(password)
@@ -46,7 +46,7 @@ export default function MembershipRegister() {
     return (
       !lowerPassword.includes(lowerFirstName) &&
       !lowerPassword.includes(lowerLastName) &&
-      (lowerEmail.length <= 3 || !lowerPassword.includes(lowerEmail))
+      (lowerEmail?.length <= 3 || !lowerPassword.includes(lowerEmail))
     )
   }, [password, firstName, lastName, email])
 

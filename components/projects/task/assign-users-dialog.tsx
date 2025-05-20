@@ -119,11 +119,11 @@ export function AssignUsersDialog({
               <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
               <span className="ml-2 text-gray-500">Loading users...</span>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : filteredUsers?.length === 0 ? (
             <div className="flex items-center justify-center h-full p-4 text-gray-500">No users found</div>
           ) : (
             <div className="space-y-1 p-1">
-              {filteredUsers.map((user: User) => (
+              {filteredUsers?.map((user: User) => (
                 <div
                   key={user.id}
                   className={`flex items-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${
@@ -159,7 +159,7 @@ export function AssignUsersDialog({
         <DialogFooter className="mt-4 pt-2 border-t sticky bottom-0 bg-white">
           <div className="flex justify-between items-center w-full">
             <div className="text-sm text-gray-500">
-              {selectedUserIds.length} user{selectedUserIds.length !== 1 ? "s" : ""} selected
+              {selectedUserIds?.length} user{selectedUserIds?.length !== 1 ? "s" : ""} selected
             </div>
             <div className="flex space-x-2">
               <Button type="button" variant="outline" onClick={onClose}>

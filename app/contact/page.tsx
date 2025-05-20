@@ -178,7 +178,7 @@ function ContactInfoCard({
       </div>
       <h3 className="text-xl font-bold mb-2">{title}</h3>
       <div className="text-gray-600">
-        {details.map((detail, index) => (
+        {details?.map((detail, index) => (
           <p key={index}>{detail}</p>
         ))}
       </div>

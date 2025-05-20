@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useGetAllTasksQuery } from "@/redux/features/tasks/tasksAPISlice"
+import { useGetAllTasksQuery } from "@/redux/features/projects/taskAPISlice"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, Plus, Filter, Calendar } from "lucide-react"
@@ -9,9 +9,10 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { Task } from "@/types/tasks"
 
 export default function TasksPage() {
-  const { data: tasks, isLoading, error } = useGetAllTasksQuery()
+  const { data: tasks, isLoading, error } = useGetAllTasksQuery('')
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [activeTab, setActiveTab] = useState("all")
 
@@ -20,7 +21,7 @@ export default function TasksPage() {
       if (activeTab === "all") {
         setFilteredTasks(tasks)
       } else {
-        setFilteredTasks(tasks.filter((task) => task.status === activeTab))
+        setFilteredTasks(tasks.filter((task: Task) => task.status === activeTab))
       }
     }
   }, [tasks, activeTab])
@@ -45,7 +46,7 @@ export default function TasksPage() {
     )
   }
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status:string) => {
     switch (status) {
       case "todo":
         return (
@@ -82,7 +83,7 @@ export default function TasksPage() {
     }
   }
 
-  const getPriorityBadge = (priority) => {
+  const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "low":
         return (
@@ -145,7 +146,7 @@ export default function TasksPage() {
 
       {filteredTasks?.length > 0 ? (
         <div className="space-y-3">
-          {filteredTasks.map((task) => (
+          {filteredTasks?.map((task) => (
             <Card key={task.id} className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
@@ -189,17 +190,17 @@ export default function TasksPage() {
                           </div>
                         )}
 
-                        {task.assigned_to?.length > 0 && (
+                        {task?.assigned_to?.length||0 > 0 && (
                           <div className="flex -space-x-2">
-                            {task.assigned_to.slice(0, 3).map((user, index) => (
+                            {task?.assigned_to?.slice(0, 3)?.map((user, index:number) => (
                               <Avatar key={index} className="h-6 w-6 border-2 border-white">
-                                <AvatarImage src={user.profile_image || "/placeholder.svg"} alt={user.name} />
-                                <AvatarFallback className="text-xs">{user.name?.charAt(0) || "U"}</AvatarFallback>
+                                <AvatarImage src={user.profile_image || "/placeholder.svg"} alt={user.first_name} />
+                                <AvatarFallback className="text-xs">{user.first_name?.charAt(0) || "U"}</AvatarFallback>
                               </Avatar>
                             ))}
-                            {task.assigned_to.length > 3 && (
+                            {task?.assigned_to?.length ||0 > 3 && (
                               <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center text-xs border-2 border-white">
-                                +{task.assigned_to.length - 3}
+                                +{task?.assigned_to?.length||0 - 3}
                               </div>
                             )}
                           </div>

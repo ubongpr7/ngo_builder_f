@@ -100,7 +100,7 @@ export default function UpdateCard({ update }: UpdateCardProps) {
             <AvatarFallback>
               {update.author.name
                 .split(" ")
-                .map((n) => n[0])
+                ?.map((n) => n[0])
                 .join("")}
             </AvatarFallback>
           </Avatar>
@@ -114,7 +114,7 @@ export default function UpdateCard({ update }: UpdateCardProps) {
 
         <p className="text-gray-700 mb-4 line-clamp-3">{update.description}</p>
 
-        {update.media && update.media.length > 0 && (
+        {update.media && update.media?.length > 0 && (
           <div className="relative h-48 w-full rounded-md overflow-hidden mb-2">
             <Image
               src={update.media[0].url || "/placeholder.svg"}
@@ -122,9 +122,9 @@ export default function UpdateCard({ update }: UpdateCardProps) {
               fill
               className="object-cover"
             />
-            {update.media.length > 1 && (
+            {update.media?.length > 1 && (
               <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-md">
-                +{update.media.length - 1} more
+                +{update.media?.length - 1} more
               </div>
             )}
           </div>

@@ -115,7 +115,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
       <div>
         <div className="flex items-center justify-between mb-2">
           <Label className="text-sm font-medium">Projects</Label>
-          {filters.projects.length > 0 && (
+          {filters.projects?.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -133,7 +133,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
           )}
         </div>
         <div className="space-y-2">
-          {SAMPLE_PROJECTS.map((project) => (
+          {SAMPLE_PROJECTS?.map((project) => (
             <div key={project.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`project-${project.id}`}
@@ -151,7 +151,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
       <div>
         <div className="flex items-center justify-between mb-2">
           <Label className="text-sm font-medium">Categories</Label>
-          {filters.categories.length > 0 && (
+          {filters.categories?.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -169,7 +169,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
           )}
         </div>
         <div className="space-y-2">
-          {CATEGORIES.map((category) => (
+          {CATEGORIES?.map((category) => (
             <div key={category.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`category-${category.id}`}
@@ -187,7 +187,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
       <div>
         <div className="flex items-center justify-between mb-2">
           <Label className="text-sm font-medium">Status</Label>
-          {filters.statuses.length > 0 && (
+          {filters.statuses?.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -205,7 +205,7 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
           )}
         </div>
         <div className="space-y-2">
-          {STATUSES.map((status) => (
+          {STATUSES?.map((status) => (
             <div key={status.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`status-${status.id}`}
@@ -268,9 +268,9 @@ export default function UpdateFilters({ onFilterChange }: UpdateFiltersProps) {
         </Popover>
       </div>
 
-      {(filters.projects.length > 0 ||
-        filters.categories.length > 0 ||
-        filters.statuses.length > 0 ||
+      {(filters.projects?.length > 0 ||
+        filters.categories?.length > 0 ||
+        filters.statuses?.length > 0 ||
         filters.dateRange.from) && (
         <Button variant="outline" className="w-full" onClick={resetFilters}>
           Reset All Filters

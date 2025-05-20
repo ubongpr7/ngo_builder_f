@@ -64,7 +64,7 @@ export default function Belief() {
 
         <div className="w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-[3.5rem]">
-            {beliefs.map((belief) => (
+            {beliefs?.map((belief) => (
               <div
                 key={belief.id}
                 className={`group rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-4 cursor-pointer ${belief.background}`}
@@ -83,7 +83,7 @@ export default function Belief() {
                     {belief.title}
                   </h2>
                   <ul className={`list-disc pl-5 space-y-2 ${belief.textColor}`}>
-                    {belief.listItems.map((item, index) => (
+                    {belief.listItems?.map((item, index) => (
                       <li key={index} className="text-left text-[#5c5c5c] text-[17px]">
                         <span className="font-semibold text-[#5c5c5c]">{item.split(":")[0]}:</span>
                         {item.split(":")[1]}

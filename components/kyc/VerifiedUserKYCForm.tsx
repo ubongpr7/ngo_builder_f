@@ -173,7 +173,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
       }
 
       // Update expertise
-      if (userProfile.expertise && userProfile.expertise.length > 0) {
+      if (userProfile.expertise && userProfile.expertise?.length > 0) {
         updatedFormState.expertise.expertise = userProfile.expertise
       }
 
@@ -217,7 +217,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
     }
 
     // Check expertise completion
-    if (formState.expertise.expertise && formState.expertise.expertise.length > 0) {
+    if (formState.expertise.expertise && formState.expertise.expertise?.length > 0) {
       completedSteps.push(2)
     }
 
@@ -325,7 +325,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
           {/* Mobile step indicators */}
           <div className="sm:hidden mt-6">
             <div className="flex justify-center gap-8 mb-2 items-start">
-              {[1, 2, 3, 4, 5].map((stepNumber) => (
+              {[1, 2, 3, 4, 5]?.map((stepNumber) => (
                 <div key={stepNumber} className="flex flex-col items-center">
                   <div
                     className={`flex items-center justify-center w-8 h-8 rounded-full 
@@ -344,7 +344,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
               ))}
             </div>
             <div className="flex justify-left gap-5">
-              {[6].map((stepNumber) => (
+              {[6]?.map((stepNumber) => (
                 <div key={stepNumber} className="flex flex-col items-center ml-2">
                   <div
                     className={`flex items-center justify-center w-8 h-8 rounded-full 
@@ -366,7 +366,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
 
           {/* Desktop step indicators */}
           <div className="hidden sm:flex justify-between items-center mt-6 px-2">
-            {Array.from({ length: TOTAL_STEPS }).map((_, index) => {
+            {Array.from({ length: TOTAL_STEPS })?.map((_, index) => {
               const stepNumber = index + 1
               return (
                 <div key={stepNumber} className="flex flex-col items-center">
@@ -532,22 +532,22 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
                 if (nextStep <= TOTAL_STEPS) {
                   setFormState((prev) => ({ ...prev, currentStep: nextStep }))
                   setActiveTab(STEP_ORDER[nextStep])
-                } else if (formState.completedSteps.length === TOTAL_STEPS) {
+                } else if (formState.completedSteps?.length === TOTAL_STEPS) {
                   router.push("/dashboard")
                 }
               }}
-              disabled={formState.currentStep >= TOTAL_STEPS && formState.completedSteps.length < TOTAL_STEPS}
+              disabled={formState.currentStep >= TOTAL_STEPS && formState.completedSteps?.length < TOTAL_STEPS}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               {formState.currentStep < TOTAL_STEPS
                 ? "Next"
-                : formState.completedSteps.length === TOTAL_STEPS
+                : formState.completedSteps?.length === TOTAL_STEPS
                   ? "Save Changes"
                   : "Complete Current Step"}
             </Button>
           </div>
           <div className="mt-4 text-center text-sm text-gray-500">
-            {formState.completedSteps.length} of {TOTAL_STEPS} steps completed
+            {formState.completedSteps?.length} of {TOTAL_STEPS} steps completed
           </div>
         </CardContent>
       </Card>

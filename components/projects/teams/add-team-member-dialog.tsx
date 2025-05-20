@@ -71,7 +71,7 @@ export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMe
   })
 
   // Prepare user options for react-select
-  const userOptions = users.map((user: { id: number; first_name: string; last_name: string; email: string }) => ({
+  const userOptions = users?.map((user: { id: number; first_name: string; last_name: string; email: string }) => ({
     value: user.id.toString(),
     label: `${user.first_name} ${user.last_name} (${user.email})`,
   }))

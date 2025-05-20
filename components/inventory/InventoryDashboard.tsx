@@ -60,7 +60,7 @@ export default function InventoryDashboard() {
         {showMobileTabs && (
           <div className="mt-2 p-4 border rounded-lg bg-white shadow-sm">
             <div className="grid grid-cols-3 gap-2">
-              {tabs.map((tab) => (
+              {tabs?.map((tab) => (
                 <div
                   key={tab.value}
                   className={`text-xs p-2 text-center rounded cursor-pointer ${
@@ -89,7 +89,7 @@ export default function InventoryDashboard() {
       >
         {/* Desktop Tabs */}
         <TabsList className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 w-full">
-          {tabs.map(tab => (
+          {tabs?.map(tab => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
             </TabsTrigger>

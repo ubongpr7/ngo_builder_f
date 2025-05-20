@@ -94,7 +94,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         />
       </div>
 
-      {filteredDocuments.length === 0 ? (
+      {filteredDocuments?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
@@ -112,7 +112,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredDocuments.map((document) => (
+          {filteredDocuments?.map((document) => (
             <Card key={document.id} className="overflow-hidden">
               <div className="flex flex-col md:flex-row">
                 <div className="bg-gray-50 p-6 flex items-center justify-center md:w-24">

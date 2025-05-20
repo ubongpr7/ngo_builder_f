@@ -63,7 +63,7 @@ export default function Header() {
                 <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Who We Are</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {whoWeAreLinks.map((link) => (
+                    {whoWeAreLinks?.map((link) => (
                       <ListItem className="text-gray-900 hover:underline hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
@@ -73,7 +73,7 @@ export default function Header() {
                 <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Resources</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {resourcesLinks.map((link) => (
+                    {resourcesLinks?.map((link) => (
                       <ListItem className="hover:underline text-gray-900 hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>
@@ -83,7 +83,7 @@ export default function Header() {
                 <NavigationMenuTrigger className="hover:text-[#469620] text-[16px]">Membership</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {membershipLinks.map((link) => (
+                    {membershipLinks?.map((link) => (
                       <ListItem className="hover:underline text-gray-900 hover:text-[#469620]" key={link.title} title={link.title} href={link.href} />
                     ))}
                   </ul>

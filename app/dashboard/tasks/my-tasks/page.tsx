@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useGetMyTasksQuery } from "@/redux/features/tasks/tasksAPISlice"
+import { useGetUserTasksQuery } from "@/redux/features/projects/taskAPISlice"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, Filter, Calendar, CheckCircle2 } from "lucide-react"
@@ -140,7 +140,7 @@ export default function MyTasksPage() {
 
       {filteredTasks?.length > 0 ? (
         <div className="space-y-3">
-          {filteredTasks.map((task) => (
+          {filteredTasks?.map((task) => (
             <Card key={task.id} className="overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">

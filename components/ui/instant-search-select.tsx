@@ -45,9 +45,9 @@ export function InstantSearchSelect({
   // Calculate dynamic height based on number of options
   const dynamicHeight = useMemo(() => {
     const itemHeight = 36
-    const visibleItems = Math.min(filteredOptions.length, 6)
+    const visibleItems = Math.min(filteredOptions?.length, 6)
     return Math.min(visibleItems * itemHeight, maxHeight)
-  }, [filteredOptions.length, maxHeight])
+  }, [filteredOptions?.length, maxHeight])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -105,7 +105,7 @@ export function InstantSearchSelect({
           style={{ height: `${dynamicHeight}px` }}
         >
           <ScrollArea className="h-full">
-            {filteredOptions.map((option) => (
+            {filteredOptions?.map((option) => (
               <div
                 key={option.value}
                 className={`px-4 py-2 cursor-pointer ${

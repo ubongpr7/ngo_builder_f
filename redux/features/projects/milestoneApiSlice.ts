@@ -60,7 +60,7 @@ export const milestoneApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`user_id=${params.userId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -81,7 +81,7 @@ export const milestoneApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`user_id=${params.userId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -134,7 +134,7 @@ export const milestoneApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`is_overdue=${params.isOverdue}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 

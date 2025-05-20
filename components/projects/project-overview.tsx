@@ -207,10 +207,10 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
               </div>
 
               
-              {project.team_members && project.team_members.length > 0 && (
+              {project.team_members && project.team_members?.length > 0 && (
                 <div className="pt-2">
                   <div className="flex flex-wrap gap-2">
-                    {project.team_members.slice(0, 3).map((member) => (
+                    {project.team_members.slice(0, 3)?.map((member) => (
                       <div key={member.id} className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage
@@ -226,8 +226,8 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
                         </span>
                       </div>
                     ))}
-                    {project.team_members.length > 3 && (
-                      <div className="text-sm text-gray-500">+{project.team_members.length - 3} more</div>
+                    {project.team_members?.length > 3 && (
+                      <div className="text-sm text-gray-500">+{project.team_members?.length - 3} more</div>
                     )}
                   </div>
                 </div>
@@ -245,10 +245,10 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
               </div>
 
               
-              {project.officials_details && project.officials_details.length > 0 && (
+              {project.officials_details && project.officials_details?.length > 0 && (
                 <div className="pt-2">
                   <div className="flex flex-wrap gap-2">
-                    {project.officials_details.slice(0, 3).map((official) => (
+                    {project.officials_details.slice(0, 3)?.map((official) => (
                       <div key={official.id} className="flex items-center space-x-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage
@@ -264,8 +264,8 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
                         </span>
                       </div>
                     ))}
-                    {project.officials_details.length > 3 && (
-                      <div className="text-sm text-gray-500">+{project.officials_details.length - 3} more</div>
+                    {project.officials_details?.length > 3 && (
+                      <div className="text-sm text-gray-500">+{project.officials_details?.length - 3} more</div>
                     )}
                   </div>
                 </div>

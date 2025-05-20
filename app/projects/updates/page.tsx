@@ -234,7 +234,7 @@ export default function UpdatesPage() {
             </TabsList>
           </Tabs>
 
-          {updates.length === 0 ? (
+          {updates?.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <div className="mx-auto w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                 <Filter className="h-12 w-12 text-gray-400" />
@@ -244,7 +244,7 @@ export default function UpdatesPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {updates.map((update) => (
+              {updates?.map((update) => (
                 <UpdateCard key={update.id} update={update} />
               ))}
             </div>

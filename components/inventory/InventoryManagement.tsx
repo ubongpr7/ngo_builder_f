@@ -163,8 +163,8 @@ export default function InventoryManagement() {
   })
 
   // Get unique categories and statuses for filters
-  const categories = Array.from(new Set(inventoryItems.map((item) => item.category)))
-  const statuses = Array.from(new Set(inventoryItems.map((item) => item.status)))
+  const categories = Array.from(new Set(inventoryItems?.map((item) => item.category)))
+  const statuses = Array.from(new Set(inventoryItems?.map((item) => item.status)))
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -239,7 +239,7 @@ export default function InventoryManagement() {
           {showMobileTabs && (
             <div className="mt-2 p-4 border rounded-lg bg-white shadow-sm">
               <div className="grid grid-cols-3 gap-2">
-                {tabs.map((tab) => (
+                {tabs?.map((tab) => (
                   <div
                     key={tab.value}
                     className={`text-xs p-2 text-center rounded cursor-pointer ${
@@ -262,7 +262,7 @@ export default function InventoryManagement() {
 
         {/* Desktop Tabs */}
         <TabsList className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 w-full">
-          {tabs.map((tab) => (
+          {tabs?.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
             </TabsTrigger>
@@ -289,7 +289,7 @@ export default function InventoryManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
+                    {categories?.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -303,7 +303,7 @@ export default function InventoryManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-statuses">All Statuses</SelectItem>
-                  {statuses.map((status) => (
+                  {statuses?.map((status) => (
                     <SelectItem key={status} value={status}>
                       {status}
                     </SelectItem>
@@ -328,8 +328,8 @@ export default function InventoryManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.length > 0 ? (
-                  filteredItems.map((item) => (
+                {filteredItems?.length > 0 ? (
+                  filteredItems?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium text-xs md:text-sm">
                         <div className="flex items-center">

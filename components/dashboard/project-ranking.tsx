@@ -34,7 +34,7 @@ export function ProjectRanking({ projects, isLoading = false, onRefresh }: Proje
       <CardContent>
         {isLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {[1, 2, 3, 4, 5]?.map((i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -42,11 +42,11 @@ export function ProjectRanking({ projects, isLoading = false, onRefresh }: Proje
               </div>
             ))}
           </div>
-        ) : rankedProjects.length > 0 ? (
+        ) : rankedProjects?.length > 0 ? (
           <div className="space-y-5">
-            {rankedProjects.map((project) => {
+            {rankedProjects?.map((project) => {
               const completionPercentage = project.milestones_count
-                ? (project.milestones_completed_count / project.milestones_count) * 100
+                ? (project?.milestones_completed_count||0 / project.milestones_count) * 100
                 : 0
 
               return (

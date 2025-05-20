@@ -35,7 +35,7 @@ export default function ProfessionalInfoForm({
   const initialIndustryRef = useRef<string | null>(formData.industry || "")
 
   useEffect(() => {
-    if (industries && industries.length > 0 && !isInitialized) {
+    if (industries && industries?.length > 0 && !isInitialized) {
       if (initialIndustryRef.current !== "") {
         const industryExists = industries.some(
           (industry: { id: string; name: string }) => industry.id === initialIndustryRef.current,
@@ -66,7 +66,7 @@ export default function ProfessionalInfoForm({
 
   // Convert industries to select options
   const industryOptions: SelectOption[] = industries
-    ? industries.map((industry: { id: number; name: string }) => ({
+    ? industries?.map((industry: { id: number; name: string }) => ({
         value: industry.id.toString(),
         label: industry.name,
       }))
@@ -88,7 +88,7 @@ export default function ProfessionalInfoForm({
       newErrors.industry = "Industry is required"
     }
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors)?.length === 0
   }
 
   const handleIndustryChange = (option: SelectOption | null) => {

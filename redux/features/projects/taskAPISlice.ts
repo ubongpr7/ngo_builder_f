@@ -95,7 +95,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`days=${params.days}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -116,7 +116,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`user_id=${params.userId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -192,7 +192,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`is_completed=${params.isCompleted}`)
         }
 
-        if (params.tags && params.tags.length > 0) {
+        if (params.tags && params.tags?.length > 0) {
           queryParams.push(`tags=${params.tags.join(",")}`)
         }
 
@@ -204,7 +204,7 @@ export const taskApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`parent_id=${params.parent === null ? 'null' : params.parent}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 

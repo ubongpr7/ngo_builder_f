@@ -47,7 +47,7 @@ export default function Commitment() {
               <div className="h-2 w-16 bg-[#FDD65B] mb-9 mx-auto sm:mx-0"></div>
             </div>
             
-            {commitments.map((commitment) => (
+            {commitments?.map((commitment) => (
               <div key={commitment.id} className="mb-6 flex flex-col items-center sm:items-start sm:flex-row gap-4 sm:gap-10 text-center sm:text-left">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#FDD65B]">{commitment.number}</h2>
                 <div>

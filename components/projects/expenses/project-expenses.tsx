@@ -281,13 +281,13 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         </CardContent>
       </Card>
 
-      {filteredExpenses.length === 0 ? (
+      {filteredExpenses?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
             <h3 className="text-lg font-medium mb-2">No Expenses Found</h3>
             <p className="text-gray-500 text-center mb-4">
-              {searchTerm || Object.keys(filters).length > 0
+              {searchTerm || Object.keys(filters)?.length > 0
                 ? "No expenses match your search criteria. Try different search terms or filters."
                 : "No expenses have been recorded for this project yet."}
             </p>
@@ -311,7 +311,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredExpenses.map((expense) => (
+          {filteredExpenses?.map((expense) => (
             <Card key={expense.id}>
               <CardHeader className="pb-2">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2">

@@ -36,7 +36,7 @@ export default function AdminProjectProposals() {
     )
   }
 
-  if (projects.length === 0) {
+  if (projects?.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -92,7 +92,7 @@ export default function AdminProjectProposals() {
     <div className="space-y-4">
       <h2 className="text-xl font-bold">Project Proposals</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projects.map((project) => (
+        {projects?.map((project) => (
           <Card key={project.id} className="overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">

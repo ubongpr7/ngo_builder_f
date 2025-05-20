@@ -112,7 +112,7 @@ export function MilestoneStatistics({ projectId }: MilestoneStatisticsProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
-              {statusCounts.map((status) => (
+              {statusCounts?.map((status) => (
                 <Card key={status.status} className="p-3">
                   <div className="font-medium">{status.status.replace("_", " ").charAt(0).toUpperCase() + status.status.replace("_", " ").slice(1)}</div>
                   <div className="text-2xl font-bold">{status.count}</div>
@@ -158,7 +158,7 @@ export function MilestoneStatistics({ projectId }: MilestoneStatisticsProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
-              {priorityCounts.map((priority) => (
+              {priorityCounts?.map((priority) => (
                 <Card key={priority.priority} className="p-3">
                   <div className="font-medium">
                     {priority.priority.charAt(0).toUpperCase() + priority.priority.slice(1)}

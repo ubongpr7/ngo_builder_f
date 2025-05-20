@@ -155,7 +155,7 @@ export function ExpenseFilterDialog({ isOpen, onClose, filters, onApplyFilters, 
                   isMulti
                   isSearchable
                   value={EXPENSE_CATEGORIES.filter((option) => field.value.includes(option.value))}
-                  onChange={(options) => field.onChange(options ? options.map((option) => option.value) : [])}
+                  onChange={(options) => field.onChange(options ? options?.map((option) => option.value) : [])}
                   className="react-select-container"
                   classNamePrefix="react-select"
                 />

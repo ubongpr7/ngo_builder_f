@@ -121,8 +121,8 @@ export default function ProjectManagement() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.length > 0 ? (
-          filteredProjects.map((project) => <ProjectCard key={project.id} project={project} />)
+        {filteredProjects?.length > 0 ? (
+          filteredProjects?.map((project) => <ProjectCard key={project.id} project={project} />)
         ) : (
           <div className="col-span-full text-center py-12">
             <div className="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-gray-100">

@@ -263,14 +263,14 @@ export default function AssetDetail({ asset }: AssetDetailProps) {
                 </CardContent>
               </Card>
 
-              {asset.customFields && asset.customFields.length > 0 && (
+              {asset.customFields && asset.customFields?.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Custom Fields</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {asset.customFields.map((field) => (
+                      {asset.customFields?.map((field) => (
                         <div key={field.id} className="flex justify-between text-sm">
                           <span className="text-gray-500">{field.name}:</span>
                           <span className="font-medium">
@@ -325,9 +325,9 @@ export default function AssetDetail({ asset }: AssetDetailProps) {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  {asset.maintenanceRecords && asset.maintenanceRecords.length > 0 ? (
+                  {asset.maintenanceRecords && asset.maintenanceRecords?.length > 0 ? (
                     <div className="space-y-4">
-                      {asset.maintenanceRecords.map((record) => (
+                      {asset.maintenanceRecords?.map((record) => (
                         <div key={record.id} className="border-b pb-4">
                           <div className="flex justify-between mb-2">
                             <span className="font-medium">{record.date}</span>
@@ -375,9 +375,9 @@ export default function AssetDetail({ asset }: AssetDetailProps) {
                   <CardTitle>Movement History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {asset.movementHistory && asset.movementHistory.length > 0 ? (
+                  {asset.movementHistory && asset.movementHistory?.length > 0 ? (
                     <div className="space-y-4">
-                      {asset.movementHistory.map((record) => (
+                      {asset.movementHistory?.map((record) => (
                         <div key={record.id} className="flex items-start space-x-4">
                           <div className="bg-gray-100 p-2 rounded-full">
                             <ArrowRight className="h-4 w-4 text-blue-500" />
@@ -426,9 +426,9 @@ export default function AssetDetail({ asset }: AssetDetailProps) {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  {asset.attachments && asset.attachments.length > 0 ? (
+                  {asset.attachments && asset.attachments?.length > 0 ? (
                     <div className="space-y-2">
-                      {asset.attachments.map((attachment) => (
+                      {asset.attachments?.map((attachment) => (
                         <div key={attachment.id} className="flex items-center justify-between p-2 border rounded-md">
                           <div className="flex items-center">
                             <FileText className="h-4 w-4 mr-2 text-gray-500" />

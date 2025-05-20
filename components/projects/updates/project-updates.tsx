@@ -149,11 +149,11 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
       return false
     }
 
-    if (filters.hasMedia === true && (!update.media_files || update.media_files.length === 0)) {
+    if (filters.hasMedia === true && (!update.media_files || update.media_files?.length === 0)) {
       return false
     }
 
-    if (filters.hasMedia === false && update.media_files && update.media_files.length > 0) {
+    if (filters.hasMedia === false && update.media_files && update.media_files?.length > 0) {
       return false
     }
 
@@ -260,10 +260,10 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
           <Button
             variant="outline"
             onClick={() => setFilterDialogOpen(true)}
-            className={Object.keys(filters).length > 0 ? "border-blue-500 text-blue-600" : ""}
+            className={Object.keys(filters)?.length > 0 ? "border-blue-500 text-blue-600" : ""}
           >
             <Filter className="mr-2 h-4 w-4" />
-            {Object.keys(filters).length > 0 ? `Filters (${Object.keys(filters).length})` : "Filter"}
+            {Object.keys(filters)?.length > 0 ? `Filters (${Object.keys(filters)?.length})` : "Filter"}
           </Button>
           <Button variant="outline" onClick={() => setStatisticsOpen(true)}>
             <BarChart2 className="mr-2 h-4 w-4" />
@@ -343,7 +343,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
           */}
         </div>
         <div className="text-sm text-gray-500">
-          {filteredUpdates.length} updates • ${totalFundsSpent.toLocaleString()} total spent
+          {filteredUpdates?.length} updates • ${totalFundsSpent.toLocaleString()} total spent
         </div>
       </div>
 
@@ -381,13 +381,13 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
         </div>
       )}
 
-      {filteredUpdates.length === 0 ? (
+      {filteredUpdates?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
             <h3 className="text-lg font-medium mb-2">No Updates Found</h3>
             <p className="text-gray-500 text-center mb-4">
-              {searchTerm || Object.keys(filters).length > 0
+              {searchTerm || Object.keys(filters)?.length > 0
                 ? "No updates match your search criteria. Try different search terms or filters."
                 : "No updates have been submitted for this project yet."}
             </p>
@@ -401,7 +401,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
         <>
           {viewMode === "list" && (
             <div className="space-y-6">
-              {sortedUpdates.map((update) => {
+              {sortedUpdates?.map((update) => {
                 const isExpanded = expandedUpdates.includes(update.id)
                 return (
                   <Card key={update.id} className="overflow-hidden">
@@ -473,11 +473,11 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                       <div>
                         <div className="font-medium mb-1">Summary</div>
                         <p
-                          className={`text-gray-700 whitespace-pre-line ${!isExpanded && update.summary.length > 200 ? "line-clamp-3" : ""}`}
+                          className={`text-gray-700 whitespace-pre-line ${!isExpanded && update.summary?.length > 200 ? "line-clamp-3" : ""}`}
                         >
                           {update.summary}
                         </p>
-                        {!isExpanded && update.summary.length > 200 && (
+                        {!isExpanded && update.summary?.length > 200 && (
                           <Button
                             variant="link"
                             className="p-0 h-auto text-blue-600"
@@ -513,11 +513,11 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                         </>
                       )}
 
-                      {update.media_files && update.media_files.length > 0 && (
+                      {update.media_files && update.media_files?.length > 0 && (
                         <div>
-                          <div className="font-medium mb-2">Media Files ({update.media_files.length})</div>
+                          <div className="font-medium mb-2">Media Files ({update.media_files?.length})</div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {update.media_files.slice(0, isExpanded ? undefined : 4).map((media, index) => (
+                            {update.media_files.slice(0, isExpanded ? undefined : 4)?.map((media, index) => (
                               <div key={index} className="relative group">
                                 <div className="aspect-square rounded-md overflow-hidden bg-gray-100 border">
                                   {media.media_type === "image" ? (
@@ -578,13 +578,13 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                                 )}
                               </div>
                             ))}
-                            {!isExpanded && update.media_files.length > 4 && (
+                            {!isExpanded && update.media_files?.length > 4 && (
                               <div
                                 className="aspect-square rounded-md overflow-hidden bg-gray-100 border flex items-center justify-center cursor-pointer"
                                 onClick={() => toggleUpdateExpansion(update.id)}
                               >
                                 <div className="text-center">
-                                  <p className="text-lg font-medium text-gray-600">+{update.media_files.length - 4}</p>
+                                  <p className="text-lg font-medium text-gray-600">+{update.media_files?.length - 4}</p>
                                   <p className="text-xs text-gray-500">more files</p>
                                 </div>
                               </div>

@@ -113,7 +113,7 @@ export default function BlogPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Featured Articles</h2>
           <div className="grid md:grid-cols-2 gap-8">
-            {featuredPosts.map((post) => (
+            {featuredPosts?.map((post) => (
               <FeaturedPostCard key={post.id} post={post} />
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function BlogPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Latest Articles</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {regularPosts.map((post) => (
+            {regularPosts?.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

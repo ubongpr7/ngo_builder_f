@@ -17,7 +17,7 @@ export default function Hero() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length)
+      setCurrent((prev) => (prev + 1) % images?.length)
     }, 3000)
     return () => clearInterval(interval)
   }, [])
@@ -25,7 +25,7 @@ export default function Hero() {
   return (
     <div className="relative lg:h-screen overflow-hidden">
       {/* Image layers */}
-      {images.map((img, index) => (
+      {images?.map((img, index) => (
         <div
           key={index}
           className={clsx(

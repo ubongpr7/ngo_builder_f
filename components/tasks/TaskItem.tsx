@@ -289,11 +289,11 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
                 typeof task.completion_percentage === "number" &&
                 task.completion_percentage > 0 && <Progress value={task.completion_percentage} className="h-1 mt-2" />}
 
-              {assignedUsers.length > 0 && (
+              {assignedUsers?.length > 0 && (
                 <div className="mt-3 flex items-center">
                   <Users className="h-3 w-3 mr-2 text-gray-500" />
                   <AvatarGroup>
-                    {assignedUsers.map((user) => (
+                    {assignedUsers?.map((user) => (
                       <Avatar key={typeof user === "object" ? user.id : user} className="h-6 w-6">
                         <AvatarFallback>
                           {typeof user === "object" ? user.first_name?.[0] || user.email?.[0] || "?" : "?"}
@@ -332,7 +332,7 @@ export default function TaskItem({ task, onUpdate, level = 0 }: TaskItemProps) {
 
       {isExpanded && task.has_subtasks && Array.isArray(subtasks) && (
         <div className={`pl-4 space-y-2 mb-4`}>
-          {subtasks.map((subtask) => (
+          {subtasks?.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} onUpdate={onUpdate} level={level + 1} />
           ))}
         </div>

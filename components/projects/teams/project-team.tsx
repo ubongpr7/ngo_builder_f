@@ -200,7 +200,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
         </Tabs>
       </div>
 
-      {filteredMembers.length === 0 ? (
+      {filteredMembers?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
@@ -226,7 +226,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => {
+          {filteredMembers?.map((member) => {
             const user = member.user_details || { first_name: "", last_name: "", email: "" }
             return (
               <Card key={member.id}>

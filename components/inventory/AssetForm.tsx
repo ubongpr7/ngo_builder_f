@@ -124,7 +124,7 @@ export default function AssetForm({ asset, isEditing = false }: AssetFormProps) 
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {assetCategories.map((category) => (
+                      {assetCategories?.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
@@ -147,7 +147,7 @@ export default function AssetForm({ asset, isEditing = false }: AssetFormProps) 
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {assetStatuses.map((status) => (
+                      {assetStatuses?.map((status) => (
                         <SelectItem key={status} value={status}>
                           {status}
                         </SelectItem>

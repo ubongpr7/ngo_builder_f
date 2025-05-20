@@ -265,7 +265,7 @@ export default function ProjectUpdatesPage() {
                 </div>
                 <div className="flex items-center">
                   <Users className="h-4 w-4 mr-1" />
-                  <span>{project.team.length} Team Members</span>
+                  <span>{project.team?.length} Team Members</span>
                 </div>
               </div>
             </div>
@@ -279,7 +279,7 @@ export default function ProjectUpdatesPage() {
                     <AvatarFallback>
                       {project.lead.name
                         .split(" ")
-                        .map((n) => n[0])
+                        ?.map((n) => n[0])
                         .join("")}
                     </AvatarFallback>
                   </Avatar>
@@ -314,7 +314,7 @@ export default function ProjectUpdatesPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {project.milestones.map((milestone) => (
+                {project.milestones?.map((milestone) => (
                   <div key={milestone.id} className="flex items-start">
                     <div
                       className={`mt-1 h-5 w-5 rounded-full flex items-center justify-center ${
@@ -359,13 +359,13 @@ export default function ProjectUpdatesPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {project.team.map((member) => (
+                {project.team?.map((member) => (
                   <div key={member.id} className="flex items-center">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback>
                         {member.name
                           .split(" ")
-                          .map((n) => n[0])
+                          ?.map((n) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
@@ -390,7 +390,7 @@ export default function ProjectUpdatesPage() {
             </TabsList>
           </Tabs>
 
-          {updates.length === 0 ? (
+          {updates?.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <div className="mx-auto w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
                 <svg
@@ -419,7 +419,7 @@ export default function ProjectUpdatesPage() {
               {updates
                 .filter((update) => activeTab === "all" || update.category === activeTab)
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((update) => (
+                ?.map((update) => (
                   <UpdateCard key={update.id} update={update} />
                 ))}
             </div>

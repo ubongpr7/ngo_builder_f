@@ -38,7 +38,7 @@ export function CategoryChart({ categoryCounts, isLoading = false, onRefresh }: 
           datasets: [
             {
               data,
-              backgroundColor: colors.map((color) => `${color}CC`), // Add transparency
+              backgroundColor: colors?.map((color) => `${color}CC`), // Add transparency
               borderColor: colors,
               borderWidth: 1,
             },

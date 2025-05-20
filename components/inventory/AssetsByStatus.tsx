@@ -57,7 +57,7 @@ export default function AssetsByStatus() {
       </div>
 
       <div className="space-y-2">
-        {statuses.map((status, index) => (
+        {statuses?.map((status, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="h-3 w-3 rounded-full" style={{ backgroundColor: status.color }} />

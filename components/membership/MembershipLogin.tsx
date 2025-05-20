@@ -82,19 +82,19 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
     const errorData = error.data || {}
 
     // Check for specific field errors
-    if (errorData.email && errorData.email.length > 0) {
+    if (errorData.email && errorData.email?.length > 0) {
       return `Email: ${errorData.email[0]}`
     }
 
-    if (errorData.password && errorData.password.length > 0) {
+    if (errorData.password && errorData.password?.length > 0) {
       return `Password: ${errorData.password[0]}`
     }
 
-    if (errorData.code && errorData.code.length > 0) {
+    if (errorData.code && errorData.code?.length > 0) {
       return `Code: ${errorData.code[0]}`
     }
 
-    if (errorData.non_field_errors && errorData.non_field_errors.length > 0) {
+    if (errorData.non_field_errors && errorData.non_field_errors?.length > 0) {
       return errorData.non_field_errors[0]
     }
 

@@ -280,7 +280,7 @@ export function AddProjectDialog() {
                           isLoading={isLoadingManagers}
                           loadingMessage={() => "Searching managers..."}
                           noOptionsMessage={({ inputValue }) =>
-                            inputValue.length > 0 ? "No managers found" : "Type to search managers"
+                            inputValue?.length > 0 ? "No managers found" : "Type to search managers"
                           }
                           aria-labelledby="project-manager-label"
                         />

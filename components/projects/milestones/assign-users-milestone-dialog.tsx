@@ -55,7 +55,7 @@ const { data: users = [], isLoading: isLoadingUsers } = useGetProjectTeamMembers
     try {
       await assignUsers({
         id: milestone.id,
-        userIds: values.userIds.map((id) => Number.parseInt(id)),
+        userIds: values.userIds?.map((id) => Number.parseInt(id)),
       }).unwrap()
 
       setOpen(false)
@@ -92,7 +92,7 @@ const { data: users = [], isLoading: isLoadingUsers } = useGetProjectTeamMembers
                         </div>
                       ) : (
                         <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-md p-2">
-                          {users.map((user: { id: number; first_name: string; last_name: string; email: string }) => (
+                          {users?.map((user: { id: number; first_name: string; last_name: string; email: string }) => (
                             <div key={user.id} className="flex items-center space-x-2 p-2 hover:bg-gray-50">
                               <input
                                 type="checkbox"

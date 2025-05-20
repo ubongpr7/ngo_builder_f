@@ -21,15 +21,15 @@ export default function MediaGallery({ media }: MediaGalleryProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1))
+    setCurrentIndex((prev) => (prev === 0 ? media?.length - 1 : prev - 1))
   }
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1))
+    setCurrentIndex((prev) => (prev === media?.length - 1 ? 0 : prev + 1))
   }
 
   // For single image
-  if (media.length === 1) {
+  if (media?.length === 1) {
     return (
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogTrigger asChild>

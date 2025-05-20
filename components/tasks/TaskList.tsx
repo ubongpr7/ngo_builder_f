@@ -61,9 +61,9 @@ export default function TaskList() {
             <div className="flex justify-center items-center h-40">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : filteredTasks.length > 0 ? (
+          ) : filteredTasks?.length > 0 ? (
             <div className="space-y-4">
-              {filteredTasks.map((task) => (
+              {filteredTasks?.map((task) => (
                 <TaskItem key={task.id} task={task} onUpdate={refetch} />
               ))}
             </div>

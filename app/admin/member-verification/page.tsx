@@ -48,7 +48,7 @@ export default function KYCVerificationPage() {
   const getInitials = (name: string) => {
     return name
       .split(" ")
-      .map((n) => n[0])
+      ?.map((n) => n[0])
       .join("")
       .toUpperCase()
   }
@@ -80,7 +80,7 @@ export default function KYCVerificationPage() {
           {isLoadingProfiles || isLoadingSearch ? (
             // Loading state
             <div className="grid gap-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3]?.map((i) => (
                 <Card key={i}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
@@ -101,8 +101,8 @@ export default function KYCVerificationPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {displayProfiles && displayProfiles.length > 0 ? (
-                displayProfiles.map((profile) => (
+              {displayProfiles && displayProfiles?.length > 0 ? (
+                displayProfiles?.map((profile) => (
                   <Card key={profile.id}>
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">

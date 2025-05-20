@@ -48,7 +48,7 @@ export function UpdateFilterDialog({
   const { data: teamMembers = [] } = useGetProjectTeamMembersQuery(projectId)
 
   // Format team members for react-select
-  const teamMemberOptions = teamMembers.map((user) => ({
+  const teamMemberOptions = teamMembers?.map((user) => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
   }))

@@ -160,7 +160,7 @@ export default function TasksPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {filteredTasks.length > 0 ? (
+        {filteredTasks?.length > 0 ? (
           filteredTasks.map((task) => (
             <Card key={task.id} className="overflow-hidden hover:shadow-md transition-shadow">
               <CardContent className="p-0">

@@ -24,11 +24,11 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
       parentId === null ? !comment.parent : comment.parent?.id === parentId,
     )
 
-    if (filteredComments.length === 0) return null
+    if (filteredComments?.length === 0) return null
 
     return (
       <div className={`space-y-4 ${level > 0 ? "ml-12 mt-4" : ""}`}>
-        {filteredComments.map((comment) => (
+        {filteredComments?.map((comment) => (
           <div key={comment.id}>
             <Card className={level > 0 ? "border-l-4 border-l-gray-200" : ""}>
               <CardHeader className="pb-2">
@@ -126,7 +126,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
       </Card>
 
       {/* Comments List */}
-      {comments.length === 0 ? (
+      {comments?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
@@ -137,7 +137,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
       ) : (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">{comments.length} Comments</h3>
+            <h3 className="text-lg font-medium">{comments?.length} Comments</h3>
             <div className="text-sm text-gray-500">
               Sort by: <span className="font-medium">Newest First</span>
             </div>

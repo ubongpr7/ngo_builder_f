@@ -70,7 +70,7 @@ export default function ExpiringWarranties() {
           </tr>
         </thead>
         <tbody>
-          {expiringWarranties.map((item) => (
+          {expiringWarranties?.map((item) => (
             <tr key={item.id} className="border-b">
               <td className="py-3">
                 <div className="flex items-center space-x-2">

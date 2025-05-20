@@ -160,7 +160,7 @@ function MembershipTierCard({
         </div>
         <p className="text-gray-600 mb-6">{description}</p>
         <ul className="space-y-3 mb-8">
-          {features.map((feature, index) => (
+          {features?.map((feature, index) => (
             <FeatureItem key={index} included={feature.included}>
               {feature.text}
             </FeatureItem>

@@ -42,7 +42,7 @@ export default function InventoryStats() {
 
   return (
     <>
-      {stats.map((stat, index) => (
+      {stats?.map((stat, index) => (
         <Card key={index}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-x-2">

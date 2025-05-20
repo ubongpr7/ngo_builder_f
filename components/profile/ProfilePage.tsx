@@ -58,8 +58,8 @@ export default function ProfilePage() {
 
     const completedFields = requiredFields.filter(
       (field) => field !== null && field !== undefined && field !== "",
-    ).length
-    return Math.round((completedFields / requiredFields.length) * 100)
+    )?.length
+    return Math.round((completedFields / requiredFields?.length) * 100)
   }
 
   // Get role badges
@@ -84,7 +84,7 @@ export default function ProfilePage() {
     if (profileData.is_project_manager) roles.push("Project Manager")
 
     // If role_summary exists, use it instead
-    if (profileData.role_summary && profileData.role_summary.length > 0) {
+    if (profileData.role_summary && profileData.role_summary?.length > 0) {
       return profileData.role_summary
     }
 
@@ -424,7 +424,7 @@ export default function ProfilePage() {
 
                 <div className="bg-gray-50 rounded-md p-3">
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Areas of Expertise</h3>
-                  {profileData.expertise_details && profileData.expertise_details.length > 0 ? (
+                  {profileData.expertise_details && profileData.expertise_details?.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {profileData.expertise_details.map((item) => (
                         <Badge key={item.id} variant="outline" className="text-xs font-normal">

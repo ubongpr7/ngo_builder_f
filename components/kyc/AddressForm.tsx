@@ -57,28 +57,28 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
 
   // Convert data arrays to react-select options
   const countryOptions: SelectOption[] = countries
-    ? countries.map((country) => ({
+    ? countries?.map((country) => ({
         value: country.id.toString(),
         label: country.name,
       }))
     : []
 
   const regionOptions: SelectOption[] = regions
-    ? regions.map((region) => ({
+    ? regions?.map((region) => ({
         value: region.id.toString(),
         label: region.name,
       }))
     : []
 
   const subregionOptions: SelectOption[] = subregions
-    ? subregions.map((subregion) => ({
+    ? subregions?.map((subregion) => ({
         value: subregion.id.toString(),
         label: subregion.name,
       }))
     : []
 
   const cityOptions: SelectOption[] = cities
-    ? cities.map((city) => ({
+    ? cities?.map((city) => ({
         value: city.id.toString(),
         label: city.name,
       }))
@@ -112,7 +112,7 @@ export default function AddressForm({ formData, updateFormData, onComplete, addr
     if (!formData.city) newErrors.city = "City/Town is required"
     if (!formData.street?.trim()) newErrors.street = "Street is required"
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors)?.length === 0
   }
 
   // Form submission

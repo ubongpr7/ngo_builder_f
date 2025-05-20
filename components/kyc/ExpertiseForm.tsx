@@ -27,11 +27,11 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
   const [errors, setErrors] = useState<Record<string, string>>({})
   
   // Initialize maxReached based on the initial formData
-  const [maxReached, setMaxReached] = useState(formData.expertise.length >= MAX_SELECTIONS)
+  const [maxReached, setMaxReached] = useState(formData.expertise?.length >= MAX_SELECTIONS)
   
   // Update maxReached whenever formData.expertise changes
   useEffect(() => {
-    setMaxReached(formData.expertise.length >= MAX_SELECTIONS)
+    setMaxReached(formData.expertise?.length >= MAX_SELECTIONS)
   }, [formData.expertise])
 
   const handleExpertiseChange = (expertiseId: number) => {
@@ -45,7 +45,7 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
       // maxReached will be updated by the useEffect
     } else {
       // Add if not selected and under the limit
-      if (updatedExpertise.length < MAX_SELECTIONS) {
+      if (updatedExpertise?.length < MAX_SELECTIONS) {
         updatedExpertise.push(expertiseId)
         // maxReached will be updated by the useEffect
       } else {
@@ -59,7 +59,7 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
     }
 
     // Clear max limit error if we're under the limit
-    if (updatedExpertise.length < MAX_SELECTIONS) {
+    if (updatedExpertise?.length < MAX_SELECTIONS) {
       const { maxLimit, ...restErrors } = errors
       setErrors(restErrors)
     }
@@ -70,16 +70,16 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (formData.expertise.length === 0) {
+    if (formData.expertise?.length === 0) {
       newErrors.expertise = "Please select at least one area of expertise"
     }
 
-    if (formData.expertise.length > MAX_SELECTIONS) {
+    if (formData.expertise?.length > MAX_SELECTIONS) {
       newErrors.maxLimit = `You can only select up to ${MAX_SELECTIONS} areas of expertise`
     }
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return Object.keys(newErrors)?.length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,7 +111,7 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
     )
   }
 
-  const selectedCount = formData.expertise.length
+  const selectedCount = formData.expertise?.length
   const remainingSelections = MAX_SELECTIONS - selectedCount
 
   return (

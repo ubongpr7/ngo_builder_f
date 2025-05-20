@@ -112,7 +112,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
   }, [open, update, reset])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    if (e.target.files && e.target.files?.length > 0) {
       const newFiles = Array.from(e.target.files)
       setMediaFiles(prev => [...prev, ...newFiles])
       
@@ -151,7 +151,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
 
   const updateCaption = (index: number, caption: string) => {
     setMediaPreviews(prev => 
-      prev.map((item, i) => 
+      prev?.map((item, i) => 
         i === index ? { ...item, caption } : item
       )
     )
@@ -220,8 +220,8 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
       await updateUpdate(updateData).unwrap()
       
       // Then upload new media files if any
-      if (mediaFiles.length > 0) {
-        const totalFiles = mediaFiles.length
+      if (mediaFiles?.length > 0) {
+        const totalFiles = mediaFiles?.length
         let uploadedFiles = 0
         
         for (const [index, fileData] of mediaPreviews.entries()) {
@@ -293,8 +293,8 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="details">Update Details</TabsTrigger>
               <TabsTrigger value="media">
-                Media Files {(existingMedia.length + mediaPreviews.length) > 0 && 
-                  `(${existingMedia.length + mediaPreviews.length})`}
+                Media Files {(existingMedia?.length + mediaPreviews?.length) > 0 && 
+                  `(${existingMedia?.length + mediaPreviews?.length})`}
               </TabsTrigger>
             </TabsList>
             
@@ -402,11 +402,11 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
                   </div>
                 </div>
 
-                {existingMedia.length > 0 && (
+                {existingMedia?.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="font-medium">Existing Files ({existingMedia.length})</h3>
+                    <h3 className="font-medium">Existing Files ({existingMedia?.length})</h3>
                     <div className="space-y-3">
-                      {existingMedia.map((media) => (
+                      {existingMedia?.map((media) => (
                         <div key={media.id} className="flex items-start gap-3 p-3 border rounded-md bg-gray-50">
                           <div className="flex-shrink-0">
                             {media.media_type === 'image' ? (
@@ -452,11 +452,11 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
                   </div>
                 )}
 
-                {mediaPreviews.length > 0 && (
+                {mediaPreviews?.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="font-medium">New Files ({mediaPreviews.length})</h3>
+                    <h3 className="font-medium">New Files ({mediaPreviews?.length})</h3>
                     <div className="space-y-3">
-                      {mediaPreviews.map((item, index) => (
+                      {mediaPreviews?.map((item, index) => (
                         <div key={index} className="flex items-start gap-3 p-3 border rounded-md bg-gray-50">
                           <div className="flex-shrink-0">
                             {item.type === 'image' ? (
@@ -505,7 +505,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
                   </div>
                 )}
 
-                {existingMedia.length === 0 && mediaPreviews.length === 0 && (
+                {existingMedia?.length === 0 && mediaPreviews?.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <FileText className="h-12 w-12 mx-auto mb-2 text-gray-400" />
                     <h3 className="text-lg font-medium mb-1">No Media Files</h3>

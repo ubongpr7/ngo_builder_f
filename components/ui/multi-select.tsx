@@ -25,14 +25,14 @@ export function MultiSelect({
   className,
 }: MultiSelectProps) {
   // Convert selected values to options format
-  const selectedOptions = selected.map((value) => {
+  const selectedOptions = selected?.map((value) => {
     const option = options.find((opt) => opt.value === value)
     return option || { value, label: value }
   })
 
   // Handle change
   const handleChange = (selectedOptions: readonly MultiSelectOption[]) => {
-    onChange(selectedOptions.map((option) => option.value))
+    onChange(selectedOptions?.map((option) => option.value))
   }
 
   return (

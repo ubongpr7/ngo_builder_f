@@ -146,13 +146,13 @@ export default function MilestonesPage() {
           <Skeleton className="h-10 w-40" />
         </div>
         <Skeleton className="h-12 w-full mb-6" />
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3]?.map((i) => (
           <Card key={i} className="mb-6">
             <CardHeader>
               <Skeleton className="h-6 w-48 mb-2" />
             </CardHeader>
             <CardContent>
-              {[1, 2].map((j) => (
+              {[1, 2]?.map((j) => (
                 <div key={j} className="mb-4">
                   <Skeleton className="h-24 w-full rounded-md" />
                 </div>
@@ -215,8 +215,8 @@ export default function MilestonesPage() {
         </Tabs>
       </div>
 
-      {Object.keys(groupedMilestones).length > 0 ? (
-        Object.values(groupedMilestones).map((project: any) => (
+      {Object.keys(groupedMilestones)?.length > 0 ? (
+        Object.values(groupedMilestones)?.map((project: any) => (
           <Collapsible
             key={project.id}
             className="mb-6"
@@ -228,7 +228,7 @@ export default function MilestonesPage() {
                 <CardHeader className="flex flex-row items-center justify-between py-4">
                   <CardTitle className="text-xl font-bold">{project.title}</CardTitle>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{Object.values(project.milestones).flat().length} Milestones</Badge>
+                    <Badge variant="outline">{Object.values(project.milestones).flat()?.length} Milestones</Badge>
                     <Button variant="ghost" size="sm">
                       <Filter className="h-4 w-4" />
                     </Button>
@@ -239,9 +239,9 @@ export default function MilestonesPage() {
               <CollapsibleContent>
                 <CardContent className="pt-0">
                   {/* Status sections */}
-                  {(["not_started", "in_progress", "delayed", "overdue", "completed"] as const).map((status) => {
+                  {(["not_started", "in_progress", "delayed", "overdue", "completed"] as const)?.map((status) => {
                     const statusMilestones = project.milestones[status]
-                    if (statusMilestones.length === 0) return null
+                    if (statusMilestones?.length === 0) return null
 
                     return (
                       <div key={status} className="mb-6 last:mb-0">
@@ -254,12 +254,12 @@ export default function MilestonesPage() {
                                 ? "Overdue"
                                 : status.charAt(0).toUpperCase() + status.slice(1)}
                           <Badge variant="outline" className="ml-2">
-                            {statusMilestones.length}
+                            {statusMilestones?.length}
                           </Badge>
                         </h3>
 
                         <div className="grid grid-cols-1 gap-4">
-                          {statusMilestones.map((milestone: any) => (
+                          {statusMilestones?.map((milestone: any) => (
                             <Card key={milestone.id} className="overflow-hidden hover:shadow-md transition-shadow">
                               <CardContent className="p-4">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
@@ -304,10 +304,10 @@ export default function MilestonesPage() {
                                       </span>
                                     </div>
                                   )}
-                                  {milestone.assigned_to && milestone.assigned_to.length > 0 && (
+                                  {milestone.assigned_to && milestone.assigned_to?.length > 0 && (
                                     <div className="flex items-center">
                                       <CheckCircle className="h-4 w-4 mr-1" />
-                                      <span>{milestone.assigned_to.length} assignees</span>
+                                      <span>{milestone.assigned_to?.length} assignees</span>
                                     </div>
                                   )}
                                 </div>

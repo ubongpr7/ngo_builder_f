@@ -37,7 +37,7 @@ export function UpdateGalleryView({ projectId }: UpdateGalleryViewProps) {
       )
     }
 
-    if (!media || media.length === 0) {
+    if (!media || media?.length === 0) {
       return (
         <div className="text-center p-8">
           <h3 className="text-lg font-medium">No media found</h3>
@@ -49,7 +49,7 @@ export function UpdateGalleryView({ projectId }: UpdateGalleryViewProps) {
     if (viewMode === "grid") {
       return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {media.map((item) => (
+          {media?.map((item) => (
             <Card
               key={item.id}
               className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
@@ -85,7 +85,7 @@ export function UpdateGalleryView({ projectId }: UpdateGalleryViewProps) {
     } else {
       return (
         <div className="space-y-2">
-          {media.map((item) => (
+          {media?.map((item) => (
             <div
               key={item.id}
               className="flex items-center p-2 hover:bg-muted rounded-md cursor-pointer"
@@ -142,22 +142,22 @@ export function UpdateGalleryView({ projectId }: UpdateGalleryViewProps) {
             <TabsTrigger value="images" className="flex items-center">
               <ImageIcon className="h-4 w-4 mr-2" />
               Images
-              {images && images.length > 0 && (
-                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{images.length}</span>
+              {images && images?.length > 0 && (
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{images?.length}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="videos" className="flex items-center">
               <Film className="h-4 w-4 mr-2" />
               Videos
-              {videos && videos.length > 0 && (
-                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{videos.length}</span>
+              {videos && videos?.length > 0 && (
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{videos?.length}</span>
               )}
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center">
               <FileText className="h-4 w-4 mr-2" />
               Documents
-              {documents && documents.length > 0 && (
-                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{documents.length}</span>
+              {documents && documents?.length > 0 && (
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">{documents?.length}</span>
               )}
             </TabsTrigger>
           </TabsList>

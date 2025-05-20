@@ -81,7 +81,7 @@ export const updateApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`update_id=${params.updateId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -102,7 +102,7 @@ export const updateApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`update_id=${params.updateId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 
@@ -123,7 +123,7 @@ export const updateApiSlice = apiSlice.injectEndpoints({
           queryParams.push(`update_id=${params.updateId}`)
         }
 
-        if (queryParams.length > 0) {
+        if (queryParams?.length > 0) {
           url += `?${queryParams.join("&")}`
         }
 

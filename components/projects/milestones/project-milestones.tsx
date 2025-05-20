@@ -183,7 +183,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
         </Tabs>
       </div>
 
-      {filteredMilestones.length === 0 ? (
+      {filteredMilestones?.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
@@ -209,7 +209,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredMilestones.map((milestone) => (
+          {filteredMilestones?.map((milestone) => (
             <Card key={milestone.id}>
               <CardHeader className="pb-2">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
@@ -251,14 +251,14 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </div>
                 )}
 
-                {milestone.assigned_to && milestone.assigned_to.length > 0 && (
+                {milestone.assigned_to && milestone.assigned_to?.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="text-sm font-medium mb-2 flex items-center">
                       <Users className="mr-2 h-4 w-4 text-gray-500" />
                       Assigned To
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {milestone.assigned_to.map((user) => (
+                      {milestone.assigned_to?.map((user) => (
                         <Badge key={user.id} variant="outline" className="bg-gray-50">
                           {user.first_name} {user.last_name}
                         </Badge>

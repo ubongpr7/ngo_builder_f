@@ -168,7 +168,7 @@ export default function CustomCreateForm<T extends Record<string, any>>({
       <div className="">
         <form onSubmit={handleSubmit(onSubmitHandler)} className="flex flex-col overflow-y-auto h-full">
           <div>
-            {Object.entries(hiddenFields).map(([fieldName, fieldValue]) => (
+            {Object.entries(hiddenFields)?.map(([fieldName, fieldValue]) => (
               <Controller
                 key={`hidden-${fieldName}`}
                 name={fieldName as Path<Partial<T>>}
@@ -180,7 +180,7 @@ export default function CustomCreateForm<T extends Record<string, any>>({
 
           <div className="flex-1 overflow-y-auto p-6">
             <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
-              {regularFields.map((key) => {
+              {regularFields?.map((key) => {
                 const keyStr = String(key).toLowerCase()
                 const inputType = getInputType(key)
                 const isGeoField = inputType === "geo-select"
@@ -279,7 +279,7 @@ export default function CustomCreateForm<T extends Record<string, any>>({
                                 ref={field.ref}
                               >
                                 <option value="">Select Contact Person</option>
-                                {contactPersons.map((contact: { id: number; name: string }) => (
+                                {contactPersons?.map((contact: { id: number; name: string }) => (
                                   <option key={contact.id} value={contact.id.toString()}>
                                     {" "}
                                     {/* Ensure string value */}

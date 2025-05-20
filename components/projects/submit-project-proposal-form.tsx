@@ -46,7 +46,7 @@ export function SubmitProjectProposalForm({ userId, onSuccess }: SubmitProjectPr
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
 
-  const categoryOptions: SelectOption[] = categoriesData.map((category) => ({
+  const categoryOptions: SelectOption[] = categoriesData?.map((category) => ({
     value: category.id.toString(),
     label: category.name,
   }))

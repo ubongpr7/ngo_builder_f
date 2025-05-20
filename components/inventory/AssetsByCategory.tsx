@@ -52,7 +52,7 @@ export default function AssetsByCategory() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {categories.map((category, index) => (
+        {categories?.map((category, index) => (
           <div key={index} className="flex items-center space-x-2">
             <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }} />
             <div className="flex flex-1 justify-between">

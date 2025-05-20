@@ -83,7 +83,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
   })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    if (e.target.files && e.target.files?.length > 0) {
       const newFiles = Array.from(e.target.files)
       setMediaFiles(prev => [...prev, ...newFiles])
       
@@ -122,7 +122,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
 
   const updateCaption = (index: number, caption: string) => {
     setMediaPreviews(prev => 
-      prev.map((item, i) => 
+      prev?.map((item, i) => 
         i === index ? { ...item, caption } : item
       )
     )
@@ -161,8 +161,8 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
       const updateId = response.id
       
       // Then upload media files if any
-      if (mediaFiles.length > 0) {
-        const totalFiles = mediaFiles.length
+      if (mediaFiles?.length > 0) {
+        const totalFiles = mediaFiles?.length
         let uploadedFiles = 0
         
         for (const [index, fileData] of mediaPreviews.entries()) {
@@ -235,7 +235,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Update Details</TabsTrigger>
             <TabsTrigger value="media">
-              Media Files {mediaPreviews.length > 0 && `(${mediaPreviews.length})`}
+              Media Files {mediaPreviews?.length > 0 && `(${mediaPreviews?.length})`}
             </TabsTrigger>
           </TabsList>
           
@@ -343,11 +343,11 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
                 </div>
               </div>
 
-              {mediaPreviews.length > 0 && (
+              {mediaPreviews?.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="font-medium">Selected Files ({mediaPreviews.length})</h3>
+                  <h3 className="font-medium">Selected Files ({mediaPreviews?.length})</h3>
                   <div className="space-y-3">
-                    {mediaPreviews.map((item, index) => (
+                    {mediaPreviews?.map((item, index) => (
                       <div key={index} className="flex items-start gap-3 p-3 border rounded-md bg-gray-50">
                         <div className="flex-shrink-0">
                           {item.type === 'image' ? (
@@ -396,7 +396,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
                 </div>
               )}
 
-              {mediaPreviews.length === 0 && (
+              {mediaPreviews?.length === 0 && (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>No media files selected</AlertTitle>

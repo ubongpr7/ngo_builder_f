@@ -39,7 +39,7 @@ export function TypeChart({ typeCounts, isLoading = false, onRefresh }: TypeChar
             {
               data,
               backgroundColor: colors,
-              borderColor: colors.map(() => "#fff"),
+              borderColor: colors?.map(() => "#fff"),
               borderWidth: 2,
             },
           ],

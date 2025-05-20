@@ -93,12 +93,12 @@ export default function DashboardPage() {
     if (projects) {
       const active = projects.filter(
         (p) => p.status === "planned" || p.status === "in_progress" || p.status === "active" || p.status === "planning",
-      ).length
+      )?.length
       const completed =
-        projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed").length
+        projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed")?.length
       const submitted =
-        projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted").length
-      const overbudget = projects.filter((p) => p.is_overbudget).length
+        projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted")?.length
+      const overbudget = projects.filter((p) => p.is_overbudget)?.length
       const totalBudget =
         projectStatistics?.budget_stats.total_budget ||
         projects.reduce((sum, p) => {
@@ -110,7 +110,7 @@ export default function DashboardPage() {
       const totalSpent = projectStatistics?.budget_stats.total_spent || 0
 
       setProjectStats({
-        total: projects.length,
+        total: projects?.length,
         active,
         completed,
         submitted,
@@ -301,7 +301,7 @@ export default function DashboardPage() {
             <div className="space-y-4">
               {projectsLoading || isRefreshingProjects ? (
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
+                  {[1, 2, 3]?.map((i) => (
                     <div key={i} className="flex gap-4 border-b pb-4">
                       <Skeleton className="h-16 w-16 rounded" />
                       <div className="flex-1">
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                 projects
                   .filter((project) => project.status === "submitted")
                   .slice(0, 3)
-                  .map((project) => (
+                  ?.map((project) => (
                     <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
                       <div className="flex justify-between items-center border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
                         <div className="flex gap-4">
@@ -342,7 +342,7 @@ export default function DashboardPage() {
 
               {!projectsLoading &&
                 !isRefreshingProjects &&
-                projects.filter((project) => project.status === "submitted").length === 0 && (
+                projects.filter((project) => project.status === "submitted")?.length === 0 && (
                   <div className="text-center py-4 text-gray-500">
                     <p>No project proposals awaiting review</p>
                   </div>
@@ -367,7 +367,7 @@ export default function DashboardPage() {
 
           {updatesLoading || isRefreshingUpdates ? (
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3]?.map((i) => (
                 <div key={i} className="border-b pb-4">
                   <Skeleton className="h-5 w-3/4 mb-2" />
                   <Skeleton className="h-4 w-full mb-1" />
@@ -375,9 +375,9 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : recentUpdates && recentUpdates.length > 0 ? (
+          ) : recentUpdates && recentUpdates?.length > 0 ? (
             <div className="space-y-4">
-              {recentUpdates.slice(0, 3).map((update) => (
+              {recentUpdates.slice(0, 3)?.map((update) => (
                 <Link href={`/dashboard/projects/${update.project_id}`} key={update.id}>
                   <div className="border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
                     <h3 className="font-medium">{update.project_details?.title || "Project Update"}</h3>
@@ -417,7 +417,7 @@ export default function DashboardPage() {
 
           {milestonesLoading || isRefreshingMilestones ? (
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3]?.map((i) => (
                 <div key={i} className="flex gap-4 border-b pb-4">
                   <Skeleton className="h-16 w-16 rounded" />
                   <div className="flex-1">
@@ -432,7 +432,7 @@ export default function DashboardPage() {
               {projects
                 .filter((project) => project.status !== "submitted" && project.status !== "cancelled")
                 .slice(0, 3)
-                .map((project) => (
+                ?.map((project) => (
                   <Link href={`/dashboard/projects/${project.id}`} key={project.id}>
                     <div className="flex gap-4 border-b pb-4 hover:bg-gray-50 transition-colors rounded p-2 cursor-pointer">
                       <div className="text-black bg-[#FDD65B] p-2 rounded text-center min-w-[60px]">

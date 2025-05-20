@@ -73,7 +73,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
 
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
 
-  const teamMemberOptions = teamMembers.map((user) => ({
+  const teamMemberOptions = teamMembers?.map((user:{first_name:string,last_name:string,username:string,id:number}) => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
   }))
@@ -246,7 +246,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
               )}
             />
             {errors.incurred_by && <p className="text-sm text-red-500">{errors.incurred_by.message}</p>}
-            {teamMemberOptions.length === 0 && !isLoadingTeamMembers && (
+            {teamMemberOptions?.length === 0 && !isLoadingTeamMembers && (
               <p className="text-xs text-amber-500">
                 No team members found for this project. Only project team members can be assigned expenses.
               </p>

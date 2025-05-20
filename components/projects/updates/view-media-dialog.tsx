@@ -23,16 +23,16 @@ export function ViewMediaDialog({ media, open, onOpenChange, relatedMedia = [] }
   const [zoomLevel, setZoomLevel] = useState(1)
   const [rotation, setRotation] = useState(0)
 
-  const allMedia = relatedMedia.length > 0 ? relatedMedia : [media]
+  const allMedia = relatedMedia?.length > 0 ? relatedMedia : [media]
   const currentMedia = allMedia[currentIndex]
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % allMedia.length)
+    setCurrentIndex((prev) => (prev + 1) % allMedia?.length)
     resetView()
   }
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length)
+    setCurrentIndex((prev) => (prev - 1 + allMedia?.length) % allMedia?.length)
     resetView()
   }
 
@@ -145,7 +145,7 @@ const handleDownload = async () => {
         <div className="relative h-[calc(90vh-8rem)] bg-gray-900 flex items-center justify-center overflow-hidden">
           {renderMediaContent()}
 
-          {allMedia.length > 1 && (
+          {allMedia?.length > 1 && (
             <>
               <Button
                 variant="ghost"
@@ -170,9 +170,9 @@ const handleDownload = async () => {
         {/* Sticky Footer */}
         <DialogFooter className="sticky bottom-0 z-10 bg-white dark:bg-gray-900 p-4 border-t flex justify-between">
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-            {allMedia.length > 1 && (
+            {allMedia?.length > 1 && (
               <span>
-                {currentIndex + 1} of {allMedia.length}
+                {currentIndex + 1} of {allMedia?.length}
               </span>
             )}
           </div>

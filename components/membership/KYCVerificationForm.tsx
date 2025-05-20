@@ -542,7 +542,7 @@ export default function KYCVerificationForm() {
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
                       <SelectContent>
-                        {countries.map((country) => (
+                        {countries?.map((country) => (
                           <SelectItem key={country} value={country}>
                             {country}
                           </SelectItem>

@@ -225,7 +225,7 @@ export default function AuthenticatedHeader() {
 
         {/* Desktop navigation */}
         <div className="hidden lg:flex lg:gap-x-8">
-          {navigation.slice(0, 4).map((item) => (
+          {navigation.slice(0, 4)?.map((item) => (
             <Link
               key={item.name}
               href={item.href}
@@ -239,7 +239,7 @@ export default function AuthenticatedHeader() {
               {item.name}
             </Link>
           ))}
-          {navigation.length > 4 && (
+          {navigation?.length > 4 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="text-sm font-medium flex items-center text-gray-700 hover:text-green-700">
@@ -247,7 +247,7 @@ export default function AuthenticatedHeader() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                {navigation.slice(4).map((item) => (
+                {navigation.slice(4)?.map((item) => (
                   <DropdownMenuItem key={item.name} asChild>
                     <Link href={item.href} className="flex items-center">
                       {item.icon}
@@ -457,7 +457,7 @@ export default function AuthenticatedHeader() {
               <div className="flow-root">
                 <div className="divide-y divide-gray-500/10">
                   <div className="space-y-2 py-3">
-                    {navigation.map((item) => (
+                    {navigation?.map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
