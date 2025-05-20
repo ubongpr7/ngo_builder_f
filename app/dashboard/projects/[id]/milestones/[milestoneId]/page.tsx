@@ -24,11 +24,13 @@ export default function MilestoneDetailPage() {
     requiredRoles: ["is_ceo"],
     requireKYC: true,
     customCheck: (user) => user.user_id === project?.manager_details?.id,
+    
   })
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
   const isTeamMember = usePermissions(userRoles, {
     requiredRoles: [],
     requireKYC: true,
+    customCheck: (user) => !!project?.team_members?.some((member) => member?.id === user.user_id),
   })
 
   return (
