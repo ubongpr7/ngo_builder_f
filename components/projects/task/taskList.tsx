@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +20,7 @@ import {
   Calendar,
   Tag,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
 import {
   useGetTasksByMilestoneQuery,
@@ -31,6 +34,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatDistanceToNow } from "date-fns"
 import { AddEditTaskDialog } from "./add-edit-task-dialog"
 
+interface TaskUser {
+  id: number
+  first_name: string
+  last_name: string
+  profile_image?: string
+}
+
 interface Task {
   id: number
   title: string
@@ -40,13 +50,14 @@ interface Task {
   task_type?: string
   due_date?: string
   completion_percentage: number
-  assigned_to: Array<{
-    id: number
-    first_name: string
-    last_name: string
-    profile_image?: string
-  }>
+  assigned_to: TaskUser[]
   parent_id?: number | null
+  parent_details?: {
+    id: number
+    title: string
+    status: string
+  } | null
+  subtasks?: Task[]
   children?: Task[]
   level?: number
 }
@@ -70,6 +81,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   })
   const [expandedTasks, setExpandedTasks] = useState<Record<number, boolean>>({})
   const [hierarchicalTasks, setHierarchicalTasks] = useState<Task[]>([])
+  const [isMounted, setIsMounted] = useState(false)
 
   // Centralized dialog state management
   const [dialogType, setDialogType] = useState<DialogType>(null)
@@ -81,10 +93,16 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     data: tasks = [],
     isLoading,
     refetch,
+    isFetching,
   } = useGetTasksByMilestoneQuery({ milestoneId, filterParams }, { refetchOnMountOrArgChange: true })
 
-  const [updateTask] = useUpdateTaskMutation()
-  const [deleteTask] = useDeleteTaskMutation()
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation()
+  const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation()
+
+  // Set mounted state to prevent hydration issues
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Function to open a specific dialog with task data
   const openDialog = (type: DialogType, task?: Task, parentId?: number) => {
@@ -113,7 +131,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   // Build hierarchical task structure
   useEffect(() => {
-    if (tasks && tasks?.length > 0) {
+    if (tasks && tasks.length > 0) {
       const taskMap = new Map<number, Task>()
       const rootTasks: Task[] = []
 
@@ -125,29 +143,75 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       // Second pass: build the hierarchy
       tasks.forEach((task: Task) => {
         const taskWithChildren = taskMap.get(task.id)
+        if (!taskWithChildren) return
+
         if (task.parent_id && taskMap.has(task.parent_id)) {
           // This is a child task
           const parent = taskMap.get(task.parent_id)
           if (parent && parent.children) {
-            taskWithChildren!.level = (parent.level || 0) + 1
-            parent.children.push(taskWithChildren!)
+            taskWithChildren.level = (parent.level || 0) + 1
+            parent.children.push(taskWithChildren)
           }
         } else {
           // This is a root task
-          rootTasks.push(taskWithChildren!)
+          rootTasks.push(taskWithChildren)
         }
       })
 
-      setHierarchicalTasks(rootTasks)
+      // Sort tasks at each level by priority and due date
+      const sortTasks = (taskList: Task[]) => {
+        // Sort by priority (high to low) then by due date (earliest first)
+        const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 }
+
+        return taskList.sort((a, b) => {
+          // First sort by priority
+          const aPriority = a.priority ? priorityOrder[a.priority as keyof typeof priorityOrder] || 999 : 999
+          const bPriority = b.priority ? priorityOrder[b.priority as keyof typeof priorityOrder] || 999 : 999
+
+          if (aPriority !== bPriority) return aPriority - bPriority
+
+          // Then sort by due date
+          if (a.due_date && b.due_date) {
+            return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+          }
+
+          // Tasks with due dates come before tasks without
+          if (a.due_date) return -1
+          if (b.due_date) return 1
+
+          // Finally sort by title
+          return a.title.localeCompare(b.title)
+        })
+      }
+
+      // Sort root tasks and their children recursively
+      const sortHierarchy = (taskList: Task[]) => {
+        // Sort this level
+        const sortedTasks = sortTasks(taskList)
+
+        // Sort each child list recursively
+        return sortedTasks.map((task) => {
+          if (task.children && task.children.length > 0) {
+            task.children = sortHierarchy(task.children)
+          }
+          return task
+        })
+      }
+
+      // Apply sorting to the hierarchy
+      const sortedRootTasks = sortHierarchy(rootTasks)
+      setHierarchicalTasks(sortedRootTasks)
 
       // Initialize expanded state for all parent tasks
       const newExpandedState: Record<number, boolean> = {}
       tasks.forEach((task: Task) => {
         if (taskMap.get(task.id)?.children?.length) {
-          newExpandedState[task.id] = true // Default to expanded
+          newExpandedState[task.id] = expandedTasks[task.id] ?? true // Preserve existing state or default to expanded
         }
       })
       setExpandedTasks(newExpandedState)
+    } else {
+      setHierarchicalTasks([])
     }
   }, [tasks])
 
@@ -160,10 +224,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
       const taskMatches = task.status === activeTab
 
       // If task has children, recursively filter them
-      if (task.children && task.children?.length > 0) {
-        task.children = filterTasksByStatus(task.children)
+      if (task.children && task.children.length > 0) {
+        task.children = filterTasksByStatus([...task.children])
         // Include this task if it matches OR if any of its children match
-        return taskMatches || task.children?.length > 0
+        return taskMatches || task.children.length > 0
       }
 
       return taskMatches
@@ -173,7 +237,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   const filteredTasks = filterTasksByStatus([...hierarchicalTasks])
 
   // Toggle task expansion
-  const toggleTaskExpansion = (taskId: number) => {
+  const toggleTaskExpansion = (taskId: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation()
+    }
     setExpandedTasks((prev) => ({
       ...prev,
       [taskId]: !prev[taskId],
@@ -182,7 +249,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
-    switch (status) {
+    if (!status) return "bg-gray-100 text-gray-800 border-gray-300"
+
+    switch (status.toLowerCase()) {
       case "todo":
         return "bg-gray-100 text-gray-800 border-gray-300"
       case "in_progress":
@@ -200,7 +269,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
   // Get priority badge color
   const getPriorityBadgeColor = (priority: string) => {
-    switch (priority) {
+    if (!priority) return "bg-gray-100 text-gray-800 border-gray-300"
+
+    switch (priority.toLowerCase()) {
       case "low":
         return "bg-green-100 text-green-800 border-green-300"
       case "medium":
@@ -215,7 +286,11 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   }
 
   // Handle task status change
-  const handleStatusChange = async (taskId: number, newStatus: string) => {
+  const handleStatusChange = async (taskId: number, newStatus: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation()
+    }
+
     try {
       await updateTask({ id: taskId, status: newStatus }).unwrap()
       refetch()
@@ -225,8 +300,12 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
   }
 
   // Handle task deletion
-  const handleDeleteTask = async (taskId: number) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
+  const handleDeleteTask = async (taskId: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation()
+    }
+
+    if (window.confirm("Are you sure you want to delete this task? This will also delete all subtasks.")) {
       try {
         await deleteTask(taskId).unwrap()
         refetch()
@@ -249,46 +328,115 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
     return new Date(dueDate) < new Date()
   }
 
+  // Count total tasks and completed tasks
+  const countTasks = (taskList: Task[]) => {
+    let total = 0
+    let completed = 0
+
+    const countRecursive = (tasks: Task[]) => {
+      tasks.forEach((task) => {
+        total++
+        if (task.status === "completed") {
+          completed++
+        }
+        if (task.children && task.children.length > 0) {
+          countRecursive(task.children)
+        }
+      })
+    }
+
+    countRecursive(taskList)
+    return { total, completed }
+  }
+
+  const taskCounts = countTasks(hierarchicalTasks)
+
   // Recursive function to render tasks and their children
   const renderTask = (task: Task, level = 0) => {
-    const hasChildren = task.children && task.children?.length > 0
+    const hasChildren = task.children && task.children.length > 0
     const isExpanded = expandedTasks[task.id] || false
+    const canEdit = isManager || is_DB_admin || isTeamMember
+
+    // Calculate completion for this task and all subtasks
+    const getTaskCompletion = (taskItem: Task): { total: number; completed: number } => {
+      let total = 1
+      let completed = taskItem.status === "completed" ? 1 : 0
+
+      if (taskItem.children && taskItem.children.length > 0) {
+        taskItem.children.forEach((child) => {
+          const childCounts = getTaskCompletion(child)
+          total += childCounts.total
+          completed += childCounts.completed
+        })
+      }
+
+      return { total, completed }
+    }
+
+    const taskCompletion = hasChildren ? getTaskCompletion(task) : null
+    const completionPercentage = taskCompletion
+      ? Math.round((taskCompletion.completed / taskCompletion.total) * 100)
+      : task.completion_percentage
 
     return (
-      <div key={task.id} className="task-item" style={{ marginLeft: `${level * 24}px` }}>
-        <Card className={`border mb-2 ${task.status === "completed" ? "bg-gray-50" : ""}`}>
+      <div key={task.id} className="task-item">
+        <Card 
+          className={`border mb-2 ${task.status === "completed" ? "bg-gray-50" : ""} hover:shadow-sm transition-shadow`}
+          onClick={() => hasChildren && toggleTaskExpansion(task.id)}
+        >
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3 flex-1">
-                {hasChildren && (
-                  <button
-                    onClick={() => toggleTaskExpansion(task.id)}
-                    className="mt-1 p-0.5 rounded-sm hover:bg-gray-100"
-                  >
-                    {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  </button>
-                )}
-                <div className="pt-0.5">
-                  {task.status === "completed" ? (
-                    <CheckSquare
-                      className="h-5 w-5 text-green-500 cursor-pointer"
-                      onClick={() => handleStatusChange(task.id, "todo")}
-                    />
+                <div className="flex items-center">
+                  {hasChildren ? (
+                    <button
+                      onClick={(e) => toggleTaskExpansion(task.id, e)}
+                      className="p-1 rounded-sm hover:bg-gray-100 mr-1"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4 text-gray-600" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-gray-600" />
+                      )}
+                    </button>
                   ) : (
-                    <Square
-                      className="h-5 w-5 text-gray-400 cursor-pointer"
-                      onClick={() => handleStatusChange(task.id, "completed")}
-                    />
+                    <div className="w-6\"></div> 
                   )}
+                  
+                  <div className="pt-0.5">
+                    {task.status === "completed" ? (
+                      <CheckSquare
+                        className="h-5 w-5 text-green-500 cursor-pointer"
+                        onClick={(e) => handleStatusChange(task.id, "todo", e)}
+                      />
+                    ) : (
+                      <Square
+                        className="h-5 w-5 text-gray-400 cursor-pointer"
+                        onClick={(e) => handleStatusChange(task.id, "completed", e)}
+                      />
+                    )}
+                  </div>
                 </div>
+                
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center">
-                    <h4 className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}>
+                    <h4 
+                      className={`font-medium ${task.status === "completed" ? "line-through text-gray-500" : ""}`}
+                      style={{ paddingLeft: `${level * 0}px` }} // Additional indentation based on level
+                    >
                       {task.title}
                     </h4>
+                    
+                    {hasChildren && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({taskCompletion?.completed}/{taskCompletion?.total})
+                      </span>
+                    )}
                   </div>
 
-                  {task.description && <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>}
+                  {task.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
+                  )}
 
                   <div className="flex flex-wrap gap-2 mt-2">
                     <Badge className={getStatusBadgeColor(task.status)}>
@@ -325,13 +473,15 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                 {task.assigned_to?.length > 0 && (
                   <TooltipProvider>
                     <div className="flex -space-x-2">
-                      {task?.assigned_to.slice(0, 3)?.map((user) => (
+                      {task.assigned_to.slice(0, 3).map((user) => (
                         <Tooltip key={user.id}>
                           <TooltipTrigger asChild>
                             <Avatar className="h-7 w-7 border-2 border-white">
-                              <AvatarImage src={user.profile_image || "/placeholder.svg"} />
+                              <AvatarImage 
+                                src={user.profile_image || `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name)}`} 
+                              />
                               <AvatarFallback className="text-xs">
-                                {`${user.first_name?.[0]}${user.last_name?.[0]}`}
+                                {`${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`}
                               </AvatarFallback>
                             </Avatar>
                           </TooltipTrigger>
@@ -340,17 +490,17 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                           </TooltipContent>
                         </Tooltip>
                       ))}
-                      {task.assigned_to?.length > 3 && (
+                      {task.assigned_to.length > 3 && (
                         <Avatar className="h-7 w-7 border-2 border-white bg-gray-200">
-                          <AvatarFallback className="text-xs">+{task.assigned_to?.length - 3}</AvatarFallback>
+                          <AvatarFallback className="text-xs">+{task.assigned_to.length - 3}</AvatarFallback>
                         </Avatar>
                       )}
                     </div>
                   </TooltipProvider>
                 )}
 
-                {/* Action buttons with tooltips - replacing dropdown menu */}
-                {(isManager || is_DB_admin || isTeamMember) && (
+                {/* Action buttons with tooltips */}
+                {canEdit && (
                   <div className="flex space-x-1">
                     <TooltipProvider>
                       <Tooltip>
@@ -359,7 +509,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-full"
-                            onClick={() => openDialog("assign", task)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openDialog("assign", task)
+                            }}
                           >
                             <Users className="h-4 w-4 text-blue-600" />
                           </Button>
@@ -375,7 +528,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-full"
-                            onClick={() => openDialog("add", null, task.id)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openDialog("add", null, task.id)
+                            }}
                           >
                             <Plus className="h-4 w-4 text-green-600" />
                           </Button>
@@ -391,7 +547,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-full"
-                            onClick={() => openDialog("edit", task)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openDialog("edit", task)
+                            }}
                           >
                             <Edit className="h-4 w-4 text-amber-600" />
                           </Button>
@@ -407,7 +566,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-full"
-                            onClick={() => handleDeleteTask(task.id)}
+                            onClick={(e) => handleDeleteTask(task.id, e)}
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
@@ -420,13 +579,13 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
               </div>
             </div>
 
-            {task.completion_percentage > 0 && task.status !== "completed" && (
+            {completionPercentage > 0 && task.status !== "completed" && (
               <div className="mt-3 space-y-1">
                 <div className="flex justify-between text-xs">
                   <span>Progress</span>
-                  <span>{task.completion_percentage}%</span>
+                  <span>{completionPercentage}%</span>
                 </div>
-                <Progress value={task.completion_percentage} className="h-1" />
+                <Progress value={completionPercentage} className="h-1" />
               </div>
             )}
           </CardContent>
@@ -434,10 +593,20 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
         {/* Render children if expanded */}
         {hasChildren && isExpanded && (
-          <div className="subtasks pl-4 border-l-2 border-gray-200 ml-4">
-            {task.children!?.map((childTask) => renderTask(childTask, level + 1))}
+          <div className="subtasks ml-6 pl-4 border-l-2 border-gray-200">
+            {task.children.map((childTask) => renderTask(childTask, level + 1))}
           </div>
         )}
+      </div>
+    )
+  }
+
+  // Don't render complex UI during server-side rendering or before hydration
+  if (!isMounted) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <span className="ml-2 text-gray-500">Loading tasks...</span>
       </div>
     )
   }
@@ -478,11 +647,9 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All Tasks ({tasks?.length})</TabsTrigger>
-          <TabsTrigger value="todo">Pending ({tasks.filter((t: Task) => t.status === "todo")?.length})</TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed ({tasks.filter((t: Task) => t.status === "completed")?.length})
-          </TabsTrigger>
+          <TabsTrigger value="all">All Tasks ({taskCounts.total})</TabsTrigger>
+          <TabsTrigger value="todo">Pending ({taskCounts.total - taskCounts.completed})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({taskCounts.completed})</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -490,8 +657,16 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         <TaskFilterBar onFilterChange={setFilterParams} currentFilters={filterParams} />
 
         {(isManager || is_DB_admin || isTeamMember) && (
-          <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => openDialog("add")}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button
+            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={() => openDialog("add")}
+            disabled={isLoading || isFetching}
+          >
+            {isLoading || isFetching ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="mr-2 h-4 w-4" />
+            )}
             Add New Task
           </Button>
         )}
@@ -499,10 +674,10 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
       {isLoading ? (
         <div className="text-center py-8">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500 mx-auto mb-4" />
           <p className="text-gray-500">Loading tasks...</p>
         </div>
-      ) : filteredTasks?.length === 0 ? (
+      ) : filteredTasks.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
@@ -521,7 +696,15 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">{filteredTasks?.map((task) => renderTask(task))}</div>
+        <div className="space-y-2">
+          {isFetching && !isLoading && (
+            <div className="flex items-center justify-center py-2 text-sm text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Refreshing tasks...
+            </div>
+          )}
+          {filteredTasks.map((task) => renderTask(task))}
+        </div>
       )}
     </div>
   )
