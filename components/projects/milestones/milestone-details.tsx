@@ -223,7 +223,7 @@ export function MilestoneDetail({
               </Tooltip>
             </TooltipProvider>
   
-            {canEdit && (
+            {(isManager  || isTeamMember) && (
               <TooltipProvider>
                 <div className="flex items-center gap-2">
                   {/* Update Status Button */}
@@ -514,7 +514,7 @@ export function MilestoneDetail({
                     </div>
                   </CardContent>
                   <CardFooter>
-                    {canEdit && (
+                    {(isManager  || isTeamMember) && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -614,7 +614,7 @@ export function MilestoneDetail({
                   <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">No Team Members Assigned</h3>
                   <p className="text-gray-500 mb-4">There are no team members assigned to this milestone yet.</p>
-                  {canEdit && (
+                  {(isManager  || isTeamMember) && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -639,7 +639,7 @@ export function MilestoneDetail({
                 </div>
               )}
             </CardContent>
-            {canEdit && milestone.assigned_to && milestone.assigned_to?.length > 0 && (
+            {(isManager  || isTeamMember) && milestone.assigned_to && milestone.assigned_to?.length > 0 && (
               <CardFooter>
                 <TooltipProvider>
                   <Tooltip>
@@ -674,7 +674,7 @@ export function MilestoneDetail({
                   <CardTitle>Documents</CardTitle>
                   <CardDescription>Files and documents related to this milestone</CardDescription>
                 </div>
-                {canEdit && (
+                {(isManager  || isTeamMember) && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -725,7 +725,7 @@ export function MilestoneDetail({
                   <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">No Documents</h3>
                   <p className="text-gray-500 mb-4">There are no documents attached to this milestone yet.</p>
-                  {canEdit && (
+                  {(isManager  || isTeamMember) && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -783,7 +783,7 @@ export function MilestoneDetail({
                 </div>
               )}
 
-              {canEdit && (
+              {(isManager  || isTeamMember) && (
                 <div className="mt-4 pt-4 border-t">
                   <textarea
                     className="w-full p-3 border rounded-md min-h-[100px]"
