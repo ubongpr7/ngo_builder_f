@@ -14,22 +14,23 @@ import {
   Download,
   Trash2,
   Edit,
-  Star,
-  StarOff,
+  CheckCircle,
+  Circle,
   Loader2,
 } from "lucide-react"
 import { MediaUploadDialog } from "@/components/media/media-upload-dialog"
 import {
-  useGetMediaByProjectQuery,
-   useGetProjectImagesQuery,
-   useGetProjectVideosQuery,
-  useGetProjectDocumentsQuery,
-  useAddProjectMediaMutation,
-  useUpdateProjectMediaMutation,
-  useDeleteProjectMediaMutation,
-  useToggleFeaturedMutation,
-} from "@/redux/features/projects/projectsAPISlice"
-import type { ProjectMedia } from "@/types/media"
+  useGetMediaByMilestoneQuery,
+   useGetMilestoneImagesQuery,
+   useGetMilestoneVideosQuery,
+  useGetMilestoneDocumentsQuery,
+  useGetDeliverableMediaQuery,
+  useAddMilestoneMediaMutation,
+  useUpdateMilestoneMediaMutation,
+  useDeleteMilestoneMediaMutation,
+  useToggleDeliverableMutation,
+} from "@/redux/features/projects/milestoneApiSlice"
+import type { MilestoneMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -45,37 +46,51 @@ import {
 import { toast } from "@/components/ui/use-toast"
 import { formatDistanceToNow } from "date-fns"
 
-interface ProjectDocumentsProps {
+interface MilestoneDocumentsProps {
+  milestoneId: number
   projectId: number
 }
 
-export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
+export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [selectedMedia, setSelectedMedia] = useState<ProjectMedia | null>(null)
+  const [selectedMedia, setSelectedMedia] = useState<MilestoneMedia | null>(null)
 
   // Queries
-  const { data: allMedia, isLoading: isLoadingAll, refetch: refetchAll } = useGetMediaByProjectQuery(projectId)
-  const { data: images, isLoading: isLoadingImages, refetch: refetchImages } = useGetProjectImagesQuery({ projectId })
-  const { data: videos, isLoading: isLoadingVideos, refetch: refetchVideos } = useGetProjectVideosQuery({ projectId })
+  const { data: allMedia, isLoading: isLoadingAll, refetch: refetchAll } = useGetMediaByMilestoneQuery(milestoneId)
+  const {
+    data: images,
+    isLoading: isLoadingImages,
+    refetch: refetchImages,
+  } = useGetMilestoneImagesQuery({ milestoneId })
+  const {
+    data: videos,
+    isLoading: isLoadingVideos,
+    refetch: refetchVideos,
+  } = useGetMilestoneVideosQuery({ milestoneId })
   const {
     data: documents,
     isLoading: isLoadingDocuments,
     refetch: refetchDocuments,
-  } = useGetProjectDocumentsQuery({ projectId })
+  } = useGetMilestoneDocumentsQuery({ milestoneId })
+  const {
+    data: deliverables,
+    isLoading: isLoadingDeliverables,
+    refetch: refetchDeliverables,
+  } = useGetDeliverableMediaQuery(milestoneId)
 
   // Mutations
-  const [addProjectMedia, { isLoading: isAdding }] = useAddProjectMediaMutation()
-  const [updateProjectMedia, { isLoading: isUpdating }] = useUpdateProjectMediaMutation()
-  const [deleteProjectMedia, { isLoading: isDeleting }] = useDeleteProjectMediaMutation()
-  const [toggleFeatured, { isLoading: isTogglingFeatured }] = useToggleFeaturedMutation()
+  const [addMilestoneMedia, { isLoading: isAdding }] = useAddMilestoneMediaMutation()
+  const [updateMilestoneMedia, { isLoading: isUpdating }] = useUpdateMilestoneMediaMutation()
+  const [deleteMilestoneMedia, { isLoading: isDeleting }] = useDeleteMilestoneMediaMutation()
+  const [toggleDeliverable, { isLoading: isTogglingDeliverable }] = useToggleDeliverableMutation()
 
   // Handle media upload
   const handleMediaUpload = async (formData: FormData) => {
     try {
-      await addProjectMedia(formData).unwrap()
+      await addMilestoneMedia(formData).unwrap()
       toast({
         title: "Media uploaded",
         description: "The media file has been uploaded successfully.",
@@ -97,7 +112,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     if (!selectedMedia) return
 
     try {
-      await updateProjectMedia({
+      await updateMilestoneMedia({
         id: selectedMedia.id,
         media: formData,
       }).unwrap()
@@ -125,7 +140,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     if (!selectedMedia) return
 
     try {
-      await deleteProjectMedia(selectedMedia.id).unwrap()
+      await deleteMilestoneMedia(selectedMedia.id).unwrap()
 
       toast({
         title: "Media deleted",
@@ -146,23 +161,23 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     }
   }
 
-  // Handle featured toggle
-  const handleToggleFeatured = async (media: ProjectMedia) => {
+  // Handle deliverable toggle
+  const handleToggleDeliverable = async (media: MilestoneMedia) => {
     try {
-      await toggleFeatured(media.id).unwrap()
+      await toggleDeliverable(media.id).unwrap()
 
       toast({
-        title: media.is_featured ? "Removed from featured" : "Added to featured",
-        description: `The media file has been ${media.is_featured ? "removed from" : "added to"} featured items.`,
+        title: media.represents_deliverable ? "Removed from deliverables" : "Added to deliverables",
+        description: `The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,
       })
 
       refetchAll()
       refetchByType(activeTab)
     } catch (error) {
-      console.error("Failed to toggle featured status:", error)
+      console.error("Failed to toggle deliverable status:", error)
       toast({
         title: "Action failed",
-        description: "There was an error updating the featured status.",
+        description: "There was an error updating the deliverable status.",
         variant: "destructive",
       })
     }
@@ -180,13 +195,16 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
       case "documents":
         refetchDocuments()
         break
+      case "deliverables":
+        refetchDeliverables()
+        break
       default:
         refetchAll()
     }
   }
 
   // Get current media list based on active tab
-  const getCurrentMedia = (): ProjectMedia[] => {
+  const getCurrentMedia = (): MilestoneMedia[] => {
     switch (activeTab) {
       case "images":
         return images || []
@@ -194,6 +212,8 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         return videos || []
       case "documents":
         return documents || []
+      case "deliverables":
+        return deliverables || []
       default:
         return allMedia || []
     }
@@ -208,6 +228,8 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         return isLoadingVideos
       case "documents":
         return isLoadingDocuments
+      case "deliverables":
+        return isLoadingDeliverables
       default:
         return isLoadingAll
     }
@@ -217,7 +239,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <Image className="h-5 w-5" />
+        return <ImageIcon className="h-5 w-5" />
       case "video":
         return <Video className="h-5 w-5" />
       case "audio":
@@ -238,17 +260,10 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     return url.split(".").pop()?.toLowerCase() || ""
   }
 
-  // Format file size
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " bytes"
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB"
-    else return (bytes / 1048576).toFixed(1) + " MB"
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Project Documents</h2>
+        <h2 className="text-2xl font-bold">Milestone Documents</h2>
         <Button onClick={() => setUploadDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Upload Document
@@ -256,8 +271,9 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="deliverables">Deliverables</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="videos">Videos</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -276,8 +292,10 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                 <h3 className="text-xl font-medium mb-2">No documents found</h3>
                 <p className="text-gray-500 text-center mb-6">
                   {activeTab === "all"
-                    ? "No documents have been uploaded for this project yet."
-                    : `No ${activeTab.slice(0, -1)} files have been uploaded for this project yet.`}
+                    ? "No documents have been uploaded for this milestone yet."
+                    : activeTab === "deliverables"
+                      ? "No deliverables have been uploaded for this milestone yet."
+                      : `No ${activeTab.slice(0, -1)} files have been uploaded for this milestone yet.`}
                 </p>
                 <Button onClick={() => setUploadDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -288,11 +306,14 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {getCurrentMedia().map((media) => (
-                <Card key={media.id} className={`overflow-hidden ${media.is_featured ? "ring-2 ring-primary" : ""}`}>
+                <Card
+                  key={media.id}
+                  className={`overflow-hidden ${media.represents_deliverable ? "ring-2 ring-green-500" : ""}`}
+                >
                   <div className="relative">
                     {media.media_type === "image" ? (
                       <div className="h-48 bg-gray-100 relative">
-                        <ImageIcon
+                        <img
                           src={media.file_url || "/placeholder.svg"}
                           alt={media.title}
                           className="w-full h-full object-cover"
@@ -311,10 +332,10 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                       </div>
                     )}
 
-                    {media.is_featured && (
-                      <Badge className="absolute top-2 right-2 bg-primary">
-                        <Star className="h-3 w-3 mr-1" />
-                        Featured
+                    {media.represents_deliverable && (
+                      <Badge className="absolute top-2 right-2 bg-green-500">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Deliverable
                       </Badge>
                     )}
                   </div>
@@ -342,16 +363,16 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleFeatured(media)}>
-                            {media.is_featured ? (
+                          <DropdownMenuItem onClick={() => handleToggleDeliverable(media)}>
+                            {media.represents_deliverable ? (
                               <>
-                                <StarOff className="h-4 w-4 mr-2" />
-                                Remove from Featured
+                                <Circle className="h-4 w-4 mr-2" />
+                                Remove from Deliverables
                               </>
                             ) : (
                               <>
-                                <Star className="h-4 w-4 mr-2" />
-                                Add to Featured
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Mark as Deliverable
                               </>
                             )}
                           </DropdownMenuItem>
@@ -393,8 +414,9 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         open={uploadDialogOpen}
         onClose={() => setUploadDialogOpen(false)}
         onSubmit={handleMediaUpload}
-        title="Project Document"
-        mediaType="project"
+        title="Milestone Document"
+        mediaType="milestone"
+        milestoneId={milestoneId}
         projectId={projectId}
       />
 
@@ -407,9 +429,10 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
             setSelectedMedia(null)
           }}
           onSubmit={handleMediaUpdate}
-          title="Project Document"
-          mediaType="project"
+          title="Milestone Document"
+          mediaType="milestone"
           initialData={selectedMedia}
+          milestoneId={milestoneId}
           projectId={projectId}
         />
       )}

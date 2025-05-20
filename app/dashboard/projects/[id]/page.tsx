@@ -31,6 +31,7 @@ import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readPr
 import { usePermissions } from "@/components/permissionHander"
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 import { useToast } from "@/components/ui/use-toast"
+import { ProjectDocuments } from "@/components/projects/project-documents"
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -415,10 +416,10 @@ export default function ProjectDetail() {
           <ProjectComments projectId={projectId} />
         </TabsContent>
 
+        */}
         <TabsContent value="documents" className="space-y-4">
           <ProjectDocuments projectId={projectId} />
         </TabsContent>
-        */}
       </Tabs>
     </div>
   )

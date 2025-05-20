@@ -5,9 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useGetImagesQuery, useGetVideosQuery, useGetDocumentsQuery } from "@/redux/features/projects/updateApiSlice"
-import type { ProjectMedia } from "@/types/project"
 import { ViewMediaDialog } from "./view-media-dialog"
 import { Loader2, FileText, ImageIcon, Film, Grid, List } from "lucide-react"
+import { ProjectMedia } from "@/types/media"
 
 interface UpdateGalleryViewProps {
   projectId: number

@@ -1,5 +1,7 @@
 import { apiSlice } from "../../services/apiSlice"
-import type { ProjectUpdate, UpdateStatistics, ProjectMedia } from "../../../types/project"
+import type { ProjectUpdate, UpdateStatistics, } from "../../../types/project"
+import { ProjectMedia } from "@/types/media";
+
 
 const backend = "project_api"
 

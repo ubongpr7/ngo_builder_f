@@ -1,12 +1,13 @@
+import { ProjectMedia } from "@/types/media"
 import { apiSlice } from "../../services/apiSlice"
 import type { 
   Project, 
   ProjectUpdate, 
   ProjectCategory, 
-  ProjectMedia, 
   ProjectStatistics, 
   UpdateStatistics 
 } from "@/types/project"
+
 interface GetProjectsParams {
   status?: string
   limit?: number
@@ -190,58 +191,6 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
       query: () => `/${projects_api}/updates/summary/`,
     }),
 
-    // Project media endpoints
-    getAllProjectMedia: builder.query<ProjectMedia[], void>({
-      query: () => `/${projects_api}/media/`,
-    }),
-
-    getProjectMediaById: builder.query<ProjectMedia, number>({
-      query: (id) => `/${projects_api}/media/${id}/`,
-    }),
-
-    createProjectMedia: builder.mutation({
-      query: (data) => ({
-        url: `/${projects_api}/media/`,
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    updateProjectMedia: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/${projects_api}/media/${id}/`,
-        method: "PATCH",
-        body: data,
-      }),
-    }),
-
-    deleteProjectMedia: builder.mutation({
-      query: (id) => ({
-        url: `/${projects_api}/media/${id}/`,
-        method: "DELETE",
-      }),
-    }),
-
-    // Custom media endpoints
-    getMediaByUpdate: builder.query<ProjectMedia[], number>({
-      query: (updateId) => `/${projects_api}/media/by_update/?update_id=${updateId}`,
-    }),
-
-    getMediaByProject: builder.query<ProjectMedia[], number>({
-      query: (projectId) => `/${projects_api}/media/by_project/?project_id=${projectId}`,
-    }),
-
-    getMediaByType: builder.query<ProjectMedia[], string>({
-      query: (mediaType) => `/${projects_api}/media/by_type/?media_type=${mediaType}`,
-    }),
-
-    bulkUploadMedia: builder.mutation({
-      query: (data) => ({
-        url: `/${projects_api}/media/bulk_upload/`,
-        method: "POST",
-        body: data,
-      }),
-    }),
 
 
     
@@ -281,17 +230,104 @@ export const {
   // Project update mutations
   useDeleteProjectUpdateMutation,
   
-  // Project media queries
-  useGetAllProjectMediaQuery,
-  useGetProjectMediaByIdQuery,
-  useGetMediaByUpdateQuery,
-  useGetMediaByProjectQuery,
-  useGetMediaByTypeQuery,
-  
-  // Project media mutations
-  useCreateProjectMediaMutation,
-  useUpdateProjectMediaMutation,
-  useDeleteProjectMediaMutation,
-  useBulkUploadMediaMutation,
 
 } = projectsApiSlice
+
+export const projectMediaApiSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    // Get all project media
+    getProjectMedia: builder.query<ProjectMedia[], void>({
+      query: () => `/${projects_api}/project-media/`,
+    }),
+
+    // Get project media by ID
+    getProjectMediaById: builder.query<ProjectMedia, number>({
+      query: (id) => `/${projects_api}/project-media/${id}/`,
+    }),
+
+    // Get media by project
+    getMediaByProject: builder.query<ProjectMedia[], number>({
+      query: (projectId) => `/${projects_api}/project-media/by_project/?project_id=${projectId}`,
+    }),
+
+    // Get featured media
+    getFeaturedMedia: builder.query<ProjectMedia[], number>({
+      query: (projectId) => `/${projects_api}/project-media/featured/?project_id=${projectId}`,
+    }),
+
+    // Get media by type
+    getProjectMediaByType: builder.query<ProjectMedia[], { projectId: number; mediaType: string }>({
+      query: ({ projectId, mediaType }) =>
+        `/${projects_api}/project-media/by_media_type/?project_id=${projectId}&media_type=${mediaType}`,
+    }),
+
+    // Get images
+    getProjectImages: builder.query<ProjectMedia[], number | void>({
+      query: (projectId) =>
+        projectId ? `/${projects_api}/project-media/images/?project_id=${projectId}` : `/${projects_api}/project-media/images/`,
+    }),
+
+    // Get videos
+    getProjectVideos: builder.query<ProjectMedia[], number | void>({
+      query: (projectId) =>
+        projectId ? `/${projects_api}/project-media/videos/?project_id=${projectId}` : `/${projects_api}/project-media/videos/`,
+    }),
+
+    // Get documents
+    getProjectDocuments: builder.query<ProjectMedia[], number | void>({
+      query: (projectId) =>
+        projectId
+          ? `/${projects_api}/project-media/documents/?project_id=${projectId}`
+          : `/${projects_api}/project-media/documents/`,
+    }),
+
+    // Add project media
+    addProjectMedia: builder.mutation<ProjectMedia, FormData>({
+      query: (media) => ({
+        url: `/${projects_api}/project-media/`,
+        method: "POST",
+        body: media,
+      }),
+    }),
+
+    // Update project media
+    updateProjectMedia: builder.mutation({
+      query: ({ id, media }) => ({
+        url: `/${projects_api}/project-media/${id}/`,
+        method: "PATCH",
+        body: media,
+      }),
+    }),
+
+    // Toggle featured status
+    toggleFeatured: builder.mutation<ProjectMedia, number>({
+      query: (id) => ({
+        url: `/${projects_api}/project-media/${id}/toggle_featured/`,
+        method: "POST",
+      }),
+    }),
+
+    // Delete project media
+    deleteProjectMedia: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/${projects_api}/project-media/${id}/`,
+        method: "DELETE",
+      }),
+    }),
+  }),
+})
+
+export const {
+  useGetProjectMediaQuery,
+  useGetProjectMediaByIdQuery,
+  useGetMediaByProjectQuery,
+  useGetFeaturedMediaQuery,
+  useGetProjectMediaByTypeQuery,
+  useGetProjectImagesQuery,
+  useGetProjectVideosQuery,
+  useGetProjectDocumentsQuery,
+  useAddProjectMediaMutation,
+  useUpdateProjectMediaMutation,
+  useToggleFeaturedMutation,
+  useDeleteProjectMediaMutation,
+} = projectMediaApiSlice

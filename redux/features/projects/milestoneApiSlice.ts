@@ -1,3 +1,4 @@
+import { MilestoneMedia } from "@/types/media";
 import { apiSlice } from "../../services/apiSlice"
 import type { ProjectMilestone, MilestoneStatistics } from "@/types/project"
 
@@ -215,3 +216,157 @@ export const {
 
   useGetUserMilestonesQuery,
 } = milestoneApiSlice
+
+
+const backend = "project_api"
+
+export const milestoneMediaApiSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    // Get all milestone media
+    getMilestoneMedia: builder.query<MilestoneMedia[], void>({
+      query: () => `/${backend}/milestone-media/`,
+    }),
+
+    // Get milestone media by ID
+    getMilestoneMediaById: builder.query<MilestoneMedia, number>({
+      query: (id) => `/${backend}/milestone-media/${id}/`,
+    }),
+
+    // Get media by milestone
+    getMediaByMilestone: builder.query<MilestoneMedia[], number>({
+      query: (milestoneId) => `/${backend}/milestone-media/by_milestone/?milestone_id=${milestoneId}`,
+    }),
+
+    // Get media by project (across all milestones)
+    getMilestoneMediaByProject: builder.query<MilestoneMedia[], number>({
+      query: (projectId) => `/${backend}/milestone-media/by_project/?project_id=${projectId}`,
+    }),
+
+    // Get deliverable media
+    getDeliverableMedia: builder.query<MilestoneMedia[], number>({
+      query: (milestoneId) => `/${backend}/milestone-media/deliverables/?milestone_id=${milestoneId}`,
+    }),
+
+    // Get media by type
+    getMilestoneMediaByType: builder.query<MilestoneMedia[], { milestoneId: number; mediaType: string }>({
+      query: ({ milestoneId, mediaType }) =>
+        `/${backend}/milestone-media/by_media_type/?milestone_id=${milestoneId}&media_type=${mediaType}`,
+    }),
+
+    // Get images
+    getMilestoneImages: builder.query<MilestoneMedia[], { projectId?: number; milestoneId?: number }>({
+      query: (params) => {
+        let url = `/${backend}/milestone-media/images/`
+        const queryParams = []
+
+        if (params.projectId) {
+          queryParams.push(`project_id=${params.projectId}`)
+        }
+
+        if (params.milestoneId) {
+          queryParams.push(`milestone_id=${params.milestoneId}`)
+        }
+
+        if (queryParams?.length > 0) {
+          url += `?${queryParams.join("&")}`
+        }
+
+        return url
+      },
+    }),
+
+    // Get videos
+    getMilestoneVideos: builder.query<MilestoneMedia[], { projectId?: number; milestoneId?: number }>({
+      query: (params) => {
+        let url = `/${backend}/milestone-media/videos/`
+        const queryParams = []
+
+        if (params.projectId) {
+          queryParams.push(`project_id=${params.projectId}`)
+        }
+
+        if (params.milestoneId) {
+          queryParams.push(`milestone_id=${params.milestoneId}`)
+        }
+
+        if (queryParams?.length > 0) {
+          url += `?${queryParams.join("&")}`
+        }
+
+        return url
+      },
+    }),
+
+    // Get documents
+    getMilestoneDocuments: builder.query<MilestoneMedia[], { projectId?: number; milestoneId?: number }>({
+      query: (params) => {
+        let url = `/${backend}/milestone-media/documents/`
+        const queryParams = []
+
+        if (params.projectId) {
+          queryParams.push(`project_id=${params.projectId}`)
+        }
+
+        if (params.milestoneId) {
+          queryParams.push(`milestone_id=${params.milestoneId}`)
+        }
+
+        if (queryParams?.length > 0) {
+          url += `?${queryParams.join("&")}`
+        }
+
+        return url
+      },
+    }),
+
+    // Add milestone media
+    addMilestoneMedia: builder.mutation<MilestoneMedia, FormData>({
+      query: (media) => ({
+        url: `/${backend}/milestone-media/`,
+        method: "POST",
+        body: media,
+      }),
+    }),
+
+    // Update milestone media
+    updateMilestoneMedia: builder.mutation({
+      query: ({ id, media }) => ({
+        url: `/${backend}/milestone-media/${id}/`,
+        method: "PATCH",
+        body: media,
+      }),
+    }),
+
+    // Toggle deliverable status
+    toggleDeliverable: builder.mutation<MilestoneMedia, number>({
+      query: (id) => ({
+        url: `/${backend}/milestone-media/${id}/toggle_deliverable/`,
+        method: "POST",
+      }),
+    }),
+
+    // Delete milestone media
+    deleteMilestoneMedia: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/${backend}/milestone-media/${id}/`,
+        method: "DELETE",
+      }),
+    }),
+  }),
+})
+
+export const {
+  useGetMilestoneMediaQuery,
+  useGetMilestoneMediaByIdQuery,
+  useGetMediaByMilestoneQuery,
+  useGetMilestoneMediaByProjectQuery,
+  useGetDeliverableMediaQuery,
+  useGetMilestoneMediaByTypeQuery,
+  useGetMilestoneImagesQuery,
+  useGetMilestoneVideosQuery,
+  useGetMilestoneDocumentsQuery,
+  useAddMilestoneMediaMutation,
+  useUpdateMilestoneMediaMutation,
+  useToggleDeliverableMutation,
+  useDeleteMilestoneMediaMutation,
+} = milestoneMediaApiSlice

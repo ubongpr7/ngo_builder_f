@@ -146,16 +146,6 @@ export interface ProjectCategory {
   description?: string;
 }
 
-export interface ProjectMedia {
-  id: number;
-  update: number;
-  media_type: 'image' | 'video' | 'document' | 'audio';
-  file: string;
-  file_url: string;
-  caption?: string;
-  uploaded_at: string;
-}
-
 export interface ProjectStatistics {
   status_counts: Record<string, number>;
   type_counts: Record<string, number>;
