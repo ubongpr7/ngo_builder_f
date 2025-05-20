@@ -425,7 +425,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                     {task.status === "completed" ? (
                       <CheckSquare
                         className="h-5 w-5 text-green-500 cursor-pointer"
-                        onClick={(e) => handleStatusChange(task.id, "todo", e)}
+                        onClick={(e) => handleStatusChange(task.id, "in_progress", e)}
                       />
                     ) : (
                       <Square
