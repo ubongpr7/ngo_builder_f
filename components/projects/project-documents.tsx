@@ -29,6 +29,7 @@ import {
   useDeleteProjectMediaMutation,
   useToggleFeaturedMutation,
 } from "@/redux/features/projects/projectsAPISlice"
+
 import type { ProjectMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -58,13 +59,13 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
 
   // Queries
   const { data: allMedia, isLoading: isLoadingAll, refetch: refetchAll } = useGetMediaByProjectQuery(projectId)
-  const { data: images, isLoading: isLoadingImages, refetch: refetchImages } = useGetProjectImagesQuery({ projectId })
-  const { data: videos, isLoading: isLoadingVideos, refetch: refetchVideos } = useGetProjectVideosQuery({ projectId })
+  const { data: images, isLoading: isLoadingImages, refetch: refetchImages } = useGetProjectImagesQuery( projectId )
+  const { data: videos, isLoading: isLoadingVideos, refetch: refetchVideos } = useGetProjectVideosQuery( projectId )
   const {
     data: documents,
     isLoading: isLoadingDocuments,
     refetch: refetchDocuments,
-  } = useGetProjectDocumentsQuery({ projectId })
+  } = useGetProjectDocumentsQuery(projectId )
 
   // Mutations
   const [addProjectMedia, { isLoading: isAdding }] = useAddProjectMediaMutation()
@@ -217,7 +218,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
       case "image":
-        return <Image className="h-5 w-5" />
+        return <ImageIcon className="h-5 w-5" />
       case "video":
         return <Video className="h-5 w-5" />
       case "audio":
@@ -292,7 +293,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                   <div className="relative">
                     {media.media_type === "image" ? (
                       <div className="h-48 bg-gray-100 relative">
-                        <ImageIcon
+                        <img
                           src={media.file_url || "/placeholder.svg"}
                           alt={media.title}
                           className="w-full h-full object-cover"
