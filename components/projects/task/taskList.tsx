@@ -136,50 +136,38 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
 
       // Create a map to store all tasks by ID for easy lookup
       const taskMap = new Map<number, Task>()
+      const rootTasks: Task[] = []
 
-      // First pass: Add all tasks to the map with their full data
+      // First pass: Add all tasks to the map
       tasks.forEach((task: Task) => {
-        // Ensure subtasks array exists
-        const taskWithSubtasks = {
+        // Make sure subtasks array exists
+        const taskWithDefaults = {
           ...task,
-          subtasks: [],
+          subtasks: Array.isArray(task.subtasks) ? [...task.subtasks] : [],
           level: 0,
         }
-        taskMap.set(task.id, taskWithSubtasks)
-      })
 
-      // Second pass: Process the subtasks recursively
-      const processSubtasks = (task: Task) => {
-        if (!task.subtasks) return
+        taskMap.set(task.id, taskWithDefaults)
 
-        // For each subtask in the current task
-        task.subtasks.forEach((subtask: Task) => {
-          // Get the full subtask data from the map
-          const fullSubtask = taskMap.get(subtask.id)
-
-          if (fullSubtask) {
-            // Set the level based on parent's level
-            fullSubtask.level = (task.level || 0) + 1
-
-            // Process this subtask's subtasks recursively
-            processSubtasks(fullSubtask)
-          }
-        })
-      }
-
-      // Process all tasks
-      tasks.forEach((task: Task) => {
-        const fullTask = taskMap.get(task.id)
-        if (fullTask) {
-          processSubtasks(fullTask)
+        // If this is a root task (no parent), add it to rootTasks
+        if (!task.parent_id) {
+          rootTasks.push(taskWithDefaults)
         }
       })
 
-      // Find root tasks (those with no parent)
-      const rootTasks: Task[] = []
-      taskMap.forEach((task) => {
-        if (!task.parent_id) {
-          rootTasks.push(task)
+      // Second pass: Build the hierarchy
+      tasks.forEach((task: Task) => {
+        if (task.parent_id && taskMap.has(task.parent_id)) {
+          const parent = taskMap.get(task.parent_id)!
+          const child = taskMap.get(task.id)!
+
+          // Set the level based on parent's level
+          child.level = (parent.level || 0) + 1
+
+          // Add this task to its parent's subtasks if not already there
+          if (!parent.subtasks.some((st) => st.id === task.id)) {
+            parent.subtasks.push(child)
+          }
         }
       })
 
@@ -209,9 +197,22 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
         })
       }
 
-      // Sort root tasks
-      const sortedRootTasks = sortTasks(rootTasks)
+      // Sort root tasks and their subtasks recursively
+      const sortHierarchy = (taskList: Task[]) => {
+        // Sort this level
+        const sortedTasks = sortTasks(taskList)
 
+        // Sort each subtask list recursively
+        return sortedTasks.map((task) => {
+          if (task.subtasks && task.subtasks.length > 0) {
+            task.subtasks = sortHierarchy(task.subtasks)
+          }
+          return task
+        })
+      }
+
+      // Apply sorting to the hierarchy
+      const sortedRootTasks = sortHierarchy(rootTasks)
       console.log("Hierarchical tasks:", sortedRootTasks)
       setHierarchicalTasks(sortedRootTasks)
 
@@ -488,7 +489,7 @@ export function TaskList({ milestoneId, projectId, isManager, is_DB_admin, isTea
                               <AvatarImage
                                 src={
                                   user.profile_image ||
-                                  `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name)}`
+                                  `/placeholder.svg?height=28&width=28&query=${encodeURIComponent(user.first_name) || "/placeholder.svg"}`
                                 }
                               />
                               <AvatarFallback className="text-xs">
