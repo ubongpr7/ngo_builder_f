@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { toast } from "react-toastify"
 import {
   Calendar,
   MapPin,
@@ -30,13 +31,11 @@ import { useGetProjectByIdQuery, useUpdateProjectMutation } from "@/redux/featur
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { usePermissions } from "@/components/permissionHander"
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
-import { useToast } from "@/components/ui/use-toast"
 import { ProjectDocuments } from "@/components/projects/project-documents"
 
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
-  const { toast } = useToast()
 
   const { data: project, isLoading, isError, refetch } = useGetProjectByIdQuery(projectId)
   const [activeTab, setActiveTab] = useState("overview")
@@ -63,17 +62,24 @@ export default function ProjectDetail() {
   const handleApprove = async (projectId: number) => {
     try {
       await updateProject({ id: projectId, data: { status: "planning" } }).unwrap()
-      toast({
-        title: "Project approved",
-        description: "The project proposal has been approved and is now in planning status.",
+      toast.success("The project proposal has been approved and is now in planning status.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       })
       refetch()
     } catch (error) {
       console.error("Failed to approve project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to approve project. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to approve project. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       })
     }
   }
@@ -81,16 +87,23 @@ export default function ProjectDetail() {
   const handleReject = async (projectId: number) => {
     try {
       await updateProject({ id: projectId, data: { status: "cancelled" } }).unwrap()
-      toast({
-        title: "Project rejected",
-        description: "The project proposal has been rejected.",
+      toast.success("The project proposal has been rejected.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       })
       refetch()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reject project. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to reject project. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       })
     }
   }
@@ -134,7 +147,6 @@ export default function ProjectDetail() {
   }
 
   const getMilestoneProgress = () => {
-    
     if (project.milestones_count) {
       const percentage = (Number(project.milestones_completed_count || 0) / Number(project.milestones_count || 1)) * 100
       return percentage
