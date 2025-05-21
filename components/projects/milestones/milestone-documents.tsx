@@ -33,6 +33,7 @@ import {
   useUpdateMilestoneMediaMutation,
   useDeleteMilestoneMediaMutation,
   useToggleDeliverableMutation,
+  useDownloadMilestoneMediaMutation,
 } from "@/redux/features/projects/milestoneApiSlice"
 import type { MilestoneMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
@@ -63,6 +64,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [selectedMedia, setSelectedMedia] = useState<MilestoneMedia | null>(null)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
 
   // Queries
   const { data: allMedia, isLoading: isLoadingAll, refetch: refetchAll } = useGetMediaByMilestoneQuery(milestoneId)
@@ -92,13 +94,26 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
   const [updateMilestoneMedia, { isLoading: isUpdating }] = useUpdateMilestoneMediaMutation()
   const [deleteMilestoneMedia, { isLoading: isDeleting }] = useDeleteMilestoneMediaMutation()
   const [toggleDeliverable, { isLoading: isTogglingDeliverable }] = useToggleDeliverableMutation()
+  const [downloadMedia, { isLoading: isDownloading }] = useDownloadMilestoneMediaMutation()
 
-  // Handle media upload
+  // Handle download
+  const handleDownload = async (media: MilestoneMedia) => {
+    try {
+      setDownloadingId(media.id)
+      await downloadMedia(media.id).unwrap()
+      toast.success("File download started")
+    } catch (error) {
+      console.error("Download error:", error)
+      toast.error("Failed to download file. Please try again.")
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
   const handleMediaUpload = async (formData: FormData) => {
     try {
       await addMilestoneMedia(formData).unwrap()
       toast.success("Media uploaded successfully")
-
 
       refetchAll()
       refetchImages()
@@ -131,7 +146,6 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
 
       toast.success("Media updated successfully")
 
-
       refetchAll()
       refetchImages()
       refetchVideos()
@@ -161,7 +175,6 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
 
       toast.success("Media deleted successfully")
 
-
       // Force refetch all queries
       refetchAll()
       refetchImages()
@@ -173,7 +186,6 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
       setDeleteDialogOpen(false)
     } catch (error) {
       toast.error("Failed to delete media")
-      
     }
   }
 
@@ -181,8 +193,9 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
   const handleToggleDeliverable = async (media: MilestoneMedia) => {
     try {
       await toggleDeliverable(media.id).unwrap()
-        toast.success(`The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,)
-
+      toast.success(
+        `The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,
+      )
 
       // Force refetch all queries
       refetchAll()
@@ -303,10 +316,9 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
           </div>
           {canEdit && (
             <Button onClick={() => setUploadDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4 bg-green-200 hover:bg-green-300" />
+              <Plus className="mr-2 h-4 w-4" />
               Upload Document
             </Button>
-
           )}
         </div>
       </div>
@@ -340,10 +352,9 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                 </p>
                 {canEdit && (
                   <Button onClick={() => setUploadDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4 bg-green-200 hover:bg-green-300" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Upload Document
                   </Button>
-                  
                 )}
               </CardContent>
             </Card>
@@ -389,17 +400,23 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
                         onClick={() => handleViewMedia(media)}
+                        title="View"
                       >
-                        <Eye className="h-3.5 w-3.5"  data-tooltip="View"/>
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
                       <Button
-                        data-tooltip="Download"
+                        title="Download"
                         variant="secondary"
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
-                        onClick={() => window.open(media.file_url, "_blank")}
+                        onClick={() => handleDownload(media)}
+                        disabled={downloadingId === media.id}
                       >
-                        <Download className="h-3.5 w-3.5" />
+                        {downloadingId === media.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Download className="h-3.5 w-3.5" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -408,47 +425,46 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
                       {canEdit && (
-                      <div className="flex space-x-1">
-                        <Button
-                        data-tooltip="Edit"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            setSelectedMedia(media)
-                            setEditDialogOpen(true)
-                          }}
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                        data-tooltip={media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => handleToggleDeliverable(media)}
-                        >
-                          {media.represents_deliverable ? (
-                            <Circle className="h-3.5 w-3.5" />
-                          ) : (
-                            <CheckCircle className="h-3.5 w-3.5" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          data-tooltip="Delete"
-                          size="icon"
-                          className="h-7 w-7 text-red-500"
-                          onClick={() => {
-                            setSelectedMedia(media)
-                            setDeleteDialogOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                        <div className="flex space-x-1">
+                          <Button
+                            title="Edit"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setSelectedMedia(media)
+                              setEditDialogOpen(true)
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            title={media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => handleToggleDeliverable(media)}
+                          >
+                            {media.represents_deliverable ? (
+                              <Circle className="h-3.5 w-3.5" />
+                            ) : (
+                              <CheckCircle className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            title="Delete"
+                            size="icon"
+                            className="h-7 w-7 text-red-500"
+                            onClick={() => {
+                              setSelectedMedia(media)
+                              setDeleteDialogOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       )}
-
                     </div>
 
                     {media.description && (
@@ -501,58 +517,69 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                   </div>
 
                   <div className="flex space-x-1">
-                    <Button data-tooltip="View" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
+                    <Button
+                      title="View"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleViewMedia(media)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      data-tooltip="Download"
+                      title="Download"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => window.open(media.file_url, "_blank")}
+                      onClick={() => handleDownload(media)}
+                      disabled={downloadingId === media.id}
                     >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    {canEdit && (
-                    <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      data-tooltip="Edit"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => {
-                        setSelectedMedia(media)
-                        setEditDialogOpen(true)
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      data-tooltip={`${media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}`}
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleToggleDeliverable(media)}
-                    >
-                      {media.represents_deliverable ? (
-                        <Circle className="h-4 w-4" />
+                      {downloadingId === media.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <CheckCircle className="h-4 w-4" />
+                        <Download className="h-4 w-4" />
                       )}
                     </Button>
-                    <Button
-                      data-tooltip="Delete"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-red-500"
-                      onClick={() => {
-                        setSelectedMedia(media)
-                        setDeleteDialogOpen(true)
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    </div>
+                    {canEdit && (
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          title="Edit"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          title={media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleToggleDeliverable(media)}
+                        >
+                          {media.represents_deliverable ? (
+                            <Circle className="h-4 w-4" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          title="Delete"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-500"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setDeleteDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

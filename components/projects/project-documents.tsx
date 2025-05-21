@@ -32,6 +32,7 @@ import {
   useUpdateProjectMediaMutation,
   useDeleteProjectMediaMutation,
   useToggleFeaturedMutation,
+  useDownloadProjectMediaMutation,
 } from "@/redux/features/projects/projectsAPISlice"
 import type { ProjectMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
@@ -53,7 +54,7 @@ interface ProjectDocumentsProps {
   canEdit: boolean
 }
 
-export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
+export function ProjectDocuments({ projectId, canEdit }: ProjectDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
@@ -61,22 +62,38 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [selectedMedia, setSelectedMedia] = useState<ProjectMedia | null>(null)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
 
   // Queries
   const { data: allMedia, isLoading: isLoadingAll, refetch: refetchAll } = useGetMediaByProjectQuery(projectId)
-  const { data: images, isLoading: isLoadingImages, refetch: refetchImages } = useGetProjectImagesQuery( projectId )
-  const { data: videos, isLoading: isLoadingVideos, refetch: refetchVideos } = useGetProjectVideosQuery( projectId )
+  const { data: images, isLoading: isLoadingImages, refetch: refetchImages } = useGetProjectImagesQuery(projectId)
+  const { data: videos, isLoading: isLoadingVideos, refetch: refetchVideos } = useGetProjectVideosQuery(projectId)
   const {
     data: documents,
     isLoading: isLoadingDocuments,
     refetch: refetchDocuments,
-  } = useGetProjectDocumentsQuery( projectId )
+  } = useGetProjectDocumentsQuery(projectId)
 
   // Mutations
   const [addProjectMedia, { isLoading: isAdding }] = useAddProjectMediaMutation()
   const [updateProjectMedia, { isLoading: isUpdating }] = useUpdateProjectMediaMutation()
   const [deleteProjectMedia, { isLoading: isDeleting }] = useDeleteProjectMediaMutation()
   const [toggleFeatured, { isLoading: isTogglingFeatured }] = useToggleFeaturedMutation()
+  const [downloadMedia, { isLoading: isDownloading }] = useDownloadProjectMediaMutation()
+
+  // Handle secure download
+  const handleDownload = async (media: ProjectMedia) => {
+    try {
+      setDownloadingId(media.id)
+      await downloadMedia(media.id).unwrap()
+      toast.success("File download started")
+    } catch (error) {
+      console.error("Download error:", error)
+      toast.error("Failed to download file. Please try again.")
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   // Handle media upload
   const handleMediaUpload = async (formData: FormData) => {
@@ -119,7 +136,6 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
 
       toast.success("Media deleted successfully")
 
-
       refetchAll()
       refetchByType(activeTab)
       setSelectedMedia(null)
@@ -133,7 +149,7 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
   const handleToggleFeatured = async (media: ProjectMedia) => {
     try {
       await toggleFeatured(media.id).unwrap()
-      toast.success( `The media file has been ${media.is_featured ? "removed from" : "added to"} featured items.`)
+      toast.success(`The media file has been ${media.is_featured ? "removed from" : "added to"} featured items.`)
 
       refetchAll()
       refetchByType(activeTab)
@@ -243,11 +259,10 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
           </div>
           {canEdit && (
             <Button onClick={() => setUploadDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4 bg-green-200 hover:bg-green-300" />
+              <Plus className="mr-2 h-4 w-4" />
               Upload Document
             </Button>
-          )
-          }
+          )}
         </div>
       </div>
 
@@ -277,11 +292,10 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
                 </p>
                 {canEdit && (
                   <Button onClick={() => setUploadDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4 bg-gray-200 hover:bg-gray-300" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Upload Document
                   </Button>
-                )
-                }
+                )}
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
@@ -319,65 +333,75 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
 
                     <div className="absolute top-2 left-2 flex space-x-1">
                       <Button
-                        data-tooltip='View'
+                        title="View"
                         variant="secondary"
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
-                        onClick={() => handleViewMedia(media)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleViewMedia(media)
+                        }}
                       >
                         <Eye className="h-3.5 w-3.5" />
                       </Button>
                       <Button
+                        title="Download"
                         variant="secondary"
-                        data-tooltip='Download'
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
-                        onClick={() => window.open(media.file_url, "_blank")}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDownload(media)
+                        }}
+                        disabled={downloadingId === media.id}
                       >
-                        <Download className="h-3.5 w-3.5" />
+                        {downloadingId === media.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Download className="h-3.5 w-3.5" />
+                        )}
                       </Button>
                     </div>
                   </div>
-                    
+
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
                       {canEdit && (
-                      <div className="flex space-x-1">
-                        <Button
-                        data-tooltip='Edit'
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            setSelectedMedia(media)
-                            setEditDialogOpen(true)
-                          }}
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          data-tooltip={`${media.is_featured ? "Remove from" : "Add to"} featured items`}
-                          className="h-7 w-7"
-                          onClick={() => handleToggleFeatured(media)}
-                        >
-                          {media.is_featured ? <StarOff className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          data-tooltip='Delete'
-                          size="icon"
-                          className="h-7 w-7 text-red-500"
-                          onClick={() => {
-                            setSelectedMedia(media)
-                            setDeleteDialogOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                        
+                        <div className="flex space-x-1">
+                          <Button
+                            title="Edit"
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setSelectedMedia(media)
+                              setEditDialogOpen(true)
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={`${media.is_featured ? "Remove from" : "Add to"} featured items`}
+                            className="h-7 w-7"
+                            onClick={() => handleToggleFeatured(media)}
+                          >
+                            {media.is_featured ? <StarOff className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            title="Delete"
+                            size="icon"
+                            className="h-7 w-7 text-red-500"
+                            onClick={() => {
+                              setSelectedMedia(media)
+                              setDeleteDialogOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -432,50 +456,66 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
                   </div>
 
                   <div className="flex space-x-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
-                      <Eye className="h-4 w-4" data-tooltip='View' />
-                    </Button>
                     <Button
+                      title="View"
                       variant="ghost"
-                      data-tooltip='Download'
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => window.open(media.file_url, "_blank")}
+                      onClick={() => handleViewMedia(media)}
                     >
-                      <Download className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      title="Download"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleDownload(media)}
+                      disabled={downloadingId === media.id}
+                    >
+                      {downloadingId === media.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
                     </Button>
                     {canEdit && (
-                    <div>
-                    <Button
-                      data-tooltip='Edit'
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => {
-                        setSelectedMedia(media)
-                        setEditDialogOpen(true)
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button data-tooltip={`${media.is_featured ? "Remove from" : "Add to"} featured items`} variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleFeatured(media)}>
-                      {media.is_featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      data-tooltip='Delete'
-                      size="icon"
-                      className="h-8 w-8 text-red-500"
-                      onClick={() => {
-                        setSelectedMedia(media)
-                        setDeleteDialogOpen(true)
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <div className="flex space-x-1">
+                        <Button
+                          title="Edit"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          title={`${media.is_featured ? "Remove from" : "Add to"} featured items`}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleToggleFeatured(media)}
+                        >
+                          {media.is_featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          title="Delete"
+                          size="icon"
+                          className="h-8 w-8 text-red-500"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setDeleteDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      )}
-
+                    )}
                   </div>
                 </div>
               ))}
