@@ -118,7 +118,7 @@ export function FileUpload({ onChange, value, mediaType, defaultPreview, classNa
             <div className="flex-1">
               <p className="font-medium truncate">{value?.name || "Current file"}</p>
               <p className="text-sm text-muted-foreground">{value ? `${(value.size / 1024).toFixed(1)} KB` : ""}</p>
-              <Button variant="ghost" size="sm" onClick={() => inputRef.current?.click()} className="mt-1">
+              <Button type="button" variant="ghost" size="sm" onClick={() => inputRef.current?.click()} className="mt-1">
                 Change file
               </Button>
             </div>

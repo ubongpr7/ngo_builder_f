@@ -17,6 +17,8 @@ export interface BaseMedia {
   }
   uploaded_at: string
   updated_at: string
+  is_featured:boolean
+  represents_deliverable:boolean
 }
 
 export interface ProjectMedia extends BaseMedia {
