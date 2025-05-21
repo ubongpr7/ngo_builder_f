@@ -668,7 +668,7 @@ export function MilestoneDetail({
         </TabsContent>
 
         <TabsContent value="documents" className="mt-6">
-          <MilestoneDocuments milestoneId={milestoneId} projectId={projectId} />
+          <MilestoneDocuments milestoneId={milestoneId} projectId={projectId}  canEdit={canEdit} />
         
         </TabsContent>
 
