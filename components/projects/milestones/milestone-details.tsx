@@ -357,7 +357,6 @@ export function MilestoneDetail({
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          // <TabsTrigger value="comments">Comments</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
