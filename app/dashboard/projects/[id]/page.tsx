@@ -134,13 +134,12 @@ export default function ProjectDetail() {
   }
 
   const getMilestoneProgress = () => {
-    console.log('project.milestones_completed_count',project.milestones_completed_count, project.milestones_count)
-    if (project.status === "completed") return 100
-
-    if (project.milestones_completed_count !== undefined) {
+    console.log(project.status)
+    if (project.milestones_count) {
       return Number((project.milestones_completed_count||0 / Number(project?.milestones_count)||1) * 100)
     }
     if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
+    if (project.status === "completed") return 100
 
     const today = new Date()
     const startDate = new Date(project.start_date ?? "")
