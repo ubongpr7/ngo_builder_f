@@ -133,12 +133,12 @@ export default function ProjectDetail() {
     return 0
   }
 
-  // Get milestone completion percentage from backend
   const getMilestoneProgress = () => {
+    console.log('project.milestones_completed_count',project.milestones_completed_count, project.milestones_count)
     if (project.status === "completed") return 100
 
     if (project.milestones_completed_count !== undefined) {
-      return Number((project.milestones_completed_count||0 / Number(project?.milestones_count)||1) * 100).toFixed(2)
+      return Number((project.milestones_completed_count||0 / Number(project?.milestones_count)||1) * 100)
     }
     if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
 
