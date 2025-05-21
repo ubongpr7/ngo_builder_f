@@ -17,22 +17,24 @@ import {
   Star,
   StarOff,
   Loader2,
+  Grid,
+  List,
+  Eye,
 } from "lucide-react"
 import { MediaUploadDialog } from "@/components/media/media-upload-dialog"
+import { ViewMediaDialog } from "@/components/media/view-media-dialog"
 import {
   useGetMediaByProjectQuery,
-   useGetProjectImagesQuery,
-   useGetProjectVideosQuery,
+  useGetProjectImagesQuery,
+  useGetProjectVideosQuery,
   useGetProjectDocumentsQuery,
   useAddProjectMediaMutation,
   useUpdateProjectMediaMutation,
   useDeleteProjectMediaMutation,
   useToggleFeaturedMutation,
 } from "@/redux/features/projects/projectsAPISlice"
-
 import type { ProjectMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,9 +54,11 @@ interface ProjectDocumentsProps {
 
 export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [selectedMedia, setSelectedMedia] = useState<ProjectMedia | null>(null)
 
   // Queries
@@ -65,7 +69,7 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     data: documents,
     isLoading: isLoadingDocuments,
     refetch: refetchDocuments,
-  } = useGetProjectDocumentsQuery(projectId )
+  } = useGetProjectDocumentsQuery( projectId )
 
   // Mutations
   const [addProjectMedia, { isLoading: isAdding }] = useAddProjectMediaMutation()
@@ -239,21 +243,40 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     return url.split(".").pop()?.toLowerCase() || ""
   }
 
-  // Format file size
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " bytes"
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB"
-    else return (bytes / 1048576).toFixed(1) + " MB"
+  // View media
+  const handleViewMedia = (media: ProjectMedia) => {
+    setSelectedMedia(media)
+    setViewDialogOpen(true)
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Project Documents</h2>
-        <Button onClick={() => setUploadDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Upload Document
-        </Button>
+        <div className="flex items-center space-x-2">
+          <div className="flex border rounded-md overflow-hidden">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("grid")}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Upload Document
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -286,31 +309,31 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                 </Button>
               </CardContent>
             </Card>
-          ) : (
+          ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {getCurrentMedia().map((media) => (
                 <Card key={media.id} className={`overflow-hidden ${media.is_featured ? "ring-2 ring-primary" : ""}`}>
                   <div className="relative">
-                    {media.media_type === "image" ? (
-                      <div className="h-48 bg-gray-100 relative">
+                    <div className="h-48 bg-gray-100 relative cursor-pointer" onClick={() => handleViewMedia(media)}>
+                      {media.media_type === "image" ? (
                         <img
                           src={media.file_url || "/placeholder.svg"}
                           alt={media.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    ) : media.media_type === "video" ? (
-                      <div className="h-48 bg-gray-800 flex items-center justify-center">
-                        <video src={media.file_url} className="w-full h-full object-cover" controls />
-                      </div>
-                    ) : (
-                      <div className="h-48 bg-gray-100 flex items-center justify-center">
-                        <div className="text-center">
-                          {getMediaTypeIcon(media.media_type)}
-                          <p className="mt-2 text-sm font-medium">{getFileExtension(media.file_url || "")}</p>
+                      ) : media.media_type === "video" ? (
+                        <div className="h-full bg-gray-800 flex items-center justify-center">
+                          <Video className="h-12 w-12 text-gray-400" />
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="h-full bg-gray-100 flex items-center justify-center">
+                          <div className="text-center">
+                            {getMediaTypeIcon(media.media_type)}
+                            <p className="mt-2 text-sm font-medium">{getFileExtension(media.file_url || "")}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {media.is_featured && (
                       <Badge className="absolute top-2 right-2 bg-primary">
@@ -318,56 +341,62 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                         Featured
                       </Badge>
                     )}
+
+                    <div className="absolute top-2 left-2 flex space-x-1">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
+                        onClick={() => handleViewMedia(media)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
+                        onClick={() => window.open(media.file_url, "_blank")}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
 
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <File className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => window.open(media.file_url, "_blank")}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedMedia(media)
-                              setEditDialogOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleFeatured(media)}>
-                            {media.is_featured ? (
-                              <>
-                                <StarOff className="h-4 w-4 mr-2" />
-                                Remove from Featured
-                              </>
-                            ) : (
-                              <>
-                                <Star className="h-4 w-4 mr-2" />
-                                Add to Featured
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedMedia(media)
-                              setDeleteDialogOpen(true)
-                            }}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleToggleFeatured(media)}
+                        >
+                          {media.is_featured ? <StarOff className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setDeleteDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
 
                     {media.description && (
@@ -383,6 +412,81 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                     </div>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {getCurrentMedia().map((media) => (
+                <div
+                  key={media.id}
+                  className={`flex items-center p-3 rounded-md border ${
+                    media.is_featured ? "border-primary bg-primary/5" : ""
+                  }`}
+                >
+                  <div
+                    className="w-12 h-12 mr-4 rounded overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer"
+                    onClick={() => handleViewMedia(media)}
+                  >
+                    {media.media_type === "image" ? (
+                      <img
+                        src={media.file_url || "/placeholder.svg"}
+                        alt={media.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      getMediaTypeIcon(media.media_type)
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 mr-4">
+                    <h3 className="font-medium truncate">{media.title}</h3>
+                    {media.description && <p className="text-sm text-gray-500 truncate">{media.description}</p>}
+                    <div className="flex items-center text-xs text-gray-500">
+                      <span className="capitalize">{media.media_type}</span>
+                      <span className="mx-1">•</span>
+                      <span>{formatDistanceToNow(new Date(media.uploaded_at), { addSuffix: true })}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => window.open(media.file_url, "_blank")}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setSelectedMedia(media)
+                        setEditDialogOpen(true)
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleFeatured(media)}>
+                      {media.is_featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500"
+                      onClick={() => {
+                        setSelectedMedia(media)
+                        setDeleteDialogOpen(true)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -412,6 +516,19 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
           mediaType="project"
           initialData={selectedMedia}
           projectId={projectId}
+        />
+      )}
+
+      {/* View Media Dialog */}
+      {selectedMedia && (
+        <ViewMediaDialog
+          isOpen={viewDialogOpen}
+          onClose={() => {
+            setViewDialogOpen(false)
+            setSelectedMedia(null)
+          }}
+          media={selectedMedia}
+          allMedia={getCurrentMedia()}
         />
       )}
 

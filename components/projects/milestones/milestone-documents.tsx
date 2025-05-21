@@ -17,13 +17,16 @@ import {
   CheckCircle,
   Circle,
   Loader2,
+  Grid,
+  List,
+  Eye,
 } from "lucide-react"
 import { MediaUploadDialog } from "@/components/media/media-upload-dialog"
-
+import { ViewMediaDialog } from "@/components/media/view-media-dialog"
 import {
   useGetMediaByMilestoneQuery,
-   useGetMilestoneImagesQuery,
-   useGetMilestoneVideosQuery,
+  useGetMilestoneImagesQuery,
+  useGetMilestoneVideosQuery,
   useGetMilestoneDocumentsQuery,
   useGetDeliverableMediaQuery,
   useAddMilestoneMediaMutation,
@@ -33,7 +36,6 @@ import {
 } from "@/redux/features/projects/milestoneApiSlice"
 import type { MilestoneMedia } from "@/types/media"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,9 +56,11 @@ interface MilestoneDocumentsProps {
 
 export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [selectedMedia, setSelectedMedia] = useState<MilestoneMedia | null>(null)
 
   // Queries
@@ -261,14 +265,40 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
     return url.split(".").pop()?.toLowerCase() || ""
   }
 
+  // View media
+  const handleViewMedia = (media: MilestoneMedia) => {
+    setSelectedMedia(media)
+    setViewDialogOpen(true)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Milestone Documents</h2>
-        <Button onClick={() => setUploadDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Upload Document
-        </Button>
+        <div className="flex items-center space-x-2">
+          <div className="flex border rounded-md overflow-hidden">
+            <Button
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("grid")}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
+              className="rounded-none"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Upload Document
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -304,7 +334,7 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                 </Button>
               </CardContent>
             </Card>
-          ) : (
+          ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {getCurrentMedia().map((media) => (
                 <Card
@@ -312,26 +342,26 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                   className={`overflow-hidden ${media.represents_deliverable ? "ring-2 ring-green-500" : ""}`}
                 >
                   <div className="relative">
-                    {media.media_type === "image" ? (
-                      <div className="h-48 bg-gray-100 relative">
+                    <div className="h-48 bg-gray-100 relative cursor-pointer" onClick={() => handleViewMedia(media)}>
+                      {media.media_type === "image" ? (
                         <img
                           src={media.file_url || "/placeholder.svg"}
                           alt={media.title}
                           className="w-full h-full object-cover"
                         />
-                      </div>
-                    ) : media.media_type === "video" ? (
-                      <div className="h-48 bg-gray-800 flex items-center justify-center">
-                        <video src={media.file_url} className="w-full h-full object-cover" controls />
-                      </div>
-                    ) : (
-                      <div className="h-48 bg-gray-100 flex items-center justify-center">
-                        <div className="text-center">
-                          {getMediaTypeIcon(media.media_type)}
-                          <p className="mt-2 text-sm font-medium">{getFileExtension(media.file_url || "")}</p>
+                      ) : media.media_type === "video" ? (
+                        <div className="h-full bg-gray-800 flex items-center justify-center">
+                          <Video className="h-12 w-12 text-gray-400" />
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="h-full bg-gray-100 flex items-center justify-center">
+                          <div className="text-center">
+                            {getMediaTypeIcon(media.media_type)}
+                            <p className="mt-2 text-sm font-medium">{getFileExtension(media.file_url || "")}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {media.represents_deliverable && (
                       <Badge className="absolute top-2 right-2 bg-green-500">
@@ -339,56 +369,66 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                         Deliverable
                       </Badge>
                     )}
+
+                    <div className="absolute top-2 left-2 flex space-x-1">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
+                        onClick={() => handleViewMedia(media)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
+                        onClick={() => window.open(media.file_url, "_blank")}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
 
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <File className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => window.open(media.file_url, "_blank")}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedMedia(media)
-                              setEditDialogOpen(true)
-                            }}
-                          >
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggleDeliverable(media)}>
-                            {media.represents_deliverable ? (
-                              <>
-                                <Circle className="h-4 w-4 mr-2" />
-                                Remove from Deliverables
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Mark as Deliverable
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedMedia(media)
-                              setDeleteDialogOpen(true)
-                            }}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => handleToggleDeliverable(media)}
+                        >
+                          {media.represents_deliverable ? (
+                            <Circle className="h-3.5 w-3.5" />
+                          ) : (
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-500"
+                          onClick={() => {
+                            setSelectedMedia(media)
+                            setDeleteDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
 
                     {media.description && (
@@ -404,6 +444,90 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                     </div>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {getCurrentMedia().map((media) => (
+                <div
+                  key={media.id}
+                  className={`flex items-center p-3 rounded-md border ${
+                    media.represents_deliverable ? "border-green-500 bg-green-50" : ""
+                  }`}
+                >
+                  <div
+                    className="w-12 h-12 mr-4 rounded overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer"
+                    onClick={() => handleViewMedia(media)}
+                  >
+                    {media.media_type === "image" ? (
+                      <img
+                        src={media.file_url || "/placeholder.svg"}
+                        alt={media.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      getMediaTypeIcon(media.media_type)
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 mr-4">
+                    <h3 className="font-medium truncate">{media.title}</h3>
+                    {media.description && <p className="text-sm text-gray-500 truncate">{media.description}</p>}
+                    <div className="flex items-center text-xs text-gray-500">
+                      <span className="capitalize">{media.media_type}</span>
+                      <span className="mx-1">•</span>
+                      <span>{formatDistanceToNow(new Date(media.uploaded_at), { addSuffix: true })}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => window.open(media.file_url, "_blank")}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setSelectedMedia(media)
+                        setEditDialogOpen(true)
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleToggleDeliverable(media)}
+                    >
+                      {media.represents_deliverable ? (
+                        <Circle className="h-4 w-4" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-500"
+                      onClick={() => {
+                        setSelectedMedia(media)
+                        setDeleteDialogOpen(true)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -435,6 +559,19 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
           initialData={selectedMedia}
           milestoneId={milestoneId}
           projectId={projectId}
+        />
+      )}
+
+      {/* View Media Dialog */}
+      {selectedMedia && (
+        <ViewMediaDialog
+          isOpen={viewDialogOpen}
+          onClose={() => {
+            setViewDialogOpen(false)
+            setSelectedMedia(null)
+          }}
+          media={selectedMedia}
+          allMedia={getCurrentMedia()}
         />
       )}
 
