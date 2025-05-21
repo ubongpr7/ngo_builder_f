@@ -13,11 +13,11 @@ import {
   FileText,
   Briefcase,
   AlertTriangle,
-  MessageSquare,
   Loader2,
-  Edit,
   CheckCircle,
   XCircle,
+  DollarSign,
+  Target,
 } from "lucide-react"
 
 import { ProjectOverview } from "@/components/projects/project-overview"
@@ -36,8 +36,8 @@ import { ProjectDocuments } from "@/components/projects/project-documents"
 export default function ProjectDetail() {
   const { id } = useParams()
   const projectId = Number(id)
-    const { toast } = useToast()
-  
+  const { toast } = useToast()
+
   const { data: project, isLoading, isError, refetch } = useGetProjectByIdQuery(projectId)
   const [activeTab, setActiveTab] = useState("overview")
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
@@ -53,18 +53,16 @@ export default function ProjectDetail() {
     customCheck: (user) => !!project?.team_members?.some((member) => member?.id === user.user_id),
   })
 
-  // State for edit project dialog
   const [editProjectOpen, setEditProjectOpen] = useState(false)
 
-  // Function to refresh project data
   const refreshProject = () => {
     refetch()
   }
   const [updateProject] = useUpdateProjectMutation()
-  
+
   const handleApprove = async (projectId: number) => {
     try {
-      await updateProject({ id: projectId, data:{status: "planning" }}).unwrap()
+      await updateProject({ id: projectId, data: { status: "planning" } }).unwrap()
       toast({
         title: "Project approved",
         description: "The project proposal has been approved and is now in planning status.",
@@ -80,25 +78,22 @@ export default function ProjectDetail() {
     }
   }
 
-
   const handleReject = async (projectId: number) => {
     try {
-      await updateProject({ id: projectId, data:{status: "cancelled"} }).unwrap()
+      await updateProject({ id: projectId, data: { status: "cancelled" } }).unwrap()
       toast({
         title: "Project rejected",
         description: "The project proposal has been rejected.",
       })
       refetch()
     } catch (error) {
-      console.error("Failed to reject project:", error)
       toast({
         title: "Error",
         description: "Failed to reject project. Please try again.",
         variant: "destructive",
       })
-    
-  }}
-
+    }
+  }
 
   if (isLoading) {
     return (
@@ -124,18 +119,29 @@ export default function ProjectDetail() {
     )
   }
 
-  // Calculate project progress
-  const calculateProgress = () => {
+  // Calculate budget progress
+  const calculateBudgetProgress = () => {
     if (project.status === "completed") return 100
     if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
 
-    // Calculate based on budget utilization if available
+    // Calculate based on budget utilization
     if (project.funds_spent && project.budget) {
       const budgetProgress = (project.funds_spent / project.budget) * 100
-      return Math.min(budgetProgress, 100).toFixed(2)
+      return Math.min(budgetProgress, 100)
     }
 
-    // Calculate based on timeline
+    return 0
+  }
+
+  // Get milestone completion percentage from backend
+  const getMilestoneProgress = () => {
+    if (project.status === "completed") return 100
+
+    if (project.milestones_completed_count !== undefined) {
+      return Number((project.milestones_completed_count||0 / Number(project?.milestones_count)||1) * 100).toFixed(2)
+    }
+    if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
+
     const today = new Date()
     const startDate = new Date(project.start_date ?? "")
     const endDate = new Date(project.target_end_date ?? "")
@@ -149,7 +155,6 @@ export default function ProjectDetail() {
     return Math.round((elapsedDuration / totalDuration) * 100)
   }
 
-  // Get status badge color
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -186,7 +191,8 @@ export default function ProjectDetail() {
     })
   }
 
-  const progress = calculateProgress()
+  const budgetProgress = calculateBudgetProgress()
+  const milestoneProgress = getMilestoneProgress()
 
   return (
     <div className="space-y-6 mt-1 mb-2">
@@ -223,22 +229,14 @@ export default function ProjectDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          
-
-
           {/* Show approval buttons for admins when project is submitted */}
           {project.status === "submitted" && is_DB_admin && (
             <>
-              <Button onClick={ ()=>{
-                handleApprove(project.id)
-              }} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={() => handleApprove(project.id)} className="bg-green-600 hover:bg-green-700 text-white">
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>
-              <Button onClick={ ()=>{
-                handleReject(project.id)
-              }} 
-              className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={() => handleReject(project.id)} className="bg-red-600 hover:bg-red-700 text-white">
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
               </Button>
@@ -261,21 +259,48 @@ export default function ProjectDetail() {
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Progress</span>
-                <span className="font-medium">{progress}%</span>
+            <div className="space-y-4">
+              {/* Budget Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 flex items-center">
+                    <DollarSign className="h-4 w-4 mr-1 text-blue-500" />
+                    Budget Utilization
+                  </span>
+                  <span className="font-medium">{budgetProgress.toFixed(2)}%</span>
+                </div>
+                <Progress
+                  value={budgetProgress}
+                  className="h-2"
+                  indicatorClassName={budgetProgress > 100 ? "bg-red-500" : "bg-blue-500"}
+                />
+                <p className="text-sm text-gray-500">
+                  {project.status === "completed"
+                    ? "Budget fully utilized"
+                    : project.status === "planned" || project.status === "submitted"
+                      ? "No funds spent yet"
+                      : `${formatCurrency(project.funds_spent)} spent of ${formatCurrency(project.budget)} budget`}
+                </p>
               </div>
-              <Progress value={progress} className="h-2" />
-              <p className="text-sm text-gray-500">
-                {project.status === "completed"
-                  ? "Project completed"
-                  : project.status === "planned"
-                    ? "Project in planning phase"
-                    : project.status === "submitted"
-                      ? "Project proposal awaiting approval"
-                      : `${progress}% complete based on timeline and budget`}
-              </p>
+
+              {/* Milestone Progress */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 flex items-center">
+                    <Target className="h-4 w-4 mr-1 text-green-500" />
+                    Milestone Completion
+                  </span>
+                  <span className="font-medium">{Number(milestoneProgress).toFixed(2)}%</span>
+                </div>
+                <Progress value={Number(milestoneProgress)} className="h-2" indicatorClassName="bg-green-500" />
+                <p className="text-sm text-gray-500">
+                  {project.status === "completed"
+                    ? "All milestones completed"
+                    : project.status === "planned" || project.status === "submitted"
+                      ? "Project not yet started"
+                      : `${Number(milestoneProgress).toFixed(2)}% of milestones completed`}
+                </p>
+              </div>
             </div>
 
             <div className="space-y-1">
