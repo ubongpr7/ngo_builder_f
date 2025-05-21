@@ -45,14 +45,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { toast } from "@/components/ui/use-toast"
 import { formatDistanceToNow } from "date-fns"
+import { toast } from "react-toastify"
 
 interface ProjectDocumentsProps {
   projectId: number
+  canEdit: boolean
 }
 
-export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
+export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
@@ -81,19 +82,11 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
   const handleMediaUpload = async (formData: FormData) => {
     try {
       await addProjectMedia(formData).unwrap()
-      toast({
-        title: "Media uploaded",
-        description: "The media file has been uploaded successfully.",
-      })
+      toast.success("Media uploaded successfully")
       refetchAll()
       refetchByType(activeTab)
     } catch (error) {
-      console.error("Failed to upload media:", error)
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading the media file.",
-        variant: "destructive",
-      })
+      toast.error("There was an error uploading the media file.")
     }
   }
 
@@ -107,21 +100,13 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
         media: formData,
       }).unwrap()
 
-      toast({
-        title: "Media updated",
-        description: "The media file has been updated successfully.",
-      })
+      toast.success("Media updated successfully")
 
       refetchAll()
       refetchByType(activeTab)
       setSelectedMedia(null)
     } catch (error) {
-      console.error("Failed to update media:", error)
-      toast({
-        title: "Update failed",
-        description: "There was an error updating the media file.",
-        variant: "destructive",
-      })
+      toast.error("There was an error updating the media file.")
     }
   }
 
@@ -132,22 +117,15 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
     try {
       await deleteProjectMedia(selectedMedia.id).unwrap()
 
-      toast({
-        title: "Media deleted",
-        description: "The media file has been deleted successfully.",
-      })
+      toast.success("Media deleted successfully")
+
 
       refetchAll()
       refetchByType(activeTab)
       setSelectedMedia(null)
       setDeleteDialogOpen(false)
     } catch (error) {
-      console.error("Failed to delete media:", error)
-      toast({
-        title: "Deletion failed",
-        description: "There was an error deleting the media file.",
-        variant: "destructive",
-      })
+      toast.error("There was an error deleting the media file.")
     }
   }
 
@@ -155,21 +133,12 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
   const handleToggleFeatured = async (media: ProjectMedia) => {
     try {
       await toggleFeatured(media.id).unwrap()
-
-      toast({
-        title: media.is_featured ? "Removed from featured" : "Added to featured",
-        description: `The media file has been ${media.is_featured ? "removed from" : "added to"} featured items.`,
-      })
+      toast.success( `The media file has been ${media.is_featured ? "removed from" : "added to"} featured items.`)
 
       refetchAll()
       refetchByType(activeTab)
     } catch (error) {
-      console.error("Failed to toggle featured status:", error)
-      toast({
-        title: "Action failed",
-        description: "There was an error updating the featured status.",
-        variant: "destructive",
-      })
+      toast.error("There was an error toggling the featured status.")
     }
   }
 
@@ -272,10 +241,13 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={() => setUploadDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Upload Document
-          </Button>
+          {canEdit && (
+            <Button onClick={() => setUploadDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Upload Document
+            </Button>
+          )
+          }
         </div>
       </div>
 
@@ -303,10 +275,13 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                     ? "No documents have been uploaded for this project yet."
                     : `No ${activeTab.slice(0, -1)} files have been uploaded for this project yet.`}
                 </p>
-                <Button onClick={() => setUploadDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Upload Document
-                </Button>
+                {canEdit && (
+                  <Button onClick={() => setUploadDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Upload Document
+                  </Button>
+                )
+                }
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
@@ -361,10 +336,11 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                       </Button>
                     </div>
                   </div>
-
+                    
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
+                      {canEdit && (
                       <div className="flex space-x-1">
                         <Button
                           variant="ghost"
@@ -396,7 +372,9 @@ export function ProjectDocuments({ projectId }: ProjectDocumentsProps) {
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
-                      </div>
+                        
+                        </div>
+                      )}
                     </div>
 
                     {media.description && (

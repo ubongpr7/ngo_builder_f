@@ -46,15 +46,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { toast } from "@/components/ui/use-toast"
 import { formatDistanceToNow } from "date-fns"
+import { toast } from "react-toastify"
 
 interface MilestoneDocumentsProps {
   milestoneId: number
   projectId: number
+  canEdit: boolean
 }
 
-export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocumentsProps) {
+export function MilestoneDocuments({ milestoneId, projectId, canEdit }: MilestoneDocumentsProps) {
   const [activeTab, setActiveTab] = useState("all")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
@@ -96,12 +97,9 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
   const handleMediaUpload = async (formData: FormData) => {
     try {
       await addMilestoneMedia(formData).unwrap()
-      toast({
-        title: "Media uploaded",
-        description: "The media file has been uploaded successfully.",
-      })
+      toast.success("Media uploaded successfully")
 
-      // Force refetch all queries to ensure categories are updated
+
       refetchAll()
       refetchImages()
       refetchVideos()
@@ -117,12 +115,7 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         refetchDeliverables()
       }, 500)
     } catch (error) {
-      console.error("Failed to upload media:", error)
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading the media file.",
-        variant: "destructive",
-      })
+      toast.error("Failed to upload media")
     }
   }
 
@@ -136,19 +129,15 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         media: formData,
       }).unwrap()
 
-      toast({
-        title: "Media updated",
-        description: "The media file has been updated successfully.",
-      })
+      toast.success("Media updated successfully")
 
-      // Force refetch all queries
+
       refetchAll()
       refetchImages()
       refetchVideos()
       refetchDocuments()
       refetchDeliverables()
 
-      // Wait a moment for the backend to process the update
       setTimeout(() => {
         refetchAll()
         refetchImages()
@@ -159,12 +148,7 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
 
       setSelectedMedia(null)
     } catch (error) {
-      console.error("Failed to update media:", error)
-      toast({
-        title: "Update failed",
-        description: "There was an error updating the media file.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update media")
     }
   }
 
@@ -175,10 +159,8 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
     try {
       await deleteMilestoneMedia(selectedMedia.id).unwrap()
 
-      toast({
-        title: "Media deleted",
-        description: "The media file has been deleted successfully.",
-      })
+      toast.success("Media deleted successfully")
+
 
       // Force refetch all queries
       refetchAll()
@@ -190,12 +172,8 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
       setSelectedMedia(null)
       setDeleteDialogOpen(false)
     } catch (error) {
-      console.error("Failed to delete media:", error)
-      toast({
-        title: "Deletion failed",
-        description: "There was an error deleting the media file.",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete media")
+      
     }
   }
 
@@ -203,11 +181,8 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
   const handleToggleDeliverable = async (media: MilestoneMedia) => {
     try {
       await toggleDeliverable(media.id).unwrap()
+        toast.success(`The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,)
 
-      toast({
-        title: media.represents_deliverable ? "Removed from deliverables" : "Added to deliverables",
-        description: `The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,
-      })
 
       // Force refetch all queries
       refetchAll()
@@ -216,12 +191,7 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
       refetchDocuments()
       refetchDeliverables()
     } catch (error) {
-      console.error("Failed to toggle deliverable status:", error)
-      toast({
-        title: "Action failed",
-        description: "There was an error updating the deliverable status.",
-        variant: "destructive",
-      })
+      toast.error("Failed to toggle deliverable")
     }
   }
 
@@ -331,10 +301,13 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={() => setUploadDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Upload Document
-          </Button>
+          {canEdit && (
+            <Button onClick={() => setUploadDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Upload Document
+            </Button>
+
+          )}
         </div>
       </div>
 
@@ -365,10 +338,13 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                       ? "No deliverables have been uploaded for this milestone yet."
                       : `No ${activeTab.slice(0, -1)} files have been uploaded for this milestone yet.`}
                 </p>
-                <Button onClick={() => setUploadDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Upload Document
-                </Button>
+                {canEdit && (
+                  <Button onClick={() => setUploadDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Upload Document
+                  </Button>
+                  
+                )}
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
@@ -430,6 +406,7 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-medium line-clamp-1">{media.title}</h3>
+                      {canEdit && (
                       <div className="flex space-x-1">
                         <Button
                           variant="ghost"
@@ -466,6 +443,8 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
+                      )}
+
                     </div>
 
                     {media.description && (

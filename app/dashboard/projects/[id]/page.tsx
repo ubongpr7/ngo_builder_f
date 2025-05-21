@@ -434,7 +434,7 @@ export default function ProjectDetail() {
 
         */}
         <TabsContent value="documents" className="space-y-4">
-          <ProjectDocuments projectId={projectId} />
+          <ProjectDocuments projectId={projectId} canEdit={isManager || is_DB_admin|| isTeamMember} />
         </TabsContent>
       </Tabs>
     </div>
