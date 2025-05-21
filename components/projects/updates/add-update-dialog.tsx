@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
-import { useToast } from "@/components/ui/use-toast"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Loader2, Upload, X, ImageIcon, FileText, Video, Mic, AlertCircle } from 'lucide-react'
 import { 
@@ -25,6 +24,7 @@ import {
   useAddMediaMutation
 } from "@/redux/features/projects/updateApiSlice"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { toast } from "react-toastify"
 
 const formSchema = z.object({
   summary: z.string().min(5, "Summary must be at least 5 characters"),
@@ -53,7 +53,6 @@ interface AddUpdateDialogProps {
 }
 
 export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: AddUpdateDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
@@ -186,11 +185,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
           setUploadProgress(Math.round((uploadedFiles / totalFiles) * 100))
         }
       }
-      
-      toast({
-        title: "Update Added",
-        description: "The project update has been successfully added.",
-      })
+      toast.success("Update added successfully!")
       
       reset()
       setMediaFiles([])
@@ -200,11 +195,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
       
     } catch (error) {
       console.error("Failed to add update:", error)
-      toast({
-        title: "Error",
-        description: "Failed to add update. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to add update. Please try again.")
     } finally {
       setIsSubmitting(false)
       setUploadProgress(0)

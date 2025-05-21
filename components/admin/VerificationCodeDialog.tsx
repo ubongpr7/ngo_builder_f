@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
 import { Loader2, X } from "lucide-react"
 import { useRequestEditCodeMutation, useVerifyEditCodeMutation } from "@/redux/features/admin/kyc-verification"
 import KYCFormContainer from "@/components/kyc/KYCFormContainer"
+import { toast } from "react-toastify"
 
 interface VerificationCodeDialogProps {
   isOpen: boolean
@@ -32,7 +32,6 @@ export function VerificationCodeDialog({
   const [step, setStep] = useState<"request" | "verify" | "edit">("request")
   const [verificationCode, setVerificationCode] = useState("")
   const [profileData, setProfileData] = useState<any>(null)
-  const { toast } = useToast()
 
   const [requestCode, { isLoading: isRequestingCode }] = useRequestEditCodeMutation()
   const [verifyCode, { isLoading: isVerifyingCode }] = useVerifyEditCodeMutation()
@@ -41,28 +40,16 @@ export function VerificationCodeDialog({
     try {
       const response = await requestCode(profileId).unwrap()
 
-      toast({
-        title: "Code Sent",
-        description: response.message,
-      })
-
+      toast.success(response.message)
       setStep("verify")
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to send verification code",
-        variant: "destructive",
-      })
+      toast.error(error.data?.error || "Failed to request code")
     }
   }
 
   const handleVerifyCode = async () => {
     if (!verificationCode) {
-      toast({
-        title: "Code Required",
-        description: "Please enter the verification code",
-        variant: "destructive",
-      })
+      toast.error("Please enter a verification code")
       return
     }
 
@@ -71,11 +58,7 @@ export function VerificationCodeDialog({
         profileId,
         code: verificationCode,
       }).unwrap()
-
-      toast({
-        title: "Success",
-        description: response.message,
-      })
+      toast.success(response.message)
 
       // Store profile data and move to edit step
       setProfileData(response.profile)
@@ -84,11 +67,7 @@ export function VerificationCodeDialog({
       // Also notify parent component
       onVerificationSuccess(response.profile)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to verify code",
-        variant: "destructive",
-      })
+      toast.error(error.data?.error || "Failed to verify code")
     }
   }
 

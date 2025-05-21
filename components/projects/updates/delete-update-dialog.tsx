@@ -11,9 +11,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from 'lucide-react'
 import { useDeleteUpdateMutation } from "@/redux/features/projects/updateApiSlice"
+import { toast } from "react-toastify"
 
 interface DeleteUpdateDialogProps {
   update: any
@@ -23,7 +23,6 @@ interface DeleteUpdateDialogProps {
 }
 
 export function DeleteUpdateDialog({ update, open, onOpenChange, onSuccess }: DeleteUpdateDialogProps) {
-  const { toast } = useToast()
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteUpdate] = useDeleteUpdateMutation()
 
@@ -33,20 +32,13 @@ export function DeleteUpdateDialog({ update, open, onOpenChange, onSuccess }: De
     try {
       await deleteUpdate(update.id).unwrap()
       
-      toast({
-        title: "Update Deleted",
-        description: "The project update has been successfully deleted.",
-      })
+      toast.success("Update deleted successfully")
       
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
       console.error("Failed to delete update:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete update. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete update")
     } finally {
       setIsDeleting(false)
     }

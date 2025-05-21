@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/components/ui/use-toast"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Search,
@@ -34,6 +33,7 @@ import {
   useReimburseExpenseMutation,
   useGetExpenseStatisticsQuery,
 } from "@/redux/features/projects/expenseApiSlice"
+import { toast } from "react-toastify"
 
 interface ProjectExpensesProps {
   projectId: number
@@ -43,7 +43,6 @@ interface ProjectExpensesProps {
 }
 
 export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectExpensesProps) {
-  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [filters, setFilters] = useState<any>({})
@@ -115,18 +114,11 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const handleQuickApprove = async (expense: any) => {
     try {
       await approveExpense({ id: expense.id, notes: "" }).unwrap()
-      toast({
-        title: "Expense Approved",
-        description: "The expense has been approved successfully.",
-      })
+      toast.success('Expense approved successfully')
+      
       refresh()
     } catch (error) {
-      console.error("Failed to approve expense:", error)
-      toast({
-        title: "Error",
-        description: "Failed to approve expense. Please try again.",
-        variant: "destructive",
-      })
+      toast.error('Failed to approve expense')
     }
   }
 
@@ -140,18 +132,11 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const handleQuickReimburse = async (expense: any) => {
     try {
       await reimburseExpense({ id: expense.id, notes: "" }).unwrap()
-      toast({
-        title: "Expense Reimbursed",
-        description: "The expense has been marked as reimbursed.",
-      })
+      toast.success("Expense reimbursed successfully")
       refresh()
     } catch (error) {
       console.error("Failed to reimburse expense:", error)
-      toast({
-        title: "Error",
-        description: "Failed to mark expense as reimbursed. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to reimburse expense")
     }
   }
 

@@ -29,7 +29,6 @@ import {
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useToast } from "@/components/ui/use-toast"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { format } from "date-fns"
 import { AddUpdateDialog } from "./add-update-dialog"
@@ -43,7 +42,6 @@ import {
   useGetUpdateStatisticsQuery,
   useDeleteUpdateMutation,
 } from "@/redux/features/projects/updateApiSlice"
-import { UpdateTimelineView } from "./update-timeline-view"
 import { UpdateGalleryView } from "./update-gallery-view"
 
 interface ProjectUpdatesProps {
@@ -54,7 +52,6 @@ interface ProjectUpdatesProps {
 }
 
 export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectUpdatesProps) {
-  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"list" | "timeline" | "gallery">("list")
@@ -629,14 +626,6 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
             </div>
           )}
 
-          {viewMode === "timeline" && (
-            <UpdateTimelineView
-              updates={sortedUpdates}
-              onViewMedia={handleViewMedia}
-              onEditUpdate={handleEditUpdate}
-              onDeleteUpdate={handleDeleteUpdate}
-            />
-          )}
 
           {viewMode === "gallery" && <UpdateGalleryView projectId={projectId} onViewMedia={handleViewMedia} />}
         </>

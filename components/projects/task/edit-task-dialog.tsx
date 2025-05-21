@@ -12,10 +12,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DateTimeInput } from "@/components/ui/datetime-input"
-import { useToast } from "@/components/ui/use-toast"
 import { useGetAllTasksQuery, useUpdateTaskMutation } from "@/redux/features/projects/taskAPISlice"
 import Select from "react-select"
 import { selectStyles } from "@/utils/select-styles"
+import { toast } from "react-toastify"
 
 interface EditTaskDialogProps {
   open: boolean
@@ -60,7 +60,6 @@ interface SelectOption {
 }
 
 export function EditTaskDialog({ open, onClose, taskId, onTaskUpdated, trigger }: EditTaskDialogProps) {
-  const { toast } = useToast()
   const { data: task, isLoading: isLoadingTask } = useGetAllTasksQuery(taskId, { skip: !open })
   const [updateTask, { isLoading }] = useUpdateTaskMutation()
 
@@ -141,10 +140,8 @@ export function EditTaskDialog({ open, onClose, taskId, onTaskUpdated, trigger }
         tags: values.tags,
       }).unwrap()
 
-      toast({
-        title: "Task updated",
-        description: "Your task has been updated successfully.",
-      })
+      toast.success("Task updated successfully")
+
 
       if (onTaskUpdated) {
         onTaskUpdated()
@@ -152,11 +149,7 @@ export function EditTaskDialog({ open, onClose, taskId, onTaskUpdated, trigger }
 
       onClose()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update task. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update task")
     }
   }
 

@@ -17,10 +17,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
-import { useToast } from "@/components/ui/use-toast"
 import Select from "react-select"
 import { useUpdateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, Download, FileText, Eye, Save } from "lucide-react"
+import { toast } from "react-toastify"
 
 // Define the form schema with Zod
 const formSchema = z.object({
@@ -66,7 +66,6 @@ interface EditExpenseDialogProps {
 }
 
 export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSuccess }: EditExpenseDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [updateExpense] = useUpdateExpenseMutation()
   const [viewingReceipt, setViewingReceipt] = useState(false)
@@ -143,21 +142,13 @@ export function EditExpenseDialog({ projectId, expense, open, onOpenChange, onSu
       formData.append("status", expense.status)
 
       await updateExpense({ id: expense.id, expense: formData }).unwrap()
-
-      toast({
-        title: "Expense Updated",
-        description: "The expense has been successfully updated.",
-      })
+      toast.success("Expense updated successfully")
 
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
       console.error("Failed to update expense:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update expense. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update expense")
     } finally {
       setIsSubmitting(false)
     }

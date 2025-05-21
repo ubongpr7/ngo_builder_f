@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
-import { useToast } from "@/components/ui/use-toast"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Loader2, Upload, X, ImageIcon, FileText, Video, Mic, Trash2 } from 'lucide-react'
 import { 
@@ -36,6 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { toast } from "react-toastify"
 
 const formSchema = z.object({
   summary: z.string().min(5, "Summary must be at least 5 characters"),
@@ -65,7 +65,6 @@ interface EditUpdateDialogProps {
 }
 
 export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSuccess }: EditUpdateDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
@@ -167,18 +166,11 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
     
     try {
       await deleteMedia(mediaToDelete.id).unwrap()
-      toast({
-        title: "Media Deleted",
-        description: "The media file has been successfully deleted.",
-      })
+      toast.success("Media file deleted successfully")
       refetchMedia()
     } catch (error) {
       console.error("Failed to delete media:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete media file. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete media. Please try again.")
     } finally {
       setDeleteMediaDialogOpen(false)
       setMediaToDelete(null)
@@ -246,10 +238,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
         }
       }
       
-      toast({
-        title: "Update Saved",
-        description: "The project update has been successfully updated.",
-      })
+      toast.success("Update saved successfully")
       
       setMediaFiles([])
       setMediaPreviews([])
@@ -258,11 +247,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
       
     } catch (error) {
       console.error("Failed to update:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update. Please try again.")
     } finally {
       setIsSubmitting(false)
       setUploadProgress(0)

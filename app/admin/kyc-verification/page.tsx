@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CheckCircle, XCircle, AlertCircle, Search, Eye, Flag, Mail, Edit, Filter, X } from "lucide-react"
 import Select from "react-select"
@@ -37,6 +36,7 @@ import { useGetCountriesQuery, useGetRegionsQuery, useGetSubregionsQuery } from 
 import { UserProfileDialog } from "@/components/admin/UserProfileDialog"
 import { VerificationCodeDialog } from "@/components/admin/VerificationCodeDialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { toast } from "react-toastify"
 
 // Define option type for react-select
 interface SelectOption {
@@ -74,7 +74,6 @@ export default function KYCVerificationPage() {
   const [selectedRegion, setSelectedRegion] = useState<number | null>(null)
   const [selectedSubregion, setSelectedSubregion] = useState<number | null>(null)
 
-  const { toast } = useToast()
   const hasCompletedKYC = (profile: KYCProfile) => {
     if (!profile) return false
 
@@ -303,17 +302,9 @@ export default function KYCVerificationPage() {
   const handleSendReminder = async (userId: number) => {
     try {
       const response = await sendKYCReminder(userId).unwrap()
-
-      toast({
-        title: "Success",
-        description: response.message || "Reminder sent successfully.",
-      })
+      toast.success("Reminder sent successfully.")
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to send reminder.",
-        variant: "destructive",
-      })
+      toast.error("Failed to send reminder.")
     }
   }
 
@@ -331,24 +322,16 @@ export default function KYCVerificationPage() {
     setSelectedProfileForEdit(null)
     setEditedProfileData(null)
     refetch()
-
-    toast({
-      title: "Profile Updated",
-      description: "The user profile has been successfully updated.",
-    })
+    toast.success("Profile updated successfully.")
+    
   }
 
   const handleBulkActionDialog = (action: "approve" | "reject" | "flag" | "mark_scammer") => {
     if (selectedProfiles?.length === 0) {
-      toast({
-        title: "No profiles selected",
-        description: "Please select at least one profile to perform this action.",
-        variant: "destructive",
-      })
+      toast.error("No profiles selected")
       return
     }
 
-    // Check if any selected profiles don't have complete KYC for approval
     if (action === "approve" && displayProfiles) {
       const incompleteProfiles = selectedProfiles.filter((id) => {
         const profile = displayProfiles.find((profile) => profile?.id === id)
@@ -356,11 +339,8 @@ export default function KYCVerificationPage() {
       })
 
       if (incompleteProfiles?.length > 0) {
-        toast({
-          title: "Incomplete KYC Documents",
-          description: `${incompleteProfiles?.length} selected profile(s) have incomplete KYC documents and cannot be approved.`,
-          variant: "destructive",
-        })
+        toast.error("Incomplete KYC Documents") 
+        
         return
       }
     }
@@ -373,11 +353,8 @@ export default function KYCVerificationPage() {
     if (bulkAction === "") return
 
     if (bulkAction !== "approve" && !bulkReason) {
-      toast({
-        title: "Reason required",
-        description: `Please provide a reason for ${bulkAction} action.`,
-        variant: "destructive",
-      })
+      toast.error("`Please provide a reason for ${bulkAction} action.`")
+      
       return
     }
 
@@ -398,11 +375,7 @@ export default function KYCVerificationPage() {
       } else if (activeTab === "pending" && bulkAction === "mark_scammer") {
         updateLocalStats("pending", "scammer", selectedProfiles?.length)
       }
-
-      toast({
-        title: "Success",
-        description: response.message,
-      })
+      toast.success(response.message)
 
       setSelectedProfiles([])
       setSelectAll(false)
@@ -411,11 +384,7 @@ export default function KYCVerificationPage() {
       setShowBulkDialog(false)
       refetch()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to perform bulk action",
-        variant: "destructive",
-      })
+      toast.error(error.data?.error || "Failed to perform bulk action")
     }
   }
 
@@ -446,19 +415,12 @@ export default function KYCVerificationPage() {
         }
       }
 
-      toast({
-        title: "Success",
-        description: response.message,
-      })
+      toast.success(response.message)
 
       setRejectionReason("")
       refetch()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.data?.error || "Failed to update verification status",
-        variant: "destructive",
-      })
+      toast.error(error.data?.error || "Failed to perform verification")
     }
   }
 
@@ -967,19 +929,11 @@ export default function KYCVerificationPage() {
 
                                       // Update local stats immediately
                                       updateLocalStats("pending", "approved")
-
-                                      toast({
-                                        title: "Success",
-                                        description: "User has been verified successfully.",
-                                      })
+                                      toast.success("User has been verified successfully.")
 
                                       refetch()
                                     } catch (error: any) {
-                                      toast({
-                                        title: "Error",
-                                        description: error.data?.error || "Failed to verify user.",
-                                        variant: "destructive",
-                                      })
+                                     toast.error(error.data?.error || "Failed to verify user.")
                                     }
                                   }}
                                   disabled={isVerifying}

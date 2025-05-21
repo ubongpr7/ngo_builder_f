@@ -17,10 +17,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DateTimeInput } from "@/components/ui/datetime-input"
-import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import { useCreateTaskMutation, useUpdateTaskMutation } from "@/redux/features/projects/taskAPISlice"
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
+import { toast } from "react-toastify"
 
 interface AddEditTaskDialogProps {
   open: boolean
@@ -59,7 +59,6 @@ const taskSchema = z
 type TaskFormValues = z.infer<typeof taskSchema>
 
 export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, onSuccess }: AddEditTaskDialogProps) {
-  const { toast } = useToast()
   const [createTask, { isLoading: isCreating }] = useCreateTaskMutation()
   const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation()
 
@@ -153,16 +152,10 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
 
       if (isEditing) {
         await updateTask({ id: task.id, data:taskData }).unwrap()
-        toast({
-          title: "Task updated",
-          description: "Your task has been updated successfully.",
-        })
+        toast.success("Task updated successfully")
       } else {
         await createTask(taskData).unwrap()
-        toast({
-          title: "Task created",
-          description: "Your task has been created successfully.",
-        })
+        toast.success("Task created successfully")
       }
 
       if (onSuccess) {
@@ -171,11 +164,7 @@ export function AddEditTaskDialog({ open, onClose, milestoneId, task, parentId, 
 
       onClose()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to ${isEditing ? "update" : "create"} task. Please try again.`,
-        variant: "destructive",
-      })
+      toast.error("Something went wrong")
     }
   }
 

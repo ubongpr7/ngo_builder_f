@@ -9,14 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, CheckCircle, XCircle, Calendar, MapPin, DollarSign } from "lucide-react"
 import { format, parseISO } from "date-fns"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "react-toastify"
 
 interface AdminProjectProposalsProps {
   limit?: number
 }
 
 export default function AdminProjectProposals() {
-  const { toast } = useToast()
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const isAdmin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
   const [processingIds, setProcessingIds] = useState<number[]>([])
@@ -50,18 +49,13 @@ export default function AdminProjectProposals() {
     try {
       setProcessingIds((prev) => [...prev, projectId])
       await updateProject({ id: projectId, data:{status: "planning" }}).unwrap()
-      toast({
-        title: "Project approved",
-        description: "The project proposal has been approved and is now in planning status.",
-      })
+      toast.success(
+        "The project proposal has been approved and is now in planning status.",
+       )
       refetch()
     } catch (error) {
-      console.error("Failed to approve project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to approve project. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to approve project. Please try again.")
+     
     } finally {
       setProcessingIds((prev) => prev.filter((id) => id !== projectId))
     }
@@ -71,18 +65,11 @@ export default function AdminProjectProposals() {
     try {
       setProcessingIds((prev) => [...prev, projectId])
       await updateProject({ id: projectId, data:{status: "cancelled"} }).unwrap()
-      toast({
-        title: "Project rejected",
-        description: "The project proposal has been rejected.",
-      })
+      toast.success("The project proposal has been rejected.")
       refetch()
     } catch (error) {
       console.error("Failed to reject project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to reject project. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to reject project. Please try again.")
     } finally {
       setProcessingIds((prev) => prev.filter((id) => id !== projectId))
     }

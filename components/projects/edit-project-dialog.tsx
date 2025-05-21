@@ -22,11 +22,11 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 import { useUpdateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
 import type { Project } from "@/types/project"
+import { toast } from "react-toastify"
 
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -69,7 +69,6 @@ export function EditProjectDialog({
   const open = isControlled ? controlledOpen : internalOpen
   const setOpen = isControlled ? setControlledOpen : setInternalOpen
 
-  const { toast } = useToast()
   const [updateProject, { isLoading }] = useUpdateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
 
@@ -136,25 +135,15 @@ export function EditProjectDialog({
       }
 
       await updateProject(formattedData).unwrap()
-
-      toast({
-        title: "Project updated",
-        description: "Your project has been updated successfully.",
-      })
-
+      toast.success("Project updated successfully")
+     
       setOpen(false)
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess()
       }
     } catch (error) {
-      console.error("Failed to update project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update project. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Error updating project")
     }
   }
 

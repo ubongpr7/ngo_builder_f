@@ -11,10 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 import { useCreateProjectMutation, useGetProjectsCategoriesQuery } from "@/redux/features/projects/projectsAPISlice"
+import { toast } from "react-toastify"
 
 const projectProposalSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -42,7 +42,6 @@ interface SubmitProjectProposalFormProps {
 
 export function SubmitProjectProposalForm({ userId, onSuccess }: SubmitProjectProposalFormProps) {
   const router = useRouter()
-  const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
 
@@ -88,10 +87,8 @@ export function SubmitProjectProposalForm({ userId, onSuccess }: SubmitProjectPr
 
       await createProject(formattedData).unwrap()
 
-      toast({
-        title: "Project proposal submitted",
-        description: "Your project proposal has been submitted for approval.",
-      })
+      toast.success("Project proposal submitted successfully!")
+
 
       form.reset()
 
@@ -103,12 +100,7 @@ export function SubmitProjectProposalForm({ userId, onSuccess }: SubmitProjectPr
         router.push("/dashboard/projects")
       }
     } catch (error) {
-      console.error("Failed to submit project proposal:", error)
-      toast({
-        title: "Error",
-        description: "Failed to submit project proposal. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to submit project proposal. Please try again.")
     }
   }
 

@@ -17,11 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
-import { useToast } from "@/components/ui/use-toast"
 import Select from "react-select"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
 import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, Receipt } from "lucide-react"
+import { toast } from "react-toastify"
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -65,7 +65,6 @@ interface AddExpenseDialogProps {
 }
 
 export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
-  const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
 
@@ -125,22 +124,14 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       formData.append("status", "pending")
 
       await createExpense(formData).unwrap()
-
-      toast({
-        title: "Expense Added",
-        description: "The expense has been successfully added.",
-      })
+      toast.success("Expense Added", )
+      
 
       reset()
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      console.error("Failed to add expense:", error)
-      toast({
-        title: "Error",
-        description: "Failed to add expense. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Error adding expense")
     } finally {
       setIsSubmitting(false)
     }

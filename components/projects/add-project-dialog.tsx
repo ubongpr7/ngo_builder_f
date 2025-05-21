@@ -19,7 +19,6 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/components/ui/use-toast"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field"
 import {
@@ -31,6 +30,7 @@ import { format } from "date-fns"
 import { debounce } from "lodash"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { usePermissions } from "../permissionHander"
+import { toast } from "react-toastify"
 
 const projectSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -54,7 +54,6 @@ type ProjectFormValues = z.infer<typeof projectSchema>
 
 export function AddProjectDialog() {
   const [open, setOpen] = useState(false)
-  const { toast } = useToast()
   const [createProject, { isLoading }] = useCreateProjectMutation()
   const { data: categoriesData = [] } = useGetProjectsCategoriesQuery()
 
@@ -120,21 +119,12 @@ export function AddProjectDialog() {
       }
 
       await createProject(formattedData).unwrap()
-
-      toast({
-        title: "Project created",
-        description: "Your project has been created successfully.",
-      })
+      toast.success( "Your project has been created successfully.")      
 
       form.reset()
       setOpen(false)
     } catch (error) {
-      console.error("Failed to create project:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
-        variant: "destructive",
-      })
+      toast.error('An error occurred while creating the project.')
     }
   }
 

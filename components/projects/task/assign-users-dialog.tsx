@@ -10,12 +10,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
 import { Input } from "@/components/ui/input"
 import { useAssignUsersToTaskMutation } from "@/redux/features/projects/taskAPISlice"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, Search } from "lucide-react"
+import { toast } from "react-toastify"
 
 interface AssignUsersDialogProps {
   open: boolean
@@ -42,7 +42,6 @@ export function AssignUsersDialog({
   currentAssignees,
   onUsersAssigned,
 }: AssignUsersDialogProps) {
-  const { toast } = useToast()
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>(currentAssignees || [])
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -76,20 +75,13 @@ export function AssignUsersDialog({
         userIds: selectedUserIds,
       }).unwrap()
 
-      toast({
-        title: "Users assigned",
-        description: "Users have been assigned to the task successfully.",
-      })
+      toast.success("Users assigned successfully!")
 
       if (onUsersAssigned) {
         onUsersAssigned()
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign users to the task. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to assign users.")
     }
   }
 

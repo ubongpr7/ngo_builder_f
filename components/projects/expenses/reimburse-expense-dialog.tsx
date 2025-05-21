@@ -9,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
 import { useReimburseExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, DollarSign } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
 import type { ProjectExpense } from "@/types/project"
+import { toast } from "react-toastify"
 
 // Define the form schema
 const reimbursementSchema = z.object({
@@ -30,7 +30,6 @@ interface ReimburseExpenseDialogProps {
 }
 
 export function ReimburseExpenseDialog({ expense, open, onOpenChange, onSuccess }: ReimburseExpenseDialogProps) {
-  const { toast } = useToast()
   const [reimburseExpense, { isLoading: isSubmitting }] = useReimburseExpenseMutation()
 
   const {
@@ -54,11 +53,7 @@ export function ReimburseExpenseDialog({ expense, open, onOpenChange, onSuccess 
 
   const onSubmit = async (data: ReimbursementFormValues) => {
     if (!expense?.id) {
-      toast({
-        title: "Error",
-        description: "Invalid expense data. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Invalid expense ID")
       return
     }
 
@@ -69,10 +64,7 @@ export function ReimburseExpenseDialog({ expense, open, onOpenChange, onSuccess 
         reimbursement_date: data.reimbursement_date.toISOString().split("T")[0],
       }).unwrap()
 
-      toast({
-        title: "Expense Reimbursed",
-        description: "The expense has been successfully marked as reimbursed.",
-      })
+      toast.success("Expense marked as reimbursed successfully!")
 
       if (onSuccess) {
         onSuccess()
@@ -80,11 +72,7 @@ export function ReimburseExpenseDialog({ expense, open, onOpenChange, onSuccess 
 
       handleClose()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark expense as reimbursed. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to mark expense as reimbursed")
     }
   }
 

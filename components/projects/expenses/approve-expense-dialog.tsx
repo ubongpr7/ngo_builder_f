@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useApproveExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, CheckCircle } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
 import type { ProjectExpense } from "@/types/project"
+import { toast } from "react-toastify"
 
 // Define the form schema
 const approvalSchema = z.object({
@@ -27,7 +27,6 @@ interface ApproveExpenseDialogProps {
 }
 
 export function ApproveExpenseDialog({ expense, open, onOpenChange, onSuccess }: ApproveExpenseDialogProps) {
-  const { toast } = useToast()
   const [approveExpense, { isLoading: isSubmitting }] = useApproveExpenseMutation()
 
   const {
@@ -53,20 +52,13 @@ export function ApproveExpenseDialog({ expense, open, onOpenChange, onSuccess }:
         id: expense.id,
         notes: data.notes,
       }).unwrap()
-
-      toast({
-        title: "Expense Approved",
-        description: "The expense has been approved successfully.",
-      })
-
+      toast.success("Expense Approved")
+      reset()
+      
       onSuccess?.()
       handleClose()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to approve expense. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Error Approving Expense")
     }
   }
 
