@@ -59,24 +59,13 @@ export default function ResetPasswordPage() {
       }).unwrap()
 
       toast.success("Password has been reset successfully! You can now log in with your new password.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      })
+              })
 
       // Redirect to login page after successful password reset
       router.push("/login")
     } catch (error) {
       toast.error("Failed to reset password. The link may be invalid or expired.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
     }
   }
