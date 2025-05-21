@@ -113,7 +113,7 @@ export function NotificationSettings() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="all">All Categories</TabsTrigger>
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <TabsTrigger key={category} value={category}>
               {category.charAt(0).toUpperCase() + category.slice(1)}
             </TabsTrigger>
@@ -121,7 +121,7 @@ export function NotificationSettings() {
         </TabsList>
         
         <TabsContent value="all" className="space-y-6">
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <NotificationCategorySection
               key={category}
               category={category}
@@ -131,7 +131,7 @@ export function NotificationSettings() {
           ))}
         </TabsContent>
         
-        {categories.map((category) => (
+        {categories?.map((category) => (
           <TabsContent key={category} value={category}>
             <NotificationCategorySection
               category={category}
@@ -178,7 +178,7 @@ function NotificationCategorySection({ category, items, onToggle }: Notification
             </div>
           </div>
           
-          {items.map((item) => (
+          {items?.map((item) => (
             <div key={item.id} className="grid grid-cols-5 gap-4 py-3 px-4 border-t">
               <div className="col-span-2">
                 <h4 className="font-medium">{item.name}</h4>
