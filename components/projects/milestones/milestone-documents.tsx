@@ -390,9 +390,10 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
                         onClick={() => handleViewMedia(media)}
                       >
-                        <Eye className="h-3.5 w-3.5" />
+                        <Eye className="h-3.5 w-3.5"  data-tooltip="View"/>
                       </Button>
                       <Button
+                        data-tooltip="Download"
                         variant="secondary"
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
@@ -500,19 +501,23 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                   </div>
 
                   <div className="flex space-x-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
+                    <Button data-tooltip="View" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button
                       variant="ghost"
+                      data-tooltip="Download"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => window.open(media.file_url, "_blank")}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
+                    {canEdit && (
+                    <div className="flex space-x-1">
                     <Button
                       variant="ghost"
+                      data-tooltip="Edit"
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => {
@@ -523,6 +528,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
+                      data-tooltip={`${media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}`}
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
@@ -535,6 +541,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                       )}
                     </Button>
                     <Button
+                      data-tooltip="Delete"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-red-500"
@@ -545,6 +552,8 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    </div>
+                    )}
                   </div>
                 </div>
               ))}

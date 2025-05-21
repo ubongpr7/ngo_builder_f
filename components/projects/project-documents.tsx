@@ -319,6 +319,7 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
 
                     <div className="absolute top-2 left-2 flex space-x-1">
                       <Button
+                        data-tooltip='View'
                         variant="secondary"
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
@@ -328,6 +329,7 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
                       </Button>
                       <Button
                         variant="secondary"
+                        data-tooltip='Download'
                         size="icon"
                         className="h-7 w-7 rounded-full bg-white/80 hover:bg-white"
                         onClick={() => window.open(media.file_url, "_blank")}
@@ -431,17 +433,21 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
 
                   <div className="flex space-x-1">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewMedia(media)}>
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" data-tooltip='View' />
                     </Button>
                     <Button
                       variant="ghost"
+                      data-tooltip='Download'
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => window.open(media.file_url, "_blank")}
                     >
                       <Download className="h-4 w-4" />
                     </Button>
+                    {canEdit && (
+                    <div>
                     <Button
+                      data-tooltip='Edit'
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
@@ -452,11 +458,12 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleFeatured(media)}>
+                    <Button data-tooltip={`${media.is_featured ? "Remove from" : "Add to"} featured items`} variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleToggleFeatured(media)}>
                       {media.is_featured ? <StarOff className="h-4 w-4" /> : <Star className="h-4 w-4" />}
                     </Button>
                     <Button
                       variant="ghost"
+                      data-tooltip='Delete'
                       size="icon"
                       className="h-8 w-8 text-red-500"
                       onClick={() => {
@@ -466,6 +473,9 @@ export function ProjectDocuments({ projectId,canEdit }: ProjectDocumentsProps) {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                      </div>
+                      )}
+
                   </div>
                 </div>
               ))}
