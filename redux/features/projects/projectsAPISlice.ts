@@ -317,7 +317,7 @@ export const projectMediaApiSlice = apiSlice.injectEndpoints({
 
   downloadProjectMedia: builder.mutation({
       query: (id) => ({
-        url: `$/{projects_api}/project-media/${id}/download/`,
+        url: `/${projects_api}/project-media/${id}/download/`,
         method: "GET",
         responseHandler: (response) => {
           // Handle the file download
