@@ -303,7 +303,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
           </div>
           {canEdit && (
             <Button onClick={() => setUploadDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4 bg-green-200 hover:bg-green-300" />
               Upload Document
             </Button>
 
@@ -340,7 +340,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                 </p>
                 {canEdit && (
                   <Button onClick={() => setUploadDialogOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-4 w-4 bg-green-200 hover:bg-green-300" />
                     Upload Document
                   </Button>
                   
@@ -409,6 +409,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                       {canEdit && (
                       <div className="flex space-x-1">
                         <Button
+                        data-tooltip="Edit"
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
@@ -420,6 +421,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                           <Edit className="h-3.5 w-3.5" />
                         </Button>
                         <Button
+                        data-tooltip={media.represents_deliverable ? "Remove from deliverables" : "Add to deliverables"}
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
@@ -433,6 +435,7 @@ export function MilestoneDocuments({ milestoneId, projectId, canEdit }: Mileston
                         </Button>
                         <Button
                           variant="ghost"
+                          data-tooltip="Delete"
                           size="icon"
                           className="h-7 w-7 text-red-500"
                           onClick={() => {
