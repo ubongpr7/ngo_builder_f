@@ -384,8 +384,8 @@ export default function ProjectDetail() {
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="assets">Assets</TabsTrigger>
-          <TabsTrigger value="comments">Comments</TabsTrigger>
+          // <TabsTrigger value="assets">Assets</TabsTrigger>
+          // <TabsTrigger value="comments">Comments</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
         </TabsList>
 

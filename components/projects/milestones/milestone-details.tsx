@@ -357,7 +357,7 @@ export function MilestoneDetail({
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="comments">Comments</TabsTrigger>
+          // <TabsTrigger value="comments">Comments</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -672,69 +672,6 @@ export function MilestoneDetail({
         
         </TabsContent>
 
-        <TabsContent value="comments" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Comments</CardTitle>
-              <CardDescription>Discussions about this milestone</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {milestone.comments && milestone.comments?.length > 0 ? (
-                <div className="space-y-4">
-                  {milestone.comments?.map((comment, index) => (
-                    <div key={index} className="p-4 border rounded-md">
-                      <div className="flex items-center mb-2">
-                        <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src={comment.user.profile_image || ""} />
-                          <AvatarFallback>
-                            {getInitials(`${comment.user.first_name} ${comment.user.last_name}`)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {comment.user.first_name} {comment.user.last_name}
-                          </p>
-                          <p className="text-xs text-gray-500">{formatDate(comment.created_at)}</p>
-                        </div>
-                      </div>
-                      <p className="text-gray-700">{comment.content}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Comments</h3>
-                  <p className="text-gray-500 mb-4">There are no comments on this milestone yet.</p>
-                </div>
-              )}
-
-              {canEdit && (
-                <div className="mt-4 pt-4 border-t">
-                  <textarea
-                    className="w-full p-3 border rounded-md min-h-[100px]"
-                    placeholder="Add a comment..."
-                  ></textarea>
-                  <div className="mt-2 flex justify-end">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Comment
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Post your comment</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   )
