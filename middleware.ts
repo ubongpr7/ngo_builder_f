@@ -28,7 +28,7 @@ const publicPaths = [
   "/activate",
   "/accounts/forgot-password",
   "/accounts/password-reset-sent",
-  "/accounts/password_reset/",
+  "/accounts/password_reset",
 
   "/membership/portal",
   "/forgot-password",
