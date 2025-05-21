@@ -63,23 +63,13 @@ export default function ProjectDetail() {
     try {
       await updateProject({ id: projectId, data: { status: "planning" } }).unwrap()
       toast.success("The project proposal has been approved and is now in planning status.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
       refetch()
     } catch (error) {
       console.error("Failed to approve project:", error)
       toast.error("Failed to approve project. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
     }
   }
@@ -88,22 +78,12 @@ export default function ProjectDetail() {
     try {
       await updateProject({ id: projectId, data: { status: "cancelled" } }).unwrap()
       toast.success("The project proposal has been rejected.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
       refetch()
     } catch (error) {
       toast.error("Failed to reject project. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
     }
   }

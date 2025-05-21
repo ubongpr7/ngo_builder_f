@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import MembershipLogin from "@/components/membership/MembershipLogin"
+import Link from "next/link"
 
 export default function MembershipPortalPage() {
   return (
@@ -14,15 +15,19 @@ export default function MembershipPortalPage() {
         <Card>
           <CardHeader>
             <CardTitle>Member Login</CardTitle>
-            <CardDescription className="text-center">Enter your credentials to access your membership account</CardDescription>
+            <CardDescription className="text-center">
+              Enter your credentials to access your membership account
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <MembershipLogin />
           </CardContent>
           <CardFooter className="flex justify-evenly">
-            <Button variant="link" className="px-0">
-              Forgot password?
-            </Button>
+            <Link href="/accounts/forgot-password">
+              <Button variant="link" className="px-0">
+                Forgot password?
+              </Button>
+            </Link>
             <Button variant="link" className="px-0">
               Need help?
             </Button>
