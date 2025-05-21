@@ -52,8 +52,8 @@ export default function ResetPasswordPage() {
 
     try {
       await resetPasswordConfirm({
-        uid,
-        token,
+        uid:uid,
+        token:token,
         new_password: newPassword,
         re_new_password: confirmPassword,
       }).unwrap()
