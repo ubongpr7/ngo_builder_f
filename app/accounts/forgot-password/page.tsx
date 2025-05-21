@@ -31,8 +31,7 @@ export default function ForgotPasswordPage() {
       toast.success("Password reset email sent! Please check your inbox.", {
         
       })
-      // Optionally redirect to a confirmation page
-      // router.push("/accounts/password-reset-sent")
+      router.push("/accounts/password-reset-sent")
     } catch (error) {
       toast.error("Failed to send password reset email. Please try again.", {
       })
