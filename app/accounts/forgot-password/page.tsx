@@ -29,23 +29,12 @@ export default function ForgotPasswordPage() {
     try {
       await resetPassword({ email }).unwrap()
       toast.success("Password reset email sent! Please check your inbox.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        
       })
       // Optionally redirect to a confirmation page
       // router.push("/accounts/password-reset-sent")
     } catch (error) {
       toast.error("Failed to send password reset email. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
       })
     }
   }

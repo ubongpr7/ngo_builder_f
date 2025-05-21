@@ -26,7 +26,10 @@ const kycProtectedPaths = [
 const publicPaths = [
   "/",
   "/activate",
-  "/accounts/verify",
+  "/accounts/forgot-password",
+  "/accounts/password-reset-sent",
+  "/accounts/forgot-password/",
+
   "/membership/portal",
   "/forgot-password",
   "/reset-password",
