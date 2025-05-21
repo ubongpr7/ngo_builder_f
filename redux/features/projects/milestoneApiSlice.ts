@@ -352,6 +352,43 @@ export const milestoneMediaApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+
+
+  downloadMilestoneMedia: builder.mutation({
+      query: (id) => ({
+        url: `/${backend}/milestone-media/${id}/download/`,
+        method: "GET",
+        responseHandler: (response) => {
+          return response.blob().then((blob) => {
+            // Get the filename from the Content-Disposition header if available
+            const contentDisposition = response.headers.get("Content-Disposition")
+            let filename = "download"
+
+            if (contentDisposition) {
+              const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+              if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1]
+              }
+            }
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+          })
+        },
+      }),
+
+
+
+ 
+    }),
+    
+
   }),
 })
 
@@ -369,4 +406,5 @@ export const {
   useUpdateMilestoneMediaMutation,
   useToggleDeliverableMutation,
   useDeleteMilestoneMediaMutation,
+  useDownloadMilestoneMediaMutation,
 } = milestoneMediaApiSlice

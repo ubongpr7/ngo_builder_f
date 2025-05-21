@@ -155,6 +155,42 @@ export const updateApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+
+    
+  downloadUpdatetMedia: builder.mutation({
+      query: (id) => ({
+        url: `/${backend}/media/${id}/download/`,
+        method: "GET",
+        responseHandler: (response) => {
+          // Handle the file download
+          return response.blob().then((blob) => {
+            // Get the filename from the Content-Disposition header if available
+            const contentDisposition = response.headers.get("Content-Disposition")
+            let filename = "download"
+
+            if (contentDisposition) {
+              const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+              if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1]
+              }
+            }
+
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+          })
+        },
+      }),
+
+
+
+ 
+    }),
   }),
 })
 
@@ -177,4 +213,5 @@ export const {
   useAddMediaMutation,
   useUpdateMediaMutation,
   useDeleteMediaMutation,
+  useDownloadUpdatetMediaMutation,
 } = updateApiSlice

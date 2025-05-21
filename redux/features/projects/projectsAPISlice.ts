@@ -314,7 +314,44 @@ export const projectMediaApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
-  }),
+
+  downloadProjectMedia: builder.mutation({
+      query: (id) => ({
+        url: `$/{projects_api}/project-media/${id}/download/`,
+        method: "GET",
+        responseHandler: (response) => {
+          // Handle the file download
+          return response.blob().then((blob) => {
+            // Get the filename from the Content-Disposition header if available
+            const contentDisposition = response.headers.get("Content-Disposition")
+            let filename = "download"
+
+            if (contentDisposition) {
+              const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+              if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1]
+              }
+            }
+
+            // Create a download link and trigger the download
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+          })
+        },
+      }),
+
+
+
+ 
+    }),
+
+    }),
 })
 
 export const {
@@ -330,4 +367,5 @@ export const {
   useUpdateProjectMediaMutation,
   useToggleFeaturedMutation,
   useDeleteProjectMediaMutation,
+  useDownloadProjectMediaMutation,
 } = projectMediaApiSlice

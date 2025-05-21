@@ -3,18 +3,11 @@
 import { useState } from "react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Download,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  ImageIcon,
-  Video,
-  Music,
-  File,
-  ExternalLink,
-} from "lucide-react"
+import { Download, ChevronLeft, ChevronRight, FileText, ImageIcon, Video, Music, File, Loader2 } from "lucide-react"
+import { toast } from "react-toastify"
 import type { ProjectMedia, MilestoneMedia } from "@/types/media"
+import { useDownloadProjectMediaMutation } from "@/redux/features/projects/projectsAPISlice"
+import {  useDownloadMilestoneMediaMutation } from "@/redux/features/projects/milestoneApiSlice"
 
 interface ViewMediaDialogProps {
   isOpen: boolean
@@ -27,6 +20,14 @@ export function ViewMediaDialog({ isOpen, onClose, media, allMedia = [] }: ViewM
   const [currentIndex, setCurrentIndex] = useState(() => {
     return allMedia.findIndex((m) => m.id === media.id)
   })
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  // Determine if we're dealing with project media or milestone media
+  const isProjectMedia = "project" in media
+
+  // Use the appropriate download mutation based on media type
+  const [downloadProjectMedia] = useDownloadProjectMediaMutation()
+  const [downloadMilestoneMedia] = useDownloadMilestoneMediaMutation()
 
   const currentMedia = currentIndex >= 0 && currentIndex < allMedia.length ? allMedia[currentIndex] : media
 
@@ -39,6 +40,25 @@ export function ViewMediaDialog({ isOpen, onClose, media, allMedia = [] }: ViewM
   const handleNext = () => {
     if (currentIndex < allMedia.length - 1) {
       setCurrentIndex(currentIndex + 1)
+    }
+  }
+
+  const handleDownload = async () => {
+    try {
+      setIsDownloading(true)
+
+      if (isProjectMedia) {
+        await downloadProjectMedia(currentMedia.id)
+      } else {
+        await downloadMilestoneMedia(currentMedia.id)
+      }
+
+      toast.success("File download started")
+    } catch (error) {
+      console.error("Download error:", error)
+      toast.error("Failed to download file. Please try again.")
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -96,13 +116,18 @@ export function ViewMediaDialog({ isOpen, onClose, media, allMedia = [] }: ViewM
           <h3 className="text-xl font-medium mt-4">{currentMedia.title}</h3>
           <p className="text-muted-foreground mb-6">{currentMedia.description}</p>
           <div className="flex space-x-4">
-            <Button onClick={() => window.open(fileUrl, "_blank")}>
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Open in new tab
-            </Button>
-            <Button variant="outline" onClick={() => window.open(fileUrl, "_blank")}>
-              <Download className="h-4 w-4 mr-2" />
-              Download
+            <Button onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Downloading...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -119,12 +144,8 @@ export function ViewMediaDialog({ isOpen, onClose, media, allMedia = [] }: ViewM
             <h2 className="text-xl font-semibold ml-2">{currentMedia.title}</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => window.open(currentMedia.file_url || currentMedia.file, "_blank")}
-            >
-              <Download className="h-4 w-4" />
+            <Button variant="outline" size="icon" onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
             </Button>
           </div>
         </div>
