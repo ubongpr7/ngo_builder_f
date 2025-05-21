@@ -134,11 +134,9 @@ export default function ProjectDetail() {
   }
 
   const getMilestoneProgress = () => {
-    if (project.status === "completed") return 100
-
+    
     if (project.milestones_count) {
-      const percentage=Number((Number(project.milestones_completed_count||0) / Number(project?.milestones_count)||1) * 100)
-      console.log(percentage)
+      const percentage = (Number(project.milestones_completed_count || 0) / Number(project.milestones_count || 1)) * 100
       return percentage
     }
     if (project.status === "planned" || project.status === "cancelled" || project.status === "submitted") return 0
