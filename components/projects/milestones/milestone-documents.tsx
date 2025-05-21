@@ -100,8 +100,22 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         title: "Media uploaded",
         description: "The media file has been uploaded successfully.",
       })
+
+      // Force refetch all queries to ensure categories are updated
       refetchAll()
-      refetchByType(activeTab)
+      refetchImages()
+      refetchVideos()
+      refetchDocuments()
+      refetchDeliverables()
+
+      // Wait a moment for the backend to process the file before refetching
+      setTimeout(() => {
+        refetchAll()
+        refetchImages()
+        refetchVideos()
+        refetchDocuments()
+        refetchDeliverables()
+      }, 500)
     } catch (error) {
       console.error("Failed to upload media:", error)
       toast({
@@ -127,8 +141,22 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         description: "The media file has been updated successfully.",
       })
 
+      // Force refetch all queries
       refetchAll()
-      refetchByType(activeTab)
+      refetchImages()
+      refetchVideos()
+      refetchDocuments()
+      refetchDeliverables()
+
+      // Wait a moment for the backend to process the update
+      setTimeout(() => {
+        refetchAll()
+        refetchImages()
+        refetchVideos()
+        refetchDocuments()
+        refetchDeliverables()
+      }, 500)
+
       setSelectedMedia(null)
     } catch (error) {
       console.error("Failed to update media:", error)
@@ -152,8 +180,13 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         description: "The media file has been deleted successfully.",
       })
 
+      // Force refetch all queries
       refetchAll()
-      refetchByType(activeTab)
+      refetchImages()
+      refetchVideos()
+      refetchDocuments()
+      refetchDeliverables()
+
       setSelectedMedia(null)
       setDeleteDialogOpen(false)
     } catch (error) {
@@ -176,8 +209,12 @@ export function MilestoneDocuments({ milestoneId, projectId }: MilestoneDocument
         description: `The media file has been ${media.represents_deliverable ? "removed from" : "added to"} milestone deliverables.`,
       })
 
+      // Force refetch all queries
       refetchAll()
-      refetchByType(activeTab)
+      refetchImages()
+      refetchVideos()
+      refetchDocuments()
+      refetchDeliverables()
     } catch (error) {
       console.error("Failed to toggle deliverable status:", error)
       toast({
