@@ -19,20 +19,15 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu"
 import {
-  Bell,
   ChevronDown,
   LogOut,
   Menu,
   Settings,
   User,
   X,
-  Users,
-  Calendar,
-  FileText,
   BarChart3,
   DollarSign,
   ShieldCheck,
-  Award,
   Handshake,
   Heart,
   UserCog,
@@ -47,6 +42,7 @@ import { useRouter } from "next/navigation"
 import { logout } from "@/redux/features/authSlice"
 import { useAppDispatch } from "@/redux/store"
 import { useGetUserLoggedInProfileDetailsQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 export default function AuthenticatedHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -130,15 +126,15 @@ export default function AuthenticatedHeader() {
   }
 
   const getDynamicNavigation = () => {
-    const baseNavigation = [
-      { name: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-4 w-4 mr-2" /> },
-    ]
+    const baseNavigation = [{ name: "Dashboard", href: "/dashboard", icon: <BarChart3 className="h-4 w-4 mr-2" /> }]
 
     if (shouldShowRoleFeatures()) {
       if (userRoles.isDBAdmin || userRoles.isDBExecutive) {
-        baseNavigation.push(
-          { name: "KYC Verification", href: "/admin/kyc-verification", icon: <UserCog className="h-4 w-4 mr-2" /> },
-        )
+        baseNavigation.push({
+          name: "KYC Verification",
+          href: "/admin/kyc-verification",
+          icon: <UserCog className="h-4 w-4 mr-2" />,
+        })
       }
 
       if (userRoles.isDonor) {
@@ -165,6 +161,13 @@ export default function AuthenticatedHeader() {
         })
       }
     }
+
+    // Add notifications to navigation
+    baseNavigation.push({
+      name: "Notifications",
+      href: "/notifications",
+      icon: <NotificationBell />,
+    })
 
     return baseNavigation
   }
@@ -236,7 +239,7 @@ export default function AuthenticatedHeader() {
               }`}
             >
               {item.icon}
-              {item.name}
+              {item.name !== "Notifications" && item.name}
             </Link>
           ))}
           {navigation?.length > 4 && (
@@ -262,50 +265,16 @@ export default function AuthenticatedHeader() {
 
         {/* Right section */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="relative p-2 rounded-md text-gray-700 hover:text-green-700">
-                <Bell className="h-6 w-6" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="max-h-[300px] overflow-y-auto">
-                {!shouldShowRoleFeatures() && (
-                  <div className="p-3 border-b bg-yellow-50">
-                    <p className="font-medium text-sm text-yellow-700">
-                      <AlertTriangle className="h-4 w-4 mr-2 inline" />
-                      Complete KYC verification
-                    </p>
-                  </div>
-                )}
-                <div className="p-3 border-b">
-                  <p className="font-medium text-sm">New event: Annual Conference</p>
-                  <p className="text-xs text-gray-500 mt-1">Join us for our annual conference on June 15th</p>
-                </div>
-              </div>
-              <DropdownMenuSeparator />
-              {/* Add more notifications here 
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/notifications"
-                  className="flex justify-center text-center text-sm font-medium text-green-700"
-                >
-                  View all notifications
-                </Link>
-              </DropdownMenuItem>
-              */}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Notification Bell - Standalone for desktop */}
+          <NotificationBell />
+
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:text-green-700">
                 <Avatar className="h-8 w-8">
                   {profileImage ? (
-                    <AvatarImage src={profileImage} alt={userFullName} />
+                    <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
                   ) : (
                     <AvatarFallback>{getInitials()}</AvatarFallback>
                   )}
@@ -341,6 +310,12 @@ export default function AuthenticatedHeader() {
                   <Link href="/profile/update" className="flex items-center gap-2 cursor-pointer">
                     <Settings className="h-4 w-4" />
                     <span>Update Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/notifications" className="flex items-center gap-2 cursor-pointer">
+                    <Settings className="h-4 w-4" />
+                    <span>Notification Settings</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -439,7 +414,7 @@ export default function AuthenticatedHeader() {
               <div className="mt-6 mb-4 flex items-center">
                 <Avatar className="h-12 w-12 mr-3">
                   {profileImage ? (
-                    <AvatarImage src={profileImage} alt={userFullName} />
+                    <AvatarImage src={profileImage || "/placeholder.svg"} alt={userFullName} />
                   ) : (
                     <AvatarFallback>{getInitials()}</AvatarFallback>
                   )}
@@ -507,6 +482,14 @@ export default function AuthenticatedHeader() {
                     >
                       <User className="h-4 w-4 mr-2" />
                       My Profile
+                    </Link>
+                    <Link
+                      href="/settings/notifications"
+                      className="flex items-center px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Notification Settings
                     </Link>
                     <button
                       onClick={() => {

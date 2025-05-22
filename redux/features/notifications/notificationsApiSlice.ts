@@ -1,8 +1,6 @@
-
 import { apiSlice } from "../../services/apiSlice"
-import type { ProjectExpense, ExpenseStatistics } from "../../../types/project"
-import { create } from "domain";
-const  backend='notification_api'
+
+const backend = "notification_api"
 
 export interface Notification {
   id: number
@@ -56,6 +54,21 @@ export interface NotificationPreference {
   receive_push: boolean
 }
 
+export interface NotificationStats {
+  total: number
+  unread: number
+  by_category: Array<{
+    notification_type__category: string
+    count: number
+    unread: number
+  }>
+  by_priority: Array<{
+    priority: string
+    count: number
+    unread: number
+  }>
+}
+
 export interface CreateNotificationRequest {
   recipients: number[]
   notification_type: string
@@ -79,16 +92,71 @@ export interface ScheduleNotificationRequest {
   is_recurring?: boolean
   recurrence_pattern?: string
 }
+
+export interface UpdatePreferencesRequest {
+  preferences: Partial<NotificationPreference>[]
+}
+
+export interface NotificationCategory {
+  value: string
+  label: string
+}
+
+export interface RecentNotificationsResponse {
+  notifications: Notification[]
+  unread_count: number
+}
+
 export const notificationsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Get paginated notifications
+    getNotifications: builder.query<
+      {
+        results: Notification[]
+        count: number
+        next: string | null
+        previous: string | null
+      },
+      {
+        page?: number
+        pageSize?: number
+        category?: string
+        isRead?: boolean
+        priority?: string
+        search?: string
+        startDate?: string
+        endDate?: string
+      }
+    >({
+      query: (params) => {
+        const queryParams = new URLSearchParams()
+        if (params.page) queryParams.append("page", params.page.toString())
+        if (params.pageSize) queryParams.append("page_size", params.pageSize.toString())
+        if (params.category) queryParams.append("category", params.category)
+        if (params.isRead !== undefined) queryParams.append("is_read", params.isRead.toString())
+        if (params.priority) queryParams.append("priority", params.priority)
+        if (params.search) queryParams.append("search", params.search)
+        if (params.startDate) queryParams.append("start_date", params.startDate)
+        if (params.endDate) queryParams.append("end_date", params.endDate)
 
-    getNotifications: builder.query<Notification[], void>({
-      query: () => `/${backend}/notifications/`,
+        return `/${backend}/notifications/?${queryParams.toString()}`
+      },
+
+          }),
+
+    // Get recent notifications for notification bell
+    getRecentNotifications: builder.query<RecentNotificationsResponse, number | void>({
+      query: (limit = 12) => `/${backend}/notifications/recent/?limit=${limit}`,
     }),
 
     // Get unread notifications for current user
     getUnreadNotifications: builder.query<Notification[], void>({
       query: () => `/${backend}/notifications/unread/`,
+    }),
+
+    // Get notification statistics
+    getNotificationStats: builder.query<NotificationStats, void>({
+      query: () => `/${backend}/notifications/stats/`,
     }),
 
     // Get notifications by category
@@ -102,6 +170,7 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
         url: `/${backend}/notifications/${id}/mark_read/`,
         method: "POST",
       }),
+      
     }),
 
     // Mark notification as unread
@@ -110,14 +179,27 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
         url: `/${backend}/notifications/${id}/mark_unread/`,
         method: "POST",
       }),
+      
     }),
 
     // Mark all notifications as read
-    markAllAsRead: builder.mutation<{ status: string; count: number }, void>({
-      query: () => ({
+    markAllAsRead: builder.mutation<{ status: string; count: number }, string | void>({
+      query: (category) => ({
         url: `/${backend}/notifications/mark_all_read/`,
         method: "POST",
+        body: category ? { category } : {},
       }),
+      
+    }),
+
+    // Delete multiple notifications
+    deleteNotifications: builder.mutation<{ status: string; count: number }, number[]>({
+      query: (ids) => ({
+        url: `/${backend}/notifications/delete_multiple/`,
+        method: "DELETE",
+        body: { ids },
+      }),
+      
     }),
 
     // Create a notification
@@ -133,10 +215,7 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Schedule a notification
-    scheduleNotification: builder.mutation<
-      { status: string; scheduled: any },
-      ScheduleNotificationRequest
-    >({
+    scheduleNotification: builder.mutation<{ status: string; scheduled: any }, ScheduleNotificationRequest>({
       query: (data) => ({
         url: `/${backend}/notifications/schedule_notification/`,
         method: "POST",
@@ -147,6 +226,11 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
     // Get all notification types
     getNotificationTypes: builder.query<NotificationType[], void>({
       query: () => `/${backend}/notification-types/`,
+    }),
+
+    // Get notification categories
+    getNotificationCategories: builder.query<NotificationCategory[], void>({
+      query: () => `/${backend}/notification-types/categories/`,
     }),
 
     // Get notification preferences
@@ -162,28 +246,43 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
     // Update notification preferences
     updatePreferences: builder.mutation<
       { status: string; count: number; preferences: NotificationPreference[] },
-      { preferences: Partial<NotificationPreference>[] }
+      UpdatePreferencesRequest
     >({
       query: (data) => ({
         url: `/${backend}/notification-preferences/update_preferences/`,
         method: "POST",
         body: data,
       }),
+      
+    }),
+
+    // Reset preferences to default
+    resetPreferencesToDefault: builder.mutation<{ status: string; message: string; count: number }, void>({
+      query: () => ({
+        url: `/${backend}/notification-preferences/reset_to_default/`,
+        method: "GET",
+      }),
+      
     }),
   }),
 })
 
 export const {
   useGetNotificationsQuery,
+  useGetRecentNotificationsQuery,
   useGetUnreadNotificationsQuery,
+  useGetNotificationStatsQuery,
   useGetNotificationsByCategoryQuery,
   useMarkAsReadMutation,
   useMarkAsUnreadMutation,
   useMarkAllAsReadMutation,
+  useDeleteNotificationsMutation,
   useCreateNotificationMutation,
   useScheduleNotificationMutation,
   useGetNotificationTypesQuery,
+  useGetNotificationCategoriesQuery,
   useGetNotificationPreferencesQuery,
   useGetAllPreferencesQuery,
   useUpdatePreferencesMutation,
+  useResetPreferencesToDefaultMutation,
 } = notificationsApiSlice
