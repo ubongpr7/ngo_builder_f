@@ -31,7 +31,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden">
         <DashboardSidebar />
-        <div className="m-3">
+        <div className="">
         <MobileMenuButton/>
         </div>
 
