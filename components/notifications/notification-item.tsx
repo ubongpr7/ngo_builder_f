@@ -24,6 +24,7 @@ import {
 import type { Notification } from "@/redux/features/notifications/notificationsApiSlice"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
 interface NotificationItemProps {
   notification: Notification
@@ -71,64 +72,87 @@ export function NotificationItem({ notification, onClick, showActions = false, o
   }
 
   return (
-    <div
-      className={`w-full px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
-        !notification.is_read ? "bg-blue-50/30" : ""
-      }`}
+  <div
+      className={cn(
+        "group flex items-start gap-3 p-4 transition-colors",
+        "hover:bg-accent/50 cursor-pointer",
+        "border-b border-border/60 last:border-b-0",
+        !notification.is_read && "bg-accent/30 hover:bg-accent/50",
+        isExpanded && "bg-accent/50"
+      )}
       onClick={() => {
-        if (onClick) onClick()
-        else setIsExpanded(!isExpanded)
+        onClick?.() || setIsExpanded(!isExpanded)
       }}
     >
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5">
-          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-            {getIcon()}
+      {/* Icon Container */}
+      <div className="shrink-0 mt-1">
+        <div className={cn(
+          "w-7 h-7 rounded-lg flex items-center justify-center",
+          "bg-background border-2 border-border",
+          "group-hover:border-primary/20 transition-colors",
+          !notification.is_read && "border-primary/30"
+        )}>
+          {getIcon()}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 min-w-0 space-y-1.5">
+        {/* Header Row */}
+        <div className="flex justify-between items-start gap-2">
+          <h4 className="text-sm font-medium text-foreground">
+            {notification.title}
+          </h4>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {notification.time_ago || formatDate(notification.created_at)}
+            </span>
+            {!notification.is_read && (
+              <div className="w-2 h-2 rounded-full bg-primary/80" />
+            )}
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start mb-1">
-            <div>
-              <h4 className="font-medium text-sm text-green-700">{notification.title}</h4>
+        {/* Body Text */}
+        <p className={cn(
+          "text-sm text-muted-foreground",
+          "transition-[line-clamp] duration-200",
+          isExpanded ? "line-clamp-none" : "line-clamp-2"
+        )}>
+          {notification.body}
+        </p>
 
-              <p className={`text-sm text-gray-700 ${isExpanded ? "" : "line-clamp-2"}`}>{notification.body}</p>
-            </div>
-
-            <div className="flex flex-col items-end ml-2">
-              <span className="text-xs text-gray-500 whitespace-nowrap">
-                {notification.time_ago || formatDate(notification.created_at)}
-              </span>
-
-              {(notification.priority === "high" || notification.priority === "urgent") && (
-                <Badge className="mt-1 bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200">
-                  {notification.priority === "high" ? "High" : "Urgent"} Priority
-                </Badge>
-              )}
-            </div>
-          </div>
+        {/* Priority and Actions */}
+        <div className="flex items-center justify-between gap-2">
+          {notification.priority && (
+            <Badge
+              variant={notification.priority === 'urgent' ? 'destructive' : 'secondary'}
+              className="px-1.5 py-0.5 text-xs font-medium"
+            >
+              {notification.priority === 'high' ? 'Important' : 'Urgent'}
+            </Badge>
+          )}
 
           {showActions && !notification.is_read && (
-            <div className="mt-2">
+            <div className="flex items-center gap-2 ml-auto">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 p-0 mr-2"
+                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (onMarkAsRead) onMarkAsRead(e)
+                  onMarkAsRead?.(e)
                 }}
               >
-                Mark as read
+                Mark read
               </Button>
-
               {notification.action_url && (
                 <Button
-                  variant="ghost"
+                  variant="default"
                   size="sm"
-                  className="h-7 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 p-0"
+                  className="h-7 px-2 text-xs"
                 >
-                  View details
+                  View
                 </Button>
               )}
             </div>
