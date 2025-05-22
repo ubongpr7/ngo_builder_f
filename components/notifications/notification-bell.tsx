@@ -7,7 +7,7 @@ import Link from "next/link"
 import {
   useGetRecentNotificationsQuery,
   useMarkAsReadMutation,
-} from "../../redux/features/notifications/notificationsApiSlice"
+} from "@/redux/features/notifications/notificationsApiSlice"
 import { Bell } from "lucide-react"
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { NotificationItem } from "./notification-item"
 
 export function NotificationBell() {
   const { data, isLoading, refetch } = useGetRecentNotificationsQuery()
@@ -44,17 +44,11 @@ export function NotificationBell() {
     }
   }
 
-  const getNotificationIcon = (icon: string) => {
-    // You can map icon names to Lucide icons here
-    // For simplicity, we'll just use the Bell icon for all
-    return <Bell className="h-4 w-4" />
-  }
-
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative  p-2 rounded-md text-gray-700 hover:text-green-700 flex">
-          <Bell className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="relative flex items-center justify-center">
+          <Bell className="h-5 w-5" />
           {data?.unread_count ? (
             <Badge
               variant="destructive"
@@ -65,7 +59,7 @@ export function NotificationBell() {
           ) : null}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 max-h-[70vh]">
+      <DropdownMenuContent align="end" className="w-96 max-h-[80vh]">
         <DropdownMenuLabel className="flex justify-between items-center">
           <span>Notifications</span>
           {data?.unread_count ? (
@@ -76,7 +70,7 @@ export function NotificationBell() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <div className="max-h-[calc(70vh-8rem)] overflow-y-auto">
+        <div className="max-h-[calc(80vh-8rem)] overflow-y-auto">
           {isLoading ? (
             // Loading skeletons
             Array(3)
@@ -93,31 +87,15 @@ export function NotificationBell() {
           ) : data?.notifications?.length ? (
             data.notifications.map((notification) => (
               <DropdownMenuItem key={notification.id} asChild className="p-0 focus:bg-transparent">
-                <Link
-                  href={notification.action_url || "/notifications"}
-                  className={cn(
-                    "block w-full p-3 border-b hover:bg-gray-50 transition-colors",
-                    !notification.is_read && "bg-blue-50 hover:bg-blue-100",
-                  )}
-                >
-                  <div className="flex justify-between items-start">
-                    <h4 className={cn("text-sm font-medium", !notification.is_read && "font-semibold")}>
-                      {notification.title}
-                    </h4>
-                    <span className="text-xs text-gray-500">{notification.time_ago}</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">{notification.body}</p>
-
-                  {!notification.is_read && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 h-6 text-xs"
-                      onClick={(e) => handleMarkAsRead(notification.id, e)}
-                    >
-                      Mark as read
-                    </Button>
-                  )}
+                <Link href={notification.action_url || "/notifications"}>
+                  <NotificationItem
+                    notification={notification}
+                    onClick={() => {
+                      if (!notification.is_read) {
+                        handleMarkAsRead(notification.id, new MouseEvent("click") as any)
+                      }
+                    }}
+                  />
                 </Link>
               </DropdownMenuItem>
             ))
@@ -128,9 +106,11 @@ export function NotificationBell() {
           )}
         </div>
 
+        <div className="p-2 text-center border-t">
           <Link href="/notifications" className="text-sm text-primary hover:underline">
             View all notifications
           </Link>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )
