@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
 import {
@@ -20,14 +22,17 @@ import {
   Star,
 } from "lucide-react"
 import type { Notification } from "@/redux/features/notifications/notificationsApiSlice"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 interface NotificationItemProps {
   notification: Notification
   onClick?: () => void
   showActions?: boolean
+  onMarkAsRead?: (e: React.MouseEvent) => void
 }
 
-export function NotificationItem({ notification, onClick, showActions = false }: NotificationItemProps) {
+export function NotificationItem({ notification, onClick, showActions = false, onMarkAsRead }: NotificationItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Get icon based on notification icon name or category
@@ -55,34 +60,6 @@ export function NotificationItem({ notification, onClick, showActions = false }:
     return iconMap[iconName] || <Bell className={iconSize} />
   }
 
-  // Get color based on notification color or priority
-  const getColor = () => {
-    const color = notification.color || "primary"
-    const priorityColorMap: Record<string, string> = {
-      low: "bg-gray-100 text-gray-600",
-      normal: "bg-blue-100 text-blue-600",
-      high: "bg-orange-100 text-orange-600",
-      urgent: "bg-red-100 text-red-600",
-    }
-
-    const colorMap: Record<string, string> = {
-      primary: "bg-blue-100 text-blue-600",
-      secondary: "bg-gray-100 text-gray-600",
-      success: "bg-green-100 text-green-600",
-      danger: "bg-red-100 text-red-600",
-      warning: "bg-yellow-100 text-yellow-600",
-      info: "bg-cyan-100 text-cyan-600",
-      blue: "bg-blue-100 text-blue-600",
-      green: "bg-green-100 text-green-600",
-      red: "bg-red-100 text-red-600",
-      yellow: "bg-yellow-100 text-yellow-600",
-      purple: "bg-purple-100 text-purple-600",
-      orange: "bg-orange-100 text-orange-600",
-    }
-
-    return colorMap[color] || priorityColorMap[notification.priority] || "bg-gray-100 text-gray-600"
-  }
-
   // Format date
   const formatDate = (dateString: string) => {
     try {
@@ -95,63 +72,64 @@ export function NotificationItem({ notification, onClick, showActions = false }:
 
   return (
     <div
-      className={`p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${notification.is_read ? "opacity-70" : ""}`}
+      className={`w-full px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+        !notification.is_read ? "bg-blue-50/30" : ""
+      }`}
       onClick={() => {
         if (onClick) onClick()
         else setIsExpanded(!isExpanded)
       }}
     >
-      <div className="flex items-start">
-        <div className={`rounded-full p-2 mr-3 ${getColor()}`}>{getIcon()}</div>
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 mt-0.5">
+          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+            {getIcon()}
+          </div>
+        </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-start">
-            <h4 className="font-medium text-sm mb-1 pr-2">{notification.title}</h4>
-            <span className="text-xs text-gray-500 whitespace-nowrap">
-              {notification.time_ago || formatDate(notification.created_at)}
-            </span>
-          </div>
+          <div className="flex justify-between items-start mb-1">
+            <div>
+              <h4 className="font-medium text-sm text-green-700">{notification.title}</h4>
 
-          <p className={`text-sm text-gray-600 dark:text-gray-300 ${isExpanded ? "" : "line-clamp-2"}`}>
-            {notification.body}
-          </p>
+              <p className={`text-sm text-gray-700 ${isExpanded ? "" : "line-clamp-2"}`}>{notification.body}</p>
+            </div>
 
-          {(notification.notification_type_category ||
-            notification.priority === "high" ||
-            notification.priority === "urgent") && (
-            <div className="flex items-center mt-1 space-x-2">
-              {notification.notification_type_category && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                  {notification.notification_type_category}
-                </span>
-              )}
+            <div className="flex flex-col items-end ml-2">
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                {notification.time_ago || formatDate(notification.created_at)}
+              </span>
 
               {(notification.priority === "high" || notification.priority === "urgent") && (
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                    notification.priority === "urgent"
-                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-                  }`}
-                >
-                  {notification.priority.charAt(0).toUpperCase() + notification.priority.slice(1)} Priority
-                </span>
+                <Badge className="mt-1 bg-orange-100 text-orange-800 hover:bg-orange-200 border-orange-200">
+                  {notification.priority === "high" ? "High" : "Urgent"} Priority
+                </Badge>
               )}
             </div>
-          )}
+          </div>
 
-          {showActions && (
-            <div className="mt-2 flex items-center space-x-2">
+          {showActions && !notification.is_read && (
+            <div className="mt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 p-0 mr-2"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (onMarkAsRead) onMarkAsRead(e)
+                }}
+              >
+                Mark as read
+              </Button>
+
               {notification.action_url && (
-                <button
-                  className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (onClick) onClick()
-                  }}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 p-0"
                 >
-                  View Details
-                </button>
+                  View details
+                </Button>
               )}
             </div>
           )}
