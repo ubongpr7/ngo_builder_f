@@ -35,7 +35,7 @@ export function NotificationBell() {
     // Set up interval for polling
     intervalRef.current = setInterval(() => {
       refetch()
-    }, 3000) 
+    }, 60000) 
 
     return () => {
       if (intervalRef.current) {

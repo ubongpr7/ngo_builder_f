@@ -57,7 +57,7 @@ export default function NotificationsPage() {
   
       intervalRef.current = setInterval(() => {
         refetch()
-      }, 6000) 
+      }, 60000) 
   
       return () => {
         if (intervalRef.current) {
