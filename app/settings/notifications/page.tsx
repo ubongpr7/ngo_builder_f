@@ -103,8 +103,6 @@ export default function NotificationSettingsPage() {
       await resetToDefault().unwrap()
       toast.success("Notification preferences reset to default")
 
-      // Force refetch after reset
-      // await refetch()
       window.location.reload()
 
 

@@ -35,7 +35,7 @@ export default function NotificationsPage() {
 
   // Queries and mutations
   const { data: categories } = useGetNotificationCategoriesQuery()
-  const { data, isLoading, isFetching } = useGetNotificationsQuery({
+  const { data, isLoading, isFetching, refetch } = useGetNotificationsQuery({
     page: currentPage,
     pageSize: 20,
     category: currentCategory !== "all" ? currentCategory : undefined,
@@ -120,6 +120,7 @@ export default function NotificationsPage() {
     try {
       await deleteNotifications(selectedNotifications).unwrap()
       toast.success(`${selectedNotifications.length} notifications deleted`)
+      refetch()
       setSelectedNotifications([])
     } catch (error) {
       toast.error("Failed to delete notifications")
@@ -131,7 +132,7 @@ export default function NotificationsPage() {
     if (selectedNotifications.length === data?.results.length) {
       setSelectedNotifications([])
     } else {
-      setSelectedNotifications(data?.results.map((n) => n.id) || [])
+      setSelectedNotifications(data?.results?.map((n) => n.id) || [])
     }
   }
 
@@ -255,7 +256,7 @@ export default function NotificationsPage() {
               <div className="space-y-4">
                 {Array(5)
                   .fill(0)
-                  .map((_, i) => (
+                  ?.map((_, i) => (
                     <div key={i} className="flex items-start p-4 border rounded-md animate-pulse">
                       <div className="w-5 h-5 bg-gray-200 rounded-full mr-3 mt-1"></div>
                       <div className="flex-1">
@@ -281,7 +282,7 @@ export default function NotificationsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  {data.results.map((notification) => (
+                  {data.results?.map((notification) => (
                     <div
                       key={notification.id}
                       className={`flex items-start p-4 border rounded-md ${!notification.is_read ? "bg-blue-50" : ""} ${
