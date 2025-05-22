@@ -253,7 +253,7 @@ function NotificationCategorySection({ category, items, onToggle }: Notification
             <div key={item.id} className="grid grid-cols-5 gap-4 py-3 px-4 border-t">
               <div className="col-span-2">
                 <div className="flex items-center">
-                  <h4 className="font-medium">{item.name}</h4>
+                  <h4 className="font-medium ">{item.name.replace('_',' ')}</h4>
                   {!item.can_disable && (
                     <TooltipProvider>
                       <Tooltip>
