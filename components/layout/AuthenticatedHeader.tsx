@@ -163,11 +163,11 @@ export default function AuthenticatedHeader() {
     }
 
     // Add notifications to navigation
-    // baseNavigation.push({
-    //   name: "Notifications",
-    //   href: "/notifications",
-    //   icon: <NotificationBell />,
-    // })
+    baseNavigation.push({
+      name: "Notifications",
+      href: "/notifications",
+      icon: <BarChart3 className="h-4 w-4 mr-2" />,
+    })
 
     return baseNavigation
   }
@@ -215,7 +215,14 @@ export default function AuthenticatedHeader() {
             <span className="text-2xl font-bold text-green-700 ml-3 tracking-tight">destinybuilders</span>
           </Link>
         </div>
-        <div className="flex lg:hidden">
+
+        {/* Mobile notification bell and menu button */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {/* Mobile notification bell - positioned next to menu button */}
+          <div className="flex items-center">
+            <NotificationBell />
+          </div>
+
           <button
             type="button"
             className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-green-700"
@@ -239,7 +246,7 @@ export default function AuthenticatedHeader() {
               }`}
             >
               {item.icon}
-              {item.name !== "Notifications" && item.name}
+              {item.name}
             </Link>
           ))}
           {navigation?.length > 4 && (
@@ -267,6 +274,7 @@ export default function AuthenticatedHeader() {
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
           {/* Notification Bell - Standalone for desktop */}
           <NotificationBell />
+
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -392,7 +400,7 @@ export default function AuthenticatedHeader() {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden">
-            <div className="fixed inset-0 z-[9999] bg-black" />
+            <div className="fixed inset-0 z-[9999] bg-black/50" />
             <div className="fixed top-0 right-0 z-[10000] w-full sm:max-w-sm h-screen overflow-y-auto bg-white px-4 py-4">
               {/* Mobile menu header */}
               <div className="flex items-center justify-between">
@@ -444,8 +452,6 @@ export default function AuthenticatedHeader() {
                         {item.name}
                       </Link>
                     ))}
-                  <NotificationBell />
-
                   </div>
 
                   {shouldShowRoleFeatures() && (

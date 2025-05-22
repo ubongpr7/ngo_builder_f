@@ -7,7 +7,7 @@ import Link from "next/link"
 import {
   useGetRecentNotificationsQuery,
   useMarkAsReadMutation,
-} from "@/redux/features/notifications/notificationsApiSlice"
+} from "../../redux/features/notifications/notificationsApiSlice"
 import { Bell } from "lucide-react"
 import {
   DropdownMenu,
@@ -53,7 +53,7 @@ export function NotificationBell() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative flex items-center justify-center">
           <Bell className="h-5 w-5" />
           {data?.unread_count ? (
             <Badge
@@ -128,6 +128,9 @@ export function NotificationBell() {
           )}
         </div>
 
+          <Link href="/notifications" className="text-sm text-primary hover:underline">
+            View all notifications
+          </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   )
