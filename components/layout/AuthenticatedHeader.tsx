@@ -265,9 +265,9 @@ export default function AuthenticatedHeader() {
 
         {/* Right section */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
-          {/* Notification Bell - Standalone for desktop */}
+          {/* Notification Bell - Standalone for desktop 
           <NotificationBell />
-
+          */}
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
