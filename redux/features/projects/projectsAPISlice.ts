@@ -191,6 +191,10 @@ export const projectsApiSlice = apiSlice.injectEndpoints({
       query: () => `/${projects_api}/updates/summary/`,
     }),
 
+    getTeamMemberOptions: builder.query({
+      query: () => `/${projects_api}/teamable/`,
+    }),
+
 
 
     
@@ -229,7 +233,7 @@ export const {
   
   // Project update mutations
   useDeleteProjectUpdateMutation,
-  
+  useGetTeamMemberOptionsQuery,
 
 } = projectsApiSlice
 

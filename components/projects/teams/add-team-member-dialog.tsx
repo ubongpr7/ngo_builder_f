@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
 import { ReactSelectField } from "@/components/ui/react-select-field"
 import { useCreateTeamMemberMutation } from "@/redux/features/projects/teamMemberApiSlice"
-import { useGetAllUsersQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetTeamMemberOptionsQuery } from "@/redux/features/projects/projectsAPISlice"
 
 const formSchema = z.object({
   user: z.string().min(1, { message: "Please select a user" }),
@@ -58,7 +58,7 @@ interface AddTeamMemberDialogProps {
 
 export function AddTeamMemberDialog({ projectId, onSuccess, trigger }: AddTeamMemberDialogProps) {
   const [open, setOpen] = useState(false)
-  const { data: users = [], isLoading: isLoadingUsers } = useGetAllUsersQuery("")
+  const { data: users = [], isLoading: isLoadingUsers } = useGetTeamMemberOptionsQuery(projectId)
   const [createTeamMember, { isLoading }] = useCreateTeamMemberMutation()
 
   const form = useForm<z.infer<typeof formSchema>>({
