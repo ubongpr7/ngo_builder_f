@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   useGetNotificationsQuery,
@@ -45,12 +45,27 @@ export default function NotificationsPage() {
   const [markAsRead] = useMarkAsReadMutation()
   const [markAllAsRead, { isLoading: isMarkingAllRead }] = useMarkAllAsReadMutation()
   const [deleteNotifications, { isLoading: isDeleting }] = useDeleteNotificationsMutation()
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Reset selected notifications when data changes
   useEffect(() => {
     setSelectedNotifications([])
   }, [data])
 
+  
+    useEffect(() => {
+      refetch()
+  
+      intervalRef.current = setInterval(() => {
+        refetch()
+      }, 6000) 
+  
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+        }
+      }
+    }, [refetch])
+  
   // Update URL with filters
   const updateFilters = (params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams?.toString())

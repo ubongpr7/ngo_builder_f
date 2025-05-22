@@ -28,7 +28,6 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Set up polling interval (every 1 minute)
   useEffect(() => {
     // Initial fetch
     refetch()
@@ -36,9 +35,8 @@ export function NotificationBell() {
     // Set up interval for polling
     intervalRef.current = setInterval(() => {
       refetch()
-    }, 60000) // 60000 ms = 1 minute
+    }, 3000) 
 
-    // Clean up interval on unmount
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -46,7 +44,6 @@ export function NotificationBell() {
     }
   }, [refetch])
 
-  // Refetch notifications when dropdown opens
   useEffect(() => {
     if (open) {
       refetch()
