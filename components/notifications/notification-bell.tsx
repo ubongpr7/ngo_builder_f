@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import {
   useGetRecentNotificationsQuery,
@@ -26,6 +26,25 @@ export function NotificationBell() {
   const { data, isLoading, refetch } = useGetRecentNotificationsQuery()
   const [markAsRead] = useMarkAsReadMutation()
   const [open, setOpen] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Set up polling interval (every 1 minute)
+  useEffect(() => {
+    // Initial fetch
+    refetch()
+
+    // Set up interval for polling
+    intervalRef.current = setInterval(() => {
+      refetch()
+    }, 60000) // 60000 ms = 1 minute
+
+    // Clean up interval on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [refetch])
 
   // Refetch notifications when dropdown opens
   useEffect(() => {
@@ -59,9 +78,9 @@ export function NotificationBell() {
           ) : null}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 max-h-[80vh]">
-        <DropdownMenuLabel className="flex justify-between items-center">
-          <span>Notifications</span>
+      <DropdownMenuContent align="end" className="w-[400px] max-h-[80vh] p-0">
+        <DropdownMenuLabel className="flex justify-between items-center px-4 py-3 border-b">
+          <span className="font-semibold">Notifications</span>
           {data?.unread_count ? (
             <Badge variant="secondary" className="ml-2">
               {data.unread_count} unread
@@ -76,12 +95,15 @@ export function NotificationBell() {
             Array(3)
               .fill(0)
               .map((_, i) => (
-                <div key={i} className="p-3 border-b">
-                  <div className="flex justify-between items-start">
-                    <Skeleton className="h-5 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-16" />
+                <div key={i} className="p-4 border-b">
+                  <div className="flex gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-5 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-full mb-1" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
                   </div>
-                  <Skeleton className="h-4 w-full" />
                 </div>
               ))
           ) : data?.notifications?.length ? (
@@ -90,11 +112,8 @@ export function NotificationBell() {
                 <Link href={notification.action_url || "/notifications"}>
                   <NotificationItem
                     notification={notification}
-                    onClick={() => {
-                      if (!notification.is_read) {
-                        handleMarkAsRead(notification.id, new MouseEvent("click") as any)
-                      }
-                    }}
+                    showActions={!notification.is_read}
+                    onMarkAsRead={(e) => handleMarkAsRead(notification.id, e)}
                   />
                 </Link>
               </DropdownMenuItem>
@@ -106,8 +125,8 @@ export function NotificationBell() {
           )}
         </div>
 
-        <div className="p-2 text-center border-t">
-          <Link href="/notifications" className="text-sm text-primary hover:underline">
+        <div className="p-3 text-center border-t">
+          <Link href="/notifications" className="text-sm text-green-700 hover:underline">
             View all notifications
           </Link>
         </div>
