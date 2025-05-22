@@ -27,8 +27,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function NotificationSettingsPage() {
-  const { data: preferences, isLoading } = useGetAllPreferencesQuery()
-  const { data: categories } = useGetNotificationCategoriesQuery()
+  const { data: preferences, isLoading,refetch } = useGetAllPreferencesQuery()
+  const { data: categories, } = useGetNotificationCategoriesQuery()
   const [updatePreferences, { isLoading: isUpdating }] = useUpdatePreferencesMutation()
   const [resetToDefault, { isLoading: isResetting }] = useResetPreferencesToDefaultMutation()
   const [activeTab, setActiveTab] = useState("all")
@@ -85,6 +85,7 @@ export default function NotificationSettingsPage() {
       await updatePreferences({ preferences: preferencesToUpdate }).unwrap()
       toast.success("Notification preferences updated successfully")
       setHasChanges(false)
+      refetch()
     } catch (error) {
       console.error("Failed to update preferences:", error)
       toast.error("Failed to update notification preferences")
@@ -96,6 +97,8 @@ export default function NotificationSettingsPage() {
       await resetToDefault().unwrap()
       toast.success("Notification preferences reset to default")
       setHasChanges(false)
+      refetch()
+      
     } catch (error) {
       console.error("Failed to reset preferences:", error)
       toast.error("Failed to reset notification preferences")
