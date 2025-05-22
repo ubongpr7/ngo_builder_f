@@ -42,7 +42,6 @@ export default function NotificationSettingsPage() {
   const [localPreferences, setLocalPreferences] = useState<Record<string, any>>({})
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Initialize local preferences when data is loaded or refetched
   useEffect(() => {
     if (preferences) {
       setLocalPreferences(preferences)
@@ -105,7 +104,10 @@ export default function NotificationSettingsPage() {
       toast.success("Notification preferences reset to default")
 
       // Force refetch after reset
-      await refetch()
+      // await refetch()
+      window.location.reload()
+
+
 
       // Clear local changes
       setHasChanges(false)
