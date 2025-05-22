@@ -117,14 +117,13 @@ export function NotificationItem({ notification, onClick, showActions = false, o
           "transition-[line-clamp] duration-200 whitespace-nowrap",
           isExpanded ? "line-clamp-none" : "line-clamp-2"
         )}>
-          {notification.body}
+          {notification.body.slice(0, 40) + (isExpanded ? "" : "...")}
         </p>
 
         {/* Priority and Actions */}
         <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {notification.time_ago || formatDate(notification.created_at)}
-            </span>
+          
+
           {notification.priority && (
             <Badge
               variant={notification.priority === 'urgent' ? 'destructive' : 'secondary'}
@@ -133,6 +132,9 @@ export function NotificationItem({ notification, onClick, showActions = false, o
               {notification.priority === 'high' ? 'Important' : 'Urgent'}
             </Badge>
           )}
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {notification.time_ago || formatDate(notification.created_at)}
+        </span>
 
           {showActions && !notification.is_read && (
             <div className="flex items-center gap-2 ml-auto">
