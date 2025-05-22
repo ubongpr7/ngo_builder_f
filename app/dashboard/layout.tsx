@@ -31,12 +31,12 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden">
         <DashboardSidebar />
-        <div className="">
+        <div className="m-3">
         <MobileMenuButton/>
         </div>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50">{children}</main>
+        <main className=" overflow-auto bg-gray-50">{children}</main>
     </div>
   )
 }
