@@ -27,20 +27,28 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function NotificationSettingsPage() {
-  const { data: preferences, isLoading,refetch } = useGetAllPreferencesQuery()
-  const { data: categories, } = useGetNotificationCategoriesQuery()
+  const {
+    data: preferences,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useGetAllPreferencesQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
+  const { data: categories } = useGetNotificationCategoriesQuery()
   const [updatePreferences, { isLoading: isUpdating }] = useUpdatePreferencesMutation()
   const [resetToDefault, { isLoading: isResetting }] = useResetPreferencesToDefaultMutation()
   const [activeTab, setActiveTab] = useState("all")
   const [localPreferences, setLocalPreferences] = useState<Record<string, any>>({})
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Initialize local preferences when data is loaded
+  // Initialize local preferences when data is loaded or refetched
   useEffect(() => {
-    if (preferences && Object.keys(localPreferences).length === 0) {
+    if (preferences) {
       setLocalPreferences(preferences)
+      setHasChanges(false)
     }
-  }, [preferences, localPreferences])
+  }, [preferences])
 
   const handleToggle = (category: string, id: number, field: string, value: boolean) => {
     setLocalPreferences((prev) => {
@@ -85,7 +93,6 @@ export default function NotificationSettingsPage() {
       await updatePreferences({ preferences: preferencesToUpdate }).unwrap()
       toast.success("Notification preferences updated successfully")
       setHasChanges(false)
-      refetch()
     } catch (error) {
       console.error("Failed to update preferences:", error)
       toast.error("Failed to update notification preferences")
@@ -96,16 +103,19 @@ export default function NotificationSettingsPage() {
     try {
       await resetToDefault().unwrap()
       toast.success("Notification preferences reset to default")
+
+      // Force refetch after reset
+      await refetch()
+
+      // Clear local changes
       setHasChanges(false)
-      refetch()
-      
     } catch (error) {
       console.error("Failed to reset preferences:", error)
       toast.error("Failed to reset notification preferences")
     }
   }
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-center p-8">
@@ -123,7 +133,7 @@ export default function NotificationSettingsPage() {
           <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Failed to load notification settings</h2>
           <p>Please try again later or contact support if the problem persists.</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
+          <Button onClick={() => refetch()} className="mt-4">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -253,7 +263,7 @@ function NotificationCategorySection({ category, items, onToggle }: Notification
             <div key={item.id} className="grid grid-cols-5 gap-4 py-3 px-4 border-t">
               <div className="col-span-2">
                 <div className="flex items-center">
-                  <h4 className="font-medium ">{item.name.replace('_',' ')}</h4>
+                  <h4 className="font-medium ">{item.name.replace("_", " ")}</h4>
                   {!item.can_disable && (
                     <TooltipProvider>
                       <Tooltip>
