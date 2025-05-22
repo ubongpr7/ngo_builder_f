@@ -109,8 +109,6 @@ export default function NotificationSettingsPage() {
 
 
 
-      // Clear local changes
-      setHasChanges(false)
     } catch (error) {
       console.error("Failed to reset preferences:", error)
       toast.error("Failed to reset notification preferences")
