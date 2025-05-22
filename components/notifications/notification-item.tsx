@@ -100,13 +100,11 @@ export function NotificationItem({ notification, onClick, showActions = false, o
       <div className="flex-1 min-w-0 space-y-1.5">
         {/* Header Row */}
         <div className="flex justify-between items-start gap-2">
-          <h4 className="text-sm font-medium text-foreground">
+          <h4 className="text-sm font-medium text-foreground whitespace-nowrap">
             {notification.title}
           </h4>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {notification.time_ago || formatDate(notification.created_at)}
-            </span>
+            
             {!notification.is_read && (
               <div className="w-2 h-2 rounded-full bg-primary/80" />
             )}
@@ -116,7 +114,7 @@ export function NotificationItem({ notification, onClick, showActions = false, o
         {/* Body Text */}
         <p className={cn(
           "text-sm text-muted-foreground",
-          "transition-[line-clamp] duration-200",
+          "transition-[line-clamp] duration-200 whitespace-nowrap",
           isExpanded ? "line-clamp-none" : "line-clamp-2"
         )}>
           {notification.body}
@@ -124,6 +122,9 @@ export function NotificationItem({ notification, onClick, showActions = false, o
 
         {/* Priority and Actions */}
         <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {notification.time_ago || formatDate(notification.created_at)}
+            </span>
           {notification.priority && (
             <Badge
               variant={notification.priority === 'urgent' ? 'destructive' : 'secondary'}
