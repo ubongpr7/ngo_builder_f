@@ -54,7 +54,7 @@ export function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative flex items-center justify-center">
-          <Bell className="h-5 w-5" />
+          <Bell className="h-6 w-6" />
           {data?.unread_count ? (
             <Badge
               variant="destructive"
