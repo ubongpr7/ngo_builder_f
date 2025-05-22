@@ -58,6 +58,7 @@ export function NotificationBell() {
     e.stopPropagation()
     try {
       await markAsRead(id).unwrap()
+      refetch()
     } catch (error) {
       console.error("Failed to mark notification as read:", error)
     }
