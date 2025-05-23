@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, AlertCircle } from "lucide-react"
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import type { KYCFormState } from "../interfaces/kyc-forms"
 import PersonalInfoForm from "./PersonalInfoForm"
 import AddressForm from "./AddressForm"
@@ -34,6 +34,7 @@ const TOTAL_STEPS = 6
 
 export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps) {
   const router = useRouter()
+  const dataInitializedRef = useRef(false)
 
   // API queries
   const {
@@ -52,6 +53,8 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
 
   // UI state
   const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   // Initialize form state with empty values
   const [formState, setFormState] = useState<KYCFormState>({
@@ -111,23 +114,37 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
     },
   })
 
-  // Handle userData changes
+  // Determine if we're still loading data
+  const isLoading = isProfileLoading || isUserDataLoading || (addressId && isAddressLoading)
+
+  // Track when all data has been loaded
   useEffect(() => {
-    if (userData) {
+    if (!isLoading && !dataLoaded) {
+      // Wait a bit to ensure all data is processed
+      const timer = setTimeout(() => {
+        setDataLoaded(true)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, dataLoaded])
+
+  // Initialize form data from userData when it's available
+  useEffect(() => {
+    if (userData && !dataInitializedRef.current) {
+      console.log("Initializing personal info from userData:", userData)
+
       setFormState((prev) => {
+        // Create a new personal info object with userData values
         const updatedPersonalInfo = {
           ...prev.personalInfo,
-          first_name: userData.first_name || prev.personalInfo.first_name || "",
-          last_name: userData.last_name || prev.personalInfo.last_name || "",
-          date_of_birth: userData.date_of_birth || prev.personalInfo.date_of_birth || "",
-          profile_link: userData.profile_link || prev.personalInfo.profile_link || "",
-          linkedin_profile: userData.linkedin_profile || prev.personalInfo.linkedin_profile || "",
-          sex: userData.sex || prev.personalInfo.sex || "",
-          disabled: userData.disabled !== undefined ? userData.disabled : prev.personalInfo.disabled || false,
-          disability:
-            userData.disability !== null && userData.disability !== undefined
-              ? userData.disability
-              : prev.personalInfo.disability || null,
+          first_name: userData.first_name || "",
+          last_name: userData.last_name || "",
+          date_of_birth: userData.date_of_birth || "",
+          profile_link: userData.profile_link || "",
+          linkedin_profile: userData.linkedin_profile || "",
+          sex: userData.sex || "",
+          disabled: userData.disabled === true,
+          disability: userData.disability !== undefined && userData.disability !== null ? userData.disability : null,
         }
 
         return {
@@ -138,13 +155,17 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
     }
   }, [userData])
 
-  // Handle userProfile and address changes
+  // Initialize form data from userProfile and address when they're available
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile && !dataInitializedRef.current) {
+      console.log("Initializing form data from userProfile:", userProfile)
+
+      // Create a new form state object
       const updatedFormState = { ...formState }
 
       // Update address data if available
       if (userProfile.address && address) {
+        console.log("Initializing address data:", address)
         updatedFormState.address = {
           country: address.country || null,
           region: address.region || null,
@@ -207,8 +228,18 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
     }
   }, [userProfile, address])
 
+  // Mark data as initialized once all data is loaded
+  useEffect(() => {
+    if (userData && userProfile && !dataInitializedRef.current && dataLoaded) {
+      console.log("All data loaded and initialized")
+      dataInitializedRef.current = true
+    }
+  }, [userData, userProfile, dataLoaded])
+
   // Calculate completed steps and set current step
   useEffect(() => {
+    if (!dataLoaded) return
+
     const completedSteps: number[] = []
 
     // Check personal info completion
@@ -245,18 +276,34 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
     setFormState((prev) => {
       const nextIncompleteStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
 
-      // Only update active tab if it's a new step
-      if (nextIncompleteStep !== prev.currentStep) {
+      // Only auto-advance during initial load, not during user interaction
+      if (isInitialLoad && nextIncompleteStep !== prev.currentStep) {
         setActiveTab(STEP_ORDER[nextIncompleteStep])
+        // Mark initial load as complete after first auto-advance
+        setIsInitialLoad(false)
+
+        return {
+          ...prev,
+          completedSteps,
+          currentStep: nextIncompleteStep,
+        }
       }
 
       return {
         ...prev,
         completedSteps,
-        currentStep: nextIncompleteStep,
+        // Don't change currentStep during user interaction
       }
     })
-  }, [formState.personalInfo, formState.expertise, formState.address, formState.contactInfo, userProfile])
+  }, [
+    formState.personalInfo,
+    formState.expertise,
+    formState.address,
+    formState.contactInfo,
+    userProfile,
+    isInitialLoad,
+    dataLoaded,
+  ])
 
   // Handle step complete
   const handleStepComplete = (step: number) => {
@@ -280,6 +327,7 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
 
   // Update form data
   const updateFormData = (section: keyof KYCFormState, data: any) => {
+    console.log(`Updating ${section} with:`, data)
     setFormState((prev) => ({
       ...prev,
       [section]: {
@@ -295,13 +343,14 @@ export function VerifiedUserKYCForm({ profileId, userId }: KYCFormContainerProps
   }
 
   // Show loading state
-  if (isProfileLoading || isUserDataLoading || isAddressLoading) {
+  if (isLoading || !dataLoaded) {
     return (
       <div className="container mx-auto py-10 px-4">
         <Card className="max-w-4xl mx-auto">
           <CardContent className="p-4 sm:p-8">
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <div className="flex flex-col justify-center items-center h-40 space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-green-600" />
+              <p className="text-gray-600">Loading your profile information...</p>
             </div>
           </CardContent>
         </Card>
