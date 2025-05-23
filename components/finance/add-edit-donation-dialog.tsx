@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
 import { Loader2, Plus, Edit2 } from "lucide-react"
+import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -111,16 +112,18 @@ export function AddEditDonationDialog({ donation, onSuccess, trigger }: AddEditD
   ]
 
   // Prepare campaign options for react-select
-  const campaignOptions = campaigns.map((campaign: any) => ({
-    value: campaign.id.toString(),
-    label: campaign.title || campaign.name,
-  }))
+  const campaignOptions =
+    campaigns?.map((campaign: any) => ({
+      value: campaign?.id?.toString(),
+      label: campaign?.title || campaign?.name,
+    })) || []
 
   // Prepare donor options for react-select
-  const donorOptions = donors.map((donor: any) => ({
-    value: donor.id.toString(),
-    label: donor.name || `${donor.first_name} ${donor.last_name}`,
-  }))
+  const donorOptions =
+    donors?.map((donor: any) => ({
+      value: donor?.id?.toString(),
+      label: donor?.name || `${donor?.first_name} ${donor?.last_name}`,
+    })) || []
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -138,8 +141,10 @@ export function AddEditDonationDialog({ donation, onSuccess, trigger }: AddEditD
           id: donation.id,
           donation: submitData,
         }).unwrap()
+        toast.success("Donation updated successfully")
       } else {
         await createDonation(submitData).unwrap()
+        toast.success("Donation created successfully")
       }
 
       setOpen(false)
@@ -147,6 +152,7 @@ export function AddEditDonationDialog({ donation, onSuccess, trigger }: AddEditD
       if (onSuccess) onSuccess()
     } catch (error) {
       console.error("Failed to save donation:", error)
+      toast.error(`Failed to ${isEditing ? "update" : "create"} donation. Please try again.`)
     }
   }
 

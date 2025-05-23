@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
 import { Loader2, Plus, Edit2 } from "lucide-react"
+import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -101,8 +102,10 @@ export function AddEditCampaignDialog({ campaign, onSuccess, trigger }: AddEditC
           id: campaign.id,
           campaign: submitData,
         }).unwrap()
+        toast.success("Campaign updated successfully")
       } else {
         await createCampaign(submitData).unwrap()
+        toast.success("Campaign created successfully")
       }
 
       setOpen(false)
@@ -110,6 +113,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, trigger }: AddEditC
       if (onSuccess) onSuccess()
     } catch (error) {
       console.error("Failed to save campaign:", error)
+      toast.error(`Failed to ${isEditing ? "update" : "create"} campaign. Please try again.`)
     }
   }
 

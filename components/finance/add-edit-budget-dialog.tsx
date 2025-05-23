@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { format } from "date-fns"
 import { Loader2, Plus, Edit2 } from "lucide-react"
+import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -105,10 +106,11 @@ export function AddEditBudgetDialog({ budget, onSuccess, trigger }: AddEditBudge
   ]
 
   // Prepare campaign options
-  const campaignOptions = campaigns.map((campaign: any) => ({
-    value: campaign.id.toString(),
-    label: campaign.title || campaign.name,
-  }))
+  const campaignOptions =
+    campaigns?.map((campaign: any) => ({
+      value: campaign?.id?.toString(),
+      label: campaign?.title || campaign?.name,
+    })) || []
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -127,8 +129,10 @@ export function AddEditBudgetDialog({ budget, onSuccess, trigger }: AddEditBudge
           id: budget.id,
           budget: submitData,
         }).unwrap()
+        toast.success("Budget updated successfully")
       } else {
         await createBudget(submitData).unwrap()
+        toast.success("Budget created successfully")
       }
 
       setOpen(false)
@@ -136,6 +140,7 @@ export function AddEditBudgetDialog({ budget, onSuccess, trigger }: AddEditBudge
       if (onSuccess) onSuccess()
     } catch (error) {
       console.error("Failed to save budget:", error)
+      toast.error(`Failed to ${isEditing ? "update" : "create"} budget. Please try again.`)
     }
   }
 

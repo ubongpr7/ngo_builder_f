@@ -3,8 +3,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { DollarSign, Calendar, User, MoreVertical, Edit2, Trash2 } from "lucide-react"
+import { DollarSign, Calendar, User, Edit2, Trash2 } from "lucide-react"
+import { toast } from "react-toastify"
 import { AddEditDonationDialog } from "./add-edit-donation-dialog"
 import { useDeleteDonationMutation } from "@/redux/features/finance/financeApiSlice"
 import type { Donation } from "@/types/finance"
@@ -17,7 +17,7 @@ export function DonationCard({ donation }: DonationCardProps) {
   const [deleteDonation] = useDeleteDonationMutation()
 
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case "completed":
         return "bg-green-100 text-green-800 border-green-300"
       case "pending":
@@ -35,10 +35,11 @@ export function DonationCard({ donation }: DonationCardProps) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount)
+    }).format(amount || 0)
   }
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A"
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -49,9 +50,11 @@ export function DonationCard({ donation }: DonationCardProps) {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this donation?")) {
       try {
-        await deleteDonation(donation.id).unwrap()
+        await deleteDonation(donation?.id).unwrap()
+        toast.success("Donation deleted successfully")
       } catch (error) {
         console.error("Failed to delete donation:", error)
+        toast.error("Failed to delete donation. Please try again.")
       }
     }
   }
@@ -62,65 +65,59 @@ export function DonationCard({ donation }: DonationCardProps) {
         <div className="flex items-center space-x-2">
           <DollarSign className="h-4 w-4 text-green-600" />
           <span className="text-sm font-medium text-gray-500">
-            {donation.donation_type === "recurring" ? "Recurring" : "One-time"}
+            {donation?.donation_type === "recurring" ? "Recurring" : "One-time"}
           </span>
         </div>
         <div className="flex items-center space-x-2">
-          <Badge className={getStatusColor(donation.status)}>{donation.status}</Badge>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <AddEditDonationDialog
-                donation={donation}
-                trigger={
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    <Edit2 className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                }
-              />
-              <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Badge className={getStatusColor(donation?.status)}>{donation?.status}</Badge>
+          <div className="flex space-x-1">
+            <AddEditDonationDialog
+              donation={donation}
+              onSuccess={() => {
+                toast.success("Donation updated successfully")
+              }}
+              trigger={
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              }
+            />
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={handleDelete}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           <div>
-            <div className="text-2xl font-bold">{formatCurrency(donation.amount)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(donation?.amount)}</div>
             <div className="flex items-center text-sm text-gray-500 mt-1">
               <User className="mr-1 h-3 w-3" />
-              {donation.is_anonymous ? "Anonymous" : donation.donor_name_display || "Unknown Donor"}
+              {donation?.is_anonymous ? "Anonymous" : donation?.donor_name_display || "Unknown Donor"}
             </div>
           </div>
 
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="mr-1 h-3 w-3" />
-            {formatDate(donation.donation_date)}
+            {formatDate(donation?.donation_date)}
           </div>
 
-          {donation.campaign_title && (
+          {donation?.campaign_title && (
             <div className="text-sm">
               <span className="text-gray-500">Campaign:</span>
-              <span className="ml-1 font-medium">{donation.campaign_title}</span>
+              <span className="ml-1 font-medium">{donation?.campaign_title}</span>
             </div>
           )}
 
-          {donation.payment_method && (
+          {donation?.payment_method && (
             <div className="text-sm">
               <span className="text-gray-500">Payment:</span>
-              <span className="ml-1 capitalize">{donation.payment_method.replace("_", " ")}</span>
+              <span className="ml-1 capitalize">{donation?.payment_method?.replace("_", " ")}</span>
             </div>
           )}
 
-          {donation.notes && <div className="text-sm text-gray-600 line-clamp-2">{donation.notes}</div>}
+          {donation?.notes && <div className="text-sm text-gray-600 line-clamp-2">{donation?.notes}</div>}
         </div>
       </CardContent>
     </Card>
