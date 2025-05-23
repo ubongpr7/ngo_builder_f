@@ -66,9 +66,6 @@ export const updateApiSlice = apiSlice.injectEndpoints({
       query: (updateId) => `/${backend}/media/by_update/?update_id=${updateId}`,
     }),
 
-    getMediaByProject: builder.query<ProjectMedia[], number>({
-      query: (projectId) => `/${backend}/media/by_project/?project_id=${projectId}`,
-    }),
 
     getImages: builder.query<ProjectMedia[], { projectId?: number; updateId?: number }>({
       query: (params) => {
@@ -206,7 +203,6 @@ export const {
   useUpdateUpdateMutation,
   useDeleteUpdateMutation,
   useGetMediaByUpdateQuery,
-  useGetMediaByProjectQuery,
   useGetImagesQuery,
   useGetVideosQuery,
   useGetDocumentsQuery,

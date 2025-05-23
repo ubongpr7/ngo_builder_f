@@ -76,7 +76,7 @@ export function FinanceDashboard({ userRoles, className }: FinanceDashboardProps
     isFetching: isRefreshingRecentDonations,
   } = useGetRecentDonationsQuery()
 
-  const is_finance_admin = usePermissions(userRoles, { requiredRoles: ["is_finance_admin"], requireKYC: true })
+  const is_finance_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_executive"], requireKYC: true })
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
 
   const [isRefreshing, setIsRefreshing] = useState(false)

@@ -18,7 +18,7 @@ export function CampaignChart({ campaignStats, isLoading = false, onRefresh }: C
   const chartInstance = useRef<Chart | null>(null)
 
   useEffect(() => {
-    if (!chartRef.current || isLoading) return
+    if (!chartRef.current || isLoading || !campaignStats) return
 
     // Destroy previous chart instance if it exists
     if (chartInstance.current) {

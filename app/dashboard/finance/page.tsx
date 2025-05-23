@@ -19,11 +19,11 @@ export default function FinanceManagement() {
     isLoading: statsLoading,
     refetch: refreshStats,
     isFetching: isRefreshingStats,
-  } = useGetFinanceStatisticsQuery()
+  } = useGetFinanceStatisticsQuery('')
 
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
-  const is_finance_admin = usePermissions(userRoles, { requiredRoles: ["is_finance_admin"], requireKYC: true })
+  const is_finance_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_executive"], requireKYC: true })
   const canManageFinance = is_DB_admin || is_finance_admin
 
   const [isRefreshing, setIsRefreshing] = useState(false)

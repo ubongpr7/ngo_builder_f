@@ -83,16 +83,16 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         let url = `/${backend}/donations/statistics/`
         const queryParams = []
 
-        if (params.start_date) {
-          queryParams.push(`start_date=${params.start_date}`)
+        if (params?.start_date) {
+          queryParams?.push(`start_date=${params?.start_date}`)
         }
 
-        if (params.end_date) {
-          queryParams.push(`end_date=${params.end_date}`)
+        if (params?.end_date) {
+          queryParams?.push(`end_date=${params?.end_date}`)
         }
 
-        if (queryParams.length > 0) {
-          url += `?${queryParams.join("&")}`
+        if (queryParams?.length > 0) {
+          url += `?${queryParams?.join("&")}`
         }
 
         return url
@@ -437,16 +437,16 @@ export const financeApiSlice = apiSlice.injectEndpoints({
         let url = `/${backend}/dashboard/summary/`
         const queryParams = []
 
-        if (params.start_date) {
-          queryParams.push(`start_date=${params.start_date}`)
+        if (params?.start_date) {
+          queryParams?.push(`start_date=${params?.start_date}`)
         }
 
-        if (params.end_date) {
-          queryParams.push(`end_date=${params.end_date}`)
+        if (params?.end_date) {
+          queryParams?.push(`end_date=${params?.end_date}`)
         }
 
-        if (queryParams.length > 0) {
-          url += `?${queryParams.join("&")}`
+        if (queryParams?.length > 0) {
+          url += `?${queryParams?.join("&")}`
         }
 
         return url
@@ -483,21 +483,21 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Finance statistics query
-    getFinanceStatistics: builder.query<any, { start_date?: string; end_date?: string }>({
+    getFinanceStatistics: builder.query({
       query: (params) => {
         let url = `/${backend}/dashboard/statistics/`
         const queryParams = []
 
-        if (params.start_date) {
-          queryParams.push(`start_date=${params.start_date}`)
+        if (params?.start_date) {
+          queryParams?.push(`start_date=${params?.start_date}`)
         }
 
-        if (params.end_date) {
-          queryParams.push(`end_date=${params.end_date}`)
+        if (params?.end_date) {
+          queryParams?.push(`end_date=${params?.end_date}`)
         }
 
-        if (queryParams.length > 0) {
-          url += `?${queryParams.join("&")}`
+        if (queryParams?.length > 0) {
+          url += `?${queryParams?.join("&")}`
         }
 
         return url
