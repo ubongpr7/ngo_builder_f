@@ -167,6 +167,7 @@ export interface Budget {
   campaign?: number
   campaign_title?: string
   grant?: number
+  description?: string
   grant_title?: string
   fiscal_year?: string
   start_date: string

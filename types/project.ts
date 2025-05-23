@@ -26,6 +26,8 @@ export interface UserData {
 export interface Project {
   id: number
   title: string
+  featured_image?: string | ''
+  team_member_count?:number|0
   description: string | null
   start_date: string | ''
   completion_percentage?: number

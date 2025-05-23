@@ -62,7 +62,7 @@ export function AddEditBudgetDialog({ budget, onSuccess, trigger }: AddEditBudge
   const [open, setOpen] = useState(false)
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation()
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation()
-  const { data: campaigns = [] } = useGetAllCampaignsQuery("")
+  const { data: campaigns = [] } = useGetAllCampaignsQuery()
   const isLoading = isCreating || isUpdating
   const isEditing = !!budget
 
@@ -259,7 +259,7 @@ export function AddEditBudgetDialog({ budget, onSuccess, trigger }: AddEditBudge
                         <ReactSelectField
                           options={budgetTypeOptions}
                           placeholder="Select type"
-                          value={budgetTypeOptions.find((option) => option.value === field.value) || null}
+                          value={budgetTypeOptions.find((option:{value:string}) => option.value === field.value) || null}
                           onChange={(option) => field.onChange(option ? option.value : "")}
                         />
                       </FormControl>

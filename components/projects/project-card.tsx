@@ -54,7 +54,7 @@ export function ProjectCard({ project }: { project: Project }) {
     <Card className="overflow-hidden">
       <div className="relative h-48">
         <Image
-          src={ `/placeholder.svg?height=400&width=600&query=${encodeURIComponent(project.title)}`}
+          src={project?.featured_image||"https://plus.unsplash.com/premium_photo-1681823622383-52d4656940e6"}
           alt={project.title}
           fill
           className="object-cover"
@@ -84,7 +84,7 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
           <div className="flex items-center text-sm text-gray-500">
             <Users className="mr-2 h-4 w-4" />
-            {project.team_members?.length || 0} team members
+            {project.team_member_count || 0} team {project.team_member_count === 1 ? "member" : "members"}
           </div>
 
           {project.status !== "planning" && (
