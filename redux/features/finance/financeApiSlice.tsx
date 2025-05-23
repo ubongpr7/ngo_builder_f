@@ -11,7 +11,7 @@ import type {
   OrganizationalExpense,
   FinanceSummary,
   DonationStats,
-} from "@/types/finance"
+} from "../../../types/finance"
 
 const backend = "finance_api"
 
@@ -456,6 +456,53 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     getFinanceCharts: builder.query<any, void>({
       query: () => `/${backend}/dashboard/charts/`,
     }),
+
+    // Get all donors (for dropdown selections)
+    getAllDonors: builder.query<any[], void>({
+      query: () => `/${backend}/donors/`,
+    }),
+
+    // Get all expenses (alias for organizational expenses)
+    getAllExpenses: builder.query<OrganizationalExpense[], void>({
+      query: () => `/${backend}/organizational-expenses/`,
+    }),
+
+    // Get all campaigns (alias for consistency)
+    getAllCampaigns: builder.query<DonationCampaign[], void>({
+      query: () => `/${backend}/campaigns/`,
+    }),
+
+    // Get all budgets (alias for consistency)
+    getAllBudgets: builder.query<Budget[], void>({
+      query: () => `/${backend}/budgets/`,
+    }),
+
+    // Get all donations (alias for consistency)
+    getAllDonations: builder.query<Donation[], void>({
+      query: () => `/${backend}/donations/`,
+    }),
+
+    // Finance statistics query
+    getFinanceStatistics: builder.query<any, { start_date?: string; end_date?: string }>({
+      query: (params) => {
+        let url = `/${backend}/dashboard/statistics/`
+        const queryParams = []
+
+        if (params.start_date) {
+          queryParams.push(`start_date=${params.start_date}`)
+        }
+
+        if (params.end_date) {
+          queryParams.push(`end_date=${params.end_date}`)
+        }
+
+        if (queryParams.length > 0) {
+          url += `?${queryParams.join("&")}`
+        }
+
+        return url
+      },
+    }),
   }),
 })
 
@@ -547,4 +594,11 @@ export const {
   // Dashboard
   useGetFinanceSummaryQuery,
   useGetFinanceChartsQuery,
+
+  useGetAllDonorsQuery,
+  useGetAllExpensesQuery,
+  useGetAllCampaignsQuery,
+  useGetAllBudgetsQuery,
+  useGetAllDonationsQuery,
+  useGetFinanceStatisticsQuery,
 } = financeApiSlice
