@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { AlertCircle, CheckCircle } from "lucide-react"
@@ -255,19 +255,12 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
       completedSteps.push(8)
     }
 
-    // Update form state with completed steps
+    // Update form state with completed steps, but don't change the current step or active tab
     setFormState((prev) => {
-      const nextIncompleteStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
-
-      // Only update active tab if it's a new step
-      if (nextIncompleteStep !== prev.currentStep) {
-        setActiveTab(STEP_ORDER[nextIncompleteStep])
-      }
-
       return {
         ...prev,
         completedSteps,
-        currentStep: nextIncompleteStep,
+        // Keep the current step as is, don't auto-advance
       }
     })
   }, [formState.personalInfo, formState.expertise, formState.address, formState.contactInfo, userProfile])
