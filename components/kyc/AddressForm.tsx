@@ -24,10 +24,8 @@ interface AddressFormProps {
 }
 
 export default function AddressForm({ formData, updateFormData, onComplete, addressId, profileId }: AddressFormProps) {
-  // Form state
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // API mutations
   const [addAddress, { isLoading: isLoadingAddAddress }] = useAddAddressMutation()
   const [updateProfile, { isLoading: isLoadingUpdateProfile }] = useUpdateAddressMutation()
 

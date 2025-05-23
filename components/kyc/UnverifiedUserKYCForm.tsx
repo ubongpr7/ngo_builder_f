@@ -45,7 +45,7 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
     isLoading: isProfileLoading,
     refetch: refetchProfile,
   } = useGetProfileQuery(profileId, { skip: !profileId })
-
+  console.log(userProfile)
   const { data: userData, isLoading: isUserDataLoading } = useGetUserProfileDetailsQuery(userId, { skip: !userId })
 
   const addressId = userProfile?.address || null
@@ -56,6 +56,7 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
 
   // UI state
   const [activeTab, setActiveTab] = useState(STEP_ORDER[1])
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   // Initialize form state with empty values
   const [formState, setFormState] = useState<KYCFormState>({
@@ -142,7 +143,6 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
     }
   }, [userData])
 
-  // Handle userProfile and address changes
   useEffect(() => {
     if (userProfile) {
       const updatedFormState = { ...formState }
@@ -255,15 +255,49 @@ export function UnverifiedUserKYCForm({ profileId, userId }: KYCFormContainerPro
       completedSteps.push(8)
     }
 
-    // Update form state with completed steps, but don't change the current step or active tab
+    // Update form state with completed steps
     setFormState((prev) => {
+      const nextIncompleteStep = Math.min(Math.max(...completedSteps, 0) + 1, TOTAL_STEPS)
+
+      // Only auto-advance during initial load, not during user interaction
+      if (isInitialLoad && nextIncompleteStep !== prev.currentStep) {
+        setActiveTab(STEP_ORDER[nextIncompleteStep])
+        // Mark initial load as complete after first auto-advance
+        setIsInitialLoad(false)
+
+        return {
+          ...prev,
+          completedSteps,
+          currentStep: nextIncompleteStep,
+        }
+      }
+
       return {
         ...prev,
         completedSteps,
-        // Keep the current step as is, don't auto-advance
+        // Don't change currentStep during user interaction
       }
     })
-  }, [formState.personalInfo, formState.expertise, formState.address, formState.contactInfo, userProfile])
+  }, [
+    formState.personalInfo,
+    formState.expertise,
+    formState.address,
+    formState.contactInfo,
+    userProfile,
+    isInitialLoad,
+  ])
+
+  // Mark initial load as complete when all data is loaded
+  useEffect(() => {
+    if (!isProfileLoading && !isUserDataLoading && !isAddressLoading && isInitialLoad) {
+      // Give a small delay to ensure all data processing is complete
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false)
+      }, 100)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isProfileLoading, isUserDataLoading, isAddressLoading, isInitialLoad])
 
   // Handle step complete
   const handleStepComplete = (step: number) => {
