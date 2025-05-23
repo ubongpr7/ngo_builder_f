@@ -12,6 +12,7 @@ import type {
   FinanceSummary,
   DonationStats,
 } from "../../../types/finance"
+import { ProjectUser } from "@/types/project";
 
 const backend = "finance_api"
 
@@ -458,8 +459,8 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Get all donors (for dropdown selections)
-    getAllDonors: builder.query<any[], void>({
-      query: () => `/${backend}/donors/`,
+    getAllDonors: builder.query<ProjectUser[], void>({
+      query: () => `project_api/all-users`,
     }),
 
     // Get all expenses (alias for organizational expenses)
