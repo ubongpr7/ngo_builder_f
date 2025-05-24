@@ -28,6 +28,7 @@ import { toast } from "react-toastify"
 import { format } from "date-fns"
 import type { DonationCampaign } from "@/types/finance"
 import Image from "next/image"
+import { Project } from "@/types/project"
 
 const getDefaultEndDate = (startDate: Date = new Date()) =>
   new Date(new Date(startDate).setDate(startDate.getDate() + 1))
@@ -119,9 +120,9 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
     }
   }, [campaign, form])
 
-  const projectOptions = projects.map((project) => ({
-    value: project.id.toString(),
-    label: project.title || project.name || `Project ${project.id}`,
+  const projectOptions = projects.map((project:Project) => ({
+    value: project.id,
+    label: project.title ,
   }))
 
   const handleImageChange = (file: File | null) => {
