@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { useForm, Controller } from "react-hook-form"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
@@ -27,7 +28,7 @@ import { toast } from "react-toastify"
 import { format } from "date-fns"
 import type { DonationCampaign } from "@/types/finance"
 
-const getDefaultEndDate = (startDate: Date = new Date()) => 
+const getDefaultEndDate = (startDate: Date = new Date()) =>
   new Date(new Date(startDate).setDate(startDate.getDate() + 1))
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -77,7 +78,7 @@ interface AddEditCampaignDialogProps {
 
 export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trigger }: AddEditCampaignDialogProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const { data: projects = [] } = useGetAllProjectsQuery('')
+  const { data: projects = [] } = useGetAllProjectsQuery("")
   const [createCampaign, { isLoading: isCreatingCampaign }] = useCreateCampaignMutation()
   const [updateCampaign, { isLoading: isUpdatingCampaign }] = useUpdateCampaignMutation()
 
@@ -105,7 +106,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
         target_amount: campaign.target_amount.toString(),
         start_date: initialStartDate,
         end_date: new Date(campaign.end_date),
-        project: campaign.project?.toString()|| "",
+        project: campaign.project?.toString() || "",
         is_active: campaign.is_active,
         is_featured: campaign.is_featured,
         image: null,
@@ -184,7 +185,9 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
             {campaign ? "Edit Campaign" : "Create New Campaign"}
           </DialogTitle>
           <DialogDescription>
-            {campaign ? "Update the campaign details below." : "Fill in the details to create a new fundraising campaign."}
+            {campaign
+              ? "Update the campaign details below."
+              : "Fill in the details to create a new fundraising campaign."}
           </DialogDescription>
         </DialogHeader>
 
@@ -206,12 +209,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                           onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
                         />
                         {previewUrl && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleImageChange(null)}
-                          >
+                          <Button type="button" variant="ghost" size="sm" onClick={() => handleImageChange(null)}>
                             <Trash className="h-4 w-4" />
                           </Button>
                         )}
@@ -226,7 +224,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                 <div className="mt-2">
                   <p className="text-sm font-medium mb-2">Preview:</p>
                   <img
-                    src={previewUrl}
+                    src={previewUrl || "/placeholder.svg"}
                     alt="Campaign preview"
                     className="w-full max-w-sm h-32 object-cover rounded-lg border"
                   />
@@ -234,7 +232,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
               )}
             </div>
 
-            {/* help me add the rest of the form components */}
+            {/* Title Field */}
             <FormField
               control={form.control}
               name="title"
@@ -375,7 +373,8 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                   </FormItem>
                 )}
               />
-  
+            </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
