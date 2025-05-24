@@ -8,7 +8,7 @@ import { TrendingUp, Users, Calendar, Target } from "lucide-react"
 
 export function CampaignStatistics() {
   const { data: statistics, isLoading } = useGetFinanceStatisticsQuery({})
-  console.log(statistics)
+  console.log('statistics: ',statistics)
   const campaignStats = statistics?.campaign_stats || {
     active_count: 0,
     total_raised: 0,
