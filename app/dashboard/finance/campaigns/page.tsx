@@ -67,7 +67,7 @@ export default function CampaignManagement() {
             <Button onClick={()=>setOpendDialog(true)} className="button-primary">
               <span>Add New Campaign</span>
             </Button>
-            <AddEditCampaignDialog  open={opendDialog} setOpen={()=>setOpendDialog(false)} onSubmit={refetch} />
+            <AddEditCampaignDialog  open={opendDialog} setOpen={()=>setOpendDialog(false)} onSuccess={refetch} />
           </div>
         )}
       </div>
