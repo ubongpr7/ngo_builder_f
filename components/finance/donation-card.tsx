@@ -3,8 +3,11 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Edit, Eye, Calendar, User, DollarSign } from "lucide-react"
+import { Edit, Eye, Calendar, User, DollarSign, AlertTriangle, Repeat } from "lucide-react"
 import { AddEditDonationDialog } from "./add-edit-donation-dialog"
+import { DonationDetailDialog } from "./donation-detail-dialog"
+import { DonationStatusUpdateDialog } from "./donation-status-update-dialog"
+import { DonationRepaymentDialog } from "./donation-repayment-dialog"
 import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { format } from "date-fns"
@@ -26,9 +29,9 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
-        return "success"
+        return "default"
       case "pending":
-        return "warning"
+        return "secondary"
       case "failed":
         return "destructive"
       case "refunded":
@@ -43,8 +46,11 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
     ? "Anonymous"
     : donation.donor_name_display || donation.donor_name || "Unknown"
 
+  // Check if repayment is available (completed recurring donations)
+  const canMakeRepayment = donation.status === "completed" && donation.donation_type === "recurring"
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <div className="flex items-center">
@@ -78,25 +84,61 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
 
       <CardFooter className="bg-gray-50 px-4 py-3 border-t flex justify-between">
         <div className="text-sm text-gray-500">
-          <Badge variant="outline">{donation.donation_type}</Badge>
+          <Badge variant="outline" className="capitalize">
+            {donation.donation_type.replace("_", " ")}
+          </Badge>
         </div>
 
-        <div className="flex space-x-2">
-          <Button variant="ghost" size="sm" asChild>
-            <a href={`/dashboard/finance/donations/${donation.id}`}>
-              <Eye className="h-4 w-4 mr-1" />
-              View
-            </a>
-          </Button>
+        <div className="flex space-x-1">
+          {/* View Details Button */}
+          <DonationDetailDialog
+            donationId={donation.id}
+            trigger={
+              <Button variant="ghost" size="sm">
+                <Eye className="h-4 w-4 mr-1" />
+                View
+              </Button>
+            }
+          />
 
+          {/* Admin Actions */}
           {is_DB_admin && (
-            <AddEditDonationDialog
+            <>
+              {/* Status Update Button */}
+              <DonationStatusUpdateDialog
+                donation={donation}
+                onSuccess={onUpdate}
+                trigger={
+                  <Button variant="ghost" size="sm">
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                    Status
+                  </Button>
+                }
+              />
+
+              {/* Edit Button */}
+              <AddEditDonationDialog
+                donation={donation}
+                onSuccess={onUpdate}
+                trigger={
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                  </Button>
+                }
+              />
+            </>
+          )}
+
+          {/* Repayment Button for completed recurring donations */}
+          {canMakeRepayment && (
+            <DonationRepaymentDialog
               donation={donation}
               onSuccess={onUpdate}
               trigger={
-                <Button variant="ghost" size="sm">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
+                <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700">
+                  <Repeat className="h-4 w-4 mr-1" />
+                  Repay
                 </Button>
               }
             />
