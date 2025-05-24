@@ -333,8 +333,8 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                   <FormLabel>Associated Project</FormLabel>
                   <FormControl>
                     <ReactSelectField
-                      value={field.value}
-                      onChange={field.onChange}
+                      value={projectOptions.find((option:{value:string}) => option.value === field.value) || null}
+                        onChange={(option) => field.onChange(option ? option.value : "")}
                       options={[{ value: "", label: "No project selected" }, ...projectOptions]}
                       placeholder="Select a project (optional)"
                       isClearable

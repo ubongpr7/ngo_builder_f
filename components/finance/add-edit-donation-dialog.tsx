@@ -283,7 +283,7 @@ export function AddEditDonationDialog({ donation, onSuccess, trigger }: AddEditD
                       <ReactSelectField
                         options={campaignOptions}
                         placeholder="Select campaign"
-                        value={campaignOptions.find((option) => option.value === field.value) || null}
+                        value={campaignOptions.find((option:{value:string}) => option.value === field.value) || null}
                         onChange={(option) => field.onChange(option ? option.value : "")}
                         isClearable
                       />
@@ -345,7 +345,7 @@ export function AddEditDonationDialog({ donation, onSuccess, trigger }: AddEditD
                         <ReactSelectField
                           options={paymentMethodOptions}
                           placeholder="Select payment method"
-                          value={paymentMethodOptions.find((option) => option.value === field.value) || null}
+                          value={paymentMethodOptions.find((option:{value:string}) => option.value === field.value) || null}
                           onChange={(option) => field.onChange(option ? option.value : "")}
                         />
                       </FormControl>
