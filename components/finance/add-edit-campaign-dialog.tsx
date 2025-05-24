@@ -27,6 +27,7 @@ import { useCreateCampaignMutation, useUpdateCampaignMutation } from "@/redux/fe
 import { toast } from "react-toastify"
 import { format } from "date-fns"
 import type { DonationCampaign } from "@/types/finance"
+import Image from "next/image"
 
 const getDefaultEndDate = (startDate: Date = new Date()) =>
   new Date(new Date(startDate).setDate(startDate.getDate() + 1))
@@ -58,7 +59,7 @@ const formSchema = z
         message: "Max image size is 5MB.",
       })
       .refine((file) => !file || (file instanceof File && ACCEPTED_IMAGE_TYPES.includes(file.type)), {
-        message: "Only .jpg, .jpeg, .png and .webp formats are supported.",
+        message: "Only JPEG, PNG, and WebP image formats are supported.",
       })
       .optional()
       .nullable(),
@@ -205,7 +206,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                       <div className="flex items-center gap-4">
                         <Input
                           type="file"
-                          accept="image/*"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
                           onChange={(e) => handleImageChange(e.target.files?.[0] || null)}
                         />
                         {previewUrl && (
@@ -223,11 +224,15 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
               {previewUrl && (
                 <div className="mt-2">
                   <p className="text-sm font-medium mb-2">Preview:</p>
-                  <img
-                    src={previewUrl || "/placeholder.svg"}
-                    alt="Campaign preview"
-                    className="w-full max-w-sm h-32 object-cover rounded-lg border"
-                  />
+                  <div className="relative w-full max-w-sm h-48 border rounded-lg overflow-hidden">
+                    <Image
+                      src={previewUrl || "/placeholder.svg"}
+                      alt="Campaign preview"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 384px) 100vw, 384px"
+                    />
+                  </div>
                 </div>
               )}
             </div>
