@@ -141,7 +141,7 @@ export function AddEditExpenseDialog({ expense, onSuccess, trigger }: AddEditExp
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button>
+          <Button className="button-primary">
             {isEditing ? (
               <>
                 <Edit2 className="mr-2 h-4 w-4" />

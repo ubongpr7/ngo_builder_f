@@ -49,7 +49,6 @@ export default function ExpertiseForm({ formData, updateFormData, onComplete, us
         updatedExpertise.push(expertiseId)
         // maxReached will be updated by the useEffect
       } else {
-        // Don't add and show error
         setErrors({
           ...errors,
           maxLimit: `You can only select up to ${MAX_SELECTIONS} areas of expertise`
