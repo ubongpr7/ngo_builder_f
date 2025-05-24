@@ -25,7 +25,7 @@ const statusUpdateSchema = z.object({
 
 interface DonationStatusUpdateDialogProps {
   donation: Donation
-  onSuccess?: () => void
+  onSuccess: () => void
   trigger?: React.ReactNode
 }
 
@@ -70,9 +70,9 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
       }).unwrap()
 
       toast.success("Donation status updated successfully")
+      onSuccess()
       setOpen(false)
       form.reset()
-      onSuccess?.()
     } catch (error) {
       console.error("Failed to update donation status:", error)
       toast.error("Failed to update donation status")
