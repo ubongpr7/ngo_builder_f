@@ -65,7 +65,7 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
 
       await updateDonation({
         id: donation.id,
-        status: values.status,
+        data:{status: values.status},
         notes: updatedNotes,
       }).unwrap()
 
