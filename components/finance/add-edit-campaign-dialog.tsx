@@ -78,8 +78,8 @@ interface AddEditCampaignDialogProps {
 export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trigger }: AddEditCampaignDialogProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const { data: projects = [] } = useGetAllProjectsQuery('')
-  const [createCampaign] = useCreateCampaignMutation()
-  const [updateCampaign] = useUpdateCampaignMutation()
+  const [createCampaign, { isLoading: isCreatingCampaign }] = useCreateCampaignMutation()
+  const [updateCampaign, { isLoading: isUpdatingCampaign }] = useUpdateCampaignMutation()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

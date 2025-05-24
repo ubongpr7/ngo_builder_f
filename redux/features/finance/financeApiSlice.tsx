@@ -52,10 +52,10 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     }),
 
     updateCampaign: builder.mutation({
-      query: ({ id, campaign }) => ({
+      query: ({ id, data }) => ({
         url: `/${backend}/campaigns/${id}/`,
         method: "PATCH",
-        body: campaign,
+        body: data,
       }),
     }),
 
