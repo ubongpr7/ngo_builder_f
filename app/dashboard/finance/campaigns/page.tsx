@@ -21,6 +21,7 @@ export default function CampaignManagement() {
   const [filteredCampaigns, setFilteredCampaigns] = useState<DonationCampaign[]>([])
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const is_DB_admin = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true })
+  const [opendDialog, setOpendDialog] = useState(false)
 
   useEffect(() => {
     if (!campaigns) return
@@ -63,7 +64,10 @@ export default function CampaignManagement() {
         </div>
         {is_DB_admin && (
           <div className="mt-4 md:mt-0">
-            <AddEditCampaignDialog onSuccess={refetch} />
+            <Button onClick={()=>setOpendDialog(true)} className="button-primary">
+              <span>Add New Campaign</span>
+            </Button>
+            <AddEditCampaignDialog  open={opendDialog} setOpen={()=>setOpendDialog(false)} onSubmit={refetch} />
           </div>
         )}
       </div>
