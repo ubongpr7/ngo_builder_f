@@ -102,7 +102,7 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
           />
 
           {/* Admin Actions */}
-          {is_DB_admin && (
+          {(is_DB_admin || donation.status === "pending") && (
             <>
               {/* Status Update Button */}
               <DonationStatusUpdateDialog
@@ -118,15 +118,15 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
 
               {/* Edit Button */}
               <AddEditDonationDialog
-                donation={donation}
-                onSuccess={onUpdate}
-                trigger={
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                }
-              />
+                  donation={donation}
+                  onSuccess={onUpdate}
+                  trigger={
+                    <Button variant="ghost" size="sm">
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  }
+                />
             </>
           )}
 
