@@ -17,6 +17,7 @@ import { useUpdateDonationMutation } from "@/redux/features/finance/financeApiSl
 import { useAuth } from "@/redux/features/users/useAuth"
 import { toast } from "react-toastify"
 import type { Donation } from "@/types/finance"
+import { format } from "date-fns"
 
 const statusUpdateSchema = z.object({
   status: z.string().min(1, "Status is required"),
@@ -25,7 +26,7 @@ const statusUpdateSchema = z.object({
 
 interface DonationStatusUpdateDialogProps {
   donation: Donation
-  onSuccess: () => void
+  onSuccess?: () => void
   trigger?: React.ReactNode
 }
 
@@ -53,11 +54,11 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
 
   const onSubmit = async (values: z.infer<typeof statusUpdateSchema>) => {
     try {
-      const currentDate = new Date().toISOString()
+      const currentDate = format(new Date(), "PPp") // This will format as "May 24, 2025, 11:15 AM"
       const userName =
         user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : user?.username || "Unknown User"
 
-      // Prepare the update note with timestamp and user info
+      // Prepare the update note with formatted timestamp and user info
       const statusUpdateNote = `\n\n--- Status Update (${currentDate}) ---\nUpdated by: ${userName}\nStatus changed from: ${donation.status} to: ${values.status}\nNote: ${values.update_note}`
 
       // Combine existing notes with the new update note
@@ -65,14 +66,14 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
 
       await updateDonation({
         id: donation.id,
-        donation:{status: values.status,
-        notes: updatedNotes,}
+        status: values.status,
+        notes: updatedNotes,
       }).unwrap()
 
       toast.success("Donation status updated successfully")
-      onSuccess()
       setOpen(false)
       form.reset()
+      onSuccess?.()
     } catch (error) {
       console.error("Failed to update donation status:", error)
       toast.error("Failed to update donation status")
@@ -164,7 +165,7 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 bg-green-600 hover:bg-green-700 text-white animate-spin" />}
                   Update Status
                 </Button>
               </div>
