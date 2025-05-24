@@ -482,6 +482,13 @@ export const financeApiSlice = apiSlice.injectEndpoints({
     getAllDonations: builder.query<Donation[], void>({
       query: () => `/${backend}/donations/`,
     }),
+createPublicDonation: builder.mutation({
+      query: (donation) => ({
+        url: `/${backend}/donations/public/`,
+        method: "POST",
+        body: donation,
+      }),
+      }),
 
     // Finance statistics query
     getFinanceStatistics: builder.query({
@@ -527,6 +534,7 @@ export const {
   useCreateDonationMutation,
   useUpdateDonationMutation,
   useDeleteDonationMutation,
+  useCreatePublicDonationMutation,
 
   // Recurring Donations
   useGetRecurringDonationsQuery,

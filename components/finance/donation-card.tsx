@@ -49,7 +49,7 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <DollarSign className="h-5 w-5 mr-1 text-green-600" />
-            <span className="font-semibold text-lg">${donation.amount.toFixed(2)}</span>
+            <span className="font-semibold text-lg">${Number(donation.amount).toFixed(2)}</span>
           </div>
           <Badge variant={getStatusVariant(donation.status) as any}>{donation.status}</Badge>
         </div>

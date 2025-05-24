@@ -42,10 +42,11 @@ export const useAuth = () => {
   const pathname = usePathname();
   const isPublic = publicRoutes.includes(pathname);
 
-  const { data: user, isLoading, isSuccess } = useGetLoggedInUserQuery(undefined, {
-    skip: isPublic,
+  const { data: user, isLoading, isSuccess } = useGetLoggedInUserQuery('', {
+    // skip: isPublic,
     refetchOnMountOrArgChange: true,
   });
+
 
 
   return {

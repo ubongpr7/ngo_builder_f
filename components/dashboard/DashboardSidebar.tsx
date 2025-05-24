@@ -7,30 +7,18 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3,
-  Calendar,
   ClipboardList,
   FileText,
   Home,
   LayoutDashboard,
-  MessageSquare,
   Package,
-  Settings,
   Users,
   Wallet,
   FolderOpen,
   PieChart,
-  Camera,
-  BookOpen,
   Heart,
-  Building,
   ChevronDown,
   X,
-  ListTodo,
-  CheckSquare,
-  Clock,
-  AlertTriangle,
-  Award,
-  UserPlus,
   Briefcase,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -184,27 +172,23 @@ export default function DashboardSidebar() {
                 All Projects
               </NavItem>
 
-                <NavItem href="/dashboard/projects/my-projects" icon={Briefcase}>
-                  My Projects
-                </NavItem>
+              <NavItem href="/dashboard/projects/my-projects" icon={Briefcase}>
+                My Projects
+              </NavItem>
 
-
-              { (userRoles.isCeo && userRoles.isKycVerified) && (
+              {userRoles.isCeo && userRoles.isKycVerified && (
                 <NavItem href="/dashboard/projects/propose" icon={FileText}>
-                    Propose New Project
-                  </NavItem>
-
+                  Propose New Project
+                </NavItem>
               )}
-              {userRoles.isDBAdmin&& (
+              {userRoles.isDBAdmin && (
                 <NavItem href="/dashboard/projects/submitted" icon={Users}>
                   Submitted Projects
                 </NavItem>
               )}
-                
-
             </NavSection>
 
-            {(userRoles.isDBAdmin && userRoles.isDBExecutive && userRoles.isCeo) && (
+            {userRoles.isDBAdmin && userRoles.isDBExecutive && userRoles.isCeo && (
               <NavSection title="Inventory" name="inventory" icon={Package}>
                 <NavItem href="/dashboard/inventory" icon={BarChart3}>
                   Overview
@@ -212,8 +196,27 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/inventory/assets" icon={Package}>
                   Assets
                 </NavItem>
-                
-                
+              </NavSection>
+            )}
+
+            {/* Finance Section - Admin and Executive only */}
+            {(userRoles.isDBAdmin || userRoles.isDBExecutive) && (
+              <NavSection title="Finance Management" name="finance" icon={Wallet}>
+                <NavItem href="/dashboard/finance" icon={PieChart}>
+                  Finance Dashboard
+                </NavItem>
+                <NavItem href="/dashboard/finance/campaigns" icon={Heart}>
+                  Campaigns
+                </NavItem>
+                <NavItem href="/dashboard/finance/donations" icon={Wallet}>
+                  Donations
+                </NavItem>
+                <NavItem href="/dashboard/finance/budgets" icon={BarChart3}>
+                  Budgets
+                </NavItem>
+                <NavItem href="/dashboard/finance/expenses" icon={FileText}>
+                  Expenses
+                </NavItem>
               </NavSection>
             )}
           </nav>

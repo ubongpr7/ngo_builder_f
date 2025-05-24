@@ -12,6 +12,7 @@ import { useAuth } from "@/redux/features/users/useAuth"
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { isLoading, isAuthenticated, isPublic } = useAuth();
+  console.log('hey there ',useAuth())
 
   const isAuthenticatedRoute =
     pathname.startsWith("/dashboard") || pathname.startsWith("/kyc") || pathname === "/profile"

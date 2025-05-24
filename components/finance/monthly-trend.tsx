@@ -55,7 +55,7 @@ export function MonthlyTrend() {
             return (
               <div key={index} className="flex flex-col items-center flex-1">
                 <div className="w-full flex flex-col items-center">
-                  <div className="text-xs text-gray-500 mb-1">${item.amount.toFixed(0)}</div>
+                  <div className="text-xs text-gray-500 mb-1">${Number(item.amount).toFixed(0)}</div>
                   <div className="w-full bg-blue-500 rounded-t" style={{ height: `${Math.max(height, 4)}%` }}></div>
                 </div>
                 <div className="text-xs text-gray-500 mt-2">{item.month.split("-")[1]}</div>

@@ -170,9 +170,11 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
 
       // Redirect to the next URL if it exists, otherwise check profile
       if (nextUrl && nextUrl !== "/dashboard") {
-        router.push(nextUrl)
+        window.location.href = nextUrl
       } else {
-        router.push(user.profile ? "/dashboard" : "/profile/update")
+        window.location.href = user.profile ? "/dashboard" : "/profile/update"
+
+        // router.push(user.profile ? "/dashboard" : "/profile/update")
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err)
@@ -372,7 +374,7 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
 }
 
 // Export the main component with Suspense boundary
-export default function VerificationLoginForm() {
+export default function VerificationLoginForm( ) {
   return (
     <Suspense fallback={<div className="max-w-md w-full space-y-6 mx-auto text-center">Loading...</div>}>
       <LoginFormWithParams />

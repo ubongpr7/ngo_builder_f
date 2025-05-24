@@ -53,7 +53,7 @@ export function ExpenseCard({ expense, onUpdate }: ExpenseCardProps) {
         <div className="mt-3 space-y-2">
           <div className="flex items-center text-sm">
             <DollarSign className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
-            <span className="text-gray-700">${expense.amount.toFixed(2)}</span>
+            <span className="text-gray-700">${Number(expense.amount).toFixed(2)}</span>
           </div>
 
           <div className="flex items-center text-sm">

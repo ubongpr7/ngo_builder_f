@@ -43,7 +43,7 @@ export function BudgetCard({ budget, onUpdate }: BudgetCardProps) {
   }
 
   // Calculate spent percentage
-  const spentPercentage = budget.spent_percentage || (budget.spent_amount / budget.total_amount) * 100
+  const spentPercentage = budget.spent_percentage || (Number(budget.spent_amount) / Number(budget.total_amount|| 1)) * 100
 
   return (
     <Card className="overflow-hidden">
@@ -63,7 +63,7 @@ export function BudgetCard({ budget, onUpdate }: BudgetCardProps) {
 
           <div className="flex items-center text-sm">
             <DollarSign className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
-            <span className="text-gray-700">${budget.total_amount.toFixed(2)}</span>
+            <span className="text-gray-700">${Number(budget.total_amount).toFixed(2)}</span>
           </div>
 
           {budget.project_title && (
@@ -84,8 +84,8 @@ export function BudgetCard({ budget, onUpdate }: BudgetCardProps) {
         <div className="mt-4">
           <Progress value={spentPercentage} className="h-2" />
           <div className="flex justify-between mt-1 text-sm">
-            <span>${budget.spent_amount.toFixed(2)} spent</span>
-            <span className="text-gray-500">${budget.total_amount.toFixed(2)}</span>
+            <span>${Number(budget.spent_amount).toFixed(2)} spent</span>
+            <span className="text-gray-500">${Number(budget.total_amount).toFixed(2)}</span>
           </div>
         </div>
       </CardContent>

@@ -1,19 +1,58 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Heart, DollarSign, Repeat, Target } from "lucide-react"
+"use client"
 
-export const metadata: Metadata = {
-  title: "Donate | Destiny Builders",
-  description: "Support the work of Destiny Builders Empowerment Foundation",
-}
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Heart, DollarSign, Repeat, Target } from "lucide-react"
+import { ActiveCampaignsPublic } from "@/components/finance/active-campaigns-public"
+import { DonationDialog } from "@/components/finance/donation-dialog"
+import { AuthDialog } from "@/components/auth-dialog"
+import { useAuth } from "@/redux/features/users/useAuth"
+import { useRouter, useSearchParams } from "next/navigation"
 
 export default function DonatePage() {
+    const { user,isLoading, isAuthenticated, isPublic } = useAuth();
+  const [showAuthDialog, setShowAuthDialog] = useState(false)
+  const [showDonationDialog, setShowDonationDialog] = useState(false)
+  const [donationType, setDonationType] = useState<"one-time" | "monthly">("one-time")
+  const [selectedCampaign, setSelectedCampaign] = useState<{ id: number; title: string } | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  // useEffect(() => {
+  //   const next = searchParams.get("next")
+  //   if (next === "/donate" && isAuthenticated) {
+  //     setShowDonationDialog(true)
+  //   }
+  // }, [isAuthenticated, searchParams])
+
+  const handleDonateClick = (type: "one-time" | "monthly", campaign?: { id: number; title: string }) => {
+    setDonationType(type)
+    setSelectedCampaign(campaign || null)
+
+    if (!isAuthenticated && !isLoading) {
+      // Set next URL for after authentication
+      const currentUrl = window.location.pathname + window.location.search
+      router.push(`${currentUrl}?next=/donate`)
+      setShowAuthDialog(true)
+    } else if (isAuthenticated) {
+      setShowDonationDialog(true)
+    }
+  }
+
+  const handleAuthSuccess = () => {
+    setShowAuthDialog(false)
+    // Small delay to ensure auth state is updated
+    setTimeout(() => {
+      setShowDonationDialog(true)
+    }, 100)
+  }
+
+  const handleContinueAsGuest = () => {
+    setShowAuthDialog(false)
+    setShowDonationDialog(true)
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -43,22 +82,51 @@ export default function DonatePage() {
           />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
+        {/* Active Campaigns Section */}
+        <ActiveCampaignsPublic onDonateClick={handleDonateClick} />
+
+        <div id="donation-form" className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
           <div className="p-8">
             <h2 className="text-2xl font-bold mb-6 text-center">Make a Donation</h2>
 
             <Tabs defaultValue="one-time" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="one-time" className="data-[state=active]:border-b-2 data-[state=active]:border-green-600">One-Time Donation</TabsTrigger>
-                <TabsTrigger value="monthly" className="data-[state=active]:border-b-2 data-[state=active]:border-green-600">Monthly Donation</TabsTrigger>
+                <TabsTrigger
+                  value="one-time"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-green-600"
+                >
+                  One-Time Donation
+                </TabsTrigger>
+                <TabsTrigger
+                  value="monthly"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-green-600"
+                >
+                  Monthly Donation
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="one-time">
-                <DonationForm recurring={false} />
+                <div className="text-center">
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => handleDonateClick("one-time")}
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    Donate Now
+                  </Button>
+                </div>
               </TabsContent>
 
               <TabsContent value="monthly">
-                <DonationForm recurring={true} />
+                <div className="text-center">
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => handleDonateClick("monthly")}
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    Donate Monthly
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
@@ -147,9 +215,26 @@ export default function DonatePage() {
             publish financial reports and impact assessments to show how your contributions are making a difference. You
             can access these reports on our Resources page.
           </p>
-          <Button variant="outline" className="hover:bg-[#469620] hover:text-white border-[#469620]">View Financial Reports</Button>
+          <Button variant="outline" className="hover:bg-[#469620] hover:text-white border-[#469620]">
+            View Financial Reports
+          </Button>
         </div>
       </div>
+
+      {/* Auth Dialog */}
+      <AuthDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        onAuthSuccess={handleAuthSuccess}
+        title="Join Our Community to Donate"
+        description="Please login or register to continue with your donation. As a member, you'll be able to track your donations and stay updated on our impact."
+      />
+
+      {/* Donation Dialog */}
+      {showDonationDialog &&(
+        <DonationDialog setOpen={setShowDonationDialog}  open={showDonationDialog} recurring={donationType === "monthly"} selectedCampaign={selectedCampaign} trigger={null} />
+
+      )}
     </div>
   )
 }
@@ -171,110 +256,5 @@ function DonationImpactCard({
       <h3 className="text-xl font-bold mb-2">{title}</h3>
       <p className="text-gray-600">{description}</p>
     </div>
-  )
-}
-
-function DonationForm({ recurring }: { recurring: boolean }) {
-  return (
-    <form className="space-y-6">
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">Select Amount</h3>
-        <RadioGroup defaultValue="50" className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <RadioGroupItem value="25" id="amount-25" className="sr-only" />
-            <Label
-              htmlFor="amount-25"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-green-600 [&:has([data-state=checked])]:border-green-600"
-            >
-              $25
-            </Label>
-          </div>
-          <div>
-            <RadioGroupItem value="50" id="amount-50" className="sr-only" />
-            <Label
-              htmlFor="amount-50"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-green-600 [&:has([data-state=checked])]:border-green-600"
-            >
-              $50
-            </Label>
-          </div>
-          <div>
-            <RadioGroupItem value="100" id="amount-100" className="sr-only" />
-            <Label
-              htmlFor="amount-100"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-green-600 [&:has([data-state=checked])]:border-green-600"
-            >
-              $100
-            </Label>
-          </div>
-          <div>
-            <RadioGroupItem value="custom" id="amount-custom" className="sr-only" />
-            <Label
-              htmlFor="amount-custom"
-              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-green-600 [&:has([data-state=checked])]:border-green-600"
-            >
-              Custom
-            </Label>
-          </div>
-        </RadioGroup>
-
-        <div className="pt-2">
-          <Label htmlFor="custom-amount">Custom Amount</Label>
-          <div className="relative mt-1">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-            <Input id="custom-amount" placeholder="Enter amount" className="pl-10" />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">Personal Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="first-name">First Name</Label>
-            <Input id="first-name" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="last-name">Last Name</Label>
-            <Input id="last-name" required />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="phone">Phone (Optional)</Label>
-          <Input id="phone" type="tel" />
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold">Donation Purpose (Optional)</h3>
-        <div className="space-y-2">
-          <Label htmlFor="purpose">Would you like to direct your donation to a specific program?</Label>
-          <select id="purpose" className="w-full rounded-md border border-input bg-background px-3 py-2">
-            <option value="general">General Support</option>
-            <option value="digital">Digital Literacy Programs</option>
-            <option value="women">Women Empowerment</option>
-            <option value="youth">Youth Leadership</option>
-            <option value="health">Community Health</option>
-            <option value="education">Education Initiatives</option>
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="comments">Comments or Special Instructions</Label>
-          <Textarea id="comments" placeholder="Any additional information you'd like to share" />
-        </div>
-      </div>
-
-      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
-        {recurring ? "Donate Monthly" : "Donate Now"}
-      </Button>
-
-      <p className="text-xs text-gray-500 text-center">
-        By proceeding, you agree to our terms of service and privacy policy. All donations are secure and encrypted.
-      </p>
-    </form>
   )
 }

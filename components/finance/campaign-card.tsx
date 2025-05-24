@@ -52,8 +52,8 @@ export function CampaignCard({ campaign, onUpdate }: CampaignCardProps) {
           <div className="mt-4">
             <Progress value={progressPercentage} className="h-2" />
             <div className="flex justify-between mt-1 text-sm">
-              <span>${campaign.current_amount.toFixed(2)}</span>
-              <span className="text-gray-500">${campaign.target_amount.toFixed(2)}</span>
+              <span>${Number(campaign.current_amount).toFixed(2)}</span>
+              <span className="text-gray-500">${Number(campaign.target_amount).toFixed(2)}</span>
             </div>
           </div>
         </div>
