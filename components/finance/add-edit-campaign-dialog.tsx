@@ -121,7 +121,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
   }, [campaign, form])
 
   const projectOptions = projects.map((project:Project) => ({
-    value: project.id,
+    value: project.id.toString(),
     label: project.title ,
   }))
 
