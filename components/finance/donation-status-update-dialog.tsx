@@ -65,8 +65,8 @@ export function DonationStatusUpdateDialog({ donation, onSuccess, trigger }: Don
 
       await updateDonation({
         id: donation.id,
-        data:{status: values.status},
-        notes: updatedNotes,
+        donation:{status: values.status,
+        notes: updatedNotes,}
       }).unwrap()
 
       toast.success("Donation status updated successfully")
