@@ -102,7 +102,7 @@ export function DonationCard({ donation, onUpdate }: DonationCardProps) {
           />
 
           {/* Admin Actions */}
-          {(is_DB_admin || donation.status === "pending") && (
+          {(is_DB_admin && ( donation.status === "pending" || donation.status ==='processing')) && (
             <>
               {/* Status Update Button */}
               <DonationStatusUpdateDialog
