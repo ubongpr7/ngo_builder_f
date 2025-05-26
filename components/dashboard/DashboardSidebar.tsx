@@ -202,7 +202,9 @@ export default function DashboardSidebar() {
             {/* Finance Section - Admin and Executive only */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive) && (
               <NavSection title="Finance Management" name="finance" icon={Wallet}>
-                
+                <NavItem href="/dashboard/finance" icon={PieChart}>
+                  Finance Dashboard
+                </NavItem>
                 <NavItem href="/dashboard/finance/campaigns" icon={Heart}>
                   Campaigns
                 </NavItem>

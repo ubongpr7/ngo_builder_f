@@ -2,7 +2,7 @@
 
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { ProjectDashboard } from "@/components/dashboard/project-dashboard"
-import { FinanceDashboard } from "@/components/dashboard/finance/finance-dashboard"
+import { FinanceDashboard } from "@/components/finances/dashboard/finance-dashboard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FileText, DollarSign, BarChart3, Settings } from "lucide-react"
 
