@@ -19,6 +19,7 @@ import { useGetBankAccountsQuery } from "@/redux/features/finance/bank-accounts"
 import { useCreateAccountTransactionMutation } from "@/redux/features/finance/account-transactions"
 import type { BankAccount } from "@/types/finance"
 import { ReactSelectField } from "@/components/ui/react-select-field"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TooltipProps {
   content: string
@@ -27,14 +28,19 @@ interface TooltipProps {
 
 function InfoTooltip({ content, children }: TooltipProps) {
   return (
-    <div className="relative inline-flex items-center group">
-      {children}
-      <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 max-w-xs">
-        {content}
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
-      </div>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="inline-flex items-center cursor-help">
+            {children}
+            <Info className="h-4 w-4 ml-1 text-muted-foreground" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs">
+          <p className="text-sm">{content}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
