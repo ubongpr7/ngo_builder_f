@@ -232,22 +232,22 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
         <TabsContent value="statistics" className="space-y-6">
           <BankAccountStatistics accountId={accountId} />
         </TabsContent>
-          {isPrimaryPignatory && (
-
+        
         <TabsContent value="transactions" className="space-y-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Transaction History</h2>
+        <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Transaction History</h2>
+        {isPrimaryPignatory && (
             <Button onClick={() => setAddTransactionDialogOpen(true)} size="sm">
               <CreditCard className="h-4 w-4 mr-2" />
               Add Transaction
             </Button>
+          )}
             <AddTransactionDialog open={addTransactionDialogOpen} 
             onTransactionAdded={refetch} onOpenChange={() =>
                setAddTransactionDialogOpen(false)}  account={account} />
           </div>
           <BankAccountTransactionHistory accountId={accountId} />
         </TabsContent>
-          )}
 
         <TabsContent value="analytics" className="space-y-6">
           <BankAccountAnalyticsCharts accountId={accountId} />
