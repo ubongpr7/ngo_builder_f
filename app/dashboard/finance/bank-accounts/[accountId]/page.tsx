@@ -268,10 +268,10 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         account={account}
-        onSuccess={() => {
-          setEditDialogOpen(false)
-          refetch()
-        }}
+        onAccountSaved={() => {
+            setEditDialogOpen(false)
+            refetch()
+          }}
       />
       )}
     </div>
