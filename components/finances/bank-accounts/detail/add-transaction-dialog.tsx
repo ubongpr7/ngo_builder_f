@@ -71,7 +71,7 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
 
   const { data: currencies = [] } = useGetCurrenciesQuery()
   const { data: bankAccountsData } = useGetBankAccountsQuery({})
-  const bankAccounts = bankAccountsData?.results || []
+  const bankAccounts = bankAccountsData
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),

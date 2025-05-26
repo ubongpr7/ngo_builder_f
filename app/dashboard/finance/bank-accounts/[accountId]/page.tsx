@@ -32,11 +32,13 @@ import { BankAccountDialog } from "@/components/finances/bank-accounts/bank-acco
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useState } from "react"
 import { toast } from "sonner"
+import { AddTransactionDialog } from "@/components/finances/bank-accounts/detail/add-transaction-dialog"
 
 export default function BankAccountDetailPage() {
   const params = useParams()
   const accountId = Number(params.accountId)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [addTransactionDialogOpen,setAddTransactionDialogOpen] = useState(false)
 
   const { data: account, isLoading, error, refetch } = useGetBankAccountByIdQuery(accountId)
   const [freezeAccount] = useFreezeBankAccountMutation()
@@ -216,6 +218,16 @@ export default function BankAccountDetailPage() {
         </TabsContent>
 
         <TabsContent value="transactions" className="space-y-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Transaction History</h2>
+            <Button onClick={() => setAddTransactionDialogOpen(true)} size="sm">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Add Transaction
+            </Button>
+            <AddTransactionDialog open={addTransactionDialogOpen} 
+            onTransactionAdded={refetch} onOpenChange={() =>
+               setAddTransactionDialogOpen(false)}  account={account} />
+          </div>
           <BankAccountTransactionHistory accountId={accountId} />
         </TabsContent>
 
