@@ -296,15 +296,6 @@ export function BankAccountsTable({
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setOpenDropdown(null) // Close dropdown first
-                            onEditAccount(account)
-                          }}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Account
-                        </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link href={`/dashboard/finance/bank-accounts/${account.id}`}>
                             <Eye className="h-4 w-4 mr-2" />
@@ -345,7 +336,19 @@ export function BankAccountsTable({
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete Account
                         </DropdownMenuItem>
-*/}                      </DropdownMenuContent>
+                          
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setOpenDropdown(null) // Close dropdown first
+                            onEditAccount(account)
+                          }}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Account
+                        </DropdownMenuItem>
+
+*/}                      
+                      </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
