@@ -15,6 +15,7 @@ import type { BankAccount, BankAccountFilters as FilterType } from "@/types/fina
 import { useGetFinancialInstitutionsQuery } from "@/redux/features/finance/financial-institutions"
 import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { formatCurrencyCompact } from "@/lib/currency-utils"
 
 export default function BankAccountsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
@@ -161,7 +162,7 @@ const balancesByCurrency = activeAccounts.reduce(
                     {currencyBalances.map(([currency, data]) => (
                       <div key={currency} className="flex justify-between items-center">
                         <span className="text-lg font-bold">
-                          {currency} {data.total.toLocaleString()}
+                          {currency} {formatCurrencyCompact(currency,data.total)}
                         </span>
                         <span className="text-xs text-muted-foreground">({data.count} accounts)</span>
                       </div>
