@@ -45,16 +45,11 @@ export default function BankAccountDetailPage() {
   const accountId = Number(params.accountId)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addTransactionDialogOpen,setAddTransactionDialogOpen] = useState(false)
-  const router = useRouter()
 
   const { data: account, isLoading, error, refetch } = useGetBankAccountByIdQuery(accountId)
   const [freezeAccount] = useFreezeBankAccountMutation()
   const [unfreezeAccount] = useUnfreezeBankAccountMutation()
-  const canViewTransactions = usePermissions(userRoles, {
-    requiredRoles: ["is_DB_admin", "is_DB_executive", "is_DB_staff", ],
-    requireKYC: true,
-    checkMode: "any",
-    })
+  
 
 const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requireKYC: true
   , customCheck: (user) => !!account?.primary_signatory?.id && account.primary_signatory.id === user.user_id
@@ -105,9 +100,6 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
         </Card>
       </div>
     )
-  }
-  if (!canViewTransactions){
-    router.push("/dashboard/finance/bank-accounts")
   }
   
   const getAccountStatusBadge = () => {

@@ -5,13 +5,24 @@ import env from "./env_file"
 
 // Role-based route permissions
 const rolePermissions: Record<string, string[]> = {
-  admin: ["/admin", "/admin/kyc-verification", ],
-  executive: ["/executive-dashboard", "/projects/approvals","/admin", "/admin/kyc-verification", ],
+  admin: ["/admin", "/admin/kyc-verification", "/dashboard/finance"],
+  executive: ["/executive-dashboard", "/projects/approvals", "/admin", "/admin/kyc-verification", "/dashboard/finance"],
   donor: ["/donations", "/impact-reports"],
   partner: ["/partnership", "/joint-projects"],
   volunteer: ["/volunteer"],
-  staff: ["/staff-dashboard", "/inventory"]
+  staff: ["/staff-dashboard", "/inventory"],
 }
+
+// Finance-specific routes that require admin or executive access
+const financeProtectedPaths = [
+  "/dashboard/finance",
+  "/dashboard/finance/bank-accounts",
+  "/dashboard/finance/campaigns",
+  "/dashboard/finance/transactions",
+  "/dashboard/finance/budgets",
+  "/dashboard/finance/grants",
+  "/dashboard/finance/reports",
+]
 
 // KYC-protected routes
 const kycProtectedPaths = [
@@ -19,7 +30,8 @@ const kycProtectedPaths = [
   "/volunteer",
   "/projects",
   "/membership/benefits",
-  ...Object.values(rolePermissions).flat()
+  ...Object.values(rolePermissions).flat(),
+  ...financeProtectedPaths, // Add finance routes to KYC protection
 ]
 
 // Public paths
@@ -29,7 +41,6 @@ const publicPaths = [
   "/accounts/forgot-password",
   "/accounts/password-reset-sent",
   "/accounts/password_reset",
-
   "/membership/portal",
   "/forgot-password",
   "/reset-password",
@@ -58,7 +69,7 @@ const publicPaths = [
   "/kyc",
   "/admin/member-verification",
   "/membership/verification",
-  "/unauthorized"
+  "/unauthorized",
 ]
 
 export async function middleware(request: NextRequest) {
@@ -67,14 +78,10 @@ export async function middleware(request: NextRequest) {
   const userId = request.cookies.get("userID")?.value || ""
 
   // Check if current path is public
-  const isPublicPath = publicPaths.some(publicPath => 
-    path === publicPath || path.startsWith(`${publicPath}/`)
-  )
+  const isPublicPath = publicPaths.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
 
   // Redirect authenticated users from auth pages
-  if (["/membership/portal", "/membership/register"].some(authPath => 
-    path.startsWith(authPath)) && accessToken
-  ) {
+  if (["/membership/portal", "/membership/register"].some((authPath) => path.startsWith(authPath)) && accessToken) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
@@ -89,8 +96,8 @@ export async function middleware(request: NextRequest) {
     const response = await fetch(`${env.BACKEND_HOST_URL}/profile_api/users/me/`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     })
 
     if (!response.ok) throw new Error("Unauthorized")
@@ -113,23 +120,28 @@ export async function middleware(request: NextRequest) {
     isDonor: profileData?.is_donor,
     isPartner: profileData?.is_partner,
     isVolunteer: profileData?.is_volunteer,
-    isStaff: profileData?.is_DB_staff
+    isStaff: profileData?.is_DB_staff,
   }
 
   // KYC Verification Check
-  if (kycProtectedPaths.some(p => path.startsWith(p))) {
+  if (kycProtectedPaths.some((p) => path.startsWith(p))) {
     if (!isKycVerified || kycStatus !== "approved") {
       return NextResponse.redirect(
-        new URL(`/profile/update`, request.url)
+        new URL(`/profile/update`, request.url),
         // new URL(`/profile/update?error=kyc_required&next=${encodeURIComponent(path)}`, request.url)
       )
     }
   }
 
-  // Role-Based Access Control
-  const requiredRole = Object.entries(rolePermissions).find(([_, paths]) => 
-    paths.some(p => path.startsWith(p))
-  )?.[0]
+  // Finance Routes Protection - Only Admin and Executive
+  if (financeProtectedPaths.some((p) => path.startsWith(p))) {
+    if (!userRoles.isAdmin && !userRoles.isExecutive) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
+  }
+
+  // Role-Based Access Control for other routes
+  const requiredRole = Object.entries(rolePermissions).find(([_, paths]) => paths.some((p) => path.startsWith(p)))?.[0]
 
   if (requiredRole) {
     const roleKey = `is${requiredRole.charAt(0).toUpperCase()}${requiredRole.slice(1)}`
