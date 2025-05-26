@@ -117,12 +117,12 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
               />
             </div>
 
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select value={typeFilter || "all"} onValueChange={(value) => setTypeFilter(value === "all" ? "" : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Transaction Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="credit">Credit</SelectItem>
                 <SelectItem value="debit">Debit</SelectItem>
                 <SelectItem value="transfer_in">Transfer In</SelectItem>
@@ -131,12 +131,15 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
               </SelectContent>
             </Select>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter || "all"}
+              onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="processing">Processing</SelectItem>
@@ -188,7 +191,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {data && data.length > 0 ? (
+          {data?.results && data.results.length > 0 ? (
             <>
               <div className="rounded-md border">
                 <Table>
@@ -204,7 +207,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.map((transaction) => (
+                    {data.results.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
