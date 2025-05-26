@@ -5,8 +5,8 @@ import env from "./env_file"
 
 // Role-based route permissions
 const rolePermissions: Record<string, string[]> = {
-  admin: ["/admin", "/admin/kyc-verification", "/dashboard/finance"],
-  executive: ["/executive-dashboard", "/projects/approvals", "/admin", "/admin/kyc-verification", "/dashboard/finance"],
+  admin: ["/admin", "/admin/kyc-verification"],
+  executive: ["/executive-dashboard", "/projects/approvals", "/admin", "/admin/kyc-verification"],
   donor: ["/donations", "/impact-reports"],
   partner: ["/partnership", "/joint-projects"],
   volunteer: ["/volunteer"],
