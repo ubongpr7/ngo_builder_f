@@ -94,7 +94,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
   )
 
   const institutionChartData = Object.entries(institutionData).map(([institution, count]) => ({
-    institution: institution.length > 15 ? institution.substring(0, 15) + "..." : institution,
+    institution: institution.length > 25 ? institution.substring(0, 25) + "..." : institution,
     count,
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
@@ -254,10 +254,10 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={institutionChartData} layout="horizontal">
+              <BarChart data={institutionChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="institution" type="category" width={100} />
+                <XAxis dataKey="institution" angle={-45} textAnchor="end" height={80} interval={0} />
+                <YAxis />
                 <Tooltip />
                 <Bar dataKey="count" fill="#10b981" />
               </BarChart>
