@@ -94,7 +94,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
   )
 
   const institutionChartData = Object.entries(institutionData).map(([institution, count]) => ({
-    institution: institution.length > 25 ? institution.substring(0, 25) + "..." : institution,
+    institution: institution.length > 25 ? institution.substring(0, 12) + "..." : institution,
     count,
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
