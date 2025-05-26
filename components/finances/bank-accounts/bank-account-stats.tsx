@@ -99,59 +99,6 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
 
-  // Dynamic balance ranges based on currencies present
-  const getBalanceRanges = (currency: string) => {
-    const isUSD = currency === "USD"
-    const multiplier = isUSD ? 1 : currency === "NGN" ? 1000 : 1
-
-    return [
-      {
-        range: `0 - ${formatCurrency(currency, 1000 * multiplier, { compact: true })}`,
-        min: 0,
-        max: 1000 * multiplier,
-      },
-      {
-        range: `${formatCurrency(currency, 1000 * multiplier, { compact: true })} - ${formatCurrency(currency, 10000 * multiplier, { compact: true })}`,
-        min: 1000 * multiplier,
-        max: 10000 * multiplier,
-      },
-      {
-        range: `${formatCurrency(currency, 10000 * multiplier, { compact: true })} - ${formatCurrency(currency, 50000 * multiplier, { compact: true })}`,
-        min: 10000 * multiplier,
-        max: 50000 * multiplier,
-      },
-      {
-        range: `${formatCurrency(currency, 50000 * multiplier, { compact: true })} - ${formatCurrency(currency, 100000 * multiplier, { compact: true })}`,
-        min: 50000 * multiplier,
-        max: 100000 * multiplier,
-      },
-      {
-        range: `${formatCurrency(currency, 100000 * multiplier, { compact: true })}+`,
-        min: 100000 * multiplier,
-        max: Number.POSITIVE_INFINITY,
-      },
-    ]
-  }
-
-  // Use the most common currency for balance distribution
-  const primaryCurrency =
-    Object.keys(currencyData).reduce((a, b) => (currencyData[a].count > currencyData[b].count ? a : b)) || "USD"
-
-  const balanceRanges = getBalanceRanges(primaryCurrency)
-  const balanceDistribution = balanceRanges.map((range) => {
-    const count = accounts.filter((acc) => {
-      const balance = Number.parseFloat(acc.current_balance)
-      const accountCurrency = acc.currency.code
-      // Only count accounts with the same currency
-      return accountCurrency === primaryCurrency && balance >= range.min && balance < range.max
-    }).length
-    return {
-      range: range.range,
-      count,
-      percentage: ((count / totalAccounts) * 100).toFixed(1),
-    }
-  })
-
   // Features adoption
   const featuresData = [
     {
@@ -318,25 +265,35 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
           </CardContent>
         </Card>
 
-        {/* Balance Distribution */}
+        {/* Account Summary by Currency - More Useful Than Balance Ranges */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Balance Ranges ({primaryCurrency})
+              Account Summary by Currency
             </CardTitle>
-            <CardDescription>Account distribution by balance in {primaryCurrency}</CardDescription>
+            <CardDescription>Breakdown of accounts and balances per currency</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={balanceDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="range" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#f59e0b" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {formattedCurrencyBalances.map(({ currency, formatted, total, count }) => (
+                <div key={currency} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <div>
+                      <p className="font-medium">{currency}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {count} account{count !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-lg">{formatted}</p>
+                    <p className="text-sm text-muted-foreground">Avg: {formatCurrency(currency, total / count)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
