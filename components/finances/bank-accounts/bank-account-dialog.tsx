@@ -13,12 +13,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Separator } from "@/components/ui/separator"
 import { Building, CreditCard, Smartphone } from "lucide-react"
 import { toast } from "react-toastify"
+
 import { useGetFinancialInstitutionsQuery } from "@/redux/features/finance/financial-institutions"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import { useGetAdminUsersQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useCreateBankAccountMutation, useUpdateBankAccountMutation } from "@/redux/features/finance/bank-accounts"
 import type { BankAccount } from "@/types/finance"
 import { ReactSelectField } from "@/components/ui/react-select-field"
+// Remove these imports:
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const bankAccountSchema = z.object({
   name: z.string().min(1, "Account name is required"),
@@ -30,6 +33,7 @@ const bankAccountSchema = z.object({
   is_restricted: z.boolean(),
   restrictions: z.string().optional(),
   primary_signatory_id: z.string().min(1, "Primary signatory is required"),
+  secondary_signatories: z.array(z.string()).optional(),
   is_active: z.boolean(),
   opening_date: z.string().min(1, "Opening date is required"),
   closing_date: z.string().optional(),
@@ -74,9 +78,7 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
 
   const { data: currencies = [] } = useGetCurrenciesQuery()
 
-  const { data: users = [] } = useGetAdminUsersQuery({
-    is_active: true,
-  })
+  const { data: users = [] } = useGetAdminUsersQuery()
 
   const form = useForm<BankAccountFormData>({
     resolver: zodResolver(bankAccountSchema),
@@ -90,6 +92,7 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
       is_restricted: false,
       restrictions: "",
       primary_signatory_id: "",
+      secondary_signatories: [],
       is_active: true,
       opening_date: new Date().toISOString().split("T")[0],
       closing_date: "",
@@ -115,6 +118,7 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
         is_restricted: account.is_restricted,
         restrictions: account.restrictions || "",
         primary_signatory_id: account.primary_signatory.id.toString(),
+        secondary_signatories: account.secondary_signatories?.map((u) => u.id.toString()) || [],
         is_active: account.is_active,
         opening_date: account.opening_date,
         closing_date: account.closing_date || "",
@@ -136,6 +140,7 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
         is_restricted: false,
         restrictions: "",
         primary_signatory_id: "",
+        secondary_signatories: [],
         is_active: true,
         opening_date: new Date().toISOString().split("T")[0],
         closing_date: "",
@@ -166,6 +171,7 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
         financial_institution_id: Number.parseInt(data.financial_institution_id),
         currency_id: Number.parseInt(data.currency_id),
         primary_signatory_id: Number.parseInt(data.primary_signatory_id),
+        secondary_signatory_ids: data.secondary_signatories?.map((id) => Number.parseInt(id)) || [],
         minimum_balance: data.minimum_balance || "0.00",
         restrictions: data.is_restricted ? data.restrictions : null,
         closing_date: data.closing_date || null,
@@ -400,6 +406,45 @@ export function BankAccountDialog({ open, onOpenChange, account, onAccountSaved 
                           label: `${user.full_name} (${user.email})`,
                         }))}
                         placeholder="Select primary signatory"
+                        isClearable
+                        isSearchable
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="secondary_signatories"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Secondary Signatories (Optional)</FormLabel>
+                    <FormControl>
+                      <ReactSelectField
+                        value={
+                          field.value
+                            ?.map((id) => {
+                              const user = users.find((user) => user.id.toString() === id)
+                              return user
+                                ? {
+                                    value: id,
+                                    label: `${user.full_name} (${user.email})`,
+                                  }
+                                : null
+                            })
+                            .filter(Boolean) || []
+                        }
+                        onChange={(options) => field.onChange(options?.map((opt) => opt.value) || [])}
+                        options={users
+                          .filter((user) => user.id.toString() !== form.watch("primary_signatory_id"))
+                          .map((user) => ({
+                            value: user.id.toString(),
+                            label: `${user.full_name} (${user.email})`,
+                          }))}
+                        placeholder="Select secondary signatories"
+                        isMulti
                         isClearable
                         isSearchable
                       />
