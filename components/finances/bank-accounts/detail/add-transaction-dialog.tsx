@@ -36,7 +36,14 @@ function InfoTooltip({ content, children }: TooltipProps) {
             <Info className="h-4 w-4 ml-1 text-muted-foreground" />
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
+        <TooltipContent
+          side="top"
+          align="center"
+          className="max-w-xs z-[60]"
+          sideOffset={5}
+          avoidCollisions={true}
+          collisionPadding={10}
+        >
           <p className="text-sm">{content}</p>
         </TooltipContent>
       </Tooltip>
@@ -56,7 +63,7 @@ const transactionSchema = z.object({
   original_currency_id: z.string().optional(),
   exchange_rate_used: z.string().optional(),
   transfer_to_account_id: z.string().optional(),
-  reference_number: z.string().min(1, "Reference number is required"),
+  reference_number: z.string(),
   bank_reference: z.string().optional(),
   transaction_date: z.string().min(1, "Transaction date is required"),
   description: z.string().min(1, "Description is required"),
@@ -174,7 +181,7 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto z-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
@@ -425,12 +432,12 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <InfoTooltip content="A unique identifier for this transaction. This helps track and reference the transaction later. Auto-generated but can be customized.">
-                        Reference Number
+                      <InfoTooltip content="Auto-generated unique identifier for this transaction. This helps track and reference the transaction later and cannot be modified.">
+                        Reference Number (Auto-generated)
                       </InfoTooltip>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="TXN-123456" {...field} />
+                      <Input placeholder="TXN-123456" readOnly className="bg-muted cursor-not-allowed" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
