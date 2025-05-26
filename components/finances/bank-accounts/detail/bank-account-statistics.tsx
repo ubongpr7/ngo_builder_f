@@ -363,6 +363,68 @@ export function BankAccountStatistics({ accountId, account }: BankAccountStatist
         </Card>
       </div>
 
+      {/* Transaction Type Breakdown */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-semibold">Transaction Type Breakdown</h3>
+          <p className="text-sm text-muted-foreground">Detailed view of each transaction type and amounts</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {analytics.typeInsights.map((insight, index) => (
+            <Card key={insight.type} className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {insight.type.includes("Money In") || insight.type.includes("Transfer In") ? (
+                      <ArrowUpRight className="h-4 w-4 text-green-600" />
+                    ) : insight.type.includes("Money Out") || insight.type.includes("Transfer Out") ? (
+                      <ArrowDownRight className="h-4 w-4 text-red-600" />
+                    ) : (
+                      <Activity className="h-4 w-4 text-blue-600" />
+                    )}
+                    <span className="text-xs font-medium text-muted-foreground">{insight.type}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p
+                    className={`text-xl font-bold ${
+                      insight.type.includes("Money In") || insight.type.includes("Transfer In")
+                        ? "text-green-600"
+                        : insight.type.includes("Money Out") || insight.type.includes("Transfer Out")
+                          ? "text-red-600"
+                          : "text-blue-600"
+                    }`}
+                  >
+                    {formatCurrency(currencyCode, insight.amount)}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{insight.count} transactions</span>
+                    <span>{insight.percentage}%</span>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    Avg: {formatCurrency(currencyCode, insight.avgAmount)}
+                  </div>
+                </div>
+
+                <div
+                  className={`absolute bottom-0 left-0 right-0 h-1 ${
+                    insight.type.includes("Money In") || insight.type.includes("Transfer In")
+                      ? "bg-green-500"
+                      : insight.type.includes("Money Out") || insight.type.includes("Transfer Out")
+                        ? "bg-red-500"
+                        : "bg-blue-500"
+                  }`}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       {/* Insights and Patterns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Cash Flow Patterns by Day */}
