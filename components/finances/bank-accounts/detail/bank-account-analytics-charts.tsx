@@ -10,8 +10,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -22,14 +20,16 @@ import { TrendingUp, Calendar, DollarSign, Activity, PieChartIcon } from "lucide
 import { useGetAccountTransactionsQuery, useGetBalanceHistoryQuery } from "@/redux/features/finance/bank-accounts"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useState, useMemo } from "react"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface BankAccountAnalyticsChartsProps {
   accountId: number
+  account?: any // Add account data to get currency
 }
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
 
-export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsChartsProps) {
+export function BankAccountAnalyticsCharts({ accountId, account }: BankAccountAnalyticsChartsProps) {
   const [timeRange, setTimeRange] = useState("90")
 
   const { data: transactionsData, isLoading: transactionsLoading } = useGetAccountTransactionsQuery({
@@ -115,8 +115,8 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
       }
     })
 
-    // Monthly comparison
-    const monthlyComparison = Array.from({ length: 6 }, (_, i) => {
+    // Monthly transaction volume by type
+    const monthlyVolumeByType = Array.from({ length: 6 }, (_, i) => {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
 
@@ -125,22 +125,56 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
         return date >= monthStart && date <= monthEnd
       })
 
-      const credits = monthTransactions
-        .filter((t) => t.transaction_type === "credit")
-        .reduce((sum, t) => sum + Number.parseFloat(t.amount), 0)
+      const typeAmounts = {
+        credit: 0,
+        debit: 0,
+        transfer_in: 0,
+        transfer_out: 0,
+        currency_exchange: 0,
+      }
 
-      const debits = monthTransactions
-        .filter((t) => t.transaction_type === "debit")
-        .reduce((sum, t) => sum + Number.parseFloat(t.amount), 0)
+      monthTransactions.forEach((t) => {
+        const amount = Number.parseFloat(t.amount)
+        if (typeAmounts.hasOwnProperty(t.transaction_type)) {
+          typeAmounts[t.transaction_type] += amount
+        }
+      })
 
       return {
         month: monthStart.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-        credits,
-        debits,
-        net: credits - debits,
-        count: monthTransactions.length,
+        ...typeAmounts,
+        total: Object.values(typeAmounts).reduce((sum, val) => sum + val, 0),
       }
     }).reverse()
+
+    // Transaction type distribution
+    const transactionTypeDistribution = filteredTransactions.reduce(
+      (acc, transaction) => {
+        const type = transaction.transaction_type
+        if (!acc[type]) {
+          acc[type] = { count: 0, amount: 0 }
+        }
+        acc[type].count += 1
+        acc[type].amount += Number.parseFloat(transaction.amount)
+        return acc
+      },
+      {} as Record<string, { count: number; amount: number }>,
+    )
+
+    const typeLabels = {
+      credit: "Credit (Money In)",
+      debit: "Debit (Money Out)",
+      transfer_in: "Transfer In",
+      transfer_out: "Transfer Out",
+      currency_exchange: "Currency Exchange",
+    }
+
+    const transactionTypeChartData = Object.entries(transactionTypeDistribution).map(([type, data]) => ({
+      type: typeLabels[type] || type,
+      count: data.count,
+      amount: data.amount,
+      percentage: filteredTransactions.length > 0 ? ((data.count / filteredTransactions.length) * 100).toFixed(1) : "0",
+    }))
 
     // Cash flow patterns
     const cashFlowPatterns = filteredTransactions.reduce(
@@ -169,8 +203,9 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
       weeklyData,
       hourlyVolume,
       sizeDistribution,
-      monthlyComparison,
       cashFlowData,
+      monthlyVolumeByType,
+      transactionTypeChartData,
     }
   }, [transactionsData, timeRange])
 
@@ -190,6 +225,14 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
         </CardContent>
       </Card>
     )
+  }
+
+  const typeLabels = {
+    credit: "Credit (Money In)",
+    debit: "Debit (Money Out)",
+    transfer_in: "Transfer In",
+    transfer_out: "Transfer Out",
+    currency_exchange: "Currency Exchange",
   }
 
   return (
@@ -234,10 +277,12 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
               <BarChart data={analyticsData.weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="week" />
-                <YAxis />
+                <YAxis
+                  tickFormatter={(value) => formatCurrency(account?.currency?.code || "USD", value, { compact: true })}
+                />
                 <Tooltip
                   formatter={(value, name) => [
-                    `$${Number(value).toLocaleString()}`,
+                    formatCurrency(account?.currency?.code || "USD", Number(value)),
                     name === "credits" ? "Credits" : name === "debits" ? "Debits" : "Net Flow",
                   ]}
                 />
@@ -297,7 +342,7 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
                 <YAxis />
                 <Tooltip
                   formatter={(value, name) => [
-                    name === "count" ? value : `$${Number(value).toLocaleString()}`,
+                    name === "count" ? value : formatCurrency(account?.currency?.code || "USD", Number(value)),
                     name === "count" ? "Transaction Count" : "Total Amount",
                   ]}
                 />
@@ -321,10 +366,12 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
               <BarChart data={analyticsData.cashFlowData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="day" />
-                <YAxis />
+                <YAxis
+                  tickFormatter={(value) => formatCurrency(account?.currency?.code || "USD", value, { compact: true })}
+                />
                 <Tooltip
                   formatter={(value, name) => [
-                    `$${Number(value).toLocaleString()}`,
+                    formatCurrency(account?.currency?.code || "USD", Number(value)),
                     name === "credits" ? "Credits" : "Debits",
                   ]}
                 />
@@ -336,8 +383,78 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
         </Card>
       </div>
 
-      {/* Monthly Comparison */}
+      {/* Monthly Transaction Volume by Type */}
       <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Monthly Transaction Volume
+          </CardTitle>
+          <CardDescription>All transaction types by month</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={analyticsData.monthlyVolumeByType}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis
+                tickFormatter={(value) => formatCurrency(account?.currency?.code || "USD", value, { compact: true })}
+              />
+              <Tooltip
+                formatter={(value, name) => [
+                  formatCurrency(account?.currency?.code || "USD", Number(value)),
+                  typeLabels[name] || name,
+                ]}
+              />
+              <Bar dataKey="credit" stackId="a" fill="#10b981" name="credit" />
+              <Bar dataKey="debit" stackId="a" fill="#ef4444" name="debit" />
+              <Bar dataKey="transfer_in" stackId="a" fill="#3b82f6" name="transfer_in" />
+              <Bar dataKey="transfer_out" stackId="a" fill="#f59e0b" name="transfer_out" />
+              <Bar dataKey="currency_exchange" stackId="a" fill="#8b5cf6" name="currency_exchange" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Transaction Types Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChartIcon className="h-5 w-5" />
+            Transaction Types
+          </CardTitle>
+          <CardDescription>Distribution by transaction type</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={analyticsData.transactionTypeChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ type, percentage }) => `${type}: ${percentage}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="count"
+              >
+                {analyticsData.transactionTypeChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value, name) => [
+                  name === "count" ? value : formatCurrency(account?.currency?.code || "USD", Number(value)),
+                  name === "count" ? "Transaction Count" : "Total Amount",
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Monthly Comparison */}
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -350,10 +467,10 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
             <LineChart data={analyticsData.monthlyComparison}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
-              <YAxis />
+              <YAxis tickFormatter={(value) => formatCurrency(account?.currency?.code || 'USD', value, { compact: true })} />
               <Tooltip
                 formatter={(value, name) => [
-                  `$${Number(value).toLocaleString()}`,
+                  formatCurrency(account?.currency?.code || 'USD', Number(value)),
                   name === "credits" ? "Credits" : name === "debits" ? "Debits" : "Net Flow",
                 ]}
               />
@@ -363,7 +480,7 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Balance History */}
       {balanceHistory && balanceHistory.length > 0 && (
@@ -385,10 +502,12 @@ export function BankAccountAnalyticsCharts({ accountId }: BankAccountAnalyticsCh
                     new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                   }
                 />
-                <YAxis tickFormatter={(value) => `$${Number(value).toLocaleString()}`} />
+                <YAxis
+                  tickFormatter={(value) => formatCurrency(account?.currency?.code || "USD", value, { compact: true })}
+                />
                 <Tooltip
                   labelFormatter={(value) => new Date(value).toLocaleDateString()}
-                  formatter={(value) => [`$${Number(value).toLocaleString()}`, "Balance"]}
+                  formatter={(value) => [formatCurrency(account?.currency?.code || "USD", Number(value)), "Balance"]}
                 />
                 <Area type="monotone" dataKey="balance" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
               </AreaChart>

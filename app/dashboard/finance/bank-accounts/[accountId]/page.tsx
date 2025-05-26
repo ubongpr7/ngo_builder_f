@@ -35,6 +35,7 @@ import { toast } from "sonner"
 import { AddTransactionDialog } from "@/components/finances/bank-accounts/detail/add-transaction-dialog"
 import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { formatCurrency } from "@/lib/currency-utils"
 
 export default function BankAccountDetailPage() {
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
@@ -173,7 +174,7 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
               <DollarSign className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Current Balance</p>
-                <p className="text-2xl font-bold">{account.formatted_balance}</p>
+                <p className="text-2xl font-bold">{formatCurrency(account.currency.code, account.current_balance)}</p>
               </div>
             </div>
           </CardContent>
@@ -250,7 +251,7 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
-          <BankAccountAnalyticsCharts accountId={accountId} />
+          <BankAccountAnalyticsCharts accountId={accountId} account={account} />
         </TabsContent>
 {        /* Balance History Tab 
         <TabsContent value="balance-history" className="space-y-6">
