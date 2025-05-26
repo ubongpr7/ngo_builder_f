@@ -86,7 +86,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
   // Institution distribution
   const institutionData = accounts.reduce(
     (acc, account) => {
-      const institution = account.financial_institution.name
+      const institution = account.financial_institution.code
       acc[institution] = (acc[institution] || 0) + 1
       return acc
     },
@@ -94,7 +94,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
   )
 
   const institutionChartData = Object.entries(institutionData).map(([institution, count]) => ({
-    institution: institution.length > 25 ? institution.substring(0, 12) + "..." : institution,
+    institution: institution.length > 25 ? institution.substring(0, 25) + "..." : institution,
     count,
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
