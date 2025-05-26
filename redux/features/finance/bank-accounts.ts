@@ -61,18 +61,7 @@ export const bankAccountsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Update bank account
-    updateBankAccount: builder.mutation<
-      BankAccount,
-      {
-        id: number
-        data: Partial<BankAccount> & {
-          financial_institution_id?: number
-          currency_id?: number
-          primary_signatory_id?: number
-          secondary_signatory_ids?: number[]
-        }
-      }
-    >({
+    updateBankAccount: builder.mutation({
       query: ({ id, data }) => ({
         url: `/${backend}/bank-accounts/${id}/`,
         method: "PATCH",
