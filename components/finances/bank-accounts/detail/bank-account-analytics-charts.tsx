@@ -176,46 +176,28 @@ export function BankAccountAnalyticsCharts({ accountId, account }: BankAccountAn
       percentage: filteredTransactions.length > 0 ? ((data.count / filteredTransactions.length) * 100).toFixed(1) : "0",
     }))
 
-    // Cash flow patterns - Fixed to show proper money in vs money out
+    // Cash flow patterns
     const cashFlowPatterns = filteredTransactions.reduce(
       (acc, transaction) => {
         const dayOfWeek = new Date(transaction.transaction_date).toLocaleDateString("en-US", { weekday: "long" })
         if (!acc[dayOfWeek]) {
-          acc[dayOfWeek] = {
-            day: dayOfWeek,
-            moneyIn: 0,
-            moneyOut: 0,
-            netFlow: 0,
-            count: 0,
-          }
+          acc[dayOfWeek] = { day: dayOfWeek, credits: 0, debits: 0, count: 0 }
         }
 
-        const amount = Number.parseFloat(transaction.amount)
-
-        // Money In: Credits and Transfer In
-        if (transaction.transaction_type === "credit" || transaction.transaction_type === "transfer_in") {
-          acc[dayOfWeek].moneyIn += amount
+        if (transaction.transaction_type === "credit") {
+          acc[dayOfWeek].credits += Number.parseFloat(transaction.amount)
+        } else {
+          acc[dayOfWeek].debits += Number.parseFloat(transaction.amount)
         }
-
-        // Money Out: Debits and Transfer Out
-        if (transaction.transaction_type === "debit" || transaction.transaction_type === "transfer_out") {
-          acc[dayOfWeek].moneyOut += amount
-        }
-
         acc[dayOfWeek].count += 1
+
         return acc
       },
       {} as Record<string, any>,
     )
 
     const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    const cashFlowData = dayOrder.map((day) => {
-      const dayData = cashFlowPatterns[day] || { day, moneyIn: 0, moneyOut: 0, count: 0 }
-      return {
-        ...dayData,
-        netFlow: dayData.moneyIn - dayData.moneyOut,
-      }
-    })
+    const cashFlowData = dayOrder.map((day) => cashFlowPatterns[day] || { day, credits: 0, debits: 0, count: 0 })
 
     return {
       weeklyData,
@@ -377,7 +359,7 @@ export function BankAccountAnalyticsCharts({ accountId, account }: BankAccountAn
               <DollarSign className="h-5 w-5" />
               Cash Flow by Day
             </CardTitle>
-            <CardDescription>Money in vs money out by day of week</CardDescription>
+            <CardDescription>Average daily cash flow patterns</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -390,12 +372,11 @@ export function BankAccountAnalyticsCharts({ accountId, account }: BankAccountAn
                 <Tooltip
                   formatter={(value, name) => [
                     formatCurrency(account?.currency?.code || "USD", Number(value)),
-                    name === "moneyIn" ? "Money In" : name === "moneyOut" ? "Money Out" : "Net Flow",
+                    name === "credits" ? "Credits" : "Debits",
                   ]}
                 />
-                <Bar dataKey="moneyIn" fill="#10b981" name="moneyIn" />
-                <Bar dataKey="moneyOut" fill="#ef4444" name="moneyOut" />
-                <Bar dataKey="netFlow" fill="#3b82f6" name="netFlow" />
+                <Bar dataKey="credits" fill="#10b981" name="credits" />
+                <Bar dataKey="debits" fill="#ef4444" name="debits" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
