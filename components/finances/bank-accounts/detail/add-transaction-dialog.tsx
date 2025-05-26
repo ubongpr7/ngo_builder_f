@@ -51,28 +51,44 @@ function InfoTooltip({ content, children }: TooltipProps) {
   )
 }
 
-const transactionSchema = z.object({
-  transaction_type: z.enum(["credit", "debit", "transfer_in", "transfer_out", "currency_exchange"]),
-  amount: z
-    .string()
-    .min(1, "Amount is required")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Amount must be a positive number",
-    }),
-  original_amount: z.string().optional(),
-  original_currency_id: z.string().optional(),
-  exchange_rate_used: z.string().optional(),
-  transfer_to_account_id: z.string().optional(),
-  reference_number: z.string(),
-  bank_reference: z.string().optional(),
-  transaction_date: z.string().min(1, "Transaction date is required"),
-  description: z.string().min(1, "Description is required"),
-  status: z.enum(["pending", "processing", "completed", "failed", "cancelled"]),
-  processor_fee: z.string().optional(),
-  net_amount: z.string().optional(),
-})
+// Dynamic schema that changes based on currency selection
+const createTransactionSchema = (isDifferentCurrency: boolean) =>
+  z.object({
+    transaction_type: z.enum(["credit", "debit", "transfer_in", "transfer_out", "currency_exchange"]),
+    amount: z
+      .string()
+      .min(1, "Amount is required")
+      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+        message: "Amount must be a positive number",
+      }),
+    original_amount: isDifferentCurrency
+      ? z
+          .string()
+          .min(1, "Original amount is required when using different currency")
+          .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+            message: "Original amount must be a positive number",
+          })
+      : z.string().optional(),
+    original_currency_id: z.string().optional(),
+    exchange_rate_used: isDifferentCurrency
+      ? z
+          .string()
+          .min(1, "Exchange rate is required when using different currency")
+          .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+            message: "Exchange rate must be a positive number",
+          })
+      : z.string().optional(),
+    transfer_to_account_id: z.string().optional(),
+    reference_number: z.string(),
+    bank_reference: z.string().optional(),
+    transaction_date: z.string().min(1, "Transaction date is required"),
+    description: z.string().min(1, "Description is required"),
+    status: z.enum(["pending", "processing", "completed", "failed", "cancelled"]),
+    processor_fee: z.string().optional(),
+    net_amount: z.string().optional(),
+  })
 
-type TransactionFormData = z.infer<typeof transactionSchema>
+type TransactionFormData = z.infer<ReturnType<typeof createTransactionSchema>>
 
 interface AddTransactionDialogProps {
   open: boolean
@@ -99,13 +115,18 @@ const statusOptions = [
 
 export function AddTransactionDialog({ open, onOpenChange, account, onTransactionAdded }: AddTransactionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCalculating, setIsCalculating] = useState(false)
 
   const { data: currencies = [] } = useGetCurrenciesQuery()
   const { data: bankAccountsData } = useGetBankAccountsQuery({})
   const bankAccounts = bankAccountsData?.results || []
 
+  // Watch for currency changes to determine if different currency is selected
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState<string>("")
+  const isDifferentCurrency = selectedCurrencyId && selectedCurrencyId !== account.currency.id.toString()
+
   const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
+    resolver: zodResolver(createTransactionSchema(isDifferentCurrency)),
     defaultValues: {
       transaction_type: "credit",
       amount: "",
@@ -125,7 +146,49 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
 
   const watchedTransactionType = form.watch("transaction_type")
   const watchedAmount = form.watch("amount")
+  const watchedOriginalAmount = form.watch("original_amount")
+  const watchedExchangeRate = form.watch("exchange_rate_used")
   const watchedProcessorFee = form.watch("processor_fee")
+  const watchedOriginalCurrency = form.watch("original_currency_id")
+
+  // Handle currency selection changes
+  React.useEffect(() => {
+    setSelectedCurrencyId(watchedOriginalCurrency || "")
+
+    if (watchedOriginalCurrency === account.currency.id.toString() || !watchedOriginalCurrency) {
+      // Same currency or no currency selected - set rate to 1 and sync amounts
+      form.setValue("exchange_rate_used", "1.00000000")
+      if (watchedAmount) {
+        form.setValue("original_amount", watchedAmount)
+      }
+    }
+  }, [watchedOriginalCurrency, account.currency.id, form, watchedAmount])
+
+  // Auto-calculate amounts based on currency conversion
+  React.useEffect(() => {
+    if (isDifferentCurrency && !isCalculating) {
+      setIsCalculating(true)
+
+      const originalAmount = Number.parseFloat(watchedOriginalAmount) || 0
+      const exchangeRate = Number.parseFloat(watchedExchangeRate) || 0
+      const currentAmount = Number.parseFloat(watchedAmount) || 0
+
+      // If user changed original amount or exchange rate, calculate main amount
+      if (originalAmount > 0 && exchangeRate > 0) {
+        const calculatedAmount = originalAmount * exchangeRate
+        if (Math.abs(calculatedAmount - currentAmount) > 0.01) {
+          form.setValue("amount", calculatedAmount.toFixed(2))
+        }
+      }
+      // If user changed main amount and we have exchange rate, calculate original amount
+      else if (currentAmount > 0 && exchangeRate > 0 && originalAmount === 0) {
+        const calculatedOriginalAmount = currentAmount / exchangeRate
+        form.setValue("original_amount", calculatedOriginalAmount.toFixed(2))
+      }
+
+      setTimeout(() => setIsCalculating(false), 100)
+    }
+  }, [watchedOriginalAmount, watchedExchangeRate, watchedAmount, isDifferentCurrency, isCalculating, form])
 
   // Auto-calculate net amount
   React.useEffect(() => {
@@ -176,8 +239,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
     if (!isSubmitting) {
       onOpenChange(false)
       form.reset()
+      setSelectedCurrencyId("")
     }
   }
+
+  const selectedCurrency = currencies.find((c) => c.id.toString() === selectedCurrencyId)
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
@@ -261,24 +327,87 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
               />
             </div>
 
-            {/* Amount and Currency */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Currency Selection First */}
+            <FormField
+              control={form.control}
+              name="original_currency_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    <InfoTooltip content="Select the currency for this transaction. If different from account currency, conversion will be calculated automatically.">
+                      Transaction Currency
+                    </InfoTooltip>
+                  </FormLabel>
+                  <FormControl>
+                    <ReactSelectField
+                      value={
+                        currencies.find((curr) => curr.id.toString() === field.value)
+                          ? {
+                              value: field.value,
+                              label: `${currencies.find((curr) => curr.id.toString() === field.value)?.code} - ${currencies.find((curr) => curr.id.toString() === field.value)?.name}`,
+                            }
+                          : null
+                      }
+                      onChange={(option) => field.onChange(option?.value || "")}
+                      options={currencies.map((currency) => ({
+                        value: currency.id.toString(),
+                        label: `${currency.code} - ${currency.name}`,
+                      }))}
+                      placeholder={`Select currency (Account: ${account.currency.code})`}
+                      isClearable
+                      isSearchable
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Currency Conversion Notice */}
+            {isDifferentCurrency && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <Info className="h-4 w-4" />
+                  <span className="font-medium">Currency Conversion Active</span>
+                </div>
+                <p className="text-sm text-blue-700 mt-1">
+                  Converting from {selectedCurrency?.code} to {account.currency.code}. Enter any two values (original
+                  amount, exchange rate, or final amount) and the third will be calculated automatically.
+                </p>
+              </div>
+            )}
+
+            {/* Multi-currency support - Enhanced */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
-                name="amount"
+                name="original_amount"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
                       <InfoTooltip
-                        content={`The transaction amount in ${account.currency.code}. For credits, this is money received. For debits, this is money spent.`}
+                        content={
+                          isDifferentCurrency
+                            ? `Amount in ${selectedCurrency?.code || "original currency"}. Required when using different currency.`
+                            : "Amount in the same currency as the account."
+                        }
                       >
-                        Amount ({account.currency.code})
+                        {isDifferentCurrency
+                          ? `Amount in ${selectedCurrency?.code || "Original Currency"} ${isDifferentCurrency ? "*" : ""}`
+                          : `Amount (${account.currency.code})`}
                       </InfoTooltip>
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="number" step="0.01" placeholder="0.00" className="pl-10" {...field} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="pl-10"
+                          {...field}
+                          disabled={!isDifferentCurrency && watchedAmount !== ""}
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -288,12 +417,45 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
 
               <FormField
                 control={form.control}
-                name="processor_fee"
+                name="exchange_rate_used"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <InfoTooltip content="Any fees charged by payment processors (like PayPal, Stripe, bank fees). This will be deducted from the amount to calculate net amount.">
-                        Processor Fee (Optional)
+                      <InfoTooltip
+                        content={
+                          isDifferentCurrency
+                            ? `Exchange rate: 1 ${selectedCurrency?.code} = X ${account.currency.code}. Required for currency conversion.`
+                            : "Exchange rate is automatically set to 1 for same currency transactions."
+                        }
+                      >
+                        Exchange Rate {isDifferentCurrency ? "*" : ""}
+                      </InfoTooltip>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.00000001"
+                        placeholder="1.00000000"
+                        {...field}
+                        readOnly={!isDifferentCurrency}
+                        className={!isDifferentCurrency ? "bg-muted" : ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      <InfoTooltip
+                        content={`Final amount in ${account.currency.code} that will be recorded in the account.`}
+                      >
+                        Final Amount ({account.currency.code})
                       </InfoTooltip>
                     </FormLabel>
                     <FormControl>
@@ -308,78 +470,59 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
               />
             </div>
 
-            {/* Multi-currency support */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Processor Fee */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="original_amount"
+                name="processor_fee"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      <InfoTooltip content="If this transaction was originally in a different currency, enter the original amount here. Used for multi-currency tracking.">
-                        Original Amount (Optional)
+                      <InfoTooltip content="Any fees charged by payment processors (like PayPal, Stripe, bank fees). This will be deducted from the final amount to calculate net amount.">
+                        Processor Fee (Optional)
                       </InfoTooltip>
                     </FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="number" step="0.01" placeholder="0.00" className="pl-10" {...field} />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="original_currency_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      <InfoTooltip content="The original currency if this transaction involved currency conversion. Select the currency the transaction was originally made in.">
-                        Original Currency
-                      </InfoTooltip>
-                    </FormLabel>
-                    <FormControl>
-                      <ReactSelectField
-                        value={
-                          currencies.find((curr) => curr.id.toString() === field.value)
-                            ? {
-                                value: field.value,
-                                label: `${currencies.find((curr) => curr.id.toString() === field.value)?.code} - ${currencies.find((curr) => curr.id.toString() === field.value)?.name}`,
-                              }
-                            : null
-                        }
-                        onChange={(option) => field.onChange(option?.value || "")}
-                        options={currencies.map((currency) => ({
-                          value: currency.id.toString(),
-                          label: `${currency.code} - ${currency.name}`,
-                        }))}
-                        placeholder="Select currency"
-                        isClearable
-                        isSearchable
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="exchange_rate_used"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      <InfoTooltip content="The exchange rate used to convert from original currency to account currency. Format: 1 original currency = X account currency.">
-                        Exchange Rate
-                      </InfoTooltip>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.00000001" placeholder="1.00000000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Net Amount (calculated) */}
+              {form.watch("net_amount") && (
+                <FormField
+                  control={form.control}
+                  name="net_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        <InfoTooltip content="The final amount after deducting processor fees. This is automatically calculated: Final Amount - Processor Fee = Net Amount.">
+                          Net Amount (After Fees)
+                        </InfoTooltip>
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            readOnly
+                            className="bg-muted pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             {/* Transfer Account (if transfer type) */}
@@ -483,27 +626,6 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 )}
               />
             </div>
-
-            {/* Net Amount (calculated) */}
-            {form.watch("net_amount") && (
-              <FormField
-                control={form.control}
-                name="net_amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      <InfoTooltip content="The final amount after deducting processor fees. This is automatically calculated: Amount - Processor Fee = Net Amount.">
-                        Net Amount (After Fees)
-                      </InfoTooltip>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="0.00" readOnly className="bg-muted" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             {/* Description */}
             <FormField
