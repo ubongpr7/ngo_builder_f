@@ -79,6 +79,28 @@ export default function BankAccountsPage() {
   const totalBalance = activeAccounts.reduce((sum, account) => sum + Number.parseFloat(account.current_balance), 0)
   const donationAccounts = bankAccounts.filter((account) => account.accepts_donations)
   const restrictedAccounts = bankAccounts.filter((account) => account.is_restricted)
+const balancesByCurrency = activeAccounts.reduce(
+    (acc, account) => {
+      const currency = account.currency.code
+      const balance = Number.parseFloat(account.current_balance)
+
+      if (!acc[currency]) {
+        acc[currency] = {
+          total: 0,
+          count: 0,
+          symbol: account.currency.code,
+        }
+      }
+
+      acc[currency].total += balance
+      acc[currency].count += 1
+
+      return acc
+    },
+    {} as Record<string, { total: number; count: number; symbol: string }>,
+  )
+
+  const currencyBalances = Object.entries(balancesByCurrency)
 
   return (
     <div className="space-y-6">
@@ -128,14 +150,26 @@ export default function BankAccountsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center space-x-2">
               <DollarSign className="h-5 w-5 text-green-600" />
-              <div>
+              <div className="w-full">
                 <p className="text-sm font-medium text-muted-foreground">Total Balance</p>
-                <p className="text-2xl font-bold">${totalBalance.toLocaleString()}</p>
+                {currencyBalances.length > 0 ? (
+                  <div className="space-y-1">
+                    {currencyBalances.map(([currency, data]) => (
+                      <div key={currency} className="flex justify-between items-center">
+                        <span className="text-lg font-bold">
+                          {currency} {data.total.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-muted-foreground">({data.count} accounts)</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold">No balances</p>
+                )}
               </div>
             </div>
           </CardContent>
