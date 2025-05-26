@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams,useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -49,6 +49,12 @@ export default function BankAccountDetailPage() {
   const { data: account, isLoading, error, refetch } = useGetBankAccountByIdQuery(accountId)
   const [freezeAccount] = useFreezeBankAccountMutation()
   const [unfreezeAccount] = useUnfreezeBankAccountMutation()
+  const canViewTransactions = usePermissions(userRoles, {
+    requiredRoles: ["is_DB_admin", "is_DB_executive", "is_DB_staff", ],
+    requireKYC: true,
+    checkMode: "any",
+    })
+
 const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true
   , customCheck: (user) => !!account?.primary_signatory?.id && account.primary_signatory.id === user.user_id
  })
@@ -84,7 +90,7 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: ["is_DB_ad
       </div>
     )
   }
-
+  const router = useRouter()
   if (error || !account) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -97,6 +103,9 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: ["is_DB_ad
         </Card>
       </div>
     )
+  }
+  if (!canViewTransactions){
+    router.push("/dashboard/finance/bank-accounts")
   }
 
   const getAccountStatusBadge = () => {
