@@ -208,6 +208,9 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/finance/campaigns" icon={Heart}>
                   Campaigns
                 </NavItem>
+                <NavItem href="/dashboard/finance/bank-accounts" icon={Heart}>
+                  Bank Accounts
+                </NavItem>
                 <NavItem href="/dashboard/finance/donations" icon={Wallet}>
                   Donations
                 </NavItem>

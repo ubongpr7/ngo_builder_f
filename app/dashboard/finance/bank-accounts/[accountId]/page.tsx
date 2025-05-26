@@ -33,9 +33,15 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useState } from "react"
 import { toast } from "sonner"
 import { AddTransactionDialog } from "@/components/finances/bank-accounts/detail/add-transaction-dialog"
+import { usePermissions } from "@/components/permissionHander"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 export default function BankAccountDetailPage() {
+  const { data: userRoles } = useGetLoggedInProfileRolesQuery()
   const params = useParams()
+  
+
+
   const accountId = Number(params.accountId)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addTransactionDialogOpen,setAddTransactionDialogOpen] = useState(false)
@@ -43,7 +49,14 @@ export default function BankAccountDetailPage() {
   const { data: account, isLoading, error, refetch } = useGetBankAccountByIdQuery(accountId)
   const [freezeAccount] = useFreezeBankAccountMutation()
   const [unfreezeAccount] = useUnfreezeBankAccountMutation()
-
+const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true
+  , customCheck: (user) => !!account?.primary_signatory?.id && account.primary_signatory.id === user.user_id
+ })
+  const isTeamMember = usePermissions(userRoles, {
+    requiredRoles: [],
+    requireKYC: true,
+    customCheck: (user) => !!account?.secondary_signatories?.some((member) => member?.id === user.user_id),
+  })
   const handleFreeze = async () => {
     try {
       await freezeAccount(accountId).unwrap()
@@ -127,6 +140,7 @@ export default function BankAccountDetailPage() {
             </div>
           </div>
         </div>
+          {isPrimaryPignatory && (
 
         <div className="flex items-center gap-2">
           {account.account_status === "frozen" ? (
@@ -144,7 +158,8 @@ export default function BankAccountDetailPage() {
             <Edit className="h-4 w-4 mr-2" />
             Edit Account
           </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Stats */}
@@ -205,8 +220,6 @@ export default function BankAccountDetailPage() {
           <TabsTrigger value="statistics">Statistics</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="balance-history">Balance History</TabsTrigger>
-          <TabsTrigger value="management">Management</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -216,6 +229,7 @@ export default function BankAccountDetailPage() {
         <TabsContent value="statistics" className="space-y-6">
           <BankAccountStatistics accountId={accountId} />
         </TabsContent>
+          {isPrimaryPignatory && (
 
         <TabsContent value="transactions" className="space-y-6">
           <div className="flex justify-between items-center mb-4">
@@ -230,11 +244,12 @@ export default function BankAccountDetailPage() {
           </div>
           <BankAccountTransactionHistory accountId={accountId} />
         </TabsContent>
+          )}
 
         <TabsContent value="analytics" className="space-y-6">
           <BankAccountAnalyticsCharts accountId={accountId} />
         </TabsContent>
-
+{        /* Balance History Tab 
         <TabsContent value="balance-history" className="space-y-6">
           <BankAccountBalanceHistory accountId={accountId} />
         </TabsContent>
@@ -242,9 +257,10 @@ export default function BankAccountDetailPage() {
         <TabsContent value="management" className="space-y-6">
           <BankAccountManagement account={account} onUpdate={refetch} />
         </TabsContent>
+        */
+        }
       </Tabs>
-
-      {/* Edit Dialog */}
+        {isPrimaryPignatory && (
       <BankAccountDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
@@ -254,6 +270,7 @@ export default function BankAccountDetailPage() {
           refetch()
         }}
       />
+      )}
     </div>
   )
 }
