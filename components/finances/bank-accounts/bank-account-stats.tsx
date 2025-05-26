@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { Building, DollarSign, TrendingUp, CreditCard, AlertTriangle, CheckCircle, Activity } from "lucide-react"
 import type { BankAccount } from "@/types/finance"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface BankAccountStatsProps {
   accounts: BankAccount[]
@@ -19,11 +20,30 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
   const donationAccounts = accounts.filter((acc) => acc.accepts_donations).length
   const restrictedAccounts = accounts.filter((acc) => acc.is_restricted).length
 
-  const totalBalance = accounts
+  // Group balances by currency instead of mixing them
+  const currencyBalances = accounts
     .filter((acc) => acc.is_active)
-    .reduce((sum, acc) => sum + Number.parseFloat(acc.current_balance), 0)
+    .reduce(
+      (acc, account) => {
+        const currency = account.currency.code
+        const balance = Number.parseFloat(account.current_balance)
+        if (!acc[currency]) {
+          acc[currency] = { total: 0, count: 0 }
+        }
+        acc[currency].total += balance
+        acc[currency].count += 1
+        return acc
+      },
+      {} as Record<string, { total: number; count: number }>,
+    )
 
-  const averageBalance = totalBalance / (activeAccounts || 1)
+  // Format currency balances for display
+  const formattedCurrencyBalances = Object.entries(currencyBalances).map(([currency, data]) => ({
+    currency,
+    formatted: formatCurrency(currency, data.total),
+    total: data.total,
+    count: data.count,
+  }))
 
   // Account type distribution
   const accountTypeData = accounts.reduce(
@@ -41,7 +61,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
 
-  // Currency distribution
+  // Currency distribution with proper formatting
   const currencyData = accounts.reduce(
     (acc, account) => {
       const currency = account.currency.code
@@ -60,7 +80,7 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
     currency,
     count: data.count,
     balance: data.balance,
-    percentage: ((data.balance / totalBalance) * 100).toFixed(1),
+    formattedBalance: formatCurrency(currency, data.balance),
   }))
 
   // Institution distribution
@@ -79,19 +99,51 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
     percentage: ((count / totalAccounts) * 100).toFixed(1),
   }))
 
-  // Balance distribution
-  const balanceRanges = [
-    { range: "$0 - $1K", min: 0, max: 1000 },
-    { range: "$1K - $10K", min: 1000, max: 10000 },
-    { range: "$10K - $50K", min: 10000, max: 50000 },
-    { range: "$50K - $100K", min: 50000, max: 100000 },
-    { range: "$100K+", min: 100000, max: Number.POSITIVE_INFINITY },
-  ]
+  // Dynamic balance ranges based on currencies present
+  const getBalanceRanges = (currency: string) => {
+    const isUSD = currency === "USD"
+    const multiplier = isUSD ? 1 : currency === "NGN" ? 1000 : 1
 
+    return [
+      {
+        range: `0 - ${formatCurrency(currency, 1000 * multiplier, { compact: true })}`,
+        min: 0,
+        max: 1000 * multiplier,
+      },
+      {
+        range: `${formatCurrency(currency, 1000 * multiplier, { compact: true })} - ${formatCurrency(currency, 10000 * multiplier, { compact: true })}`,
+        min: 1000 * multiplier,
+        max: 10000 * multiplier,
+      },
+      {
+        range: `${formatCurrency(currency, 10000 * multiplier, { compact: true })} - ${formatCurrency(currency, 50000 * multiplier, { compact: true })}`,
+        min: 10000 * multiplier,
+        max: 50000 * multiplier,
+      },
+      {
+        range: `${formatCurrency(currency, 50000 * multiplier, { compact: true })} - ${formatCurrency(currency, 100000 * multiplier, { compact: true })}`,
+        min: 50000 * multiplier,
+        max: 100000 * multiplier,
+      },
+      {
+        range: `${formatCurrency(currency, 100000 * multiplier, { compact: true })}+`,
+        min: 100000 * multiplier,
+        max: Number.POSITIVE_INFINITY,
+      },
+    ]
+  }
+
+  // Use the most common currency for balance distribution
+  const primaryCurrency =
+    Object.keys(currencyData).reduce((a, b) => (currencyData[a].count > currencyData[b].count ? a : b)) || "USD"
+
+  const balanceRanges = getBalanceRanges(primaryCurrency)
   const balanceDistribution = balanceRanges.map((range) => {
     const count = accounts.filter((acc) => {
       const balance = Number.parseFloat(acc.current_balance)
-      return balance >= range.min && balance < range.max
+      const accountCurrency = acc.currency.code
+      // Only count accounts with the same currency
+      return accountCurrency === primaryCurrency && balance >= range.min && balance < range.max
     }).length
     return {
       range: range.range,
@@ -143,15 +195,24 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Multi-Currency Balance Display */}
+        <Card className="md:col-span-2">
           <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mb-3">
               <DollarSign className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Balance</p>
-                <p className="text-2xl font-bold">${totalBalance.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Avg: ${averageBalance.toLocaleString()}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Balances by Currency</p>
               </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {formattedCurrencyBalances.map(({ currency, formatted, count }) => (
+                <div key={currency} className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-lg font-bold">{formatted}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {count} account{count !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -165,21 +226,6 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
                 <p className="text-2xl font-bold">{donationAccounts}</p>
                 <p className="text-xs text-muted-foreground">
                   {((donationAccounts / totalAccounts) * 100).toFixed(1)}% of total
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Restricted</p>
-                <p className="text-2xl font-bold">{restrictedAccounts}</p>
-                <p className="text-xs text-muted-foreground">
-                  {((restrictedAccounts / totalAccounts) * 100).toFixed(1)}% of total
                 </p>
               </div>
             </div>
@@ -238,7 +284,9 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
                 <YAxis />
                 <Tooltip
                   formatter={(value, name) => [
-                    name === "balance" ? `$${Number(value).toLocaleString()}` : value,
+                    name === "balance"
+                      ? currencyChartData.find((d) => d.balance === value)?.formattedBalance || value
+                      : value,
                     name === "balance" ? "Total Balance" : "Account Count",
                   ]}
                 />
@@ -275,9 +323,9 @@ export function BankAccountStats({ accounts }: BankAccountStatsProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Balance Ranges
+              Balance Ranges ({primaryCurrency})
             </CardTitle>
-            <CardDescription>Account distribution by balance</CardDescription>
+            <CardDescription>Account distribution by balance in {primaryCurrency}</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
