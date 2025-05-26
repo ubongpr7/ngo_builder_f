@@ -244,11 +244,11 @@ export function BankAccountsTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Switch
+                      {/*<Switch
                         checked={account.is_active}
                         onCheckedChange={() => handleToggleActive(account)}
                         disabled={updatingAccount === account.id}
-                      />
+                      />*/}
                       <div className="flex items-center gap-1">
                         {account.is_active ? (
                           <CheckCircle className="h-3 w-3 text-green-600" />
