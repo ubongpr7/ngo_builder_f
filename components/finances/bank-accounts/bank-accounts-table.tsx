@@ -238,7 +238,7 @@ export function BankAccountsTable({
                       <div className="font-medium">{formatCurrencyCompact(account.currency.code,account.current_balance)}</div>
                       {account.minimum_balance && Number.parseFloat(account.minimum_balance) > 0 && (
                         <div className="text-xs text-muted-foreground">
-                          Min: formatCurrencyCompact({account.currency.code} ,{Number.parseFloat(account.minimum_balance)})
+                          Min: {formatCurrencyCompact(account.currency.code ,Number.parseFloat(account.minimum_balance))}
                         </div>
                       )}
                     </div>
