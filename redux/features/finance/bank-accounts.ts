@@ -89,18 +89,7 @@ export const bankAccountsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Get account transactions
-    getAccountTransactions: builder.query<
-      PaginatedResponse<AccountTransaction>,
-      {
-        accountId: number
-        start_date?: string
-        end_date?: string
-        type?: string
-        status?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getAccountTransactions: builder.query({
       query: ({ accountId, ...params }) => {
         const queryParams = new URLSearchParams()
 

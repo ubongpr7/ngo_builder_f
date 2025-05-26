@@ -306,10 +306,8 @@ export function BankAccountsTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link href={`/dashboard/finance/bank-accounts/${account.id}`}>
-                          <span>
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
-                          </span>
                           </Link>
                           
                         </DropdownMenuItem>

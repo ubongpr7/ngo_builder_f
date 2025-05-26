@@ -188,7 +188,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {data?.results && data.results.length > 0 ? (
+          {data && data.length > 0 ? (
             <>
               <div className="rounded-md border">
                 <Table>
@@ -204,7 +204,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.results.map((transaction) => (
+                    {data.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
