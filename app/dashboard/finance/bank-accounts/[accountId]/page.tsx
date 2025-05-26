@@ -231,7 +231,7 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
         </TabsContent>
 
         <TabsContent value="statistics" className="space-y-6">
-          <BankAccountStatistics accountId={accountId} />
+          <BankAccountStatistics accountId={accountId} account={account} />
         </TabsContent>
         
         <TabsContent value="transactions" className="space-y-6">
