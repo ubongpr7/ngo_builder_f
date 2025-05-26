@@ -44,6 +44,7 @@ import {
 import { toast } from "react-toastify"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { BankAccount } from "@/types/finance"
+import { formatCurrencyCompact } from "@/lib/currency-utils"
 
 interface BankAccountsTableProps {
   accounts: BankAccount[]
@@ -234,10 +235,10 @@ export function BankAccountsTable({
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
-                      <div className="font-medium">{account.formatted_balance}</div>
+                      <div className="font-medium">{formatCurrencyCompact(account.currency.code,account.current_balance)}</div>
                       {account.minimum_balance && Number.parseFloat(account.minimum_balance) > 0 && (
                         <div className="text-xs text-muted-foreground">
-                          Min: {account.currency.code} {Number.parseFloat(account.minimum_balance).toLocaleString()}
+                          Min: formatCurrencyCompact({account.currency.code} ,{Number.parseFloat(account.minimum_balance)})
                         </div>
                       )}
                     </div>

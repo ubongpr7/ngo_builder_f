@@ -162,7 +162,7 @@ const balancesByCurrency = activeAccounts.reduce(
                     {currencyBalances.map(([currency, data]) => (
                       <div key={currency} className="flex justify-between items-center">
                         <span className="text-lg font-bold">
-                          {currency} {formatCurrencyCompact(currency,data.total)}
+                          {formatCurrencyCompact(currency,data.total)}
                         </span>
                         <span className="text-xs text-muted-foreground">({data.count} accounts)</span>
                       </div>
