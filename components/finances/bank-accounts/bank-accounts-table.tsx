@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   DropdownMenu,
@@ -304,8 +305,13 @@ export function BankAccountsTable({
                           Edit Account
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
+                          <Link href={`/dashboard/finance/bank-accounts/${account.id}`}>
+                          <span>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </span>
+                          </Link>
+                          
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Activity className="h-4 w-4 mr-2" />
