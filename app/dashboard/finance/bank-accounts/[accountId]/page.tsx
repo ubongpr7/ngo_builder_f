@@ -56,7 +56,7 @@ export default function BankAccountDetailPage() {
     checkMode: "any",
     })
 
-const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: ["is_DB_admin"], requireKYC: true
+const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requireKYC: true
   , customCheck: (user) => !!account?.primary_signatory?.id && account.primary_signatory.id === user.user_id
  })
   const isTeamMember = usePermissions(userRoles, {
