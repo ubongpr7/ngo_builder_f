@@ -1,3 +1,0 @@
-when user clicks on the campaign to donate, it donation dialog should app
-
-here show the detail of the donation in one view part, then a form for them to submit  a pending  donation proposal that will be
