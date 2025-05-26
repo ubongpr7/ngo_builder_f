@@ -295,6 +295,7 @@ export function BankAccountsTable({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
                         <DropdownMenuItem
                           onClick={() => {
                             setOpenDropdown(null) // Close dropdown first
@@ -311,7 +312,7 @@ export function BankAccountsTable({
                           </Link>
                           
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        {/*<DropdownMenuItem>
                           <Activity className="h-4 w-4 mr-2" />
                           View Transactions
                         </DropdownMenuItem>
@@ -344,7 +345,7 @@ export function BankAccountsTable({
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete Account
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
+*/}                      </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>

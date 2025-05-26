@@ -13,10 +13,14 @@ import { BankAccountFilters } from "@/components/finances/bank-accounts/bank-acc
 import { useGetBankAccountsQuery } from "@/redux/features/finance/bank-accounts"
 import type { BankAccount, BankAccountFilters as FilterType } from "@/types/finance"
 import { useGetFinancialInstitutionsQuery } from "@/redux/features/finance/financial-institutions"
+import { usePermissions } from "@/components/permissionHander"
+import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 
 export default function BankAccountsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null)
+    const { data: userRoles } = useGetLoggedInProfileRolesQuery()
+  
   const [filters, setFilters] = useState<FilterType>({
     page: 1,
     page_size: 20,
@@ -68,6 +72,9 @@ export default function BankAccountsPage() {
   }
 
   // Calculate summary stats
+  const canManageBankAccounts = usePermissions(userRoles, {
+    requiredRoles:['is_DB_admin']
+  })
   const activeAccounts = bankAccounts.filter((account) => account.is_active)
   const totalBalance = activeAccounts.reduce((sum, account) => sum + Number.parseFloat(account.current_balance), 0)
   const donationAccounts = bankAccounts.filter((account) => account.accepts_donations)
@@ -86,10 +93,13 @@ export default function BankAccountsPage() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={handleAddAccount}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Account
-          </Button>
+          {canManageBankAccounts && (
+            <Button onClick={handleAddAccount}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Account
+            </Button>
+          )}
+          
         </div>
       </div>
 
@@ -189,6 +199,7 @@ export default function BankAccountsPage() {
             onPageChange={handlePageChange}
             onEditAccount={handleEditAccount}
             onRefresh={refetch}
+
           />
         </TabsContent>
 
