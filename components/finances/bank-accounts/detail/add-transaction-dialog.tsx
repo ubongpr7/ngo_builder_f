@@ -12,13 +12,31 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CalendarIcon, DollarSign, Plus } from "lucide-react"
+import { CalendarIcon, DollarSign, Plus, Info } from "lucide-react"
 import { toast } from "react-toastify"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import { useGetBankAccountsQuery } from "@/redux/features/finance/bank-accounts"
 import { useCreateAccountTransactionMutation } from "@/redux/features/finance/account-transactions"
 import type { BankAccount } from "@/types/finance"
 import { ReactSelectField } from "@/components/ui/react-select-field"
+
+interface TooltipProps {
+  content: string
+  children: React.ReactNode
+}
+
+function InfoTooltip({ content, children }: TooltipProps) {
+  return (
+    <div className="relative inline-flex items-center group">
+      {children}
+      <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 max-w-xs">
+        {content}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+      </div>
+    </div>
+  )
+}
 
 const transactionSchema = z.object({
   transaction_type: z.enum(["credit", "debit", "transfer_in", "transfer_out", "currency_exchange"]),
@@ -71,7 +89,7 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
 
   const { data: currencies = [] } = useGetCurrenciesQuery()
   const { data: bankAccountsData } = useGetBankAccountsQuery({})
-  const bankAccounts = bankAccountsData
+  const bankAccounts = bankAccountsData?.results || []
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -170,7 +188,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="transaction_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Transaction Type</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="Choose the type of transaction: Credit (money coming in), Debit (money going out), Transfer (between accounts), or Currency Exchange">
+                        Transaction Type
+                      </InfoTooltip>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -198,7 +220,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="Current status of the transaction: Pending (waiting), Processing (in progress), Completed (finished), Failed (unsuccessful), or Cancelled">
+                        Status
+                      </InfoTooltip>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -229,7 +255,13 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount ({account.currency.code})</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip
+                        content={`The transaction amount in ${account.currency.code}. For credits, this is money received. For debits, this is money spent.`}
+                      >
+                        Amount ({account.currency.code})
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -246,7 +278,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="processor_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Processor Fee (Optional)</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="Any fees charged by payment processors (like PayPal, Stripe, bank fees). This will be deducted from the amount to calculate net amount.">
+                        Processor Fee (Optional)
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -266,7 +302,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="original_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Original Amount (Optional)</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="If this transaction was originally in a different currency, enter the original amount here. Used for multi-currency tracking.">
+                        Original Amount (Optional)
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="0.00" {...field} />
                     </FormControl>
@@ -280,7 +320,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="original_currency_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Original Currency</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="The original currency if this transaction involved currency conversion. Select the currency the transaction was originally made in.">
+                        Original Currency
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <ReactSelectField
                         value={
@@ -311,7 +355,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="exchange_rate_used"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Exchange Rate</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="The exchange rate used to convert from original currency to account currency. Format: 1 original currency = X account currency.">
+                        Exchange Rate
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" step="0.00000001" placeholder="1.00000000" {...field} />
                     </FormControl>
@@ -329,7 +377,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      {watchedTransactionType === "transfer_in" ? "Transfer From Account" : "Transfer To Account"}
+                      <InfoTooltip
+                        content={`Select the ${watchedTransactionType === "transfer_in" ? "source" : "destination"} account for this transfer. Money will be ${watchedTransactionType === "transfer_in" ? "coming from" : "going to"} this account.`}
+                      >
+                        {watchedTransactionType === "transfer_in" ? "Transfer From Account" : "Transfer To Account"}
+                      </InfoTooltip>
                     </FormLabel>
                     <FormControl>
                       <ReactSelectField
@@ -366,7 +418,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="reference_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reference Number</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="A unique identifier for this transaction. This helps track and reference the transaction later. Auto-generated but can be customized.">
+                        Reference Number
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="TXN-123456" {...field} />
                     </FormControl>
@@ -380,7 +436,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="bank_reference"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bank Reference (Optional)</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="The reference number provided by the bank or payment processor. This helps match transactions with bank statements.">
+                        Bank Reference (Optional)
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="Bank ref number" {...field} />
                     </FormControl>
@@ -394,7 +454,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="transaction_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Transaction Date</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="The actual date when the transaction occurred. This may be different from when you're recording it in the system.">
+                        Transaction Date
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <div className="relative">
                         <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -414,7 +478,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
                 name="net_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Net Amount (After Fees)</FormLabel>
+                    <FormLabel>
+                      <InfoTooltip content="The final amount after deducting processor fees. This is automatically calculated: Amount - Processor Fee = Net Amount.">
+                        Net Amount (After Fees)
+                      </InfoTooltip>
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="0.00" readOnly className="bg-muted" {...field} />
                     </FormControl>
@@ -430,7 +498,11 @@ export function AddTransactionDialog({ open, onOpenChange, account, onTransactio
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>
+                    <InfoTooltip content="Provide details about this transaction: what it was for, who it was from/to, or any other relevant information for future reference.">
+                      Description
+                    </InfoTooltip>
+                  </FormLabel>
                   <FormControl>
                     <Textarea placeholder="Describe the transaction..." className="resize-none" rows={3} {...field} />
                   </FormControl>

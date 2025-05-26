@@ -111,6 +111,8 @@ export interface BankAccount {
   compliance_status: "compliant" | "pending_review" | "non_compliant"
   last_reconciled_date?: string
   auto_reconciliation_enabled: boolean
+  
+
 }
 
 // Exchange Rate Types
