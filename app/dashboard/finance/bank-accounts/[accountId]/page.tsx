@@ -223,7 +223,6 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="statistics">Statistics</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -250,9 +249,6 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
           <BankAccountTransactionHistory accountId={accountId} />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <BankAccountAnalyticsCharts accountId={accountId} account={account} />
-        </TabsContent>
 {        /* Balance History Tab 
         <TabsContent value="balance-history" className="space-y-6">
           <BankAccountBalanceHistory accountId={accountId} />
