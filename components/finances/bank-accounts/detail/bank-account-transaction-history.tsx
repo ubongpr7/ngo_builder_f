@@ -21,6 +21,7 @@ import {
 import { useGetAccountTransactionsQuery } from "@/redux/features/finance/bank-accounts"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Pagination } from "@/components/ui/pagination"
+import { TransactionDetailsDialog } from "./transaction-details-dialog"
 import type { AccountTransaction } from "@/types/finance"
 
 interface BankAccountTransactionHistoryProps {
@@ -34,6 +35,8 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
   const [statusFilter, setStatusFilter] = useState<string>("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [selectedTransaction, setSelectedTransaction] = useState<AccountTransaction | null>(null)
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false)
 
   const { data, isLoading, error } = useGetAccountTransactionsQuery({
     accountId,
@@ -80,6 +83,11 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
     const isCredit = transaction.transaction_type === "credit" || transaction.transaction_type === "transfer_in"
     const sign = isCredit ? "+" : "-"
     return `${sign}${transaction.formatted_amount}`
+  }
+
+  const handleTransactionClick = (transaction: AccountTransaction) => {
+    setSelectedTransaction(transaction)
+    setShowDetailsDialog(true)
   }
 
   const handleExport = () => {
@@ -193,9 +201,9 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
         <CardContent>
           {data?.results && data.results.length > 0 ? (
             <>
-              <div >
-                <div className="rounded-md border table-scroll">
-                  <Table >
+              <div className="w-full overflow-x-auto">
+                <div className="rounded-md border">
+                  <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="whitespace-nowrap">Type</TableHead>
@@ -208,7 +216,11 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                     </TableHeader>
                     <TableBody>
                       {data.results.map((transaction) => (
-                        <TableRow key={transaction.id}>
+                        <TableRow
+                          key={transaction.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleTransactionClick(transaction)}
+                        >
                           <TableCell className="whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               {getTransactionIcon(transaction.transaction_type)}
@@ -270,6 +282,13 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
           )}
         </CardContent>
       </Card>
+
+      {/* Transaction Details Dialog */}
+      <TransactionDetailsDialog
+        transaction={selectedTransaction}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+      />
     </div>
   )
 }
