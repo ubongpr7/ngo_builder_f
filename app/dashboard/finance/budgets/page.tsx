@@ -240,7 +240,7 @@ export default function BudgetsPage() {
 
         <TabsContent value="budgets" className="space-y-6">
           <BudgetListTable
-            budgets={budgets?.results || []}
+            budgets={budgets || []}
             isLoading={budgetsLoading}
             onFiltersChange={handleFilterChange}
           />
@@ -251,13 +251,13 @@ export default function BudgetsPage() {
         </TabsContent>
 
         <TabsContent value="utilization" className="space-y-6">
-          <BudgetUtilizationMatrix budgets={budgets?.results || []} isLoading={budgetsLoading} />
+          <BudgetUtilizationMatrix budgets={budgets || []} isLoading={budgetsLoading} />
         </TabsContent>
 
         <TabsContent value="health" className="space-y-6">
           <BudgetHealthIndicators
             statistics={statistics}
-            budgets={budgets?.results || []}
+            budgets={budgets || []}
             isLoading={budgetsLoading || statsLoading}
           />
         </TabsContent>
