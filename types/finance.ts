@@ -148,7 +148,58 @@ export interface DonationCampaign {
   is_completed: boolean
   donations_count: number
   donors_count: number
+
+  donation_trends: Array<{
+    day: string
+    count: number
+    total: number
+  }>
+  donor_segments: {
+    micro: number
+    small: number
+    medium: number
+    large: number
+    major: number
+  }
+  payment_method_breakdown: Array<{
+    payment_method: string
+    count: number
+    total: number
+  }>
+  geographic_distribution: Array<any>
+  donation_breakdown: {
+    regular_donations: {
+      count: number
+      total: number
+      percentage: number
+    }
+    in_kind_donations: {
+      count: number
+      total: number
+      percentage: number
+    }
+    recurring_donations: {
+      count: number
+      total: number
+      percentage: number
+    }
+  }
+  // Bank account data
+  available_bank_accounts: BankAccount[]
+  bank_accounts_by_currency: Record<string, BankAccount[]>
+  campaign_bank_accounts: Array<{
+    id: number
+    bank_account: BankAccount
+    is_primary: boolean
+    created_at: string
+  }>
+  // Recent donations
+  donations: Donation[]
+  recurring_donations: RecurringDonation[]
+  in_kind_donations: InKindDonation[]
 }
+
+
 
 // Donation Types
 export interface Donation {
@@ -371,6 +422,50 @@ export interface BudgetFunding {
   notes?: string
 }
 
+
+
+export interface BudgetStatistics {
+  total_budgets: number
+  total_allocated: number
+  total_spent: number
+  by_type: Array<{
+    budget_type: string
+    count: number
+    total_amount: number
+    spent_amount: number
+  }>
+  by_status: Array<{
+    status: string
+    count: number
+    total_amount: number
+    spent_amount: number
+  }>
+  utilization_summary: Array<{
+    budget_id: number
+    budget_title: string
+    budget_type: string
+    total_amount: number
+    spent_amount: number
+    remaining_amount: number
+    utilization_percentage: number
+    currency_code: string
+  }>
+}
+
+export interface BudgetFilters {
+  search?: string
+  budget_type?: string
+  status?: string
+  fiscal_year?: string
+  start_date?: string
+  end_date?: string
+  currency?: string
+  min_amount?: number
+  max_amount?: number
+  project?: string
+  department?: string
+}
+
 export interface FundingBreakdown {
   source: string
   type: string
@@ -554,25 +649,6 @@ export interface GrantFilters {
   managed_by?: number
   amount_min?: number
   amount_max?: number
-  start_date_from?: string
-  start_date_to?: string
-  search?: string
-  ordering?: string
-  page?: number
-  page_size?: number
-}
-
-export interface BudgetFilters {
-  budget_type?: string
-  status?: string
-  currency?: number
-  project?: number
-  department?: number
-  fiscal_year?: string
-  created_by?: number
-  approved_by?: number
-  total_amount_min?: number
-  total_amount_max?: number
   start_date_from?: string
   start_date_to?: string
   search?: string

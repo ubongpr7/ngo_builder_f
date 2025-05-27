@@ -6,20 +6,7 @@ const backend = "finance_api"
 export const budgetsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all budgets
-    getBudgets: builder.query<
-      PaginatedResponse<Budget>,
-      {
-        budget_type?: string
-        status?: string
-        fiscal_year?: string
-        department?: number
-        currency?: number
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getBudgets: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
