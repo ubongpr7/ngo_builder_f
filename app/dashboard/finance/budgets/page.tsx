@@ -54,7 +54,8 @@ export default function BudgetsPage() {
   })
 
   const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery()
-
+  console.log("Budgets:", budgets)
+  console.log("Statistics:", statistics)
   const handleFilterChange = (newFilters: any) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }
