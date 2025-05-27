@@ -104,93 +104,7 @@ export default function BudgetsPage() {
         </div>
       </div>
 
-      {/* Executive Summary Cards */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-l-4 border-l-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Budgets</p>
-                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{statistics.total_budgets}</p>
-                </div>
-                <div className="h-12 w-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <Target className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">+12% from last quarter</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Allocated</p>
-                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                    ${statistics.total_allocated || "0"}
-                  </p>
-                </div>
-                <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-green-600">+8% from last month</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Spent</p>
-                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
-                    ${statistics.total_spent || "0"}
-                  </p>
-                </div>
-                <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-red-600">-3% from target</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Utilization Rate</p>
-                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                    {statistics.total_allocated > 0
-                      ? Math.round((statistics.total_spent / statistics.total_allocated||1) * 100)
-                      : 0}
-                    %
-                  </p>
-
-                </div>
-                <div className="h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                  <PieChart className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm text-yellow-600">Optimal range</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
+      
       {/* Filters Panel */}
       {showFilters && (
         <BudgetFiltersPanel
@@ -207,10 +121,7 @@ export default function BudgetsPage() {
             <BarChart3 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Analytics
-          </TabsTrigger>
+          
           <TabsTrigger value="budgets" className="gap-2">
             <Target className="h-4 w-4" />
             Budgets
