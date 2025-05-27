@@ -148,27 +148,7 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Get budget statistics
-    getBudgetStatistics: builder.query<
-      {
-        total_budgets: number
-        total_allocated: number
-        total_spent: number
-        by_type: Array<{
-          budget_type: string
-          count: number
-          total_amount: number
-          spent_amount: number
-        }>
-        by_status: Array<{
-          status: string
-          count: number
-          total_amount: number
-          spent_amount: number
-        }>
-        utilization_summary: BudgetUtilization[]
-      },
-      void
-    >({
+    getBudgetStatistics: builder.query({
       query: () => `/${backend}/budgets/statistics/`,
     }),
   }),

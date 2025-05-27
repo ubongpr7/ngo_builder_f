@@ -53,9 +53,7 @@ export default function BudgetsPage() {
     page_size: 50,
   })
 
-  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery()
-  console.log("Budgets:", budgets)
-  console.log("Statistics:", statistics)
+  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery('')
   const handleFilterChange = (newFilters: any) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }
@@ -246,7 +244,7 @@ export default function BudgetsPage() {
             onFiltersChange={handleFilterChange}
           />
         </TabsContent>
-
+        {/* Departments Tab Content 
         <TabsContent value="departments" className="space-y-6">
           <DepartmentBudgetBreakdown statistics={statistics} isLoading={statsLoading} />
         </TabsContent>
@@ -262,6 +260,7 @@ export default function BudgetsPage() {
             isLoading={budgetsLoading || statsLoading}
           />
         </TabsContent>
+        */}
       </Tabs>
 
       {/* Add Budget Dialog */}
