@@ -24,9 +24,10 @@ interface BudgetListTableProps {
   budgets: Budget[]
   isLoading: boolean
   onFiltersChange: (filters: any) => void
+  filters: any
 }
 
-export function BudgetListTable({ budgets, isLoading, onFiltersChange }: BudgetListTableProps) {
+export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }: BudgetListTableProps) {
   const [sortField, setSortField] = useState<string>("created_at")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
 
@@ -123,7 +124,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange }: BudgetL
             </TableHeader>
             <TableBody>
               {budgets.map((budget) => {
-                const utilizationPercentage = Number.parseFloat(budget.spent_percentage)
+                const utilizationPercentage = Number(budget.spent_percentage) || 0
                 const isOverBudget = utilizationPercentage > 100
                 const isNearLimit = utilizationPercentage > 85
 
@@ -131,9 +132,9 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange }: BudgetL
                   <TableRow key={budget.id} className="hover:bg-gray-50">
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-medium">{budget.title}</div>
+                        <div className="font-medium">{budget.title || "Untitled Budget"}</div>
                         <div className="text-sm text-muted-foreground">
-                          {budget.fiscal_year && `FY ${budget.fiscal_year}`}
+                          {budget.fiscal_year ? `FY ${budget.fiscal_year}` : "No fiscal year"}
                         </div>
                       </div>
                     </TableCell>
@@ -144,9 +145,9 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange }: BudgetL
 
                     <TableCell>
                       <div className="space-y-1">
-                        <div className="font-medium">{budget.formatted_amount}</div>
+                        <div className="font-medium">{budget.formatted_amount || "$0"}</div>
                         <div className="text-sm text-muted-foreground">
-                          Spent: ${Number.parseFloat(budget.spent_amount).toLocaleString()}
+                          Spent: ${Number(budget.spent_amount || 0).toLocaleString()}
                         </div>
                       </div>
                     </TableCell>
@@ -230,12 +231,14 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange }: BudgetL
           </Table>
         </div>
 
-        {budgets.length === 0 && (
+        {budgets.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">No budgets found</h3>
             <p className="text-muted-foreground mb-4">
-              Create your first budget to start tracking expenses and allocations.
+              {Object.values(filters).some((f) => f)
+                ? "No budgets match your current filters. Try adjusting your search criteria."
+                : "Create your first budget to start tracking expenses and allocations."}
             </p>
             <Button>Create Budget</Button>
           </div>

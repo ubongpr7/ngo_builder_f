@@ -35,20 +35,47 @@ export function BudgetAnalyticsPanel({ statistics, isLoading }: BudgetAnalyticsP
 
   // Advanced analytics data
   const performanceMetrics = [
-    { metric: "Budget Accuracy", value: 87, target: 90, trend: "up" },
-    { metric: "Spend Velocity", value: 73, target: 75, trend: "down" },
-    { metric: "Forecast Precision", value: 92, target: 85, trend: "up" },
-    { metric: "Approval Efficiency", value: 68, target: 80, trend: "down" },
-    { metric: "Resource Utilization", value: 84, target: 85, trend: "stable" },
+    {
+      metric: "Budget Accuracy",
+      value: Math.round(statistics?.performance_metrics?.budget_accuracy || 0),
+      target: 90,
+      trend: "up",
+    },
+    {
+      metric: "Spend Velocity",
+      value: Math.round(statistics?.performance_metrics?.spend_velocity || 0),
+      target: 75,
+      trend: "down",
+    },
+    {
+      metric: "Forecast Precision",
+      value: Math.round(statistics?.performance_metrics?.forecast_precision || 0),
+      target: 85,
+      trend: "up",
+    },
+    {
+      metric: "Approval Efficiency",
+      value: Math.round(statistics?.performance_metrics?.approval_efficiency || 0),
+      target: 80,
+      trend: "down",
+    },
+    {
+      metric: "Resource Utilization",
+      value: Math.round(statistics?.performance_metrics?.resource_utilization || 0),
+      target: 85,
+      trend: "stable",
+    },
   ]
 
-  const departmentPerformance = [
-    { department: "Operations", efficiency: 92, utilization: 87, variance: 5 },
-    { department: "Programs", efficiency: 88, utilization: 94, variance: -6 },
-    { department: "Admin", efficiency: 76, utilization: 82, variance: 12 },
-    { department: "Marketing", efficiency: 85, utilization: 78, variance: 8 },
-    { department: "IT", efficiency: 91, utilization: 89, variance: 3 },
-  ]
+  const departmentPerformance =
+    statistics?.by_department?.length > 0
+      ? statistics.by_department.map((dept: any) => ({
+          department: dept.department_name || "Unknown",
+          efficiency: Math.round(dept.avg_utilization || 0),
+          utilization: Math.round(dept.avg_utilization || 0),
+          variance: Math.round((dept.avg_utilization || 0) - 75), // variance from 75% target
+        }))
+      : [{ department: "No Data", efficiency: 0, utilization: 0, variance: 0 }]
 
   const budgetHealthMatrix =
     statistics?.utilization_summary?.map((item: any) => ({
@@ -73,12 +100,37 @@ export function BudgetAnalyticsPanel({ statistics, isLoading }: BudgetAnalyticsP
   ]
 
   const riskAnalysis = [
-    { category: "Overspend Risk", value: 23, color: "#EF4444" },
-    { category: "Underspend Risk", value: 15, color: "#F59E0B" },
-    { category: "Timeline Risk", value: 31, color: "#8B5CF6" },
-    { category: "Resource Risk", value: 18, color: "#06B6D4" },
-    { category: "Compliance Risk", value: 13, color: "#10B981" },
-  ]
+    {
+      category: "Overspend Risk",
+      value: Math.round(statistics?.risk_analysis?.overspend_risk || 0),
+      color: "#EF4444",
+    },
+    {
+      category: "Underspend Risk",
+      value: Math.round(statistics?.risk_analysis?.underspend_risk || 0),
+      color: "#F59E0B",
+    },
+    {
+      category: "Timeline Risk",
+      value: Math.round(statistics?.risk_analysis?.timeline_risk || 0),
+      color: "#8B5CF6",
+    },
+    {
+      category: "Resource Risk",
+      value: Math.round(statistics?.risk_analysis?.resource_risk || 0),
+      color: "#06B6D4",
+    },
+    {
+      category: "Compliance Risk",
+      value: Math.round(statistics?.risk_analysis?.compliance_risk || 0),
+      color: "#10B981",
+    },
+  ].filter((item) => item.value > 0) // Only show risks that exist
+
+  // If no risks, show a default "No Risk" item
+  if (riskAnalysis.length === 0) {
+    riskAnalysis.push({ category: "No Active Risks", value: 100, color: "#10B981" })
+  }
 
   return (
     <div className="space-y-6">
@@ -112,22 +164,31 @@ export function BudgetAnalyticsPanel({ statistics, isLoading }: BudgetAnalyticsP
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={forecastData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value, name) => [
-                    name === "confidence" ? `${value}%` : `$${value?.toLocaleString()}`,
-                    name === "projected" ? "Projected" : name === "actual" ? "Actual" : "Confidence",
-                  ]}
-                />
-                <Line type="monotone" dataKey="projected" stroke="#3B82F6" strokeWidth={3} strokeDasharray="5 5" />
-                <Line type="monotone" dataKey="actual" stroke="#10B981" strokeWidth={3} />
-                <Line type="monotone" dataKey="confidence" stroke="#F59E0B" strokeWidth={2} yAxisId="right" />
-              </LineChart>
-            </ResponsiveContainer>
+            {forecastData.every((item) => item.projected === 0) ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No forecast data available</p>
+                </div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={forecastData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      name === "confidence" ? `${value}%` : `$${value?.toLocaleString()}`,
+                      name === "projected" ? "Projected" : name === "actual" ? "Actual" : "Confidence",
+                    ]}
+                  />
+                  <Line type="monotone" dataKey="projected" stroke="#3B82F6" strokeWidth={3} strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="actual" stroke="#10B981" strokeWidth={3} />
+                  <Line type="monotone" dataKey="confidence" stroke="#F59E0B" strokeWidth={2} yAxisId="right" />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 

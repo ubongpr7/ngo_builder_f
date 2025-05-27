@@ -28,45 +28,49 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
     return <div>Loading overview...</div>
   }
 
-  // Mock data for charts - replace with real data
-  const monthlyTrends = [
-    { month: "Jan", allocated: 120000, spent: 95000, remaining: 25000 },
-    { month: "Feb", allocated: 135000, spent: 108000, remaining: 27000 },
-    { month: "Mar", allocated: 150000, spent: 125000, remaining: 25000 },
-    { month: "Apr", allocated: 165000, spent: 140000, remaining: 25000 },
-    { month: "May", allocated: 180000, spent: 155000, remaining: 25000 },
-    { month: "Jun", allocated: 195000, spent: 170000, remaining: 25000 },
-  ]
+  const monthlyTrends =
+    statistics?.monthly_trends?.map((trend) => ({
+      month: trend.month_name?.split(" ")[0] || trend.month,
+      allocated: trend.total_allocated || 0,
+      spent: trend.total_spent || 0,
+      remaining: (trend.total_allocated || 0) - (trend.total_spent || 0),
+    })) || []
 
   const budgetTypeData =
-    statistics?.by_type?.map((item: any, index: number) => ({
-      name: item.budget_type,
-      value: item.total_amount,
-      count: item.count,
-      color: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4"][index % 6],
-    })) || []
+    statistics?.by_type?.length > 0
+      ? statistics.by_type.map((item: any, index: number) => ({
+          name: item.budget_type?.replace("_", " ").toUpperCase() || "Unknown",
+          value: Number(item.total_amount) || 0,
+          count: item.count || 0,
+          color: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4"][index % 6],
+        }))
+      : [{ name: "No Data", value: 1, count: 0, color: "#E5E7EB" }]
 
   const statusData =
-    statistics?.by_status?.map((item: any, index: number) => ({
-      name: item.status,
-      value: item.total_amount,
-      count: item.count,
-      color: ["#10B981", "#F59E0B", "#3B82F6", "#EF4444", "#8B5CF6"][index % 5],
-    })) || []
+    statistics?.by_status?.length > 0
+      ? statistics.by_status.map((item: any, index: number) => ({
+          name: item.status?.replace("_", " ").toUpperCase() || "Unknown",
+          value: Number(item.total_amount) || 0,
+          count: item.count || 0,
+          color: ["#10B981", "#F59E0B", "#3B82F6", "#EF4444", "#8B5CF6"][index % 5],
+        }))
+      : [{ name: "No Data", value: 1, count: 0, color: "#E5E7EB" }]
 
   const utilizationData =
-    statistics?.utilization_summary?.slice(0, 10)?.map((item: any) => ({
-      name: item.budget_title.substring(0, 20) + "...",
-      utilization: Number.parseFloat(item.utilization_percentage),
-      allocated: item.total_amount,
-      spent: item.spent_amount,
-      health:
-        Number.parseFloat(item.utilization_percentage) > 90
-          ? "critical"
-          : Number.parseFloat(item.utilization_percentage) > 75
-            ? "warning"
-            : "healthy",
-    })) || []
+    statistics?.utilization_summary?.length > 0
+      ? statistics.utilization_summary.slice(0, 10).map((item: any) => ({
+          name: (item.budget_title || "Unnamed Budget").substring(0, 20) + "...",
+          utilization: Number(item.utilization_percentage) || 0,
+          allocated: Number(item.total_amount) || 0,
+          spent: Number(item.spent_amount) || 0,
+          health:
+            Number(item.utilization_percentage) > 90
+              ? "critical"
+              : Number(item.utilization_percentage) > 75
+                ? "warning"
+                : "healthy",
+        }))
+      : []
 
   return (
     <div className="space-y-6">
@@ -77,9 +81,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-sm font-medium">Active Budgets</p>
-                <p className="text-3xl font-bold">
-                  {statistics?.by_status?.find((s: any) => s.status === "active")?.count || 0}
-                </p>
+                <p className="text-3xl font-bold">{statistics?.summary?.active_budgets || 0}</p>
               </div>
               <Target className="h-8 w-8 text-blue-200" />
             </div>
@@ -95,12 +97,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100 text-sm font-medium">Budget Efficiency</p>
-                <p className="text-3xl font-bold">
-                  {statistics?.total_allocated > 0
-                    ? Math.round((statistics.total_spent / statistics.total_allocated) * 100)
-                    : 0}
-                  %
-                </p>
+                <p className="text-3xl font-bold">{statistics?.summary?.avg_utilization?.toFixed(1) || "0.0"}%</p>
               </div>
               <Activity className="h-8 w-8 text-green-200" />
             </div>
@@ -116,9 +113,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-orange-100 text-sm font-medium">Pending Approval</p>
-                <p className="text-3xl font-bold">
-                  {statistics?.by_status?.find((s: any) => s.status === "pending_approval")?.count || 0}
-                </p>
+                <p className="text-3xl font-bold">{statistics?.summary?.pending_approval || 0}</p>
               </div>
               <Clock className="h-8 w-8 text-orange-200" />
             </div>
@@ -134,14 +129,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-purple-100 text-sm font-medium">Avg. Utilization</p>
-                <p className="text-3xl font-bold">
-                  {utilizationData.length > 0
-                    ? Math.round(
-                        utilizationData.reduce((acc, item) => acc + item.utilization, 0) / utilizationData.length,
-                      )
-                    : 0}
-                  %
-                </p>
+                <p className="text-3xl font-bold">{statistics?.summary?.avg_utilization?.toFixed(0) || "0"}%</p>
               </div>
               <Zap className="h-8 w-8 text-purple-200" />
             </div>
@@ -164,23 +152,32 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={monthlyTrends}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, ""]} />
-                <Area
-                  type="monotone"
-                  dataKey="allocated"
-                  stackId="1"
-                  stroke="#3B82F6"
-                  fill="#3B82F6"
-                  fillOpacity={0.6}
-                />
-                <Area type="monotone" dataKey="spent" stackId="2" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
-              </AreaChart>
-            </ResponsiveContainer>
+            {monthlyTrends.length === 0 ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No budget trend data available</p>
+                </div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={monthlyTrends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, ""]} />
+                  <Area
+                    type="monotone"
+                    dataKey="allocated"
+                    stackId="1"
+                    stroke="#3B82F6"
+                    fill="#3B82F6"
+                    fillOpacity={0.6}
+                  />
+                  <Area type="monotone" dataKey="spent" stackId="2" stroke="#10B981" fill="#10B981" fillOpacity={0.6} />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -193,24 +190,33 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={budgetTypeData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {budgetTypeData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, "Amount"]} />
-              </PieChart>
-            </ResponsiveContainer>
+            {budgetTypeData.length === 1 && budgetTypeData[0].name === "No Data" ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No budget type data available</p>
+                </div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={budgetTypeData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {budgetTypeData.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, "Amount"]} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
