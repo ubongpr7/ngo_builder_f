@@ -30,7 +30,7 @@ interface TransactionDetailsDialogProps {
 
 export function TransactionDetailsDialog({ transaction, open, onOpenChange }: TransactionDetailsDialogProps) {
   if (!transaction) return null
-    const accounts_code = transaction.formatted_amount.split(" ")[0] || "USD"
+
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case "credit":
@@ -84,7 +84,7 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
     return (
       <span className={`font-bold text-2xl ${color}`}>
         {sign}
-        {formatCurrency(accounts_code, Number(transaction.amount))}
+        {formatCurrency(transaction.account.currency.code, Number(transaction.amount))}
       </span>
     )
   }
@@ -172,7 +172,7 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Currency</p>
                 <p>
-                  {accounts_code} - {transaction.account.currency.name}
+                  {transaction.account.currency.code} - {transaction.account.currency.name}
                 </p>
               </div>
             </CardContent>
@@ -196,14 +196,14 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Amount</p>
                   <p className="font-medium">
-                    {formatCurrency(accounts_code, Number(transaction.amount))}
+                    {formatCurrency(transaction.account.currency.code, Number(transaction.amount))}
                   </p>
                 </div>
                 {transaction.processor_fee && Number(transaction.processor_fee) > 0 && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Processor Fee</p>
                     <p className="text-red-600">
-                      -{formatCurrency(accounts_code, Number(transaction.processor_fee))}
+                      -{formatCurrency(transaction.account.currency.code, Number(transaction.processor_fee))}
                     </p>
                   </div>
                 )}
@@ -213,7 +213,7 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Net Amount</p>
                   <p className="font-medium text-green-600">
-                    {formatCurrency(accounts_code, Number(transaction.net_amount))}
+                    {formatCurrency(transaction.account.currency.code, Number(transaction.net_amount))}
                   </p>
                 </div>
               )}
@@ -247,7 +247,7 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Converted Amount</p>
                     <p className="font-medium">
-                      {formatCurrency(accounts_code, Number(transaction.amount))}
+                      {formatCurrency(transaction.account.currency.code, Number(transaction.amount))}
                     </p>
                   </div>
                 </div>
@@ -256,7 +256,7 @@ export function TransactionDetailsDialog({ transaction, open, onOpenChange }: Tr
                     <p className="text-sm font-medium text-muted-foreground">Exchange Rate</p>
                     <p className="font-mono">
                       1 {transaction.original_currency.code} = {Number(transaction.exchange_rate_used).toFixed(6)}{" "}
-                      {accounts_code}
+                      {transaction.account.currency.code}
                     </p>
                   </div>
                 )}
