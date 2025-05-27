@@ -115,6 +115,8 @@ export default function BudgetsPage() {
       )}
 
       {/* Main Content Tabs */}
+      {budgets (
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
           <TabsTrigger value="overview" className="gap-2">
@@ -169,6 +171,8 @@ export default function BudgetsPage() {
           />
         </TabsContent>
       </Tabs>
+      )}
+
 
       {/* Add Budget Dialog */}
       <AddBudgetDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
