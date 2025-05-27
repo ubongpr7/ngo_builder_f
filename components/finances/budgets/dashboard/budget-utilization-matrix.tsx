@@ -315,7 +315,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
-                <Tooltip formatter={(value: any) => [`$${value.toLocaleString()}/day`, "Velocity"]} />
+                <Tooltip formatter={(value: any) => [`$${value}/day`, "Velocity"]} />
                 <Bar dataKey="velocity" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
@@ -411,8 +411,8 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                     <TableCell>
                       <Badge variant="outline">{budget.type}</Badge>
                     </TableCell>
-                    <TableCell>${budget.allocated.toLocaleString()}</TableCell>
-                    <TableCell>${budget.spent.toLocaleString()}</TableCell>
+                    <TableCell>${budget.allocated}</TableCell>
+                    <TableCell>${budget.spent}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={budget.utilization} className="w-16 h-2" />

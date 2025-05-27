@@ -147,7 +147,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
                       <div className="space-y-1">
                         <div className="font-medium">{budget.formatted_amount || "$0"}</div>
                         <div className="text-sm text-muted-foreground">
-                          Spent: ${Number(budget.spent_amount || 0).toLocaleString()}
+                          Spent: ${Number(budget.spent_amount || 0)}
                         </div>
                       </div>
                     </TableCell>
@@ -166,7 +166,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
                             Over budget by $
                             {(
                               Number.parseFloat(budget.spent_amount) - Number.parseFloat(budget.total_amount)
-                            ).toLocaleString()}
+                            )}
                           </div>
                         )}
                       </div>

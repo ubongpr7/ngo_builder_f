@@ -165,7 +165,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, ""]} />
+                  <Tooltip formatter={(value) => [`$${value}`, ""]} />
                   <Area
                     type="monotone"
                     dataKey="allocated"
@@ -213,7 +213,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, "Amount"]} />
+                  <Tooltip formatter={(value) => [`$${value}`, "Amount"]} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -237,7 +237,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
               <YAxis dataKey="name" type="category" width={150} />
               <Tooltip
                 formatter={(value, name) => [
-                  name === "utilization" ? `${value}%` : `$${value.toLocaleString()}`,
+                  name === "utilization" ? `${value}%` : `$${value}`,
                   name === "utilization" ? "Utilization" : name === "allocated" ? "Allocated" : "Spent",
                 ]}
               />
@@ -262,7 +262,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                   {status.name.replace("_", " ").toUpperCase()}
                 </Badge>
                 <div className="text-2xl font-bold">{status.count}</div>
-                <div className="text-sm text-muted-foreground">${status.value?.toLocaleString() || "0"}</div>
+                <div className="text-sm text-muted-foreground">${status.value || "0"}</div>
               </div>
             </CardContent>
           </Card>

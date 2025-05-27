@@ -713,7 +713,7 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
                           <div className="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-300">
                             <p>
                               • Total Amount: {form.watch("currency")}{" "}
-                              {form.watch("total_amount")?.toLocaleString() || "0"}
+                              {form.watch("total_amount") || "0"}
                             </p>
                             <p>• Type: {budgetTypes.find((t) => t.value === form.watch("budget_type"))?.label}</p>
                             <p>

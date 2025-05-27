@@ -179,7 +179,7 @@ export function BudgetAnalyticsPanel({ statistics, isLoading }: BudgetAnalyticsP
                   <YAxis />
                   <Tooltip
                     formatter={(value, name) => [
-                      name === "confidence" ? `${value}%` : `$${value?.toLocaleString()}`,
+                      name === "confidence" ? `${value}%` : `$${value}`,
                       name === "projected" ? "Projected" : name === "actual" ? "Actual" : "Confidence",
                     ]}
                   />
@@ -266,7 +266,7 @@ export function BudgetAnalyticsPanel({ statistics, isLoading }: BudgetAnalyticsP
               <Scatter
                 name="Budgets"
                 dataKey="variance"
-                fill={(entry: any) =>
+                fill={(entry: {risk: string}) =>
                   entry.risk === "High" ? "#EF4444" : entry.risk === "Medium" ? "#F59E0B" : "#10B981"
                 }
               />

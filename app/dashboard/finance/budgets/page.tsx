@@ -133,7 +133,7 @@ export default function BudgetsPage() {
                 <div>
                   <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Allocated</p>
                   <p className="text-3xl font-bold text-green-900 dark:text-green-100">
-                    ${statistics.total_allocated?.toLocaleString() || "0"}
+                    ${statistics.total_allocated || "0"}
                   </p>
                 </div>
                 <div className="h-12 w-12 bg-green-500 rounded-lg flex items-center justify-center">
@@ -153,7 +153,7 @@ export default function BudgetsPage() {
                 <div>
                   <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Total Spent</p>
                   <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">
-                    ${statistics.total_spent?.toLocaleString() || "0"}
+                    ${statistics.total_spent || "0"}
                   </p>
                 </div>
                 <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
