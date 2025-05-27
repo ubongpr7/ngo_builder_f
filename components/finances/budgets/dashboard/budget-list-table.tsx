@@ -97,7 +97,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto table-scroll">
           <Table>
             <TableHeader>
               <TableRow>

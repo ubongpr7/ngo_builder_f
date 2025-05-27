@@ -22,7 +22,6 @@ import {
   Zap,
 } from "lucide-react"
 import { BudgetOverviewDashboard } from "@/components/finances/budgets/dashboard/budget-overview-dashboard"
-import { BudgetAnalyticsPanel } from "@/components/finances/budgets/dashboard/budget-analytics-panel"
 import { BudgetListTable } from "@/components/finances/budgets/dashboard/budget-list-table"
 import { BudgetFiltersPanel } from "@/components/finances/budgets/dashboard/budget-filters-panel"
 
@@ -171,14 +170,12 @@ export default function BudgetsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Utilization Rate</p>
-                  {/*                   
                     <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
                     {statistics.total_allocated > 0
                       ? Math.round((statistics.total_spent / statistics.total_allocated||1) * 100)
                       : 0}
                     %
                   </p>
-                  */}
 
                 </div>
                 <div className="h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
@@ -236,9 +233,6 @@ export default function BudgetsPage() {
           <BudgetOverviewDashboard statistics={statistics} isLoading={statsLoading} />
         </TabsContent>
 
-        <TabsContent value="analytics" className="space-y-6">
-          <BudgetAnalyticsPanel statistics={statistics} isLoading={statsLoading} />
-        </TabsContent>
 
         <TabsContent value="budgets" className="space-y-6">
           <BudgetListTable
