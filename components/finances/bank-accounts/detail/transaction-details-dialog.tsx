@@ -30,7 +30,7 @@ interface TransactionDetailsDialogProps {
 
 export function TransactionDetailsDialog({ transaction, open, onOpenChange }: TransactionDetailsDialogProps) {
   if (!transaction) return null
-    const accounts_code = transaction.formatted_amount.split
+    const accounts_code = transaction.formatted_amount.split(" ")[0] || "USD"
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case "credit":
