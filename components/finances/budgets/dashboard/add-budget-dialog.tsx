@@ -39,7 +39,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react"
-import { useCreateBudgetMutation, useUpdateBudgetMutation } from "@/redux/features/budgets/budget"
+import { useCreateBudgetMutation, useUpdateBudgetMutation } from "@/redux/features/finance/budget"
 import { toast } from "sonner"
 
 const budgetSchema = z.object({
