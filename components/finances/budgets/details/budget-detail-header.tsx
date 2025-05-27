@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Calendar, DollarSign, TrendingUp, Users, Download, Edit, Share } from "lucide-react"
 import type { Budget } from "@/types/finance"
-import { formatCurrency, formatDate, formatPercentage } from "@/lib/utils"
-
+import { formatDate,  } from "@/lib/utils"
+import { formatCurrency } from "@/lib/currency-utils"
 interface BudgetDetailHeaderProps {
   budget: Budget
   onEdit?: () => void
@@ -97,7 +97,7 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{budget.formatted_amount}</div>
+            <div className="text-2xl font-bold">{formatCurrency( budget.currency.code,budget.total_amount)}</div>
             <p className="text-xs text-muted-foreground">
               {budget.currency.code} • {budget.budget_type.replace("_", " ")}
             </p>
@@ -111,11 +111,11 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(Number.parseFloat(budget.spent_amount), budget.currency.code)}
+              {formatCurrency( budget.currency.code,budget.spent_amount)}
             </div>
             <div className="flex items-center gap-2 mt-1">
               <Progress value={spentPercentage} className="flex-1" />
-              <span className="text-xs text-muted-foreground">{formatPercentage(spentPercentage)}</span>
+              <span className="text-xs text-muted-foreground">{spentPercentage}</span>
             </div>
           </CardContent>
         </Card>
@@ -127,7 +127,7 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(Number.parseFloat(budget.remaining_amount), budget.currency.code)}
+              {formatCurrency( budget.currency.code,budget.remaining_amount)}
             </div>
             <p className="text-xs text-muted-foreground">
               {daysRemaining > 0 ? `${daysRemaining} days left` : "Budget period ended"}
@@ -141,7 +141,7 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatPercentage(utilizationRate)}</div>
+            <div className="text-2xl font-bold">{utilizationRate}</div>
             <p className="text-xs text-muted-foreground">
               {budget.items_count} items • {budget.expenses_count} expenses
             </p>
@@ -160,21 +160,21 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Funding Coverage</span>
-                  <span>{formatPercentage(budget.budget_health.funding_coverage)}</span>
+                  <span>{budget.budget_health.funding_coverage}</span>
                 </div>
                 <Progress value={budget.budget_health.funding_coverage} />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Expense Velocity</span>
-                  <span>{formatPercentage(budget.budget_health.expense_velocity)}</span>
+                  <span>{budget.budget_health.expense_velocity}</span>
                 </div>
                 <Progress value={budget.budget_health.expense_velocity} />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Utilization Rate</span>
-                  <span>{formatPercentage(budget.budget_health.utilization_rate)}</span>
+                  <span>{budget.budget_health.utilization_rate}</span>
                 </div>
                 <Progress value={budget.budget_health.utilization_rate} />
               </div>

@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { Budget } from "@/types/finance"
-
+import { useRouter } from "next/navigation"
 interface BudgetListTableProps {
   budgets: Budget[]
   isLoading: boolean
@@ -37,7 +37,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
     setSortDirection(direction)
     onFiltersChange({ ordering: direction === "desc" ? `-${field}` : field })
   }
-
+  const router= useRouter()
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       draft: { color: "bg-gray-100 text-gray-800", icon: Edit },
@@ -119,7 +119,6 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
                   Period
                 </TableHead>
                 <TableHead>Health</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -129,7 +128,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
                 const isNearLimit = utilizationPercentage > 85
 
                 return (
-                  <TableRow key={budget.id} className="hover:bg-gray-50">
+                  <TableRow  onClick={()=>router.push(`/dashboard/finance/budgets/${budget.id}`)} key={budget.id} className="hover:bg-gray-50 cursor-pointer">
                     <TableCell>
                       <div className="space-y-1">
                         <div className="font-medium">{budget.title || "Untitled Budget"}</div>
@@ -197,33 +196,7 @@ export function BudgetListTable({ budgets, isLoading, onFiltersChange, filters }
                       </div>
                     </TableCell>
 
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Budget
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Activity className="mr-2 h-4 w-4" />
-                            View Analytics
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                  
                   </TableRow>
                 )
               })}

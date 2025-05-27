@@ -7,6 +7,7 @@ import { BudgetAllocationsSection } from "@/components/finances/budgets/details/
 import { BudgetActivityTimeline } from "@/components/finances/budgets/details/budget-activity-timeline"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useGetBudgetByIdQuery } from "@/redux/features/finance/budgets"
+import { BudgetAnalyticsDashboard } from "@/components/finances/budgets/details/budget-analytics-dashboard"
 
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -70,12 +71,13 @@ export default function BudgetDetailPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="funding">Funding</TabsTrigger>
           <TabsTrigger value="items">Items ({budget.items_count || 0})</TabsTrigger>
           <TabsTrigger value="allocations">Allocations ({budget.allocations_count || 0})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -99,6 +101,9 @@ export default function BudgetDetailPage() {
 
         <TabsContent value="activity">
           <BudgetActivityTimeline budget={budget} />
+        </TabsContent>
+        <TabsContent value="analytics">
+          <BudgetAnalyticsDashboard budget={budget} />
         </TabsContent>
       </Tabs>
     </div>

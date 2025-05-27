@@ -73,10 +73,6 @@ export function formatRelativeTime(dateString: string): string {
   }
 }
 
-export function formatPercentage(value: number): string {
-  return `${value.toFixed(1)}%`
-}
-
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(value)
 }

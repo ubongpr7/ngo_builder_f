@@ -8,7 +8,7 @@ interface CurrencyConfig {
 // Currency configuration mapping
 const CURRENCY_CONFIG: Record<string, CurrencyConfig> = {
   USD: { symbol: "$", decimals: 2, locale: "en-US" },
-  EUR: { symbol: "€", decimals: 2, locale: "en-EU" },
+  EUR: { symbol: "€", decimals: 2, locale: "de-DE" },
   GBP: { symbol: "£", decimals: 2, locale: "en-GB" },
   NGN: { symbol: "₦", decimals: 2, locale: "en-NG" },
   CAD: { symbol: "C$", decimals: 2, locale: "en-CA" },
@@ -19,10 +19,31 @@ const CURRENCY_CONFIG: Record<string, CurrencyConfig> = {
   ZAR: { symbol: "R", decimals: 2, locale: "en-ZA" },
   KES: { symbol: "KSh", decimals: 2, locale: "en-KE" },
   GHS: { symbol: "₵", decimals: 2, locale: "en-GH" },
-  XOF: { symbol: "CFA", decimals: 0, locale: "fr-SN" }, // West African CFA franc
-  XAF: { symbol: "FCFA", decimals: 0, locale: "fr-CM" }, // Central African CFA franc
-  // Add more currencies as needed
-}
+  XOF: { symbol: "CFA", decimals: 0, locale: "fr-SN" },
+  XAF: { symbol: "FCFA", decimals: 0, locale: "fr-CM" },
+  BRL: { symbol: "R$", decimals: 2, locale: "pt-BR" },
+  MXN: { symbol: "$", decimals: 2, locale: "es-MX" },
+  CHF: { symbol: "CHF", decimals: 2, locale: "de-CH" },
+  SEK: { symbol: "kr", decimals: 2, locale: "sv-SE" },
+  NOK: { symbol: "kr", decimals: 2, locale: "nb-NO" },
+  DKK: { symbol: "kr", decimals: 2, locale: "da-DK" },
+  RUB: { symbol: "₽", decimals: 2, locale: "ru-RU" },
+  KRW: { symbol: "₩", decimals: 0, locale: "ko-KR" },
+  SGD: { symbol: "S$", decimals: 2, locale: "en-SG" },
+  HKD: { symbol: "HK$", decimals: 2, locale: "zh-HK" },
+  MYR: { symbol: "RM", decimals: 2, locale: "ms-MY" },
+  THB: { symbol: "฿", decimals: 2, locale: "th-TH" },
+  PHP: { symbol: "₱", decimals: 2, locale: "en-PH" },
+  IDR: { symbol: "Rp", decimals: 0, locale: "id-ID" },
+  TZS: { symbol: "TSh", decimals: 2, locale: "sw-TZ" },
+  UGX: { symbol: "USh", decimals: 0, locale: "en-UG" },
+  EGP: { symbol: "£", decimals: 2, locale: "ar-EG" },
+  MAD: { symbol: "د.م.", decimals: 2, locale: "fr-MA" },
+  AED: { symbol: "د.إ", decimals: 2, locale: "ar-AE" },
+  SAR: { symbol: "﷼", decimals: 2, locale: "ar-SA" },
+  BDT: { symbol: "৳", decimals: 2, locale: "bn-BD" },
+  PKR: { symbol: "₨", decimals: 2, locale: "ur-PK" },
+};
 
 /**
  * Formats a monetary value with proper currency symbol and formatting

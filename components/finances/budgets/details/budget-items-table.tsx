@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ChevronDown, ChevronRight, Eye, Plus, AlertTriangle, Lock } from "lucide-react"
 import type { Budget, BudgetItem } from "@/types/finance"
-import {  formatDate, formatPercentage } from "@/lib/utils"
+import {  formatDate } from "@/lib/utils"
 import { formatCurrency } from "@/lib/currency-utils"
 
 interface BudgetItemsTableProps {
@@ -90,7 +90,7 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
 
                     return (
                       <>
-                        <TableRow key={item.id} className="hover:bg-gray-50">
+                        <TableRow key={item.id}  className="hover:bg-gray-50 cursor-pointer">
                           <TableCell>
                             <Button
                               variant="ghost"
@@ -134,7 +134,7 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
                           <TableCell className="text-center">
                             <div className="space-y-1">
                               <Progress value={spentPercentage} className="w-16" />
-                              <span className="text-xs text-gray-500">{formatPercentage(spentPercentage)}</span>
+                              <span className="text-xs text-gray-500">{spentPercentage}</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
