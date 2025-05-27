@@ -203,3 +203,15 @@ option {
 .button-primary:hover{
   background: green -700px;
 }
+
+
+.table-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table-scroll table {
+  width: 100%;
+  min-width: 600px; /* or whatever min size you need */
+  white-space: nowrap;
+}
