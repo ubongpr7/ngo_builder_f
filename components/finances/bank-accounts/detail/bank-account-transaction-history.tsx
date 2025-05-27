@@ -194,7 +194,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
           {data?.results && data.results.length > 0 ? (
             <>
               <div className="rounded-md border">
-                <Table>
+                <Table className="min-w-full overflow-x-auto">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Type</TableHead>
