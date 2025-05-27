@@ -22,15 +22,15 @@ import {
   Zap,
 } from "lucide-react"
 import { BudgetOverviewDashboard } from "@/components/finances/budgets/dashboard/budget-overview-dashboard"
-import { BudgetAnalyticsPanel } from "@/components/finances/budgets/dasboard/budget-analytics-panel"
+import { BudgetAnalyticsPanel } from "@/components/finances/budgets/dashboard/budget-analytics-panel"
 import { BudgetListTable } from "@/components/finances/budgets/dashboard/budget-list-table"
 import { BudgetFiltersPanel } from "@/components/finances/budgets/dashboard/budget-filters-panel"
 
 import { DepartmentBudgetBreakdown } from "@/components/finances/budgets/dashboard/department-budget-breakdown"
-import { BudgetUtilizationMatrix } from "@/components/finance/budgets/dashboard/budget-utilization-matrix"
-import { AddBudgetDialog } from "@/components/budgets/add-budget-dialog"
+import { BudgetUtilizationMatrix } from "@/components/finances/budgets/dashboard/budget-utilization-matrix"
+import { AddBudgetDialog } from "@/components/finances/budgets/dashboard/add-budget-dialog"
 import { BudgetHealthIndicators } from "@/components/finances/budgets/dashboard/budget-health-indicators"
-import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budget"
+import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budgets"
 
 
 
