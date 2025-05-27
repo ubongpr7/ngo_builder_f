@@ -193,59 +193,66 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
         <CardContent>
           {data?.results && data.results.length > 0 ? (
             <>
-              <div className="rounded-md border">
-                <Table className="min-w-full overflow-x-auto">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Reference</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {data.results.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getTransactionIcon(transaction.transaction_type)}
-                            <span className="capitalize">{transaction.transaction_type.replace("_", " ")}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {new Date(transaction.transaction_date).toLocaleDateString()}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-[200px] truncate" title={transaction.description}>
-                            {transaction.description}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <code className="text-xs bg-muted px-1 py-0.5 rounded">{transaction.reference_number}</code>
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`font-medium ${
-                              transaction.transaction_type === "credit" ||
-                              transaction.transaction_type === "transfer_in"
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {formatAmount(transaction)}
-                          </span>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                        
+              <div className="w-full overflow-x-auto">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="whitespace-nowrap">Type</TableHead>
+                        <TableHead className="whitespace-nowrap">Date</TableHead>
+                        <TableHead className="whitespace-nowrap">Description</TableHead>
+                        <TableHead className="whitespace-nowrap">Reference</TableHead>
+                        <TableHead className="whitespace-nowrap">Amount</TableHead>
+                        <TableHead className="whitespace-nowrap">Status</TableHead>
+                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {data.results.map((transaction) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {getTransactionIcon(transaction.transaction_type)}
+                              <span className="capitalize">{transaction.transaction_type.replace("_", " ")}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              {new Date(transaction.transaction_date).toLocaleDateString()}
+                            </div>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="max-w-[200px] truncate" title={transaction.description}>
+                              {transaction.description}
+                            </div>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <code className="text-xs bg-muted px-1 py-0.5 rounded">{transaction.reference_number}</code>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <span
+                              className={`font-medium ${
+                                transaction.transaction_type === "credit" ||
+                                transaction.transaction_type === "transfer_in"
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {formatAmount(transaction)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">{getStatusBadge(transaction.status)}</TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
 
               {/* Pagination */}
