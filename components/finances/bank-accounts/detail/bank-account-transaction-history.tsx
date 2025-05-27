@@ -204,7 +204,6 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                         <TableHead className="whitespace-nowrap">Reference</TableHead>
                         <TableHead className="whitespace-nowrap">Amount</TableHead>
                         <TableHead className="whitespace-nowrap">Status</TableHead>
-                        <TableHead className="whitespace-nowrap">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -243,11 +242,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                             </span>
                           </TableCell>
                           <TableCell className="whitespace-nowrap">{getStatusBadge(transaction.status)}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
+                          
                         </TableRow>
                       ))}
                     </TableBody>
