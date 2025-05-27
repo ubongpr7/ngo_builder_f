@@ -171,12 +171,15 @@ export default function BudgetsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Utilization Rate</p>
-                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+                  {/*                   
+                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
                     {statistics.total_allocated > 0
-                      ? Math.round((statistics.total_spent / statistics.total_allocated) * 100)
+                      ? Math.round((statistics.total_spent / statistics.total_allocated||1) * 100)
                       : 0}
                     %
                   </p>
+                  */}
+
                 </div>
                 <div className="h-12 w-12 bg-purple-500 rounded-lg flex items-center justify-center">
                   <PieChart className="h-6 w-6 text-white" />
@@ -244,7 +247,7 @@ export default function BudgetsPage() {
             onFiltersChange={handleFilterChange}
           />
         </TabsContent>
-        {/* Departments Tab Content 
+        {/* Departments Tab Content */}
         <TabsContent value="departments" className="space-y-6">
           <DepartmentBudgetBreakdown statistics={statistics} isLoading={statsLoading} />
         </TabsContent>
@@ -260,7 +263,6 @@ export default function BudgetsPage() {
             isLoading={budgetsLoading || statsLoading}
           />
         </TabsContent>
-        */}
       </Tabs>
 
       {/* Add Budget Dialog */}
