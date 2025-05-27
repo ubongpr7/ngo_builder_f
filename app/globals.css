@@ -217,15 +217,15 @@ option {
 }
 
 
-table::-webkit-scrollbar {
+.table-scroll table::-webkit-scrollbar {
   height: 8px;
 }
 
-table::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+.table-scroll table::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.4);
   border-radius: 4px;
 }
 
-table::-webkit-scrollbar-track {
+.table-scroll table::-webkit-scrollbar-track {
   background-color: transparent;
 }
