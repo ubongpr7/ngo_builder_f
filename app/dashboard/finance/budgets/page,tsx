@@ -32,6 +32,8 @@ import { AddBudgetDialog } from "@/components/budgets/add-budget-dialog"
 import { BudgetHealthIndicators } from "@/components/finances/budgets/dashboard/budget-health-indicators"
 import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budget"
 
+
+
 export default function BudgetsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilters, setShowFilters] = useState(false)
