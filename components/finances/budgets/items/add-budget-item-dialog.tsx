@@ -21,23 +21,36 @@ import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { DollarSign, User, Lock, CheckCircle, Target, FileText, Settings, Loader2, AlertTriangle } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "react-toastify"
 import { cn } from "@/lib/utils"
 import type { BudgetItem } from "@/types/finance"
 import { useGetAdminUsersQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useCreateBudgetItemMutation, useUpdateBudgetItemMutation } from "@/redux/features/finance/budget-items"
 import { formatCurrency } from "@/lib/currency-utils"
 
-const budgetItemSchema = z.object({
-  category: z.string().min(1, "Category is required"),
-  subcategory: z.string().optional(),
-  description: z.string().min(1, "Description is required"),
-  budgeted_amount: z.number().min(0.01, "Amount must be greater than 0"),
-  responsible_person_id: z.number().optional(),
-  approval_required_threshold: z.number().optional(),
-  is_locked: z.boolean().default(false),
-  notes: z.string().optional(),
-})
+const budgetItemSchema = z
+  .object({
+    category: z.string().min(1, "Category is required"),
+    subcategory: z.string().optional(),
+    description: z.string().min(1, "Description is required"),
+    budgeted_amount: z.number().min(0.01, "Amount must be greater than 0"),
+    responsible_person_id: z.number().optional(),
+    approval_required_threshold: z.number().optional(),
+    is_locked: z.boolean().default(false),
+    notes: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.approval_required_threshold && data.budgeted_amount) {
+        return data.approval_required_threshold <= data.budgeted_amount * 0.5
+      }
+      return true
+    },
+    {
+      message: "Approval threshold cannot exceed 50% of budget item amount",
+      path: ["approval_required_threshold"],
+    },
+  )
 
 type BudgetItemFormData = z.infer<typeof budgetItemSchema>
 
@@ -428,10 +441,13 @@ export function AddBudgetItemDialog({
 
   const selectedCategory = form.watch("category")
   const budgetedAmount = form.watch("budgeted_amount")
+  const approvalThreshold = form.watch("approval_required_threshold")
+  const maxThreshold = budgetedAmount * 0.5
+  const exceedsThresholdLimit = approvalThreshold && approvalThreshold > maxThreshold
 
   // Check if amount exceeds available budget
   const exceedsAvailableBudget = budgetedAmount > availableAmount
-  const isFormValid = !exceedsAvailableBudget && budgetedAmount > 0
+  const isFormValid = !exceedsAvailableBudget && !exceedsThresholdLimit && budgetedAmount > 0
 
   // React Select options
   const categoryOptions = categories.map((category) => ({
@@ -508,7 +524,7 @@ export function AddBudgetItemDialog({
                   <div className="text-center">
                     <div className="text-sm text-gray-600">Total Budget</div>
                     <div className="text-lg font-semibold text-gray-900">
-                      {formatCurrency(budgetCurrency.code,budget.total_amount)}
+                      {formatCurrency(budgetCurrency.code, budget.total_amount)}
                     </div>
                   </div>
                   <div className="text-center">
@@ -522,7 +538,7 @@ export function AddBudgetItemDialog({
                     <div
                       className={cn("text-lg font-semibold", availableAmount > 0 ? "text-green-600" : "text-red-600")}
                     >
-                      {formatCurrency(budgetCurrency.code,availableAmount)}
+                      {formatCurrency(budgetCurrency.code, availableAmount)}
                     </div>
                   </div>
                 </div>
@@ -676,11 +692,23 @@ export function AddBudgetItemDialog({
                             type="number"
                             step="0.01"
                             placeholder="0.00"
+                            max={maxThreshold}
+                            className={cn(exceedsThresholdLimit && "border-red-500 focus:border-red-500")}
                             {...field}
                             onChange={(e) => field.onChange(Number.parseFloat(e.target.value) || undefined)}
                           />
                         </FormControl>
-                        <FormDescription>Expenses above this amount require approval</FormDescription>
+                        {exceedsThresholdLimit && (
+                          <div className="flex items-center gap-2 text-red-600 text-sm">
+                            <AlertTriangle className="h-4 w-4" />
+                            Threshold cannot exceed 50% of budget amount (
+                            {formatCurrency(budgetCurrency.code, maxThreshold)})
+                          </div>
+                        )}
+                        <FormDescription>
+                          Expenses above this amount require approval (Max:{" "}
+                          {formatCurrency(budgetCurrency.code, maxThreshold)})
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -705,15 +733,11 @@ export function AddBudgetItemDialog({
                       </span>
                     </div>
                     <div className={cn("mt-2 text-sm", exceedsAvailableBudget ? "text-red-600" : "text-blue-600")}>
+                      <p>Requested: {formatCurrency(budgetCurrency.code, budgetedAmount)}</p>
+                      <p>Available: {formatCurrency(budgetCurrency.code, availableAmount)}</p>
                       <p>
-                        Requested: {budgetCurrency.code} {budgetedAmount.toLocaleString()}
-                      </p>
-                      <p>
-                        Available: {budgetCurrency.code} {availableAmount.toLocaleString()}
-                      </p>
-                      <p>
-                        Remaining after allocation: {budgetCurrency.code}{" "}
-                        {(availableAmount - budgetedAmount).toLocaleString()}
+                        Remaining after allocation:{" "}
+                        {formatCurrency(budgetCurrency.code, availableAmount - budgetedAmount)}
                       </p>
                     </div>
                   </div>
@@ -826,9 +850,7 @@ export function AddBudgetItemDialog({
                   <h4 className="font-semibold text-gray-900">Budget Item Summary</h4>
                   <div className="mt-2 space-y-1 text-sm text-gray-700">
                     <p>• Category: {form.watch("category") || "Not selected"}</p>
-                    <p>
-                      • Amount: {budgetCurrency.code} {(budgetedAmount || 0).toLocaleString()}
-                    </p>
+                    <p>• Amount: {formatCurrency(budgetCurrency.code, budgetedAmount || 0)}</p>
                     <p>• Locked: {form.watch("is_locked") ? "Yes" : "No"}</p>
                     <p>• Approval Required: {form.watch("approval_required_threshold") ? "Yes" : "No"}</p>
                   </div>
