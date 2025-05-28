@@ -67,9 +67,9 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
             </Button>
             <AddBudgetItemDialog open={openAddDialog}
             onSuccess={onAddItem}
-            onOpenChange={() => setOpenAddDialog(false)} }
+            onOpenChange={() => setOpenAddDialog(false)} 
             budgetId={budget.id}
-            currency={budget.currency}
+            budgetCurrency={budget.currency}
              />
           </div>
         </CardHeader>
