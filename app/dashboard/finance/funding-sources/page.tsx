@@ -540,8 +540,15 @@ export default function FundingSourcesPage() {
           if (!open) setSelectedFundingSource(null)
 
         }
-        onSuccess={()=>reftetch()}
-        
+     
+        fundingSource={selectedFundingSource}
+        onSuccess={(action, fundingSourceName) => {
+          if (action === "create") {
+            toast.success(`Funding source "${fundingSourceName}" created successfully!`)
+          } else if (action === "update") {
+            toast.success(`Funding source "${fundingSourceName}" updated successfully!`)
+          }
+        }}
       />
 
       <FundingSourceDetailDialog
