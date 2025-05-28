@@ -210,7 +210,7 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
 
   const donationOptions = donations.map((donation: any) => ({
     value: donation.id,
-    label: `${donation.donor_name_display} - ${formatCurrencyCompact( donation?.currency?.code, donation.amount)}`,
+    label: `${donation.donor_name_display} - ${formatCurrencyCompact( donation?.currency?.code||'USD', donation.amount)}`,
     donation: donation,
   }))
 
