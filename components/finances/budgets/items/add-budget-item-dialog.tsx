@@ -139,7 +139,7 @@ export function AddBudgetItemDialog({
 
     try {
       const payload = {
-        budget: budgetId,
+        budget_id: budgetId,
         ...data,
         // Convert undefined to null for API
         responsible_person_id: data.responsible_person_id || null,
