@@ -88,7 +88,8 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
 
   const { data: currencies = [], isLoading: currenciesLoading } = useGetCurrenciesQuery()
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery({})
-  const { data: departments = [], isLoading: departmentsLoading } = useGetDepartmentsQuery({})
+  const { data: departments = [], isLoading: departmentsLoading } = useGetDepartmentsQuery('')
+    console.log(departments)
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation()
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation()
   const [selectedCurrency, setSelectedCurrency] = useState(null)
@@ -370,7 +371,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                                     </div>
                                   </SelectItem>
                                 ) : (
-                                  departments.map((department: any) => (
+                                  departments?.map((department: any) => (
                                     <SelectItem key={department.id} value={department.id.toString()}>
                                       {department.name}
                                     </SelectItem>
