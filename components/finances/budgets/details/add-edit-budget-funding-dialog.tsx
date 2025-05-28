@@ -27,7 +27,7 @@ import { toast } from "sonner"
 import type { BudgetFunding } from "@/types/finance"
 import { 
   useAddBudgetFundingMutation,
-  useUpdateBudgetFundingMutation
+  useUpateBudgetFundingMutation
 } from "@/redux/features/finance/budgets"
 
 import { useGetFundingSourcesQuery } from "@/redux/features/finance/funding-sources"
