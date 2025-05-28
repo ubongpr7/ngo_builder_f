@@ -34,7 +34,7 @@ import {
   useCreateFundingSourceMutation,
   useUpdateFundingSourceMutation,
 } from "@/redux/features/finance/funding-sources"
-import { formatCurrency } from "@/lib/currency-utils"
+import { formatCurrency, formatCurrencyCompact } from "@/lib/currency-utils"
 
 const fundingSourceSchema = z
   .object({
@@ -81,7 +81,6 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
   const { data: grantsData, isLoading: grantsLoading } = useGetGrantsQuery({})
   const { data: donationsData, isLoading: donationsLoading } = useGetDonationsQuery({})
   const { data: campaignsData, isLoading: campaignsLoading } = useGetDonationCampaignsQuery({})
-    console.log('campaign: ', campaignsData,'donations: ', donationsData,'grants: ', grantsData,'currencies: ', currenciesData)
   const [createFundingSource, { isLoading: isCreating }] = useCreateFundingSourceMutation()
   const [updateFundingSource, { isLoading: isUpdating }] = useUpdateFundingSourceMutation()
 
@@ -211,7 +210,7 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
 
   const donationOptions = donations.map((donation: any) => ({
     value: donation.id,
-    label: `${donation.donor_name_display} - ${donation.formatted_amount}`,
+    label: `${donation.donor_name_display} - ${formatCurrencyCompact( donation.currency.code, donation.amount)}`,
     donation: donation,
   }))
 
