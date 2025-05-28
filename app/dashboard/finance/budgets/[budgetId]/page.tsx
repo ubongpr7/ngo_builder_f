@@ -67,7 +67,7 @@ export default function BudgetDetailPage() {
       </div>
 
       {/* Header */}
-      <BudgetDetailHeader budget={budget} onEdit={()=>refresh()} />
+      <BudgetDetailHeader budget={budget} onEdit={()=>refetch()} />
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
@@ -92,7 +92,7 @@ export default function BudgetDetailPage() {
         </TabsContent>
 
         <TabsContent value="items">
-          <BudgetItemsTable budget={budget} />
+          <BudgetItemsTable budget={budget} onAddItem={refetch} />
         </TabsContent>
 
         <TabsContent value="allocations">
