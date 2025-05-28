@@ -413,6 +413,7 @@ export interface Budget {
   items: BudgetItem[]
   budget_funding: BudgetFunding[]
   funding_breakdown: FundingBreakdown[]
+  allocated_amount?: number
 }
 
 export interface BudgetFunding {
