@@ -163,6 +163,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
       }
       form.reset()
     } catch (error: any) {
+      console.error(error)
       toast.error(error?.data?.message || "Failed to save budget")
       
     }
