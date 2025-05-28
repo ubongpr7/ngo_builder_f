@@ -196,25 +196,25 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
   }, [currencyId, currencies])
 
   // React Select options
-  const currencyOptions = currencies.map((currency: any) => ({
+  const currencyOptions = currencies?.map((currency: any) => ({
     value: currency.id,
     label: `${currency.code} - ${currency.name}`,
     currency: currency,
   }))
 
-  const grantOptions = grants.map((grant: any) => ({
+  const grantOptions = grants?.map((grant: any) => ({
     value: grant.id,
     label: `${grant.title} - ${grant.grantor}`,
     grant: grant,
   }))
 
-  const donationOptions = donations.map((donation: any) => ({
+  const donationOptions = donations?.map((donation: any) => ({
     value: donation.id,
     label: `${donation.donor_name_display} - ${formatCurrencyCompact( donation?.currency?.code||'USD', donation.amount)}`,
     donation: donation,
   }))
 
-  const campaignOptions = campaigns.map((campaign: any) => ({
+  const campaignOptions = campaigns?.map((campaign: any) => ({
     value: campaign.id,
     label: campaign.title,
     campaign: campaign,

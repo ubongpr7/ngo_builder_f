@@ -40,6 +40,19 @@ export function FundingSourceDetailDialog({
 }: FundingSourceDetailDialogProps) {
   if (!fundingSource) return null
 
+  // Helper function to safely parse dates
+  const safeParseDate = (dateString: string | null | undefined): Date | null => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  // Helper function to safely format dates
+  const safeFormatDate = (dateString: string | null | undefined, formatStr: string): string => {
+    const date = safeParseDate(dateString);
+    return date ? format(date, formatStr) : 'N/A';
+  };
+
   const allocationPercentage = fundingSource.amount_available
     ? (Number.parseFloat(fundingSource.amount_allocated || "0") / Number.parseFloat(fundingSource.amount_available)) *
       100
@@ -55,17 +68,23 @@ export function FundingSourceDetailDialog({
         bgColor: "bg-gray-100",
         icon: Clock,
       }
-    if (fundingSource.is_expired)
+    
+    const expiryDate = safeParseDate(fundingSource.available_until);
+    const today = new Date();
+    
+    if (expiryDate && expiryDate < today) {
       return {
         status: "Expired",
         color: "text-red-500",
         bgColor: "bg-red-100",
         icon: AlertTriangle,
       }
-    if (fundingSource.available_until) {
-      const expiryDate = new Date(fundingSource.available_until)
-      const thirtyDaysFromNow = new Date()
-      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+    }
+
+    if (expiryDate) {
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      
       if (expiryDate <= thirtyDaysFromNow) {
         return {
           status: "Expiring Soon",
@@ -75,6 +94,7 @@ export function FundingSourceDetailDialog({
         }
       }
     }
+    
     return {
       status: "Available",
       color: "text-green-500",
@@ -154,16 +174,18 @@ export function FundingSourceDetailDialog({
   const fundingTypeDetails = getFundingTypeDetails(fundingSource.funding_type)
 
   // Calculate days until expiry
-  const getDaysUntilExpiry = () => {
-    if (!fundingSource.available_until) return null
-    const expiryDate = new Date(fundingSource.available_until)
-    const today = new Date()
-    const diffTime = expiryDate.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays
+  const getDaysUntilExpiry = (): number | null => {
+    const expiryDate = safeParseDate(fundingSource.available_until);
+    if (!expiryDate) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    
+    const diffTime = expiryDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  const daysUntilExpiry = getDaysUntilExpiry()
+  const daysUntilExpiry = getDaysUntilExpiry();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -222,7 +244,7 @@ export function FundingSourceDetailDialog({
                   )}
 
                   <div className="text-sm text-muted-foreground">
-                    Created {format(new Date(fundingSource.created_at),)}
+                    Created {safeFormatDate(fundingSource.created_at, "PPP")}
                   </div>
                 </div>
               </CardContent>
@@ -318,7 +340,7 @@ export function FundingSourceDetailDialog({
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Available From</div>
                       <div className="text-lg font-semibold">
-                        {format(new Date(fundingSource.available_from),)}
+                        {safeFormatDate(fundingSource.available_from, "PPP")}
                       </div>
                     </div>
                   )}
@@ -326,7 +348,7 @@ export function FundingSourceDetailDialog({
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Available Until</div>
                       <div className="text-lg font-semibold">
-                        {format(new Date(fundingSource.available_until), )}
+                        {safeFormatDate(fundingSource.available_until, "PPP")}
                       </div>
                     </div>
                   )}
@@ -342,7 +364,7 @@ export function FundingSourceDetailDialog({
                         <div
                           className={cn(
                             "bg-white border-2 rounded-full w-3 h-3",
-                            daysUntilExpiry && daysUntilExpiry > 0 ? "border-blue-500" : "border-red-500",
+                            daysUntilExpiry !== null && daysUntilExpiry > 0 ? "border-blue-500" : "border-red-500",
                           )}
                         ></div>
                       </div>
@@ -376,9 +398,9 @@ export function FundingSourceDetailDialog({
                     <div className="text-right">
                       <div className="font-semibold">{fundingSource.donation.formatted_amount}</div>
                       <div className="text-xs text-muted-foreground">
-                        {format(
-                          new Date(fundingSource.donation.donation_date || fundingSource.donation.created_at),
-                          "MMM dd, yyyy",
+                        {safeFormatDate(
+                          fundingSource.donation.donation_date || fundingSource.donation.created_at,
+                          "MMM dd, yyyy"
                         )}
                       </div>
                     </div>
@@ -456,7 +478,7 @@ export function FundingSourceDetailDialog({
             </div>
           )}
 
-          {/* Allocation History (if available) */}
+          {/* Allocation History */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
