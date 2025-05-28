@@ -11,6 +11,7 @@ import { ChevronDown, ChevronRight, Eye, Plus, AlertTriangle, Lock } from "lucid
 import type { Budget, BudgetItem } from "@/types/finance"
 import {  formatDate } from "@/lib/utils"
 import { formatCurrency } from "@/lib/currency-utils"
+import { AddBudgetItemDialog } from "../items/add-budget-item-dialog"
 
 interface BudgetItemsTableProps {
   budget: Budget
@@ -20,8 +21,8 @@ interface BudgetItemsTableProps {
 
 export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsTableProps) {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set())
-  const [selectedItem, setSelectedItem] = useState<BudgetItemDetail | null>(null)
-
+  const [selectedItem, setSelectedItem] = useState<BudgetItem | null>(null)
+  const [openAddDialog, setOpenAddDialog] = useState<boolean>(false)
   const toggleExpanded = (itemId: number) => {
     const newExpanded = new Set(expandedItems)
     if (newExpanded.has(itemId)) {
@@ -60,10 +61,16 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Budget Items ({budget.items_count})</CardTitle>
-            <Button onClick={onAddItem} size="sm">
+            <Button onClick={() => setOpenAddDialog(true)} size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Add Item
             </Button>
+            <AddBudgetItemDialog open={openAddDialog}
+            onSuccess={onAddItem}
+            onOpenChange={() => setOpenAddDialog(false)} }
+            budgetId={budget.id}
+            currency={budget.currency}
+             />
           </div>
         </CardHeader>
         <CardContent>

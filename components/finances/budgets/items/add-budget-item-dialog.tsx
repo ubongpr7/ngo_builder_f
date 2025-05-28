@@ -50,6 +50,7 @@ interface AddBudgetItemDialogProps {
   budgetCurrency: {
     id: number
     code: string
+    name: string
   }
 }
 
