@@ -109,9 +109,8 @@ export function AddBudgetItemDialog({
   const onSubmit = async (data: BudgetItemFormData) => {
     try {
       const payload = {
-        budget: budgetId,
+        budget_id: budgetId,
         ...data,
-        // Convert undefined to null for API
         responsible_person_id: data.responsible_person_id || null,
         approval_required_threshold: data.approval_required_threshold || null,
         subcategory: data.subcategory || "",
