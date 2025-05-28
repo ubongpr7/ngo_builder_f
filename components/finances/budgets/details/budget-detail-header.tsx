@@ -77,6 +77,7 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
         </div>
 
         <div className="flex items-center gap-2">
+        {/* 
           <Button variant="outline" size="sm" onClick={onShare}>
             <Share className="h-4 w-4 mr-2" />
             Share
@@ -85,6 +86,7 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
+          */}
           <Button size="sm" onClick={()=>setOpenDialog(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Budget
