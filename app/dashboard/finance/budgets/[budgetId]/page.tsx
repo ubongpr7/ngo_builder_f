@@ -22,8 +22,9 @@ export default function BudgetDetailPage() {
   const {
     data: budget,
     isLoading: loading,
+    refetch,
     error,
-  } = useGetBudgetByIdQuery(budgetId, {
+  } = useGetBudgetByIdQuery(Number(budgetId), {
     skip: !budgetId,
   })
 
@@ -66,7 +67,7 @@ export default function BudgetDetailPage() {
       </div>
 
       {/* Header */}
-      <BudgetDetailHeader budget={budget} />
+      <BudgetDetailHeader budget={budget} onEdit={()=>refresh()} />
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
