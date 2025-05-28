@@ -81,7 +81,7 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
   const { data: grantsData, isLoading: grantsLoading } = useGetGrantsQuery({})
   const { data: donationsData, isLoading: donationsLoading } = useGetDonationsQuery({})
   const { data: campaignsData, isLoading: campaignsLoading } = useGetDonationCampaignsQuery({})
-
+    console.log('campaign: ', campaignsData,'donations: ', donationsData,'grants: ', grantsData,'currencies: ', currenciesData)
   const [createFundingSource, { isLoading: isCreating }] = useCreateFundingSourceMutation()
   const [updateFundingSource, { isLoading: isUpdating }] = useUpdateFundingSourceMutation()
 
