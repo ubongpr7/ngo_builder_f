@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import Select from "react-select"
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -115,7 +115,7 @@ export function AddFundAllocationDialog({
       if (isEditing) {
         await updateFundAllocation({
           id: allocation.id,
-          data:payload,
+          data: payload,
         }).unwrap()
         toast.success("Fund allocation updated successfully!")
       } else {
@@ -174,6 +174,39 @@ export function AddFundAllocationDialog({
   const isInsufficientFunds =
     selectedAccount && allocationAmount > Number.parseFloat(selectedAccount.current_balance || "0")
 
+  // React Select options for bank accounts
+  const bankAccountOptions = bankAccounts.map((account: any) => ({
+    value: account.id,
+    label: account.name,
+    account: account,
+  }))
+
+  // Custom styles for React Select
+  const selectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      minHeight: "40px",
+      borderColor: state.isFocused ? "#3b82f6" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #3b82f6" : "none",
+      "&:hover": {
+        borderColor: "#3b82f6",
+      },
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#eff6ff" : "white",
+      color: state.isSelected ? "white" : "#374151",
+      padding: "12px",
+      "&:hover": {
+        backgroundColor: state.isSelected ? "#3b82f6" : "#eff6ff",
+      },
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: "#9ca3af",
+    }),
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -206,52 +239,48 @@ export function AddFundAllocationDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Bank Account *</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                        defaultValue={field.value?.toString()}
-                        disabled={bankAccountsLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
+                      <FormControl>
+                        <Controller
+                          name="source_account_id"
+                          control={form.control}
+                          render={({ field: controllerField }) => (
+                            <Select
+                              {...controllerField}
+                              options={bankAccountOptions}
+                              value={bankAccountOptions.find((option) => option.value === controllerField.value)}
+                              onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || 0)}
                               placeholder={bankAccountsLoading ? "Loading accounts..." : "Select bank account"}
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {bankAccountsLoading ? (
-                            <SelectItem value="loading" disabled>
-                              <div className="flex items-center gap-2">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Loading accounts...
-                              </div>
-                            </SelectItem>
-                          ) : (
-                            bankAccounts.map((account: any) => (
-                              <SelectItem key={account.id} value={account.id.toString()}>
+                              isSearchable
+                              isLoading={bankAccountsLoading}
+                              isDisabled={bankAccountsLoading}
+                              styles={selectStyles}
+                              className="react-select-container"
+                              classNamePrefix="react-select"
+                              formatOptionLabel={(option: any) => (
                                 <div className="flex items-center gap-3 py-2">
-                                  {getAccountTypeIcon(account.account_type)}
+                                  {getAccountTypeIcon(option.account.account_type)}
                                   <div className="flex-1">
-                                    <div className="font-medium">{account.name}</div>
+                                    <div className="font-medium">{option.account.name}</div>
                                     <div className="text-sm text-gray-500">
-                                      {account.financial_institution?.name} • {account.account_number}
+                                      {option.account.financial_institution?.name} • {option.account.account_number}
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
-                                      <Badge className={getAccountTypeColor(account.account_type)}>
-                                        {account.account_type}
+                                      <Badge className={getAccountTypeColor(option.account.account_type)}>
+                                        {option.account.account_type}
                                       </Badge>
                                       <span className="text-sm font-medium text-green-600">
-                                        {account.currency?.code}{" "}
-                                        {Number.parseFloat(account.current_balance || "0").toLocaleString()}
+                                        {option.account.currency?.code}{" "}
+                                        {Number.parseFloat(option.account.current_balance || "0").toLocaleString()}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
-                              </SelectItem>
-                            ))
+                              )}
+                              noOptionsMessage={() => (bankAccountsLoading ? "Loading..." : "No accounts found")}
+                            />
                           )}
-                        </SelectContent>
-                      </Select>
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -418,8 +447,6 @@ export function AddFundAllocationDialog({
                 />
 
                 <Separator />
-
-               
               </CardContent>
             </Card>
 

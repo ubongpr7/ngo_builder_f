@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import Select from "react-select"
 import {
   Dialog,
   DialogContent,
@@ -16,13 +17,12 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { DollarSign, User, Lock, CheckCircle, Target, FileText, Settings, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import type { BudgetItem} from "@/types/finance"
+import type { BudgetItem } from "@/types/finance"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import { useGetAdminUsersQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useCreateBudgetItemMutation, useUpdateBudgetItemMutation } from "@/redux/features/finance/budget-items"
@@ -121,7 +121,7 @@ export function AddBudgetItemDialog({
       if (isEditing) {
         await updateBudgetItem({
           id: budgetItem.id,
-          data:payload,
+          data: payload,
         }).unwrap()
         toast.success("Budget item updated successfully!")
       } else {
@@ -174,6 +174,56 @@ export function AddBudgetItemDialog({
   const budgetedAmount = form.watch("budgeted_amount")
   const selectedCurrency = currencies.find((c: any) => c.id === form.watch("currency_id"))
 
+  // React Select options
+  const categoryOptions = categories.map((category) => ({
+    value: category,
+    label: category,
+  }))
+
+  const subcategoryOptions =
+    selectedCategory && subcategories[selectedCategory]
+      ? subcategories[selectedCategory].map((subcategory) => ({
+          value: subcategory,
+          label: subcategory,
+        }))
+      : []
+
+  const currencyOptions = currencies.map((currency: any) => ({
+    value: currency.id,
+    label: `${currency.code} - ${currency.name}`,
+  }))
+
+  const userOptions = users.map((user: any) => ({
+    value: user.id,
+    label: `${user.first_name} ${user.last_name}`,
+    email: user.email,
+  }))
+
+  // Custom styles for React Select
+  const selectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      minHeight: "40px",
+      borderColor: state.isFocused ? "#3b82f6" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #3b82f6" : "none",
+      "&:hover": {
+        borderColor: "#3b82f6",
+      },
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#eff6ff" : "white",
+      color: state.isSelected ? "white" : "#374151",
+      "&:hover": {
+        backgroundColor: state.isSelected ? "#3b82f6" : "#eff6ff",
+      },
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: "#9ca3af",
+    }),
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -207,20 +257,25 @@ export function AddBudgetItemDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Controller
+                            name="category"
+                            control={form.control}
+                            render={({ field: controllerField }) => (
+                              <Select
+                                {...controllerField}
+                                options={categoryOptions}
+                                value={categoryOptions.find((option) => option.value === controllerField.value)}
+                                onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || "")}
+                                placeholder="Select category"
+                                isSearchable
+                                styles={selectStyles}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                              />
+                            )}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -232,21 +287,26 @@ export function AddBudgetItemDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Subcategory</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCategory}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select subcategory" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {selectedCategory &&
-                              subcategories[selectedCategory]?.map((subcategory) => (
-                                <SelectItem key={subcategory} value={subcategory}>
-                                  {subcategory}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Controller
+                            name="subcategory"
+                            control={form.control}
+                            render={({ field: controllerField }) => (
+                              <Select
+                                {...controllerField}
+                                options={subcategoryOptions}
+                                value={subcategoryOptions.find((option) => option.value === controllerField.value)}
+                                onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || "")}
+                                placeholder="Select subcategory"
+                                isSearchable
+                                isDisabled={!selectedCategory}
+                                styles={selectStyles}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                              />
+                            )}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -312,24 +372,27 @@ export function AddBudgetItemDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Currency *</FormLabel>
-                        <Select
-                          onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                          defaultValue={field.value?.toString()}
-                          disabled={currenciesLoading}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={currenciesLoading ? "Loading..." : "Select currency"} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {currencies.map((currency: any) => (
-                              <SelectItem key={currency.id} value={currency.id.toString()}>
-                                {currency.code} - {currency.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Controller
+                            name="currency_id"
+                            control={form.control}
+                            render={({ field: controllerField }) => (
+                              <Select
+                                {...controllerField}
+                                options={currencyOptions}
+                                value={currencyOptions.find((option) => option.value === controllerField.value)}
+                                onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || 0)}
+                                placeholder={currenciesLoading ? "Loading..." : "Select currency"}
+                                isSearchable
+                                isLoading={currenciesLoading}
+                                isDisabled={currenciesLoading}
+                                styles={selectStyles}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                              />
+                            )}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -386,43 +449,39 @@ export function AddBudgetItemDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Responsible Person</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                        defaultValue={field.value?.toString()}
-                        disabled={usersLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
+                      <FormControl>
+                        <Controller
+                          name="responsible_person_id"
+                          control={form.control}
+                          render={({ field: controllerField }) => (
+                            <Select
+                              {...controllerField}
+                              options={userOptions}
+                              value={userOptions.find((option) => option.value === controllerField.value)}
+                              onChange={(selectedOption) =>
+                                controllerField.onChange(selectedOption?.value || undefined)
+                              }
                               placeholder={usersLoading ? "Loading users..." : "Select responsible person"}
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {usersLoading ? (
-                            <SelectItem value="loading" disabled>
-                              <div className="flex items-center gap-2">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Loading users...
-                              </div>
-                            </SelectItem>
-                          ) : (
-                            users.map((user: any) => (
-                              <SelectItem key={user.id} value={user.id.toString()}>
+                              isSearchable
+                              isLoading={usersLoading}
+                              isDisabled={usersLoading}
+                              isClearable
+                              styles={selectStyles}
+                              className="react-select-container"
+                              classNamePrefix="react-select"
+                              formatOptionLabel={(option: any) => (
                                 <div className="flex items-center gap-2">
                                   <User className="h-4 w-4" />
                                   <div>
-                                    <div>
-                                      {user.first_name} {user.last_name}
-                                    </div>
-                                    <div className="text-xs text-gray-500">{user.email}</div>
+                                    <div>{option.label}</div>
+                                    <div className="text-xs text-gray-500">{option.email}</div>
                                   </div>
                                 </div>
-                              </SelectItem>
-                            ))
+                              )}
+                            />
                           )}
-                        </SelectContent>
-                      </Select>
+                        />
+                      </FormControl>
                       <FormDescription>Person responsible for managing this budget item</FormDescription>
                       <FormMessage />
                     </FormItem>
