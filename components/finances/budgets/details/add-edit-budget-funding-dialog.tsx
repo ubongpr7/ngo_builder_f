@@ -73,7 +73,7 @@ export function BudgetFundingDialog({
 
   // Mutation hooks
   const [createBudgetFunding, { isLoading: isCreating }] = useAddBudgetFundingMutation()
-  const [updateBudgetFunding, { isLoading: isUpdating }] = useUpdateBudgetFundingMutation()
+  const [updateBudgetFunding, { isLoading: isUpdating }] = useUpateBudgetFundingMutation()
 
   const isLoading = isCreating || isUpdating || fundingSourcesLoading
 
