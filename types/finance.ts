@@ -492,6 +492,7 @@ export interface BudgetItem {
   remaining_amount: string
   spent_percentage: string
   formatted_amount: string
+  currency:Currency
 }
 
 // Organizational Expense Types

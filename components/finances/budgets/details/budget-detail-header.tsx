@@ -8,6 +8,8 @@ import { Calendar, DollarSign, TrendingUp, Users, Download, Edit, Share } from "
 import type { Budget } from "@/types/finance"
 import { formatDate,  } from "@/lib/utils"
 import { formatCurrency } from "@/lib/currency-utils"
+import { AddBudgetDialog } from "@/components/finances/budgets/dashboard/add-budget-dialog"
+import { useState } from "react"
 interface BudgetDetailHeaderProps {
   budget: Budget
   onEdit?: () => void
@@ -16,6 +18,7 @@ interface BudgetDetailHeaderProps {
 }
 
 export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: BudgetDetailHeaderProps) {
+    const [openDialog, setOpenDialog]=useState(false)
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -82,10 +85,12 @@ export function BudgetDetailHeader({ budget, onEdit, onExport, onShare }: Budget
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button size="sm" onClick={onEdit}>
+          <Button size="sm" onClick={()=>setOpenDialog(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit Budget
           </Button>
+          <AddBudgetDialog open={openDialog} budget={budget} onOpenChange={()=>setOpenDialog(false)} onSuccess={onEdit} />
+
         </div>
       </div>
 

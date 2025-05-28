@@ -8,7 +8,6 @@ import { BudgetActivityTimeline } from "@/components/finances/budgets/details/bu
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { useGetBudgetByIdQuery } from "@/redux/features/finance/budgets"
 import { BudgetAnalyticsDashboard } from "@/components/finances/budgets/details/budget-analytics-dashboard"
-
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"

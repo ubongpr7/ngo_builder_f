@@ -54,17 +54,8 @@ export const fundAllocationsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Update fund allocation
-    updateFundAllocation: builder.mutation<
-      FundAllocation,
-      {
-        id: number
-        data: Partial<FundAllocation> & {
-          source_account_id?: number
-          budget_id?: number
-          approved_by_id?: number
-        }
-      }
-    >({
+    updateFundAllocation: builder.mutation
+      ({
       query: ({ id, data }) => ({
         url: `/${backend}/fund-allocations/${id}/`,
         method: "PATCH",

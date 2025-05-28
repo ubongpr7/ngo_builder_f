@@ -41,15 +41,8 @@ export const budgetItemsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Update budget item
-    updateBudgetItem: builder.mutation<
-      BudgetItem,
-      {
-        id: number
-        data: Partial<BudgetItem> & {
-          responsible_person_id?: number
-        }
-      }
-    >({
+    updateBudgetItem: builder.mutation
+      ({
       query: ({ id, data }) => ({
         url: `/${backend}/budget-items/${id}/`,
         method: "PATCH",

@@ -17,19 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
 import {
-  CalendarIcon,
-  Plus,
-  Trash2,
   DollarSign,
   Target,
   Building2,
@@ -38,9 +30,13 @@ import {
   Settings,
   AlertTriangle,
   CheckCircle,
+  Loader2,
 } from "lucide-react"
 import { useCreateBudgetMutation, useUpdateBudgetMutation } from "@/redux/features/finance/budgets"
 import { toast } from "sonner"
+import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
+import type { Budget } from "@/types/finance"
+import { DateInput } from "@/components/ui/date-input"
 
 const budgetSchema = z.object({
   name: z.string().min(1, "Budget name is required"),
@@ -48,34 +44,33 @@ const budgetSchema = z.object({
   budget_type: z.enum(["project", "organizational", "departmental", "emergency", "marketing", "operational"]),
   status: z.enum(["draft", "pending_approval", "approved", "active", "completed", "cancelled"]),
   total_amount: z.number().min(0.01, "Amount must be greater than 0"),
-  currency: z.string().min(1, "Currency is required"),
+  currency_id: z.number().min(1, "Currency is required"),
   fiscal_year: z.number().min(2020).max(2030),
   start_date: z.date(),
   end_date: z.date(),
   department: z.string().optional(),
   project: z.string().optional(),
-  funding_sources: z.array(z.string()).optional(),
   approval_required: z.boolean().default(false),
   auto_approve_limit: z.number().optional(),
   notification_threshold: z.number().min(0).max(100).default(80),
-  tags: z.array(z.string()).optional(),
 })
 
 type BudgetFormData = z.infer<typeof budgetSchema>
 
 interface AddBudgetDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
-  budget?: any // For editing existing budget
+  onOpenChange: () => void
+  onSuccess?: () => void
+  budget?: Budget
 }
 
-export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogProps) {
+export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBudgetDialogProps) {
   const [activeTab, setActiveTab] = useState("basic")
-  const [newTag, setNewTag] = useState("")
-  const [newFundingSource, setNewFundingSource] = useState("")
 
+  const { data: currencies = [], isLoading: currenciesLoading } = useGetCurrenciesQuery()
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation()
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation()
+  const [selectedCurrency, setSelectedCurrency] = useState(null)
 
   const isEditing = !!budget
   const isLoading = isCreating || isUpdating
@@ -88,94 +83,72 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
       budget_type: "project",
       status: "draft",
       total_amount: 0,
-      currency: "USD",
+      currency_id: 1,
       fiscal_year: new Date().getFullYear(),
       start_date: new Date(),
       end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
       department: "",
       project: "",
-      funding_sources: [],
       approval_required: false,
       auto_approve_limit: 0,
       notification_threshold: 80,
-      tags: [],
     },
   })
+
+  // Set default currency when currencies are loaded
+  useEffect(() => {
+    if (currencies.length > 0 && !form.getValues("currency_id")) {
+      form.setValue("currency_id", currencies[0].id)
+    }
+  }, [currencies, form])
 
   // Populate form when editing
   useEffect(() => {
     if (budget && open) {
       form.reset({
-        name: budget.name || "",
+        name: budget.title || "",
         description: budget.description || "",
         budget_type: budget.budget_type || "project",
         status: budget.status || "draft",
-        total_amount: budget.total_amount || 0,
-        currency: budget.currency || "USD",
-        fiscal_year: budget.fiscal_year || new Date().getFullYear(),
+        total_amount: Number.parseFloat(budget.total_amount) || 0,
+        currency_id: budget.currency?.id || (currencies.length > 0 ? currencies[0].id : 1),
+        fiscal_year: Number.parseInt(budget.fiscal_year) || new Date().getFullYear(),
         start_date: budget.start_date ? new Date(budget.start_date) : new Date(),
         end_date: budget.end_date ? new Date(budget.end_date) : new Date(),
-        department: budget.department || "",
-        project: budget.project || "",
-        funding_sources: budget.funding_sources || [],
+        department: budget.department?.name || "",
+        project: budget.project?.title || "",
         approval_required: budget.approval_required || false,
-        auto_approve_limit: budget.auto_approve_limit || 0,
-        notification_threshold: budget.notification_threshold || 80,
-        tags: budget.tags || [],
+        auto_approve_limit: Number.parseFloat(budget.auto_approve_limit) || 0,
+        notification_threshold: Number.parseInt(budget.notification_threshold) || 80,
       })
     }
-  }, [budget, open, form])
+  }, [budget, open, form, currencies])
+
+  useEffect(() => {
+    if (currencies.length > 0) {
+      const currencyId = form.getValues("currency_id")
+      const selected = currencies.find((c) => c.id === currencyId)
+      setSelectedCurrency(selected || currencies[0])
+    }
+  }, [currencies, form.watch("currency_id")])
 
   const onSubmit = async (data: BudgetFormData) => {
     try {
       if (isEditing) {
         await updateBudget({ id: budget.id, ...data }).unwrap()
         toast.success("Budget updated successfully!")
+        onSuccess?.()
+        onOpenChange()
       } else {
         await createBudget(data).unwrap()
         toast.success("Budget created successfully!")
+        onSuccess?.()
+        onOpenChange()
       }
-      onOpenChange(false)
       form.reset()
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to save budget")
     }
-  }
-
-  const addTag = () => {
-    if (newTag.trim()) {
-      const currentTags = form.getValues("tags") || []
-      if (!currentTags.includes(newTag.trim())) {
-        form.setValue("tags", [...currentTags, newTag.trim()])
-      }
-      setNewTag("")
-    }
-  }
-
-  const removeTag = (tagToRemove: string) => {
-    const currentTags = form.getValues("tags") || []
-    form.setValue(
-      "tags",
-      currentTags.filter((tag) => tag !== tagToRemove),
-    )
-  }
-
-  const addFundingSource = () => {
-    if (newFundingSource.trim()) {
-      const currentSources = form.getValues("funding_sources") || []
-      if (!currentSources.includes(newFundingSource.trim())) {
-        form.setValue("funding_sources", [...currentSources, newFundingSource.trim()])
-      }
-      setNewFundingSource("")
-    }
-  }
-
-  const removeFundingSource = (sourceToRemove: string) => {
-    const currentSources = form.getValues("funding_sources") || []
-    form.setValue(
-      "funding_sources",
-      currentSources.filter((source) => source !== sourceToRemove),
-    )
   }
 
   const budgetTypes = [
@@ -195,8 +168,6 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
     { value: "completed", label: "Completed", color: "purple" },
     { value: "cancelled", label: "Cancelled", color: "red" },
   ]
-
-  const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "NGN", "KES", "GHS", "ZAR"]
 
   const departments = [
     "Programs & Services",
@@ -227,7 +198,7 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="basic" className="gap-2">
                   <FileText className="h-4 w-4" />
                   Basic Info
@@ -239,10 +210,6 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
                 <TabsTrigger value="settings" className="gap-2">
                   <Settings className="h-4 w-4" />
                   Settings
-                </TabsTrigger>
-                <TabsTrigger value="advanced" className="gap-2">
-                  <Target className="h-4 w-4" />
-                  Advanced
                 </TabsTrigger>
               </TabsList>
 
@@ -391,22 +358,35 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
 
                       <FormField
                         control={form.control}
-                        name="currency"
+                        name="currency_id"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Currency *</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select
+                              onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                              defaultValue={field.value?.toString()}
+                              disabled={currenciesLoading}
+                            >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select currency" />
+                                  <SelectValue placeholder={currenciesLoading ? "Loading..." : "Select currency"} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {currencies.map((currency) => (
-                                  <SelectItem key={currency} value={currency}>
-                                    {currency}
+                                {currenciesLoading ? (
+                                  <SelectItem value="loading" disabled>
+                                    <div className="flex items-center gap-2">
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Loading currencies...
+                                    </div>
                                   </SelectItem>
-                                ))}
+                                ) : (
+                                  currencies.map((currency: any) => (
+                                    <SelectItem key={currency.id} value={currency.id.toString()}>
+                                      {currency.code} - {currency.name}
+                                    </SelectItem>
+                                  ))
+                                )}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -442,33 +422,16 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
                         control={form.control}
                         name="start_date"
                         render={({ field }) => (
-                          <FormItem className="flex flex-col">
+                          <FormItem>
                             <FormLabel>Start Date *</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground",
-                                    )}
-                                  >
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => date < new Date("1900-01-01")}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
+                            <FormControl>
+                              <DateInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                label=""
+                                minDate={new Date("1900-01-01")}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -478,68 +441,20 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
                         control={form.control}
                         name="end_date"
                         render={({ field }) => (
-                          <FormItem className="flex flex-col">
+                          <FormItem>
                             <FormLabel>End Date *</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground",
-                                    )}
-                                  >
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => date < form.getValues("start_date")}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
+                            <FormControl>
+                              <DateInput
+                                value={field.value}
+                                onChange={field.onChange}
+                                label=""
+                                minDate={form.watch("start_date")}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
-
-                    <div>
-                      <FormLabel>Funding Sources</FormLabel>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add funding source..."
-                            value={newFundingSource}
-                            onChange={(e) => setNewFundingSource(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addFundingSource())}
-                          />
-                          <Button type="button" onClick={addFundingSource} size="sm">
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(form.watch("funding_sources") || []).map((source) => (
-                            <Badge key={source} variant="secondary" className="gap-1">
-                              {source}
-                              <button
-                                type="button"
-                                onClick={() => removeFundingSource(source)}
-                                className="ml-1 hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -664,80 +579,37 @@ export function AddBudgetDialog({ open, onOpenChange, budget }: AddBudgetDialogP
                     />
                   </CardContent>
                 </Card>
-              </TabsContent>
-
-              <TabsContent value="advanced" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Advanced Configuration</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5" />
                     <div>
-                      <FormLabel>Tags</FormLabel>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add tag..."
-                            value={newTag}
-                            onChange={(e) => setNewTag(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                          />
-                          <Button type="button" onClick={addTag} size="sm">
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(form.watch("tags") || []).map((tag) => (
-                            <Badge key={tag} variant="outline" className="gap-1">
-                              {tag}
-                              <button
-                                type="button"
-                                onClick={() => removeTag(tag)}
-                                className="ml-1 hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-100">Budget Summary</h4>
+                      <div className="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-300">
+                        <p>
+                          • Total Amount: {selectedCurrency?.code || "USD"}{" "}
+                          {form.watch("total_amount")?.toLocaleString() || "0"}
+                        </p>
+                        <p>• Type: {budgetTypes.find((t) => t.value === form.watch("budget_type"))?.label}</p>
+                        <p>
+                          • Duration:{" "}
+                          {form.watch("start_date") && form.watch("end_date")
+                            ? `${Math.ceil((form.watch("end_date").getTime() - form.watch("start_date").getTime()) / (1000 * 60 * 60 * 24))} days`
+                            : "Not set"}
+                        </p>
+                        <p>• Approval Required: {form.watch("approval_required") ? "Yes" : "No"}</p>
+                        <p>• Notification at: {form.watch("notification_threshold")}% utilization</p>
                       </div>
                     </div>
-
-                    <Separator />
-
-                    <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-                        <div>
-                          <h4 className="font-semibold text-blue-900 dark:text-blue-100">Budget Summary</h4>
-                          <div className="mt-2 space-y-1 text-sm text-blue-700 dark:text-blue-300">
-                            <p>
-                              • Total Amount: {form.watch("currency")}{" "}
-                              {form.watch("total_amount") || "0"}
-                            </p>
-                            <p>• Type: {budgetTypes.find((t) => t.value === form.watch("budget_type"))?.label}</p>
-                            <p>
-                              • Duration:{" "}
-                              {form.watch("start_date") && form.watch("end_date")
-                                ? `${Math.ceil((form.watch("end_date").getTime() - form.watch("start_date").getTime()) / (1000 * 60 * 60 * 24))} days`
-                                : "Not set"}
-                            </p>
-                            <p>• Approval Required: {form.watch("approval_required") ? "Yes" : "No"}</p>
-                            <p>• Notification at: {form.watch("notification_threshold")}% utilization</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange()} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || currenciesLoading}>
                 {isLoading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
