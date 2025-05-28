@@ -17,7 +17,7 @@ export const userProfileReading = apiSlice.injectEndpoints({
     query: () => `/${management_api}/profile-roles/`,
   }),
   
-  getAdminUsers: builder.query<UserProfileRoles, void>({
+  getAdminUsers: builder.query({
     query: () => `/project_api/admin-users/`,
   }),
 
