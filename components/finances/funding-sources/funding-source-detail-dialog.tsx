@@ -29,13 +29,14 @@ interface FundingSourceDetailDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   fundingSource: FundingSource | null
-  
+  onEdit?: (fundingSource: FundingSource) => void
 }
 
 export function FundingSourceDetailDialog({
   open,
   onOpenChange,
   fundingSource,
+  onEdit,
 }: FundingSourceDetailDialogProps) {
   if (!fundingSource) return null
 
@@ -176,7 +177,12 @@ export function FundingSourceDetailDialog({
               </DialogTitle>
               <DialogDescription className="mt-1">Detailed information about this funding source</DialogDescription>
             </div>
-            
+            {onEdit && (
+              <Button variant="outline" onClick={() => onEdit(fundingSource)} className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
@@ -216,7 +222,7 @@ export function FundingSourceDetailDialog({
                   )}
 
                   <div className="text-sm text-muted-foreground">
-                    Created {format(new Date(fundingSource.created_at), "PPP")}
+                    Created {format(new Date(fundingSource.created_at),)}
                   </div>
                 </div>
               </CardContent>
@@ -312,7 +318,7 @@ export function FundingSourceDetailDialog({
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Available From</div>
                       <div className="text-lg font-semibold">
-                        {format(new Date(fundingSource.available_from), "PPP")}
+                        {format(new Date(fundingSource.available_from),)}
                       </div>
                     </div>
                   )}
@@ -320,7 +326,7 @@ export function FundingSourceDetailDialog({
                     <div>
                       <div className="text-sm font-medium text-muted-foreground">Available Until</div>
                       <div className="text-lg font-semibold">
-                        {format(new Date(fundingSource.available_until), "PPP")}
+                        {format(new Date(fundingSource.available_until), )}
                       </div>
                     </div>
                   )}
@@ -498,7 +504,12 @@ export function FundingSourceDetailDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close
             </Button>
-           
+            {onEdit && (
+              <Button onClick={() => onEdit(fundingSource)} className="gap-2">
+                <Edit className="h-4 w-4" />
+                Edit Funding Source
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

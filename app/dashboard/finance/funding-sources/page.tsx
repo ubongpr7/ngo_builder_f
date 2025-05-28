@@ -553,7 +553,11 @@ export default function FundingSourcesPage() {
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
         fundingSource={selectedFundingSource}
-        
+        onEdit={(source) => {
+          setShowDetailDialog(false)
+          setSelectedFundingSource(source)
+          setShowAddDialog(true)
+        }}
       />
     </div>
   )
