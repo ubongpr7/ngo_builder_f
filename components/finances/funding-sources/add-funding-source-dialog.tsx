@@ -88,10 +88,10 @@ export function AddFundingSourceDialog({ open, onOpenChange, onSuccess, fundingS
   const isLoading = isCreating || isUpdating
 
   // Extract data from the response structure
-  const currencies = currenciesData?.results || []
-  const grants = grantsData?.results || []
-  const donations = donationsData?.results || []
-  const campaigns = campaignsData?.results || []
+  const currencies = currenciesData
+  const grants = grantsData
+  const donations = donationsData
+  const campaigns = campaignsData
 
   const form = useForm<FundingSourceFormData>({
     resolver: zodResolver(fundingSourceSchema),
