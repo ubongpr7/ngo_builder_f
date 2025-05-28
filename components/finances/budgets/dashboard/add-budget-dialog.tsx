@@ -38,7 +38,7 @@ import {
   ShieldAlert,
 } from "lucide-react"
 import { useCreateBudgetMutation, useUpdateBudgetMutation } from "@/redux/features/finance/budgets"
-import { toast } from "sonner"
+import { toast } from "react-toastify"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import { useGetProjectsQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
@@ -164,6 +164,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
       form.reset()
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to save budget")
+      
     }
   }
 
