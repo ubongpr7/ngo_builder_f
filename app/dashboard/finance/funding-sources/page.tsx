@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo, useEffect } from "react"
+import React, { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,10 +31,11 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { toast } from "react-toastify"
 
+// Custom hook for debounced search
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value)
     }, delay)
@@ -72,7 +73,7 @@ export default function FundingSourcesPage() {
     [debouncedSearchTerm, filters],
   )
 
-  const { data: fundingSourcesData, isLoading, error, isFetching } = useGetFundingSourcesQuery(queryParams)
+  const { data: fundingSourcesData, isLoading, error, isFetching,refetch } = useGetFundingSourcesQuery(queryParams)
 
   const fundingSources = fundingSourcesData || []
 
@@ -117,7 +118,6 @@ export default function FundingSourcesPage() {
   }
 
   const handleViewDetails = (fundingSource: any) => {
-    console.log("Viewing details for", fundingSource.name)
     setSelectedFundingSource(fundingSource)
     setShowDetailDialog(true)
     toast.info(`Viewing details for ${fundingSource.name}`)
@@ -538,13 +538,12 @@ export default function FundingSourcesPage() {
         onOpenChange={(open) => {
           setShowAddDialog(open)
           if (!open) setSelectedFundingSource(null)
-
-        }
-     
+        }}
         fundingSource={selectedFundingSource}
         onSuccess={(action, fundingSourceName) => {
           if (action === "create") {
             toast.success(`Funding source "${fundingSourceName}" created successfully!`)
+            refetch()
           } else if (action === "update") {
             toast.success(`Funding source "${fundingSourceName}" updated successfully!`)
           }
@@ -559,6 +558,7 @@ export default function FundingSourcesPage() {
           setShowDetailDialog(false)
           setSelectedFundingSource(source)
           setShowAddDialog(true)
+          refetch()
         }}
       />
     </div>
