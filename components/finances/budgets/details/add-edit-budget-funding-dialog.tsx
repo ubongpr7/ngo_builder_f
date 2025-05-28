@@ -78,7 +78,7 @@ export function BudgetFundingDialog({
   const isLoading = isCreating || isUpdating || fundingSourcesLoading
 
   // Extract funding sources from response
-  const fundingSources = fundingSourcesData?.results || []
+  const fundingSources = fundingSourcesData || []
 
   // Initialize form
   const form = useForm<BudgetFundingFormData>({
