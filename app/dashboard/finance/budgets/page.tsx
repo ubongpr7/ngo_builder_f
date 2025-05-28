@@ -83,17 +83,7 @@ export default function BudgetsPage() {
               className="pl-10 w-64"
             />
           </div>
-          {/* 
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-
-          <Button variant="outline" onClick={handleExport} className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-            */}
+          
           <Button
             onClick={() => setShowAddDialog(true)}
             className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"

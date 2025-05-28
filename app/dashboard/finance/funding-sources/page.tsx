@@ -72,7 +72,7 @@ export default function FundingSourcesPage() {
     [debouncedSearchTerm, filters],
   )
 
-  const { data: fundingSourcesData, isLoading, error, isFetching,refetch } = useGetFundingSourcesQuery(queryParams)
+  const { data: fundingSourcesData, isLoading, error, isFetching } = useGetFundingSourcesQuery(queryParams)
 
   const fundingSources = fundingSourcesData || []
 
@@ -540,16 +540,8 @@ export default function FundingSourcesPage() {
           if (!open) setSelectedFundingSource(null)
 
         }
-        onSuccess={()=>refetch()}
-    }
-        fundingSource={selectedFundingSource}
-        onSuccess={(action, fundingSourceName) => {
-          if (action === "create") {
-            toast.success(`Funding source "${fundingSourceName}" created successfully!`)
-          } else if (action === "update") {
-            toast.success(`Funding source "${fundingSourceName}" updated successfully!`)
-          }
-        }}
+        onSuccess={()=>reftetch()}
+        
       />
 
       <FundingSourceDetailDialog
