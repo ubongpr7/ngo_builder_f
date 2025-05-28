@@ -72,7 +72,7 @@ export default function FundingSourcesPage() {
     [debouncedSearchTerm, filters],
   )
 
-  const { data: fundingSourcesData, isLoading, error, isFetching } = useGetFundingSourcesQuery(queryParams)
+  const { data: fundingSourcesData, isLoading, error, isFetching,refetch } = useGetFundingSourcesQuery(queryParams)
 
   const fundingSources = fundingSourcesData || []
 
@@ -538,7 +538,10 @@ export default function FundingSourcesPage() {
         onOpenChange={(open) => {
           setShowAddDialog(open)
           if (!open) setSelectedFundingSource(null)
-        }}
+
+        }
+        onSuccess={()=>refetch()}
+    }
         fundingSource={selectedFundingSource}
         onSuccess={(action, fundingSourceName) => {
           if (action === "create") {
