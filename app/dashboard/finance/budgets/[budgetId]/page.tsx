@@ -74,9 +74,10 @@ export default function BudgetDetailPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="funding">Funding</TabsTrigger>
+          <TabsTrigger value="funding-source">Funding Sources ({budget.funding_sources_count || 0})</TabsTrigger>
           <TabsTrigger value="items">Items ({budget.items_count || 0})</TabsTrigger>
           <TabsTrigger value="allocations">Allocations ({budget.allocations_count || 0})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -98,7 +99,7 @@ export default function BudgetDetailPage() {
         <TabsContent value="items">
           <BudgetItemsTable budget={budget} onAddItem={refetch} />
         </TabsContent>
-        <TabsContent value="items">
+        <TabsContent value="funding-source">
           <BudgetFundingSection budget={budget} onAddFunding={refetch} />
         </TabsContent>
 
