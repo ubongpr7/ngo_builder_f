@@ -74,7 +74,7 @@ export default function FundingSourcesPage() {
 
   const { data: fundingSourcesData, isLoading, error, isFetching } = useGetFundingSourcesQuery(queryParams)
 
-  const fundingSources = fundingSourcesData?.results || []
+  const fundingSources = fundingSourcesData || []
 
   // Calculate summary statistics
   const summaryStats = useMemo(() => {

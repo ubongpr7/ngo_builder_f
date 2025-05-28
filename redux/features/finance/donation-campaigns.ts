@@ -5,7 +5,6 @@ const backend = "finance_api"
 
 export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get all campaigns
     getDonationCampaigns: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
