@@ -44,6 +44,7 @@ import { useGetProjectsQuery } from "@/redux/features/projects/projectsAPISlice"
 import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import type { Budget } from "@/types/finance"
 import { DateInput } from "@/components/ui/date-input"
+import { format } from "date-fns"
 
 const budgetSchema = z.object({
   title: z.string().min(1, "Budget title is required"),
@@ -113,7 +114,6 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
     },
   })
 
-  // Set default currency when currencies are loaded
   useEffect(() => {
     if (currencies.length > 0 && !form.getValues("currency_id")) {
       form.setValue("currency_id", currencies[0].id)
@@ -150,13 +150,20 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
 
   const onSubmit = async (data: BudgetFormData) => {
     try {
+      // Format dates for API
+      const formattedData = {
+        ...data,
+        start_date: data.start_date ? format(data.start_date, "yyyy-MM-dd") : undefined,
+        end_date: data.end_date ? format(data.end_date, "yyyy-MM-dd") : undefined,
+      }
+
       if (isEditing) {
-        await updateBudget({ id: budget.id, data: data }).unwrap()
+        await updateBudget({ id: budget.id, data: formattedData }).unwrap()
         toast.success("Budget updated successfully!")
         onSuccess?.()
         onOpenChange()
       } else {
-        await createBudget(data).unwrap()
+        await createBudget(formattedData).unwrap()
         toast.success("Budget created successfully!")
         onSuccess?.()
         onOpenChange()
@@ -165,7 +172,6 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
     } catch (error: any) {
       console.error(error)
       toast.error(error?.data?.message || "Failed to save budget")
-      
     }
   }
 
