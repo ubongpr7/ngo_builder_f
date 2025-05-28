@@ -26,13 +26,7 @@ export const budgetItemsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create budget item
-    createBudgetItem: builder.mutation<
-      BudgetItem,
-      Partial<BudgetItem> & {
-        budget_id: number
-        responsible_person_id?: number
-      }
-    >({
+    createBudgetItem: builder.mutation({
       query: (budgetItem) => ({
         url: `/${backend}/budget-items/`,
         method: "POST",

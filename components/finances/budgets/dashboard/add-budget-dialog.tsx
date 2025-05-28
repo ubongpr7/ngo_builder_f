@@ -19,7 +19,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import {
   DollarSign,
@@ -31,28 +30,47 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
+  BookOpen,
+  Briefcase,
+  HeartHandshake,
+  PartyPopper,
+  PenToolIcon as Tool,
+  ShieldAlert,
 } from "lucide-react"
 import { useCreateBudgetMutation, useUpdateBudgetMutation } from "@/redux/features/finance/budgets"
 import { toast } from "sonner"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
+import { useGetProjectsQuery } from "@/redux/features/projects/projectsAPISlice"
+import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import type { Budget } from "@/types/finance"
 import { DateInput } from "@/components/ui/date-input"
 
 const budgetSchema = z.object({
-  name: z.string().min(1, "Budget name is required"),
+  title: z.string().min(1, "Budget title is required"),
   description: z.string().optional(),
-  budget_type: z.enum(["project", "organizational", "departmental", "emergency", "marketing", "operational"]),
+  budget_type: z.enum([
+    "project",
+    "organizational",
+    "departmental",
+    "program",
+    "emergency",
+    "capacity_building",
+    "advocacy",
+    "research",
+    "partnership",
+    "event",
+    "maintenance",
+    "contingency",
+  ]),
   status: z.enum(["draft", "pending_approval", "approved", "active", "completed", "cancelled"]),
   total_amount: z.number().min(0.01, "Amount must be greater than 0"),
   currency_id: z.number().min(1, "Currency is required"),
-  fiscal_year: z.number().min(2020).max(2030),
+  fiscal_year: z.string().optional(),
   start_date: z.date(),
   end_date: z.date(),
-  department: z.string().optional(),
-  project: z.string().optional(),
-  approval_required: z.boolean().default(false),
-  auto_approve_limit: z.number().optional(),
-  notification_threshold: z.number().min(0).max(100).default(80),
+  project_id: z.number().optional().nullable(),
+  department_id: z.number().optional().nullable(),
+  notes: z.string().optional(),
 })
 
 type BudgetFormData = z.infer<typeof budgetSchema>
@@ -68,6 +86,8 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   const [activeTab, setActiveTab] = useState("basic")
 
   const { data: currencies = [], isLoading: currenciesLoading } = useGetCurrenciesQuery()
+  const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery({})
+  const { data: departments = [], isLoading: departmentsLoading } = useGetDepartmentsQuery({})
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation()
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation()
   const [selectedCurrency, setSelectedCurrency] = useState(null)
@@ -78,20 +98,18 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   const form = useForm<BudgetFormData>({
     resolver: zodResolver(budgetSchema),
     defaultValues: {
-      name: "",
+      title: "",
       description: "",
       budget_type: "project",
       status: "draft",
       total_amount: 0,
       currency_id: 1,
-      fiscal_year: new Date().getFullYear(),
+      fiscal_year: new Date().getFullYear().toString(),
       start_date: new Date(),
       end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      department: "",
-      project: "",
-      approval_required: false,
-      auto_approve_limit: 0,
-      notification_threshold: 80,
+      project_id: null,
+      department_id: null,
+      notes: "",
     },
   })
 
@@ -106,20 +124,18 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   useEffect(() => {
     if (budget && open) {
       form.reset({
-        name: budget.title || "",
+        title: budget.title || "",
         description: budget.description || "",
         budget_type: budget.budget_type || "project",
         status: budget.status || "draft",
         total_amount: Number.parseFloat(budget.total_amount) || 0,
         currency_id: budget.currency?.id || (currencies.length > 0 ? currencies[0].id : 1),
-        fiscal_year: Number.parseInt(budget.fiscal_year) || new Date().getFullYear(),
+        fiscal_year: budget.fiscal_year || new Date().getFullYear().toString(),
         start_date: budget.start_date ? new Date(budget.start_date) : new Date(),
         end_date: budget.end_date ? new Date(budget.end_date) : new Date(),
-        department: budget.department?.name || "",
-        project: budget.project?.title || "",
-        approval_required: budget.approval_required || false,
-        auto_approve_limit: Number.parseFloat(budget.auto_approve_limit) || 0,
-        notification_threshold: Number.parseInt(budget.notification_threshold) || 80,
+        project_id: budget.project?.id || null,
+        department_id: budget.department?.id || null,
+        notes: budget.notes || "",
       })
     }
   }, [budget, open, form, currencies])
@@ -135,7 +151,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   const onSubmit = async (data: BudgetFormData) => {
     try {
       if (isEditing) {
-        await updateBudget({ id: budget.id, data:data }).unwrap()
+        await updateBudget({ id: budget.id, ...data }).unwrap()
         toast.success("Budget updated successfully!")
         onSuccess?.()
         onOpenChange()
@@ -152,12 +168,18 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   }
 
   const budgetTypes = [
-    { value: "project", label: "Project Budget", icon: Target },
-    { value: "organizational", label: "Organizational Budget", icon: Building2 },
-    { value: "departmental", label: "Departmental Budget", icon: Users },
-    { value: "emergency", label: "Emergency Budget", icon: AlertTriangle },
-    { value: "marketing", label: "Marketing Budget", icon: FileText },
-    { value: "operational", label: "Operational Budget", icon: Settings },
+    { value: "project", label: "Project", icon: Target },
+    { value: "organizational", label: "Organizational", icon: Building2 },
+    { value: "departmental", label: "Departmental", icon: Users },
+    { value: "program", label: "Program", icon: BookOpen },
+    { value: "emergency", label: "Emergency Response", icon: AlertTriangle },
+    { value: "capacity_building", label: "Capacity Building", icon: Users },
+    { value: "advocacy", label: "Advocacy & Policy", icon: FileText },
+    { value: "research", label: "Research & Development", icon: Briefcase },
+    { value: "partnership", label: "Partnership", icon: HeartHandshake },
+    { value: "event", label: "Event", icon: PartyPopper },
+    { value: "maintenance", label: "Maintenance & Operations", icon: Tool },
+    { value: "contingency", label: "Contingency", icon: ShieldAlert },
   ]
 
   const statusOptions = [
@@ -167,17 +189,6 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
     { value: "active", label: "Active", color: "green" },
     { value: "completed", label: "Completed", color: "purple" },
     { value: "cancelled", label: "Cancelled", color: "red" },
-  ]
-
-  const departments = [
-    "Programs & Services",
-    "Operations",
-    "Marketing & Outreach",
-    "Administration",
-    "Research & Development",
-    "Emergency Response",
-    "Finance & Accounting",
-    "Human Resources",
   ]
 
   return (
@@ -207,9 +218,9 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                   <DollarSign className="h-4 w-4" />
                   Financial
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="gap-2">
+                <TabsTrigger value="details" className="gap-2">
                   <Settings className="h-4 w-4" />
-                  Settings
+                  Details
                 </TabsTrigger>
               </TabsList>
 
@@ -222,10 +233,10 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="name"
+                        name="title"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Budget Name *</FormLabel>
+                            <FormLabel>Budget Title *</FormLabel>
                             <FormControl>
                               <Input placeholder="e.g., Education Program 2024" {...field} />
                             </FormControl>
@@ -288,22 +299,36 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="department"
+                        name="project_id"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Department</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormLabel>Project</FormLabel>
+                            <Select
+                              onValueChange={(value) => field.onChange(value ? Number(value) : null)}
+                              defaultValue={field.value?.toString() || ""}
+                              disabled={projectsLoading}
+                            >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select department" />
+                                  <SelectValue placeholder="Select project (optional)" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {departments.map((dept) => (
-                                  <SelectItem key={dept} value={dept}>
-                                    {dept}
+                                <SelectItem value="none">None</SelectItem>
+                                {projectsLoading ? (
+                                  <SelectItem value="loading" disabled>
+                                    <div className="flex items-center gap-2">
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Loading projects...
+                                    </div>
                                   </SelectItem>
-                                ))}
+                                ) : (
+                                  projects.map((project: any) => (
+                                    <SelectItem key={project.id} value={project.id.toString()}>
+                                      {project.title}
+                                    </SelectItem>
+                                  ))
+                                )}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -313,13 +338,38 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
 
                       <FormField
                         control={form.control}
-                        name="project"
+                        name="department_id"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Project</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Associated project (optional)" {...field} />
-                            </FormControl>
+                            <FormLabel>Department</FormLabel>
+                            <Select
+                              onValueChange={(value) => field.onChange(value ? Number(value) : null)}
+                              defaultValue={field.value?.toString() || ""}
+                              disabled={departmentsLoading}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select department (optional)" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                {departmentsLoading ? (
+                                  <SelectItem value="loading" disabled>
+                                    <div className="flex items-center gap-2">
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Loading departments...
+                                    </div>
+                                  </SelectItem>
+                                ) : (
+                                  departments.map((department: any) => (
+                                    <SelectItem key={department.id} value={department.id.toString()}>
+                                      {department.name}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -399,17 +449,9 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                         name="fiscal_year"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Fiscal Year *</FormLabel>
+                            <FormLabel>Fiscal Year</FormLabel>
                             <FormControl>
-                              <Input
-                                type="number"
-                                min="2020"
-                                max="2030"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number.parseInt(e.target.value) || new Date().getFullYear())
-                                }
-                              />
+                              <Input placeholder="e.g., 2024 or 2023-2024" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -460,10 +502,10 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                 </Card>
               </TabsContent>
 
-              <TabsContent value="settings" className="space-y-6">
+              <TabsContent value="details" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Budget Settings</CardTitle>
+                    <CardTitle className="text-lg">Additional Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <FormField
@@ -512,66 +554,21 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
 
                     <Separator />
 
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="approval_required"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">Approval Required</FormLabel>
-                              <FormDescription>Require approval for expenses from this budget</FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch checked={field.value} onCheckedChange={field.onChange} />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      {form.watch("approval_required") && (
-                        <FormField
-                          control={form.control}
-                          name="auto_approve_limit"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Auto-Approve Limit</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="0.00"
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number.parseFloat(e.target.value) || 0)}
-                                />
-                              </FormControl>
-                              <FormDescription>Expenses below this amount will be auto-approved</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-                    </div>
-
-                    <Separator />
-
                     <FormField
                       control={form.control}
-                      name="notification_threshold"
+                      name="notes"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Notification Threshold (%)</FormLabel>
+                          <FormLabel>Notes</FormLabel>
                           <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="100"
+                            <Textarea
+                              placeholder="Additional notes about this budget..."
+                              className="min-h-[100px]"
                               {...field}
-                              onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 80)}
                             />
                           </FormControl>
                           <FormDescription>
-                            Send notifications when budget utilization reaches this percentage
+                            Add any additional information, constraints, or special instructions
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -596,8 +593,8 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                             ? `${Math.ceil((form.watch("end_date").getTime() - form.watch("start_date").getTime()) / (1000 * 60 * 60 * 24))} days`
                             : "Not set"}
                         </p>
-                        <p>• Approval Required: {form.watch("approval_required") ? "Yes" : "No"}</p>
-                        <p>• Notification at: {form.watch("notification_threshold")}% utilization</p>
+                        <p>• Status: {statusOptions.find((s) => s.value === form.watch("status"))?.label}</p>
+                        <p>• Fiscal Year: {form.watch("fiscal_year") || "Not specified"}</p>
                       </div>
                     </div>
                   </div>

@@ -376,6 +376,8 @@ export interface FundingSource {
 export interface Budget {
   id: number
   title: string
+  currency_id: string
+  description: string
   budget_type:
     | "project"
     | "organizational"
