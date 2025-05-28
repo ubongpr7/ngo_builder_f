@@ -1,5 +1,6 @@
 import { apiSlice } from "../../services/apiSlice"
 import type { FundingSource, PaginatedResponse } from "../../../types/finance"
+import { get } from "http"
 
 const backend = "finance_api"
 
@@ -81,6 +82,12 @@ export const fundingSourcesApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
       }),
     }),
+    getFundingSourceAllocationHistory: builder.query({
+      query: (id) => ({
+        url: `/${backend}/funding-sources/${id}/allocation-history/`,
+        method: "GET",
+      }),
+    })
   }),
 })
 
@@ -90,4 +97,5 @@ export const {
   useCreateFundingSourceMutation,
   useUpdateFundingSourceMutation,
   useDeleteFundingSourceMutation,
+  useGetFundingSourceAllocationHistoryQuery
 } = fundingSourcesApiSlice

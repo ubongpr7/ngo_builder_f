@@ -363,13 +363,40 @@ export interface FundingSource {
   donation?: Donation
   campaign?: DonationCampaign
   grant?: Grant
+  donation_id: number
+  campaign_id:number
+  grant_id:number
   amount_available: string
-  currency: Currency
   amount_allocated: string
   is_active: boolean
   created_at: string
   amount_remaining: string
   formatted_amount: string
+}
+export interface FundingSourceDetail extends FundingSource {
+  budgets_count?: number
+  total_budgets_funded?: string
+  average_allocation?: string
+  last_allocation_date?: string
+  allocation_history?: Array<{
+    id: number
+    budget_name: string
+    amount_allocated: string
+    allocation_date: string
+  }>
+  created_by?: {
+    id: number
+    first_name: string
+    last_name: string
+    email: string
+  }
+  linked_source_name?: string
+  days_until_expiry?: number
+  utilization_trend?: Array<{
+    date: string
+    allocated_amount: string
+    remaining_amount: string
+  }>
 }
 
 // Budget Types
