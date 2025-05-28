@@ -27,15 +27,7 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create budget
-    createBudget: builder.mutation<
-      Budget,
-      Partial<Budget> & {
-        currency_id: number
-        project_id?: number
-        department_id?: number
-        approved_by_id?: number
-      }
-    >({
+    createBudget: builder.mutation({
       query: (budget) => ({
         url: `/${backend}/budgets/`,
         method: "POST",
@@ -44,18 +36,7 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Update budget
-    updateBudget: builder.mutation<
-      Budget,
-      {
-        id: number
-        data: Partial<Budget> & {
-          currency_id?: number
-          project_id?: number
-          department_id?: number
-          approved_by_id?: number
-        }
-      }
-    >({
+    updateBudget: builder.mutation({
       query: ({ id, data }) => ({
         url: `/${backend}/budgets/${id}/`,
         method: "PATCH",
