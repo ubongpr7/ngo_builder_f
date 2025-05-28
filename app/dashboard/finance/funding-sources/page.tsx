@@ -117,6 +117,7 @@ export default function FundingSourcesPage() {
   }
 
   const handleViewDetails = (fundingSource: any) => {
+    console.log("Viewing details for", fundingSource.name)
     setSelectedFundingSource(fundingSource)
     setShowDetailDialog(true)
     toast.info(`Viewing details for ${fundingSource.name}`)
@@ -552,11 +553,7 @@ export default function FundingSourcesPage() {
         open={showDetailDialog}
         onOpenChange={setShowDetailDialog}
         fundingSource={selectedFundingSource}
-        onEdit={(source) => {
-          setShowDetailDialog(false)
-          setSelectedFundingSource(source)
-          setShowAddDialog(true)
-        }}
+        
       />
     </div>
   )
