@@ -12,6 +12,9 @@ import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { BudgetInsights } from "@/components/finances/budgets/details/analytics"
+import { BudgetFundingSection } from "@/components/finances/budgets/details/budget-funding"
+
 
 export default function BudgetDetailPage() {
   const params = useParams()
@@ -78,6 +81,7 @@ export default function BudgetDetailPage() {
           <TabsTrigger value="allocations">Allocations ({budget.allocations_count || 0})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="insight">Insight</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -94,6 +98,9 @@ export default function BudgetDetailPage() {
         <TabsContent value="items">
           <BudgetItemsTable budget={budget} onAddItem={refetch} />
         </TabsContent>
+        <TabsContent value="items">
+          <BudgetFundingSection budget={budget} onAddFunding={refetch} />
+        </TabsContent>
 
         <TabsContent value="allocations">
           <BudgetAllocationsSection budget={budget} onAddAllocation={()=>refetch()} />
@@ -104,6 +111,9 @@ export default function BudgetDetailPage() {
         </TabsContent>
         <TabsContent value="analytics">
           <BudgetAnalyticsDashboard budget={budget} />
+        </TabsContent>
+        <TabsContent value="insight">
+          <BudgetInsights  budget={budget} isLoading={loading} />
         </TabsContent>
       </Tabs>
     </div>

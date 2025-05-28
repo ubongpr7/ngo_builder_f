@@ -37,6 +37,7 @@ import {
 } from "@/redux/features/finance/funding-sources"
 import { toast } from "react-toastify"
 
+
 export default function FundingSourceDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -82,7 +83,7 @@ export default function FundingSourceDetailPage() {
           <p className="text-muted-foreground mb-4">
             The funding source you're looking for doesn't exist or you don't have permission to view it.
           </p>
-          <Button onClick={() => router.push("/finances/funding-sources")}>
+          <Button onClick={() => router.push("/dashboard/finance/funding-sources")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Funding Sources
           </Button>
@@ -246,7 +247,7 @@ export default function FundingSourceDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push("/finances/funding-sources")}>
+          <Button variant="ghost" onClick={() => router.push("/dashboard/finance/funding-sources")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -337,6 +338,7 @@ export default function FundingSourceDetailPage() {
             <FileText className="h-4 w-4" />
             Details
           </TabsTrigger>
+          
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -732,7 +734,9 @@ export default function FundingSourceDetailPage() {
               </CardContent>
             </Card>
           )}
+          
         </TabsContent>
+        
       </Tabs>
 
       {/* Edit Dialog */}
