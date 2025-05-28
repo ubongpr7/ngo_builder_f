@@ -45,7 +45,7 @@ type FundAllocationFormData = z.infer<typeof fundAllocationSchema>
 
 interface AddFundAllocationDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: () => void
   onSuccess?: () => void
   budgetId: number
   allocation?: FundAllocation
@@ -124,7 +124,7 @@ export function AddFundAllocationDialog({
       }
 
       onSuccess?.()
-      onOpenChange(false)
+      onOpenChange()
       form.reset()
       setSelectedAccount(null)
     } catch (error: any) {
@@ -449,7 +449,7 @@ export function AddFundAllocationDialog({
             })()}
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange()} disabled={isLoading}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading || isInsufficientFunds}>

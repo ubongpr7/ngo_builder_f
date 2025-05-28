@@ -8,12 +8,15 @@ import { Building2, CreditCard, Plus, CheckCircle, XCircle } from "lucide-react"
 import type { Budget } from "@/types/finance"
 import {  formatDate } from "@/lib/utils"
 import { formatCurrency } from "@/lib/currency-utils"
+import { AddFundAllocationDialog } from "../items/add-fund-allocation-dialog"
+import { useState } from "react"
 interface BudgetAllocationsSectionProps {
   budget: Budget
   onAddAllocation?: () => void
 }
 
 export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllocationsSectionProps) {
+  const [openAddDialog,setOpenAddDialog]=useState(false)
   const getAccountTypeIcon = (type: string) => {
     switch (type) {
       case "checking":
@@ -59,11 +62,18 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Fund Allocations ({budget.allocations_count})</CardTitle>
-            <Button onClick={onAddAllocation} size="sm">
+            <Button onClick={()=>setOpenAddDialog(true)} size="sm">
               <Plus className="h-4 w-4 mr-2" />
               Add Allocation
             </Button>
           </div>
+          <AddFundAllocationDialog 
+          open={openAddDialog}
+          onOpenChange={()=>setOpenAddDialog(false)}
+          budgetId={budget.id}
+          budgetCurrency={budget.currency}
+          onSuccess={onAddAllocation}
+          />
         </CardHeader>
         <CardContent>
           {/* Summary */}

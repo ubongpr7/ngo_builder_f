@@ -96,7 +96,7 @@ export default function BudgetDetailPage() {
         </TabsContent>
 
         <TabsContent value="allocations">
-          <BudgetAllocationsSection budget={budget} />
+          <BudgetAllocationsSection budget={budget} onAddAllocation={()=>refetch()} />
         </TabsContent>
 
         <TabsContent value="activity">
