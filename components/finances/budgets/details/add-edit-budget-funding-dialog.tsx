@@ -68,7 +68,9 @@ export function BudgetFundingDialog({
   // Fetch funding sources
   const { data: fundingSourcesData, isLoading: fundingSourcesLoading } = useGetFundingSourcesQuery({
     is_active: true,
-    amount_remaining__gt: 0
+    amount_remaining__gt: 0,
+    currency: budgetCurrency.id,
+
   })
 
   // Mutation hooks
@@ -77,10 +79,8 @@ export function BudgetFundingDialog({
 
   const isLoading = isCreating || isUpdating || fundingSourcesLoading
 
-  // Extract funding sources from response
   const fundingSources = fundingSourcesData || []
 
-  // Initialize form
   const form = useForm<BudgetFundingFormData>({
     resolver: zodResolver(budgetFundingSchema),
     defaultValues: {
