@@ -670,7 +670,7 @@ export function AddBudgetItemDialog({
                         {exceedsAvailableBudget && (
                           <div className="flex items-center gap-2 text-red-600 text-sm">
                             <AlertTriangle className="h-4 w-4" />
-                            Amount exceeds available budget of {budgetCurrency.code} {availableAmount.toLocaleString()}
+                            Amount exceeds available budget of {formatCurrency(budgetCurrency.code, availableAmount)}
                           </div>
                         )}
                         <FormDescription>
