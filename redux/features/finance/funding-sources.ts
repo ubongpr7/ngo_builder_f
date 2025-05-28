@@ -7,18 +7,7 @@ const backend = "finance_api"
 export const fundingSourcesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all funding sources
-    getFundingSources: builder.query<
-      PaginatedResponse<FundingSource>,
-      {
-        funding_type?: string
-        currency?: number
-        is_active?: boolean
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getFundingSources: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
