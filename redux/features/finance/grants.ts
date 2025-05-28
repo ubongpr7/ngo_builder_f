@@ -6,19 +6,7 @@ const backend = "finance_api"
 export const grantsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all grants
-    getGrants: builder.query<
-      PaginatedResponse<Grant>,
-      {
-        status?: string
-        grantor_type?: string
-        currency?: number
-        project?: number
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getGrants: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 

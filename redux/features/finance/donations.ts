@@ -6,7 +6,7 @@ const backend = "finance_api"
 export const donationsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all donations with comprehensive filtering
-    getDonations: builder.query<PaginatedResponse<Donation>, DonationFilters>({
+    getDonations: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
