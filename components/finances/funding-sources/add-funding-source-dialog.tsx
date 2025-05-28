@@ -26,7 +26,7 @@ import { DollarSign, Calendar, FileText, Settings, Loader2, CheckCircle, AlertTr
 import { toast } from "sonner"
 import { DateInput } from "@/components/ui/date-input"
 import type { FundingSource } from "@/types/finance"
-import { useGetCurrenciesQuery } from "@/redux/features/finance/currencies"
+import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import { useGetGrantsQuery } from "@/redux/features/finance/grants"
 import { useGetDonationsQuery } from "@/redux/features/finance/donations"
 import { useGetDonationCampaignsQuery } from "@/redux/features/finance/donation-campaigns"
