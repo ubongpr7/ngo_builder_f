@@ -205,3 +205,29 @@ export function formatCurrencyCompact(currencyCode: string, value: number | stri
     compact: true,
   })
 }
+
+
+
+export function formatPercentage(
+  value: number | null | undefined,
+  decimals: number = 2
+): string {
+  // Handle null/undefined and invalid numbers
+  if (value === null || value === undefined || isNaN(value)) {
+    return "N/A"
+  }
+
+  // Handle infinite values
+  if (!isFinite(value)) {
+    return value > 0 ? "∞%" : "-∞%"
+  }
+
+  // Handle negative zero
+  if (Object.is(value, -0)) value = 0
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'percent',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value / 100)
+}
