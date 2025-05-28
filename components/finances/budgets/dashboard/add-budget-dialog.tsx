@@ -151,7 +151,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   const onSubmit = async (data: BudgetFormData) => {
     try {
       if (isEditing) {
-        await updateBudget({ id: budget.id, ...data }).unwrap()
+        await updateBudget({ id: budget.id, data: data }).unwrap()
         toast.success("Budget updated successfully!")
         onSuccess?.()
         onOpenChange()
