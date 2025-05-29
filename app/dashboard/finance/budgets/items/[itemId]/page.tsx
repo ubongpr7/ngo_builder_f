@@ -46,7 +46,7 @@ const BudgetItemDetailPage = () => {
   const itemId = params.itemId as string
     
   const [activeTab, setActiveTab] = useState("overview");
-  const { data, isLoading:loading, error } = useGetBudgetItemByIdQuery(itemId);
+  const { data, isLoading:loading, error } = useGetBudgetItemByIdQuery(Number(itemId));
 
   if (loading) return <PageSkeleton />;
   if (error) return <div>Error: {error.message}</div>;
