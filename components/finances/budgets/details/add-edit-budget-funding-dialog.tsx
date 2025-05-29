@@ -32,6 +32,7 @@ import {
 
 import { useGetFundingSourcesQuery } from "@/redux/features/finance/funding-sources"
 import { DateInput } from "@/components/ui/date-input"
+import { formatCurrency } from "@/lib/currency-utils"
 
 const budgetFundingSchema = z.object({
   funding_source_id: z.number().min(1, "Funding source is required"),
@@ -284,8 +285,9 @@ export function BudgetFundingDialog({
                                           {status}
                                         </Badge>
                                         <span className="text-sm font-medium text-green-600">
-                                          {source.currency?.code}{" "}
-                                          {Number.parseFloat(source.amount_available || "0").toLocaleString()}
+                                          {formatCurrency(
+                                            source.currency?.code,
+                                          (source.amount_available || "0"))}
                                         </span>
                                       </div>
                                     </div>
@@ -318,8 +320,8 @@ export function BudgetFundingDialog({
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-blue-900">
-                          {selectedFundingSource.currency?.code}{" "}
-                          {Number.parseFloat(selectedFundingSource.amount_remaining || "0").toLocaleString()}
+                          {formatCurrency( selectedFundingSource.currency?.code,
+                                (selectedFundingSource.amount_remaining || "0"))}
                         </div>
                         <div className="text-sm text-blue-700">Remaining Balance</div>
                       </div>
@@ -424,14 +426,14 @@ export function BudgetFundingDialog({
                         Allocation: {budgetCurrency.code} {allocationAmount.toLocaleString()}
                       </p>
                       <p>
-                        Available: {selectedFundingSource.currency?.code}{" "}
-                        {Number.parseFloat(selectedFundingSource.amount_remaining || "0").toLocaleString()}
+                        Available: {formatCurrency(selectedFundingSource.currency?.code,(selectedFundingSource.amount_remaining || "0"))}
                       </p>
                       <p>
-                        Remaining: {selectedFundingSource.currency?.code}{" "}
-                        {(
-                          Number.parseFloat(selectedFundingSource.amount_remaining || "0") - allocationAmount
-                        ).toLocaleString()}
+                        Remaining: {formatCurrency(
+                            selectedFundingSource.currency?.code,
+                            (Number.parseFloat(selectedFundingSource.amount_remaining || "0") - allocationAmount)
+                        )}
+                        
                       </p>
                     </div>
                   </div>
@@ -448,7 +450,7 @@ export function BudgetFundingDialog({
                   <div className="mt-2 space-y-1 text-sm text-gray-700">
                     <p>• Source: {selectedFundingSource?.name || "Not selected"}</p>
                     <p>
-                      • Amount: {budgetCurrency.code} {(allocationAmount || 0).toLocaleString()}
+                      • Amount: {formatCurrency(budgetCurrency.code,(allocationAmount || 0))}
                     </p>
                     <p>
                       • Date:{" "}
