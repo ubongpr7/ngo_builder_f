@@ -37,7 +37,6 @@ import { formatCurrency } from "@/lib/currency-utils"
 const budgetFundingSchema = z.object({
   funding_source_id: z.number().min(1, "Funding source is required"),
   amount_allocated: z.number().min(0.01, "Amount must be greater than 0"),
-  allocation_date: z.date(),
   notes: z.string().optional(),
 })
 
@@ -87,7 +86,6 @@ export function BudgetFundingDialog({
     defaultValues: {
       funding_source_id: 0,
       amount_allocated: 0,
-      allocation_date: new Date(),
       notes: "",
     },
   })
@@ -98,7 +96,6 @@ export function BudgetFundingDialog({
       form.reset({
         funding_source_id: budgetFunding.funding_source.id,
         amount_allocated: Number.parseFloat(budgetFunding.amount_allocated),
-        allocation_date: new Date(budgetFunding.allocation_date),
         notes: budgetFunding.notes || "",
       })
       setSelectedFundingSource(budgetFunding.funding_source)
@@ -106,7 +103,6 @@ export function BudgetFundingDialog({
       form.reset({
         funding_source_id: 0,
         amount_allocated: 0,
-        allocation_date: new Date(),
         notes: "",
       })
       setSelectedFundingSource(null)
@@ -116,10 +112,9 @@ export function BudgetFundingDialog({
   const onSubmit = async (data: BudgetFundingFormData) => {
     try {
       const payload = {
-        budget: budgetId,
+        budget_id: budgetId,
         funding_source: data.funding_source_id,
         amount_allocated: data.amount_allocated.toString(),
-        allocation_date: format(data.allocation_date, "yyyy-MM-dd"),
         notes: data.notes,
       }
 
@@ -130,7 +125,7 @@ export function BudgetFundingDialog({
         }).unwrap()
         toast.success("Budget funding updated successfully!")
       } else {
-        await createBudgetFunding(  payload).unwrap()
+        await createBudgetFunding(payload).unwrap()
         toast.success("Budget funding created successfully!")
       }
 
@@ -368,25 +363,7 @@ export function BudgetFundingDialog({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="allocation_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Allocation Date *</FormLabel>
-                        <FormControl>
-                          <DateInput
-                            value={field.value}
-                            onChange={field.onChange}
-                            label=""
-                            maxDate={new Date()}
-                            minDate={new Date("1900-01-01")}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  
                 </div>
 
                 <FormField
@@ -452,10 +429,7 @@ export function BudgetFundingDialog({
                     <p>
                       • Amount: {formatCurrency(budgetCurrency.code,(allocationAmount || 0))}
                     </p>
-                    <p>
-                      • Date:{" "}
-                      {form.watch("allocation_date") ? format(form.watch("allocation_date"), "PPP") : "Not set"}
-                    </p>
+                    
                     {selectedFundingSource?.restrictions && (
                       <p className="text-orange-600">
                         • Restrictions: {selectedFundingSource.restrictions.substring(0, 100)}...
