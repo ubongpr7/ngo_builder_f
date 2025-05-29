@@ -490,7 +490,7 @@ export function FundingSourceDetailDialog({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div>
-                    <div className="text-lg font-semibold">{fundingSource.budgets_count || 0}</div>
+                    <div className="text-lg font-semibold">{fundingSource?.allocations.length || 0}</div>
                     <div className="text-xs text-muted-foreground">Budgets Funded</div>
                   </div>
                   <div>
