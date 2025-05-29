@@ -12,7 +12,7 @@ import type { Budget, BudgetItem } from "@/types/finance"
 import {  formatDate } from "@/lib/utils"
 import { formatCurrency } from "@/lib/currency-utils"
 import { AddBudgetItemDialog } from "../items/add-budget-item-dialog"
-
+import { useRouter } from "next/navigation"
 interface BudgetItemsTableProps {
   budget: Budget
   onAddItem?: () => void
@@ -32,6 +32,7 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
     }
     setExpandedItems(newExpanded)
   }
+  const router = useRouter()
 
   const getStatusColor = (percentage: number, isLocked: boolean) => {
     if (isLocked) return "text-gray-500"
@@ -99,7 +100,7 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
 
                     return (
                       <>
-                        <TableRow key={item.id}  className="hover:bg-gray-50 cursor-pointer">
+                        <TableRow key={item.id} onClick={()=>router.push(`/budgets/items/${item.id}`)}  className="hover:bg-gray-50 cursor-pointer">
                           <TableCell>
                             <Button
                               variant="ghost"
