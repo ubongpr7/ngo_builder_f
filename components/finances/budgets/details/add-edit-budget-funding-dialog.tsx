@@ -129,7 +129,7 @@ export function BudgetFundingDialog({
         }).unwrap()
         toast.success("Budget funding updated successfully!")
       } else {
-        await createBudgetFunding({id: budgetId, data: payload}).unwrap()
+        await createBudgetFunding(  payload).unwrap()
         toast.success("Budget funding created successfully!")
       }
 
