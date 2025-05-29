@@ -15,7 +15,6 @@ import { ArrowLeft } from "lucide-react"
 import { BudgetInsights } from "@/components/finances/budgets/details/analytics"
 import { BudgetFundingSection } from "@/components/finances/budgets/details/budget-funding"
 
-
 export default function BudgetDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -74,12 +73,10 @@ export default function BudgetDetailPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-6"> {/* Changed to 6 columns */}
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="funding">Funding</TabsTrigger>
-          <TabsTrigger value="funding-source">Funding Sources ({budget.funding_sources_count || 0})</TabsTrigger>
           <TabsTrigger value="items">Items ({budget.items_count || 0})</TabsTrigger>
-          <TabsTrigger value="allocations">Allocations ({budget.allocations_count || 0})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="insight">Insight</TabsTrigger>
@@ -92,27 +89,51 @@ export default function BudgetDetailPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="funding">
-          <BudgetFundingBreakdown budget={budget} />
+        {/* Funding Section with Nested Tabs */}
+        <TabsContent value="funding" className="space-y-6">
+          <Tabs defaultValue="breakdown">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
+              <TabsTrigger value="funding-source">
+                Sources ({budget.funding_sources_count || 0})
+              </TabsTrigger>
+              <TabsTrigger value="allocations">
+                Allocations ({budget.allocations_count || 0})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="breakdown" className="pt-4">
+              <BudgetFundingBreakdown budget={budget} />
+            </TabsContent>
+            
+            <TabsContent value="funding-source" className="pt-4">
+              <BudgetFundingSection 
+                budget={budget} 
+                onAddFunding={refetch} 
+              />
+            </TabsContent>
+            
+            <TabsContent value="allocations" className="pt-4">
+              <BudgetAllocationsSection 
+                budget={budget} 
+                onAddAllocation={() => refetch()} 
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="items">
           <BudgetItemsTable budget={budget} onAddItem={refetch} />
         </TabsContent>
-        <TabsContent value="funding-source">
-          <BudgetFundingSection budget={budget} onAddFunding={refetch} />
-        </TabsContent>
-
-        <TabsContent value="allocations">
-          <BudgetAllocationsSection budget={budget} onAddAllocation={()=>refetch()} />
-        </TabsContent>
 
         <TabsContent value="activity">
           <BudgetActivityTimeline budget={budget} />
         </TabsContent>
+        
         <TabsContent value="analytics">
           <BudgetAnalyticsDashboard budget={budget} />
         </TabsContent>
+        
         <TabsContent value="insight">
           <BudgetInsights  budget={budget} isLoading={loading} />
         </TabsContent>
