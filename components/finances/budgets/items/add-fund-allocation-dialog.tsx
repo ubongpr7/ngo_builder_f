@@ -66,7 +66,10 @@ export function AddFundAllocationDialog({
   const [selectedAccount, setSelectedAccount] = useState<any>(null)
   const isEditing = !!allocation
 
-  const { data: bankAccountsData, isLoading: bankAccountsLoading } = useGetBankAccountsQuery({})
+  const { data: bankAccountsData, isLoading: bankAccountsLoading } = useGetBankAccountsQuery({
+    currency: budgetCurrency.id,
+    is_active: true,
+  })
 
   const [createFundAllocation, { isLoading: isCreating }] = useCreateFundAllocationMutation()
   const [updateFundAllocation, { isLoading: isUpdating }] = useUpdateFundAllocationMutation()
@@ -74,7 +77,7 @@ export function AddFundAllocationDialog({
   const isLoading = isCreating || isUpdating
 
   // Extract bank accounts from the response structure
-  const bankAccounts = bankAccountsData?.results || []
+  const bankAccounts = bankAccountsData || []
 
   const form = useForm<FundAllocationFormData>({
     resolver: zodResolver(fundAllocationSchema),
