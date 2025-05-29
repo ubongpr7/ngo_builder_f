@@ -106,8 +106,8 @@ export function AddFundAllocationDialog({
   const onSubmit = async (data: FundAllocationFormData) => {
     try {
       const payload = {
-        budget: budgetId,
-        source_account: data.source_account_id,
+        budget_id: budgetId,
+        source_account_id: data.source_account_id,
         amount_allocated: data.amount_allocated.toString(),
         allocation_date: format(data.allocation_date, "yyyy-MM-dd"),
         purpose: data.purpose,
