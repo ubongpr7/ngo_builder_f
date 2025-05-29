@@ -423,7 +423,7 @@ export function BudgetFundingDialog({
                     </div>
                     <div className={cn("mt-2 text-sm", isInsufficientFunds ? "text-red-600" : "text-green-600")}>
                       <p>
-                        Allocation: {formatCurrency(budgetCurrency.code, allocationAmount.)}
+                        Allocation: {formatCurrency(budgetCurrency.code, allocationAmount)}
                       </p>
                       <p>
                         Available: {formatCurrency(selectedFundingSource.currency?.code,(selectedFundingSource.amount_remaining || "0"))}
