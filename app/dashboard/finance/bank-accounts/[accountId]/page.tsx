@@ -36,6 +36,7 @@ import { AddTransactionDialog } from "@/components/finances/bank-accounts/detail
 import { usePermissions } from "@/components/permissionHander"
 import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { formatCurrency } from "@/lib/currency-utils"
+import { set } from "date-fns"
 
 export default function BankAccountDetailPage() {
   const { data: userRoles } = useGetLoggedInProfileRolesQuery()
@@ -60,7 +61,13 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
     requireKYC: true,
     customCheck: (user) => !!account?.secondary_signatories?.some((member) => member?.id === user.user_id),
   })
-
+  const [refetchAccounts,setRefetchAccounts]=useState(false)
+  
+  const handleRefetch = () => {
+    setRefetchAccounts(true)
+    refetch()
+    setRefetchAccounts(false)
+  }
 
   const handleFreeze = async () => {
     try {
@@ -243,10 +250,10 @@ const isPrimaryPignatory = usePermissions(userRoles, { requiredRoles: [], requir
             </Button>
           )}
             <AddTransactionDialog open={addTransactionDialogOpen} 
-            onTransactionAdded={refetch} onOpenChange={() =>
+            onTransactionAdded={handleRefetch} onOpenChange={() =>
                setAddTransactionDialogOpen(false)}  account={account} />
           </div>
-          <BankAccountTransactionHistory accountId={accountId} />
+          <BankAccountTransactionHistory refetchAccounts={refetchAccounts}  accountId={accountId} />
         </TabsContent>
 
 {        /* Balance History Tab 

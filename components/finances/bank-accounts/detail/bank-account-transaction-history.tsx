@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,9 +26,10 @@ import type { AccountTransaction } from "@/types/finance"
 
 interface BankAccountTransactionHistoryProps {
   accountId: number
+  refetchAccounts:boolean
 }
 
-export function BankAccountTransactionHistory({ accountId }: BankAccountTransactionHistoryProps) {
+export function BankAccountTransactionHistory({ accountId,refetchAccounts }: BankAccountTransactionHistoryProps) {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("")
@@ -38,7 +39,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
   const [selectedTransaction, setSelectedTransaction] = useState<AccountTransaction | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
 
-  const { data, isLoading, error } = useGetAccountTransactionsQuery({
+  const { data, isLoading, error,refetch } = useGetAccountTransactionsQuery({
     accountId,
     page,
     page_size: 20,
@@ -49,7 +50,19 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
     end_date: endDate || undefined,
     ordering: "-transaction_date",
   })
+useEffect(() => {
+  let timeoutId: ReturnType<typeof setTimeout>;
 
+  if (refetchAccounts) {
+    timeoutId = setTimeout(() => {
+      refetch();
+    }, 500);
+  }
+
+  return () => {
+    clearTimeout(timeoutId);
+  };
+}, [refetchAccounts, refetch]);
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case "credit":
@@ -215,7 +228,7 @@ export function BankAccountTransactionHistory({ accountId }: BankAccountTransact
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {data.results.map((transaction) => (
+                      {data.results.map((transaction:AccountTransaction) => (
                         <TableRow
                           key={transaction.id}
                           className="cursor-pointer hover:bg-muted/50"
