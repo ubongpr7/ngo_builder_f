@@ -50,6 +50,7 @@ export default function FundingSourceDetailPage() {
 
   const { data: allocationHistoryData, isLoading: historyLoading } =
     useGetFundingSourceAllocationHistoryQuery(fundingSourceId)
+    console.log(allocationHistoryData)
   const allocationHistory = allocationHistoryData as {
     allocations: {
       budget_id: number
@@ -62,6 +63,7 @@ export default function FundingSourceDetailPage() {
     amount_allocated: number
     amount_remaining: number
   }
+  console.log(allocationHistory)
 
   if (isLoading) {
     return (
