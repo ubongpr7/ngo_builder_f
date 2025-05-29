@@ -133,7 +133,7 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-medium">{allocation.formatted_amount}</div>
+                      <div className="font-medium">{formatCurrency(allocation.source_account.currency.code,allocation.amount_allocated)}</div>
                       <div className="text-sm text-gray-500">{allocation.source_account.currency.code}</div>
                     </TableCell>
                     <TableCell>
