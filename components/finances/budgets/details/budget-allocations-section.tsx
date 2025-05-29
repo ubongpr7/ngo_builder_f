@@ -129,11 +129,11 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
                     <TableCell>
                       <div className="text-sm">
                         <div className="font-medium">{allocation.source_account.financial_institution.name}</div>
-                        <div className="text-gray-500">Balance: {allocation.source_account.formatted_balance}</div>
+                        <div className="text-gray-500">Balance: {formatCurrency(allocation.source_account.currency.code,allocation.source_account.current_balance))}</div>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="font-medium">{allocation.formatted_amount}</div>
+                      <div className="font-medium">{formatCurrency(allocation.source_account.currency.code,allocation.amount_allocated)}</div>
                       <div className="text-sm text-gray-500">{allocation.source_account.currency.code}</div>
                     </TableCell>
                     <TableCell>
@@ -183,34 +183,25 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
       </Card>
 
       {/* Allocation Summary by Account */}
-      {budget.allocation_summary && budget.allocation_summary.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Allocation Summary by Account</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {budget.allocation_summary.map((summary, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {getAccountTypeIcon(summary.account_type)}
-                    <div>
-                      <div className="font-medium">{summary.account_name}</div>
-                      <div className="text-sm text-gray-500">
-                        {summary.account_type.replace("_", " ")} • {summary.currency}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">{summary.total_allocated}</div>
-                    <div className="text-sm text-gray-500">{summary.percentage||0}% of total</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+     
+     {budget.allocation_summary.map((summary, index) => (
+  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+    <div className="flex items-center gap-3">
+      {getAccountTypeIcon(summary.account_type)}
+      <div>
+        <div className="font-medium">{summary.account_name}</div>
+        <div className="text-sm text-gray-500">
+          {summary.account_type.replace("_", " ")} • {summary.currency_code}
+        </div>
+      </div>
     </div>
+    <div className="text-right">
+      <div className="font-medium">{summary.formatted_amount}</div>
+      <div className="text-sm text-gray-500">{summary.percentage}% of total</div>
+    </div>
+  </div>
+))}
+
+      </div>
   )
 }
