@@ -38,7 +38,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { formatCurrencyCompact } from "@/lib/currency-utils";
-import { useGetBudgetItemDetailQuery } from "@/redux/features/finance/budget-items"; // Adjust import based on your actual hook
+import { useGetBudgetItemByIdQuery } from "@/redux/features/finance/budget-items"; // Adjust import based on your actual hook
 import { BudgetItem } from "@/types/finance";
 
 const BudgetItemDetailPage = () => {
@@ -46,7 +46,7 @@ const BudgetItemDetailPage = () => {
   const itemId = params.itemId as string
     
   const [activeTab, setActiveTab] = useState("overview");
-  const { data, isLoading:loading, error } = useGetBudgetItemDetailQuery(itemId);
+  const { data, isLoading:loading, error } = useGetBudgetItemByIdQuery(itemId);
 
   if (loading) return <PageSkeleton />;
   if (error) return <div>Error: {error.message}</div>;
