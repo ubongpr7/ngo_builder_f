@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { Building2, CreditCard, DollarSign, User, CheckCircle, AlertTriangle, Banknote, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import type { FundAllocation } from "@/types/finance"
+import type { Budget, FundAllocation } from "@/types/finance"
 import { useGetBankAccountsQuery } from "@/redux/features/finance/bank-accounts"
 import {
   useCreateFundAllocationMutation,
@@ -47,29 +47,27 @@ interface AddFundAllocationDialogProps {
   open: boolean
   onOpenChange: () => void
   onSuccess?: () => void
-  budgetId: number
+  budget:Budget
   allocation?: FundAllocation
-  budgetCurrency: {
-    id: number
-    code: string
-  }
+  
 }
 
 export function AddFundAllocationDialog({
   open,
   onOpenChange,
   onSuccess,
-  budgetId,
+  budget,
   allocation,
-  budgetCurrency,
 }: AddFundAllocationDialogProps) {
   const [selectedAccount, setSelectedAccount] = useState<any>(null)
   const isEditing = !!allocation
+  const budgetCurrency=budget.currency
+  const budgetId=budget.id
 
   const { data: bankAccountsData, isLoading: bankAccountsLoading } = useGetBankAccountsQuery({
-    currency: budgetCurrency.id,
-    is_active: true,
-    // min_balance: ,
+    // currency: budgetCurrency.id,
+    // is_active: true,
+    min_balance:(Number(budget?.total_amount||0)-Number(budget?.allocated_amount||0))/10 ,
   })
 
   const [createFundAllocation, { isLoading: isCreating }] = useCreateFundAllocationMutation()

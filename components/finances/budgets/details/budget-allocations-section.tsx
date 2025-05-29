@@ -71,7 +71,7 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
           open={openAddDialog}
           onOpenChange={()=>setOpenAddDialog(false)}
           budgetId={budget.id}
-          budgetCurrency={budget.currency}
+          budget={budget}
           onSuccess={onAddAllocation}
           />
         </CardHeader>
