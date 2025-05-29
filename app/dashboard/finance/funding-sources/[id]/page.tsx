@@ -47,7 +47,7 @@ export default function FundingSourceDetailPage() {
   const [activeTab, setActiveTab] = useState("overview")
 
   const { data: fundingSource, isLoading, error, refetch } = useGetFundingSourceByIdQuery(fundingSourceId)
-
+  console.log(fundingSource?.donation)
   const { data: allocationHistoryData, isLoading: historyLoading } =
     useGetFundingSourceAllocationHistoryQuery(fundingSourceId)
     console.log(allocationHistoryData)
