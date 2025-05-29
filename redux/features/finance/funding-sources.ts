@@ -73,7 +73,7 @@ export const fundingSourcesApiSlice = apiSlice.injectEndpoints({
     }),
     getFundingSourceAllocationHistory: builder.query({
       query: (id) => ({
-        url: `/${backend}/funding-sources/${id}/allocation-history/`,
+        url: `/${backend}/funding-sources/${id}/allocation_history/`,
         method: "GET",
       }),
     })
