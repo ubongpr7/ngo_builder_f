@@ -65,8 +65,8 @@ export function AddFundAllocationDialog({
   const budgetId=budget.id
 
   const { data: bankAccountsData, isLoading: bankAccountsLoading } = useGetBankAccountsQuery({
-    // currency: budgetCurrency.id,
-    // is_active: true,
+    currency: budgetCurrency.id,
+    is_active: true,
     min_balance:(Number(budget?.total_amount||0)-Number(budget?.allocated_amount||0))/10 ,
   })
 
