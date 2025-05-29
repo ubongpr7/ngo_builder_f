@@ -100,7 +100,7 @@ export function BudgetItemsTable({ budget, onAddItem, onEditItem }: BudgetItemsT
 
                     return (
                       <>
-                        <TableRow key={item.id} onClick={()=>router.push(`/budgets/items/${item.id}`)}  className="hover:bg-gray-50 cursor-pointer">
+                        <TableRow key={item.id} onClick={()=>router.push(`dashboard/finance/budgets/items/${item.id}`)}  className="hover:bg-gray-50 cursor-pointer">
                           <TableCell>
                             <Button
                               variant="ghost"

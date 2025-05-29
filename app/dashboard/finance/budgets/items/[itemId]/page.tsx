@@ -60,25 +60,6 @@ const BudgetItemDetailPage = () => {
         <h1 className="text-3xl font-bold">
           {budgetItem.category} - {budgetItem.subcategory}
         </h1>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <FileText className="mr-2 h-4 w-4" />
-            Reports
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Actions</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" /> Edit Item
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-500">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
