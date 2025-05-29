@@ -203,7 +203,7 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
                   </div>
                   <div className="text-right">
                     <div className="font-medium">{summary.total_allocated}</div>
-                    <div className="text-sm text-gray-500">{summary.percentage.toFixed(1)}% of total</div>
+                    <div className="text-sm text-gray-500">{summary.percentage||0}% of total</div>
                   </div>
                 </div>
               ))}
