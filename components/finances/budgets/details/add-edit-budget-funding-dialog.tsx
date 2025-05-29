@@ -281,7 +281,7 @@ export function BudgetFundingDialog({
                                         <span className="text-sm font-medium text-green-600">
                                           {formatCurrency(
                                             source.currency?.code,
-                                          (source.amount_available || "0"))}
+                                          (source.amount_remaining || "0"))}
                                         </span>
                                       </div>
                                     </div>
