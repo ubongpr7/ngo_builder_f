@@ -67,8 +67,9 @@ export function AddFundAllocationDialog({
   const isEditing = !!allocation
 
   const { data: bankAccountsData, isLoading: bankAccountsLoading } = useGetBankAccountsQuery({
-    // currency: budgetCurrency.id,
-    // is_active: true,
+    currency: budgetCurrency.id,
+    is_active: true,
+    // min_balance: ,
   })
 
   const [createFundAllocation, { isLoading: isCreating }] = useCreateFundAllocationMutation()

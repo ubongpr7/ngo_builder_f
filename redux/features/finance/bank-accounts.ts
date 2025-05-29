@@ -6,19 +6,7 @@ const backend = "finance_api"
 export const bankAccountsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all bank accounts
-    getBankAccounts: builder.query<
-      PaginatedResponse<BankAccount>,
-      {
-        account_type?: string
-        currency?: number
-        is_active?: boolean
-        is_restricted?: boolean
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getBankAccounts: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
