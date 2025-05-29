@@ -107,7 +107,7 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
     // Add funding
     addBudgetFunding: builder.mutation({
       query: ( data ) => ({
-        url: `/${backend}/budget-funding`,
+        url: `/${backend}/budget-funding/`,
         method: "POST",
         body: data,
       }),
