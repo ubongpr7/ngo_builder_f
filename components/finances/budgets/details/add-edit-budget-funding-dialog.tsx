@@ -47,6 +47,7 @@ interface BudgetFundingDialogProps {
   onOpenChange: () => void
   onSuccess?: () => void
   budgetId: number
+  budgetFundingIds?: number[]
   budgetFunding?: BudgetFunding
   budgetCurrency: {
     id: number
@@ -59,6 +60,7 @@ export function BudgetFundingDialog({
   onOpenChange,
   onSuccess,
   budgetId,
+  budgetFundingIds,
   budgetFunding,
   budgetCurrency,
 }: BudgetFundingDialogProps) {
@@ -70,6 +72,7 @@ export function BudgetFundingDialog({
     is_active: true,
     amount_remaining__gt: 0,
     currency: budgetCurrency.id,
+    exclude_ids: budgetFundingIds,
   })
 
   // Mutation hooks
@@ -143,18 +146,16 @@ export function BudgetFundingDialog({
   const allocationAmount = form.watch("amount_allocated")
   const fundingSourceId = form.watch("funding_source_id")
 
-  // Update selected funding source when ID changes
   useEffect(() => {
     const source = fundingSources.find((src: any) => src.id === fundingSourceId)
     setSelectedFundingSource(source)
   }, [fundingSourceId, fundingSources])
 
-  // Check for insufficient funds
   const isInsufficientFunds = selectedFundingSource && 
     allocationAmount > Number.parseFloat(selectedFundingSource.amount_remaining || "0")
 
-  // React Select options for funding sources
   const fundingSourceOptions = fundingSources.map((source: any) => ({
+
     value: source.id,
     label: source.name,
     fundingSource: source,

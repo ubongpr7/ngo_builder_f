@@ -76,6 +76,7 @@ export function BudgetFundingSection({ budget, onAddFunding }: BudgetFundingSect
             open={openAddDialog}
             onOpenChange={() => setOpenAddDialog(false)}
             budgetId={budget.id}
+            budgetFundingIds={budget.funding_sources_summary?.map(f => f.id)}
             budgetCurrency={budget.currency}
             onSuccess={onAddFunding}
           />
