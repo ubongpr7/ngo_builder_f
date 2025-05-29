@@ -31,9 +31,9 @@ import {
 } from "@/redux/features/finance/budgets"
 
 import { useGetFundingSourcesQuery } from "@/redux/features/finance/funding-sources"
-import { DateInput } from "@/components/ui/date-input"
 import { formatCurrency } from "@/lib/currency-utils"
 
+// REMOVED allocation_date from schema
 const budgetFundingSchema = z.object({
   funding_source_id: z.number().min(1, "Funding source is required"),
   amount_allocated: z.number().min(0.01, "Amount must be greater than 0"),
@@ -70,7 +70,6 @@ export function BudgetFundingDialog({
     is_active: true,
     amount_remaining__gt: 0,
     currency: budgetCurrency.id,
-
   })
 
   // Mutation hooks
@@ -113,7 +112,7 @@ export function BudgetFundingDialog({
     try {
       const payload = {
         budget_id: budgetId,
-        funding_source: data.funding_source_id,
+        funding_source_id: data.funding_source_id,
         amount_allocated: data.amount_allocated.toString(),
         notes: data.notes,
       }
@@ -335,7 +334,7 @@ export function BudgetFundingDialog({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4"> {/* Reduced to single column */}
                   <FormField
                     control={form.control}
                     name="amount_allocated"
@@ -363,7 +362,7 @@ export function BudgetFundingDialog({
                     )}
                   />
 
-                  
+                  {/* REMOVED allocation_date field */}
                 </div>
 
                 <FormField
@@ -410,7 +409,6 @@ export function BudgetFundingDialog({
                             selectedFundingSource.currency?.code,
                             (Number.parseFloat(selectedFundingSource.amount_remaining || "0") - allocationAmount)
                         )}
-                        
                       </p>
                     </div>
                   </div>
@@ -429,7 +427,7 @@ export function BudgetFundingDialog({
                     <p>
                       • Amount: {formatCurrency(budgetCurrency.code,(allocationAmount || 0))}
                     </p>
-                    
+                    {/* REMOVED allocation_date from summary */}
                     {selectedFundingSource?.restrictions && (
                       <p className="text-orange-600">
                         • Restrictions: {selectedFundingSource.restrictions.substring(0, 100)}...
