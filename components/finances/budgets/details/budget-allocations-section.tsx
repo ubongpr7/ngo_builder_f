@@ -70,7 +70,6 @@ export function BudgetAllocationsSection({ budget, onAddAllocation }: BudgetAllo
           <AddFundAllocationDialog 
           open={openAddDialog}
           onOpenChange={()=>setOpenAddDialog(false)}
-          budgetId={budget.id}
           budget={budget}
           onSuccess={onAddAllocation}
           />

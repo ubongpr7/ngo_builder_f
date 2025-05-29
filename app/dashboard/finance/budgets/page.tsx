@@ -141,6 +141,7 @@ export default function BudgetsPage() {
             budgets={budgets || []}
             isLoading={budgetsLoading}
             onFiltersChange={handleFilterChange}
+            filters={filters}
           />
         </TabsContent>
         {/* Departments Tab Content */}
