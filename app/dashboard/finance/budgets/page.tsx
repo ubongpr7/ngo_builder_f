@@ -1,59 +1,69 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Search,
-  Plus,
-  Filter,
-  Download,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  DollarSign,
-  Target,
-  Activity,
-  Building2,
-  PieChart,
-  BarChart3,
-  Zap,
-} from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Search, Plus, Filter, AlertTriangle, Target, Activity, Building2, BarChart3 } from "lucide-react"
 import { BudgetOverviewDashboard } from "@/components/finances/budgets/dashboard/budget-overview-dashboard"
 import { BudgetListTable } from "@/components/finances/budgets/dashboard/budget-list-table"
 import { BudgetFiltersPanel } from "@/components/finances/budgets/dashboard/budget-filters-panel"
-
 import { DepartmentBudgetBreakdown } from "@/components/finances/budgets/dashboard/department-budget-breakdown"
 import { BudgetUtilizationMatrix } from "@/components/finances/budgets/dashboard/budget-utilization-matrix"
 import { AddBudgetDialog } from "@/components/finances/budgets/dashboard/add-budget-dialog"
 import { BudgetHealthIndicators } from "@/components/finances/budgets/dashboard/budget-health-indicators"
 import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budgets"
-import { ref } from "process"
-
-
+import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
+import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
+import Select from "react-select"
+import { useEffect } from "react"
 
 export default function BudgetsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
+
+  const { data: currencyData, isLoading: currenciesLoading } = useGetCurrenciesQuery("")
+  const { data: departmentData } = useGetDepartmentsQuery("")
+  const currencies= currencyData ||[]
+  const departments = departmentData || []
+
   const [filters, setFilters] = useState({
     budget_type: "",
     status: "",
     department: "",
     fiscal_year: "",
     ordering: "-created_at",
+    currency: 1, // Will be updated when currencies load
   })
 
-  const { data: budgets, isLoading: budgetsLoading, refetch } = useGetBudgetsQuery({
+  useEffect(() => {
+    if (currencies?.length > 0 && filters.currency === 1) {
+      setFilters((prev) => ({
+        ...prev,
+        currency: currencies[0].id,
+      }))
+    }
+  }, [currencies])
+
+  const {
+    data: budgets,
+    isLoading: budgetsLoading,
+    refetch,
+  } = useGetBudgetsQuery({
     search: searchTerm,
     ...filters,
     page_size: 50,
   })
 
-  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery('')
+  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery({
+    // currency: filters.currency,
+    ...filters,
+  })
+
   const handleFilterChange = (newFilters: any) => {
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }
@@ -84,7 +94,47 @@ export default function BudgetsPage() {
               className="pl-10 w-64"
             />
           </div>
-          
+
+          {/* Currency Selector */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium whitespace-nowrap">Currency:</Label>
+            <Select
+              value={currencies?.find((currency: any) => currency.id === filters.currency)}
+              onChange={(selectedOption: any) => handleFilterChange({ currency: selectedOption?.id })}
+              options={currencies?.map((currency: any) => ({
+                value: currency.id,
+                label: currency.code,
+                name: currency.name,
+              }))}
+              isLoading={currenciesLoading}
+              placeholder="Currency"
+              styles={{
+                control: (provided: any) => ({
+                  ...provided,
+                  minWidth: "120px",
+                  borderColor: "#3b82f6",
+                  "&:hover": { borderColor: "#3b82f6" },
+                }),
+              }}
+              formatOptionLabel={(option: any) => (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{option.label}</span>
+                  <span className="text-xs text-gray-500">{option.name}</span>
+                </div>
+              )}
+            />
+          </div>
+
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filters
+            {Object.values(filters).filter((v) => v && v !== "-created_at" && v !== filters.currency).length > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {Object.values(filters).filter((v) => v && v !== "-created_at" && v !== filters.currency).length}
+              </Badge>
+            )}
+          </Button>
+
           <Button
             onClick={() => setShowAddDialog(true)}
             className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -95,7 +145,6 @@ export default function BudgetsPage() {
         </div>
       </div>
 
-      
       {/* Filters Panel */}
       {showFilters && (
         <BudgetFiltersPanel
@@ -106,14 +155,13 @@ export default function BudgetsPage() {
       )}
 
       {/* Main Content Tabs */}
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
           </TabsTrigger>
-          
+
           <TabsTrigger value="budgets" className="gap-2">
             <Target className="h-4 w-4" />
             Budgets
@@ -136,7 +184,6 @@ export default function BudgetsPage() {
           <BudgetOverviewDashboard statistics={statistics} isLoading={statsLoading} />
         </TabsContent>
 
-
         <TabsContent value="budgets" className="space-y-6">
           <BudgetListTable
             budgets={budgets || []}
@@ -145,7 +192,7 @@ export default function BudgetsPage() {
             filters={filters}
           />
         </TabsContent>
-        {/* Departments Tab Content */}
+
         <TabsContent value="departments" className="space-y-6">
           <DepartmentBudgetBreakdown statistics={statistics} isLoading={statsLoading} />
         </TabsContent>
@@ -164,14 +211,14 @@ export default function BudgetsPage() {
       </Tabs>
 
       {/* Add Budget Dialog */}
-      <AddBudgetDialog open={showAddDialog} 
-      onSuccess={
-        ()=>{
+      <AddBudgetDialog
+        open={showAddDialog}
+        onSuccess={() => {
           setShowAddDialog(false)
           refetch()
-      }}
-      
-      onOpenChange={setShowAddDialog} />
+        }}
+        onOpenChange={setShowAddDialog}
+      />
     </div>
   )
 }
