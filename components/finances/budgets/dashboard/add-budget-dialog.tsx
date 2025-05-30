@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import Select from 'react-select'
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
@@ -89,7 +89,7 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   const { data: currencies = [], isLoading: currenciesLoading } = useGetCurrenciesQuery()
   const { data: projects = [], isLoading: projectsLoading } = useGetProjectsQuery({})
   const { data: departments = [], isLoading: departmentsLoading } = useGetDepartmentsQuery('')
-    console.log(departments)
+  
   const [createBudget, { isLoading: isCreating }] = useCreateBudgetMutation()
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation()
   const [selectedCurrency, setSelectedCurrency] = useState(null)
@@ -192,13 +192,64 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
   ]
 
   const statusOptions = [
-    { value: "draft", label: "Draft", color: "gray" },
-    { value: "pending_approval", label: "Pending Approval", color: "yellow" },
-    { value: "approved", label: "Approved", color: "blue" },
-    { value: "active", label: "Active", color: "green" },
-    { value: "completed", label: "Completed", color: "purple" },
-    { value: "cancelled", label: "Cancelled", color: "red" },
+    { value: "draft", label: "Draft", color: "#6b7280" },
+    { value: "pending_approval", label: "Pending Approval", color: "#f59e0b" },
+    { value: "approved", label: "Approved", color: "#3b82f6" },
+    { value: "active", label: "Active", color: "#10b981" },
+    { value: "completed", label: "Completed", color: "#8b5cf6" },
+    { value: "cancelled", label: "Cancelled", color: "#ef4444" },
   ]
+
+  // Format budget type options with icons
+  const formatBudgetTypeOption = (option: any, { context }: any) => {
+    const type = budgetTypes.find(bt => bt.value === option.value);
+    if (context === 'menu') {
+      return (
+        <div className="flex items-center gap-2">
+          {type && <type.icon className="h-4 w-4" />}
+          {option.label}
+        </div>
+      );
+    }
+    return option.label;
+  };
+
+  // Format status options with colored dots
+  const formatStatusOption = (option: any, { context }: any) => {
+    if (context === 'menu') {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: option.color }} />
+          {option.label}
+        </div>
+      );
+    }
+    return option.label;
+  };
+
+  // Project options with "None" option
+  const projectOptions = [
+    { value: null, label: "None" },
+    ...(projects || []).map((project: any) => ({
+      value: project.id,
+      label: project.title
+    }))
+  ];
+
+  // Department options with "None" option
+  const departmentOptions = [
+    { value: null, label: "None" },
+    ...(departments || []).map((department: any) => ({
+      value: department.id,
+      label: department.name
+    }))
+  ];
+
+  // Currency options
+  const currencyOptions = (currencies || []).map((currency: any) => ({
+    value: currency.id,
+    label: `${currency.code} - ${currency.name}`
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -260,26 +311,18 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Budget Type *</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select budget type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {budgetTypes.map((type) => {
-                                  const Icon = type.icon
-                                  return (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      <div className="flex items-center gap-2">
-                                        <Icon className="h-4 w-4" />
-                                        {type.label}
-                                      </div>
-                                    </SelectItem>
-                                  )
-                                })}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Select
+                                options={budgetTypes.map(bt => ({ value: bt.value, label: bt.label }))}
+                                value={budgetTypes
+                                  .map(bt => ({ value: bt.value, label: bt.label }))
+                                  .find(option => option.value === field.value)}
+                                onChange={(option) => field.onChange(option?.value)}
+                                formatOptionLabel={formatBudgetTypeOption}
+                                placeholder="Select budget type"
+                                className="w-full"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -312,34 +355,17 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Project</FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value ? Number(value) : null)}
-                              defaultValue={field.value?.toString() || ""}
-                              disabled={projectsLoading}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select project (optional)" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {projectsLoading ? (
-                                  <SelectItem value="loading" disabled>
-                                    <div className="flex items-center gap-2">
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                      Loading projects...
-                                    </div>
-                                  </SelectItem>
-                                ) : (
-                                  projects.map((project: any) => (
-                                    <SelectItem key={project.id} value={project.id.toString()}>
-                                      {project.title}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Select
+                                options={projectOptions}
+                                value={projectOptions.find(option => option.value === field.value)}
+                                onChange={(option) => field.onChange(option?.value)}
+                                placeholder="Select project (optional)"
+                                isLoading={projectsLoading}
+                                isDisabled={projectsLoading}
+                                className="w-full"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -351,34 +377,17 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Department</FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value ? Number(value) : null)}
-                              defaultValue={field.value?.toString() || ""}
-                              disabled={departmentsLoading}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select department (optional)" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {departmentsLoading ? (
-                                  <SelectItem value="loading" disabled>
-                                    <div className="flex items-center gap-2">
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                      Loading departments...
-                                    </div>
-                                  </SelectItem>
-                                ) : (
-                                  departments?.map((department: any) => (
-                                    <SelectItem key={department.id} value={department.id.toString()}>
-                                      {department.name}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Select
+                                options={departmentOptions}
+                                value={departmentOptions.find(option => option.value === field.value)}
+                                onChange={(option) => field.onChange(option?.value)}
+                                placeholder="Select department (optional)"
+                                isLoading={departmentsLoading}
+                                isDisabled={departmentsLoading}
+                                className="w-full"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -421,33 +430,17 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Currency *</FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(Number.parseInt(value))}
-                              defaultValue={field.value?.toString()}
-                              disabled={currenciesLoading}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={currenciesLoading ? "Loading..." : "Select currency"} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {currenciesLoading ? (
-                                  <SelectItem value="loading" disabled>
-                                    <div className="flex items-center gap-2">
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                      Loading currencies...
-                                    </div>
-                                  </SelectItem>
-                                ) : (
-                                  currencies.map((currency: any) => (
-                                    <SelectItem key={currency.id} value={currency.id.toString()}>
-                                      {currency.code} - {currency.name}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Select
+                                options={currencyOptions}
+                                value={currencyOptions.find(option => option.value === field.value)}
+                                onChange={(option) => field.onChange(option?.value)}
+                                placeholder={currenciesLoading ? "Loading..." : "Select currency"}
+                                isLoading={currenciesLoading}
+                                isDisabled={currenciesLoading}
+                                className="w-full"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -523,39 +516,16 @@ export function AddBudgetDialog({ open, onOpenChange, onSuccess, budget }: AddBu
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {statusOptions.map((status) => (
-                                <SelectItem key={status.value} value={status.value}>
-                                  <div className="flex items-center gap-2">
-                                    <div
-                                      className="w-2 h-2 rounded-full"
-                                      style={{
-                                        backgroundColor:
-                                          status.color === "gray"
-                                            ? "#6b7280"
-                                            : status.color === "yellow"
-                                              ? "#f59e0b"
-                                              : status.color === "blue"
-                                                ? "#3b82f6"
-                                                : status.color === "green"
-                                                  ? "#10b981"
-                                                  : status.color === "purple"
-                                                    ? "#8b5cf6"
-                                                    : "#ef4444",
-                                      }}
-                                    />
-                                    {status.label}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <Select
+                              options={statusOptions}
+                              value={statusOptions.find(option => option.value === field.value)}
+                              onChange={(option) => field.onChange(option?.value)}
+                              formatOptionLabel={formatStatusOption}
+                              placeholder="Select status"
+                              className="w-full"
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
