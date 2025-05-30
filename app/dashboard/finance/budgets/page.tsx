@@ -30,6 +30,7 @@ import { BudgetUtilizationMatrix } from "@/components/finances/budgets/dashboard
 import { AddBudgetDialog } from "@/components/finances/budgets/dashboard/add-budget-dialog"
 import { BudgetHealthIndicators } from "@/components/finances/budgets/dashboard/budget-health-indicators"
 import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budgets"
+import { ref } from "process"
 
 
 
@@ -46,7 +47,7 @@ export default function BudgetsPage() {
     ordering: "-created_at",
   })
 
-  const { data: budgets, isLoading: budgetsLoading } = useGetBudgetsQuery({
+  const { data: budgets, isLoading: budgetsLoading, refetch } = useGetBudgetsQuery({
     search: searchTerm,
     ...filters,
     page_size: 50,
@@ -163,7 +164,14 @@ export default function BudgetsPage() {
       </Tabs>
 
       {/* Add Budget Dialog */}
-      <AddBudgetDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <AddBudgetDialog open={showAddDialog} 
+      onSuccess={
+        ()=>{
+          setShowAddDialog(false)
+          refetch()
+      }}
+      
+      onOpenChange={setShowAddDialog} />
     </div>
   )
 }

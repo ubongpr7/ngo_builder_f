@@ -40,7 +40,7 @@ interface Currency {
 }
 
 interface CurrencyInterface {
-  id: string;
+  id: number;
   code: string;
   name: string;
 }

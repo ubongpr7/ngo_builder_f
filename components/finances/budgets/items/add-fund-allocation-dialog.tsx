@@ -249,7 +249,7 @@ export function AddFundAllocationDialog({
                             <Select
                               {...controllerField}
                               options={bankAccountOptions}
-                              value={bankAccountOptions.find((option) => option.value === controllerField.value)}
+                              value={bankAccountOptions.find((option: any) => option.value === controllerField.value)}
                               onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || 0)}
                               placeholder={bankAccountsLoading ? "Loading accounts..." : "Select bank account"}
                               isSearchable

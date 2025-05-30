@@ -35,7 +35,7 @@ import Image from "next/image"
 import type { Project } from "@/types/project"
 
 interface CurrencyInterface {
-  id: string
+  id: number
   code: string
   name: string
 }
@@ -138,7 +138,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
         title: "",
         description: "",
         target_amount: "",
-        target_currency: defaultCurrency?.id || "",
+        target_currency: defaultCurrency?.id.toString() || "",
         start_date: new Date(),
         end_date: getDefaultEndDate(),
         project_id: "",
@@ -416,7 +416,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen, trig
                   <FormLabel>Associated Project</FormLabel>
                   <FormControl>
                     <ReactSelectField
-                      value={projectOptions.find((option) => option.value === field.value) || null}
+                      value={projectOptions.find((option:any) => option.value === field.value) || null}
                       onChange={(option) => field.onChange(option ? option.value : "")}
                       options={[{ value: "", label: "No project selected" }, ...projectOptions]}
                       placeholder="Select a project (optional)"
