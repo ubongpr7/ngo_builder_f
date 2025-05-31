@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, DollarSign, Loader2, AlertTriangle, CheckCircle } from "lucide-react"
+import { CalendarIcon, Loader2, AlertTriangle, CheckCircle, Plus, Edit } from "lucide-react"
 import { toast } from "react-toastify"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
@@ -48,7 +48,7 @@ interface ExpenseDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   budgetItem: any
-  expense?: any
+  expense?: any | null
   onSuccess?: () => void
 }
 
@@ -65,7 +65,7 @@ const EXPENSE_TYPES = [
   { value: "other", label: "Other" },
 ]
 
-export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSuccess }: ExpenseDialogProps) {
+export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, onSuccess }: ExpenseDialogProps) {
   const isEditing = !!expense
 
   const [createExpense, { isLoading: isCreating }] = useCreateOrganizationalExpenseMutation()
@@ -86,30 +86,41 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
     },
   })
 
-  // Populate form when editing
+  // Reset form when dialog opens/closes or expense changes
   useEffect(() => {
-    if (expense && open) {
-      form.reset({
-        title: expense.title || "",
-        description: expense.description || "",
-        expense_type: expense.expense_type || "",
-        amount: Number.parseFloat(expense.amount) || 0,
-        expense_date: expense.expense_date ? new Date(expense.expense_date) : new Date(),
-        vendor: expense.vendor || "",
-        notes: expense.notes || "",
-      })
-    } else if (!expense && open) {
-      form.reset({
-        title: "",
-        description: "",
-        expense_type: "",
-        amount: 0,
-        expense_date: new Date(),
-        vendor: "",
-        notes: "",
-      })
+    if (open) {
+      if (expense) {
+        // Editing mode - populate with expense data
+        form.reset({
+          title: expense.title || "",
+          description: expense.description || "",
+          expense_type: expense.expense_type || "",
+          amount: Number.parseFloat(expense.amount) || 0,
+          expense_date: expense.expense_date ? new Date(expense.expense_date) : new Date(),
+          vendor: expense.vendor || "",
+          notes: expense.notes || "",
+        })
+      } else {
+        // Creating mode - reset to defaults
+        form.reset({
+          title: "",
+          description: "",
+          expense_type: "",
+          amount: 0,
+          expense_date: new Date(),
+          vendor: "",
+          notes: "",
+        })
+      }
     }
   }, [expense, open, form])
+
+  // Clear form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset()
+    }
+  }, [open, form])
 
   const watchedAmount = form.watch("amount")
   const remainingBudget = Number.parseFloat(budgetItem?.remaining_amount || "0")
@@ -128,7 +139,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
 
     try {
       const payload = {
-        budget_item_id: budgetItem.id,
+        budget_item: budgetItem.id,
         title: data.title,
         description: data.description,
         expense_type: data.expense_type,
@@ -136,7 +147,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
         expense_date: format(data.expense_date, "yyyy-MM-dd"),
         vendor: data.vendor || "",
         notes: data.notes || "",
-        currency_id: budgetItem.budget?.currency,
+        currency: budgetItem.budget?.currency?.id,
         status: requiresApproval ? "pending" : "draft",
       }
 
@@ -153,22 +164,60 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
 
       onSuccess?.()
       onOpenChange(false)
-      form.reset()
     } catch (error: any) {
       console.error("Expense error:", error)
       toast.error(error?.data?.message || error?.data?.detail || `Failed to ${isEditing ? "update" : "create"} expense`)
     }
   }
 
+  const handleCancel = () => {
+    form.reset()
+    onOpenChange(false)
+  }
+
   const currencyCode = budgetItem?.budget?.currency?.code || "USD"
+
+  // Custom styles for React Select
+  const selectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      minHeight: "40px",
+      borderColor: state.isFocused ? "#3b82f6" : "#d1d5db",
+      boxShadow: state.isFocused ? "0 0 0 1px #3b82f6" : "none",
+      "&:hover": {
+        borderColor: "#3b82f6",
+      },
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#eff6ff" : "white",
+      color: state.isSelected ? "white" : "#374151",
+      "&:hover": {
+        backgroundColor: state.isSelected ? "#3b82f6" : "#eff6ff",
+      },
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: "#9ca3af",
+    }),
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            {isEditing ? "Edit Expense" : "Add New Expense"}
+            {isEditing ? (
+              <>
+                <Edit className="h-5 w-5" />
+                Edit Expense
+              </>
+            ) : (
+              <>
+                <Plus className="h-5 w-5" />
+                Add New Expense
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
             {isEditing ? "Update the expense details and amount" : "Create a new expense for this budget item"}
@@ -187,10 +236,13 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
                   <div>
                     <span className="text-gray-600">Budget Item:</span>
                     <p className="font-medium">{budgetItem?.category}</p>
+                    {budgetItem?.subcategory && <p className="text-sm text-gray-500">{budgetItem.subcategory}</p>}
                   </div>
                   <div>
                     <span className="text-gray-600">Available Budget:</span>
-                    <p className="font-medium text-green-600">{formatCurrency(currencyCode, availableAmount)}</p>
+                    <p className={cn("font-medium", availableAmount > 0 ? "text-green-600" : "text-red-600")}>
+                      {formatCurrency(currencyCode, availableAmount)}
+                    </p>
                   </div>
                   <div>
                     <span className="text-gray-600">Total Budgeted:</span>
@@ -203,6 +255,18 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
                     </p>
                   </div>
                 </div>
+                {isEditing && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <Edit className="h-4 w-4" />
+                      <span className="font-medium">Editing Expense</span>
+                    </div>
+                    <p className="text-sm text-blue-600 mt-1">
+                      Current expense amount ({formatCurrency(currencyCode, currentExpenseAmount)}) has been added back
+                      to available budget for editing.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -240,6 +304,9 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
                             onChange={(selectedOption) => controllerField.onChange(selectedOption?.value || "")}
                             placeholder="Select expense type"
                             isSearchable
+                            styles={selectStyles}
+                            className="react-select-container"
+                            classNamePrefix="react-select"
                           />
                         )}
                       />
@@ -401,12 +468,13 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
                   {requiresApproval && (
                     <p>Approval Threshold: {formatCurrency(currencyCode, budgetItem?.approval_required_threshold)}</p>
                   )}
+                  {isEditing && <p>Previous Amount: {formatCurrency(currencyCode, currentExpenseAmount)}</p>}
                 </div>
               </div>
             )}
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button type="button" variant="outline" onClick={handleCancel} disabled={isLoading}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading || exceedsAvailableBudget}>
@@ -416,7 +484,19 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
                     {isEditing ? "Updating..." : "Creating..."}
                   </>
                 ) : (
-                  <>{isEditing ? "Update Expense" : "Create Expense"}</>
+                  <>
+                    {isEditing ? (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Update Expense
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Expense
+                      </>
+                    )}
+                  </>
                 )}
               </Button>
             </DialogFooter>

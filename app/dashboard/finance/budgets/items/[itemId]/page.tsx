@@ -38,7 +38,7 @@ export default function BudgetItemDetailPage() {
 
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
-  const [selectedExpense, setSelectedExpense] = useState(null)
+  const [selectedExpense, setSelectedExpense] = useState<any>(null)
 
   const {
     data: budgetItem,
@@ -99,9 +99,15 @@ export default function BudgetItemDetailPage() {
     setShowExpenseDialog(true)
   }
 
+  const handleExpenseDialogClose = () => {
+    setSelectedExpense(null)
+    setShowExpenseDialog(false)
+  }
+
   const handleDialogSuccess = () => {
     refetchBudgetItem()
     refetchExpenses()
+    // Don't close dialog here, let the dialog handle it
   }
 
   const getStatusColor = (utilization: number) => {
@@ -196,7 +202,7 @@ export default function BudgetItemDetailPage() {
               <div>
                 <p className="text-sm font-medium text-purple-600">Utilization</p>
                 <div className="flex items-center gap-2">
-                  <p className={`text-2xl font-bold ${getStatusColor(utilization)}`}>{utilization}%</p>
+                  <p className={`text-2xl font-bold ${getStatusColor(utilization)}`}>{utilization.toFixed(1)}%</p>
                   {getStatusIcon(utilization)}
                 </div>
                 <Progress value={Math.min(utilization, 100)} className="mt-2" />
@@ -346,7 +352,7 @@ export default function BudgetItemDetailPage() {
 
       <ExpenseDialog
         open={showExpenseDialog}
-        onOpenChange={setShowExpenseDialog}
+        onOpenChange={handleExpenseDialogClose}
         budgetItem={budgetItem}
         expense={selectedExpense}
         onSuccess={handleDialogSuccess}
