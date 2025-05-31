@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -9,9 +9,6 @@ import { X, Filter, RotateCcw } from "lucide-react"
 import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 import Select from "react-select"
-import makeAnimated from "react-select/animated"
-
-const animatedComponents = makeAnimated()
 
 interface BudgetFiltersPanelProps {
   filters: {
@@ -63,7 +60,6 @@ const ORDERING_OPTIONS = [
   { value: "end_date", label: "Earliest End Date" },
 ]
 
-// Generate fiscal years (current year ± 5 years)
 const generateFiscalYears = () => {
   const currentYear = new Date().getFullYear()
   const years = []
@@ -73,7 +69,6 @@ const generateFiscalYears = () => {
   return years
 }
 
-// Custom styles for react-select
 const customSelectStyles = {
   control: (provided: any, state: any) => ({
     ...provided,
@@ -88,69 +83,32 @@ const customSelectStyles = {
     ...provided,
     backgroundColor: state.isSelected ? "#3b82f6" : state.isFocused ? "#eff6ff" : "white",
     color: state.isSelected ? "white" : "#374151",
-    "&:hover": {
-      backgroundColor: state.isSelected ? "#3b82f6" : "#eff6ff",
-    },
-  }),
-  multiValue: (provided: any) => ({
-    ...provided,
-    backgroundColor: "#eff6ff",
-    borderRadius: "6px",
-  }),
-  multiValueLabel: (provided: any) => ({
-    ...provided,
-    color: "#1e40af",
-    fontWeight: "500",
-  }),
-  multiValueRemove: (provided: any) => ({
-    ...provided,
-    color: "#1e40af",
-    "&:hover": {
-      backgroundColor: "#dbeafe",
-      color: "#1e40af",
-    },
-  }),
-}
-
-// Custom styles for currency select (required field)
-const currencySelectStyles = {
-  ...customSelectStyles,
-  control: (provided: any, state: any) => ({
-    ...provided,
-    borderColor: state.isFocused ? "#3b82f6" : "#3b82f6",
-    borderWidth: "2px",
-    boxShadow: state.isFocused ? "0 0 0 1px #3b82f6" : "none",
-    "&:hover": {
-      borderColor: "#3b82f6",
-    },
-    minHeight: "40px",
-    backgroundColor: "#fafbff",
   }),
 }
 
 export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: BudgetFiltersPanelProps) {
   const [localFilters, setLocalFilters] = useState(filters)
-  const { data: departmentData, isLoading: departmentsLoading } = useGetDepartmentsQuery("")
-  const { data: currencyData, isLoading: currenciesLoading } = useGetCurrenciesQuery()
-  const departments = departmentData||[]
-  const currencies = currencyData||[]
+  const { data: departments, isLoading: departmentsLoading } = useGetDepartmentsQuery("")
+  const { data: currencies, isLoading: currenciesLoading } = useGetCurrenciesQuery("")
+
   const fiscalYears = generateFiscalYears()
 
-  // Transform departments data for react-select
+  // Sync with parent filters when they change
+  useEffect(() => {
+    setLocalFilters(filters)
+  }, [filters])
+
   const departmentOptions =
     departments?.map((dept: any) => ({
       value: dept.id.toString(),
       label: dept.name,
-      description: dept.description || "",
     })) || []
 
-  // Transform currencies data for react-select
   const currencyOptions =
     currencies?.map((currency: any) => ({
       value: currency.id,
       label: `${currency.code} - ${currency.name}`,
       code: currency.code,
-      name: currency.name,
     })) || []
 
   const handleFilterChange = (key: string, value: any) => {
@@ -159,6 +117,7 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
   }
 
   const applyFilters = () => {
+    console.log("Applying filters:", localFilters)
     onFiltersChange(localFilters)
     onClose()
   }
@@ -189,24 +148,6 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
     handleFilterChange(key, "")
   }
 
-  // Custom option component for departments
-  const DepartmentOption = ({ data, ...props }: any) => (
-    <div {...props} className="p-2 hover:bg-blue-50 cursor-pointer">
-      <div className="font-medium text-gray-900">{data.label}</div>
-      {data.description && <div className="text-sm text-gray-500 truncate">{data.description}</div>}
-    </div>
-  )
-
-  // Custom option component for currencies
-  const CurrencyOption = ({ data, ...props }: any) => (
-    <div {...props} className="p-2 hover:bg-blue-50 cursor-pointer">
-      <div className="flex items-center gap-2">
-        <span className="font-bold text-blue-600">{data.code}</span>
-        <span className="text-gray-700">{data.name}</span>
-      </div>
-    </div>
-  )
-
   return (
     <Card className="border-l-4 border-l-blue-500">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -225,13 +166,10 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Currency Filter - Always Required */}
+        {/* Currency Filter - Required */}
         <div className="space-y-2">
           <Label className="text-sm font-medium flex items-center gap-1">
             Currency <span className="text-red-500">*</span>
-            <Badge variant="outline" className="text-xs">
-              Required
-            </Badge>
           </Label>
           <Select
             value={currencyOptions.find((option) => option.value === localFilters.currency)}
@@ -239,19 +177,12 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
             options={currencyOptions}
             isLoading={currenciesLoading}
             isSearchable
-            placeholder={currenciesLoading ? "Loading currencies..." : "Select currency"}
-            styles={currencySelectStyles}
-            components={{ animatedComponents, Option: CurrencyOption }}
-            formatOptionLabel={(option: any) => (
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-blue-600">{option.code}</span>
-                <span className="text-gray-700">{option.name}</span>
-              </div>
-            )}
+            placeholder="Select currency"
+            styles={customSelectStyles}
           />
         </div>
 
-        {/* Active Filters Display */}
+        {/* Active Filters */}
         {getActiveFiltersCount() > 0 && (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Active Filters</Label>
@@ -319,7 +250,6 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
               isSearchable
               placeholder="All types"
               styles={customSelectStyles}
-              components={animatedComponents}
             />
           </div>
 
@@ -334,7 +264,6 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
               isSearchable
               placeholder="All statuses"
               styles={customSelectStyles}
-              components={animatedComponents}
               formatOptionLabel={(option: any) => (
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: option.color }} />
@@ -354,10 +283,8 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
               isLoading={departmentsLoading}
               isClearable
               isSearchable
-              placeholder={departmentsLoading ? "Loading departments..." : "All departments"}
+              placeholder="All departments"
               styles={customSelectStyles}
-              components={{ ...animatedComponents, Option: DepartmentOption }}
-              noOptionsMessage={() => "No departments found"}
             />
           </div>
 
@@ -372,7 +299,6 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
               isSearchable
               placeholder="All years"
               styles={customSelectStyles}
-              components={animatedComponents}
             />
           </div>
         </div>
@@ -387,7 +313,6 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
             isSearchable
             placeholder="Select sorting"
             styles={customSelectStyles}
-            components={animatedComponents}
           />
         </div>
 

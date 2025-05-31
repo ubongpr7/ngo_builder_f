@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
 import { Search, Plus, Filter, AlertTriangle, Target, Activity, Building2, BarChart3 } from "lucide-react"
 import { BudgetOverviewDashboard } from "@/components/finances/budgets/dashboard/budget-overview-dashboard"
 import { BudgetListTable } from "@/components/finances/budgets/dashboard/budget-list-table"
@@ -17,8 +16,6 @@ import { BudgetHealthIndicators } from "@/components/finances/budgets/dashboard/
 import { useGetBudgetsQuery, useGetBudgetStatisticsQuery } from "@/redux/features/finance/budgets"
 import { useGetDepartmentsQuery } from "@/redux/features/profile/readProfileAPISlice"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
-import Select from "react-select"
-import { useEffect } from "react"
 
 export default function BudgetsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -26,10 +23,8 @@ export default function BudgetsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
 
-  const { data: currencyData, isLoading: currenciesLoading } = useGetCurrenciesQuery("")
-  const { data: departmentData } = useGetDepartmentsQuery("")
-  const currencies= currencyData ||[]
-  const departments = departmentData || []
+  const { data: currencies, isLoading: currenciesLoading } = useGetCurrenciesQuery()
+  const { data: departments } = useGetDepartmentsQuery("")
 
   const [filters, setFilters] = useState({
     budget_type: "",
@@ -37,40 +32,56 @@ export default function BudgetsPage() {
     department: "",
     fiscal_year: "",
     ordering: "-created_at",
-    currency: 1, // Will be updated when currencies load
+    currency: 1,
   })
 
+  // Set default currency when currencies load
   useEffect(() => {
-    if (currencies?.length > 0 && filters.currency === 1) {
+    if (currencies && currencies.length > 0 && filters.currency === 1) {
       setFilters((prev) => ({
         ...prev,
         currency: currencies[0].id,
       }))
     }
-  }, [currencies])
+  }, [currencies, filters.currency])
 
-  const {
-    data: budgets,
-    isLoading: budgetsLoading,
-    refetch,
-  } = useGetBudgetsQuery({
+  // Build query parameters
+  const queryParams = {
     search: searchTerm,
-    ...filters,
+    budget_type: filters.budget_type || undefined,
+    status: filters.status || undefined,
+    department: filters.department || undefined,
+    fiscal_year: filters.fiscal_year || undefined,
+    ordering: filters.ordering,
+    currency: filters.currency,
     page_size: 50,
-  })
+  }
 
-  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery({
-    // currency: filters.currency,
-    ...filters,
-  })
+  // Remove undefined values
+  const cleanQueryParams = Object.fromEntries(
+    Object.entries(queryParams).filter(([_, value]) => value !== undefined && value !== ""),
+  )
+
+  const { data: budgets, isLoading: budgetsLoading, refetch } = useGetBudgetsQuery(cleanQueryParams)
+
+  const { data: statistics, isLoading: statsLoading } = useGetBudgetStatisticsQuery(cleanQueryParams)
 
   const handleFilterChange = (newFilters: any) => {
+    console.log("Filter change:", newFilters)
     setFilters((prev) => ({ ...prev, ...newFilters }))
   }
 
   const handleExport = () => {
-    // Export functionality
     console.log("Exporting budget data...")
+  }
+
+  const getActiveFiltersCount = () => {
+    let count = 0
+    if (filters.budget_type) count++
+    if (filters.status) count++
+    if (filters.department) count++
+    if (filters.fiscal_year) count++
+    return count
   }
 
   return (
@@ -95,42 +106,12 @@ export default function BudgetsPage() {
             />
           </div>
 
-          {/* Currency Selector */}
-          <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium whitespace-nowrap">Currency:</Label>
-            <Select
-              value={currencies?.find((currency: any) => currency.id === filters.currency)}
-              onChange={(selectedOption: any) => handleFilterChange({ currency: selectedOption?.id })}
-              options={currencies?.map((currency: any) => ({
-                value: currency.id,
-                label: currency.code,
-                name: currency.name,
-              }))}
-              isLoading={currenciesLoading}
-              placeholder="Currency"
-              styles={{
-                control: (provided: any) => ({
-                  ...provided,
-                  minWidth: "120px",
-                  borderColor: "#3b82f6",
-                  "&:hover": { borderColor: "#3b82f6" },
-                }),
-              }}
-              formatOptionLabel={(option: any) => (
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{option.label}</span>
-                  <span className="text-xs text-gray-500">{option.name}</span>
-                </div>
-              )}
-            />
-          </div>
-
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="gap-2">
             <Filter className="h-4 w-4" />
             Filters
-            {Object.values(filters).filter((v) => v && v !== "-created_at" && v !== filters.currency).length > 0 && (
+            {getActiveFiltersCount() > 0 && (
               <Badge variant="secondary" className="ml-1">
-                {Object.values(filters).filter((v) => v && v !== "-created_at" && v !== filters.currency).length}
+                {getActiveFiltersCount()}
               </Badge>
             )}
           </Button>
@@ -156,7 +137,7 @@ export default function BudgetsPage() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:grid-cols-5">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Overview
