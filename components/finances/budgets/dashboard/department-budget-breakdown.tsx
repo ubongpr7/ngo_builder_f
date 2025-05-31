@@ -22,117 +22,203 @@ import {
   Radar,
 } from "recharts"
 import { Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Activity } from "lucide-react"
+import { formatCurrency } from "@/lib/currency-utils"
+
+interface DepartmentData {
+  department__name: string
+  department__id: number
+  count: number
+  total_amount: number
+  spent_amount: number
+  avg_utilization: number
+}
+
+interface CurrencyStatistics {
+  summary: {
+    currency_code: string
+    currency_name: string
+    total_budgets: number
+    total_allocated: number
+    total_spent: number
+    avg_utilization: number
+  }
+  by_department: DepartmentData[]
+}
+
+interface MultiCurrencyStatistics {
+  currencies: Record<string, CurrencyStatistics>
+}
 
 interface DepartmentBudgetBreakdownProps {
-  statistics: any
+  statistics: CurrencyStatistics | MultiCurrencyStatistics | null
   isLoading: boolean
 }
 
-export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentBudgetBreakdownProps) {
-  // Mock department data - replace with real API data
-  const departmentData = [
-    {
-      id: 1,
-      name: "Programs & Services",
-      code: "PROG",
-      totalBudget: 2500000,
-      spent: 1875000,
-      utilization: 75,
-      budgetCount: 12,
-      status: "healthy",
-      trend: "up",
-      efficiency: 92,
-      riskLevel: "low",
-    },
-    {
-      id: 2,
-      name: "Operations",
-      code: "OPS",
-      totalBudget: 800000,
-      spent: 720000,
-      utilization: 90,
-      budgetCount: 8,
-      status: "warning",
-      trend: "up",
-      efficiency: 88,
-      riskLevel: "medium",
-    },
-    {
-      id: 3,
-      name: "Marketing & Outreach",
-      code: "MKTG",
-      totalBudget: 450000,
-      spent: 315000,
-      utilization: 70,
-      budgetCount: 6,
-      status: "healthy",
-      trend: "down",
-      efficiency: 85,
-      riskLevel: "low",
-    },
-    {
-      id: 4,
-      name: "Administration",
-      code: "ADMIN",
-      totalBudget: 600000,
-      spent: 540000,
-      utilization: 90,
-      budgetCount: 5,
-      status: "warning",
-      trend: "stable",
-      efficiency: 78,
-      riskLevel: "medium",
-    },
-    {
-      id: 5,
-      name: "Research & Development",
-      code: "RND",
-      totalBudget: 350000,
-      spent: 175000,
-      utilization: 50,
-      budgetCount: 4,
-      status: "underutilized",
-      trend: "down",
-      efficiency: 95,
-      riskLevel: "low",
-    },
-    {
-      id: 6,
-      name: "Emergency Response",
-      code: "EMRG",
-      totalBudget: 1200000,
-      spent: 1080000,
-      utilization: 90,
-      budgetCount: 3,
-      status: "critical",
-      trend: "up",
-      efficiency: 82,
-      riskLevel: "high",
-    },
-  ]
+// Safe number validation and conversion
+const safeNumber = (value: any, defaultValue = 0): number => {
+  if (value === null || value === undefined) return defaultValue
+  const num = typeof value === "string" ? Number.parseFloat(value) : Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
 
-  const chartData = departmentData.map((dept) => ({
+// Helper function to determine status based on utilization
+const getUtilizationStatus = (utilization: number): string => {
+  if (utilization >= 95) return "critical"
+  if (utilization >= 85) return "warning"
+  if (utilization < 50) return "underutilized"
+  return "healthy"
+}
+
+// Helper function to determine risk level
+const getRiskLevel = (utilization: number, budgetCount: number): string => {
+  if (utilization >= 95 || budgetCount === 0) return "high"
+  if (utilization >= 85 || budgetCount <= 2) return "medium"
+  return "low"
+}
+
+// Helper function to calculate efficiency score
+const calculateEfficiency = (utilization: number, budgetCount: number): number => {
+  // Base efficiency on utilization being close to optimal (75-85%)
+  const optimalUtilization = 80
+  const utilizationScore = Math.max(0, 100 - Math.abs(utilization - optimalUtilization) * 2)
+
+  // Factor in budget count (more budgets = better planning)
+  const budgetCountScore = Math.min(100, budgetCount * 10)
+
+  // Weighted average
+  return Math.round(utilizationScore * 0.7 + budgetCountScore * 0.3)
+}
+
+export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentBudgetBreakdownProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-2 bg-gray-200 rounded w-full"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!statistics) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p>No department data available</p>
+            <p className="text-sm">Department breakdown will appear when budgets are created</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Handle both single currency and multi-currency statistics
+  let departmentData: DepartmentData[] = []
+  let currencyCode = "USD"
+
+  if ("currencies" in statistics) {
+    // Multi-currency: combine all department data
+    const multiCurrencyStats = statistics as MultiCurrencyStatistics
+    const allCurrencies = Object.values(multiCurrencyStats.currencies || {})
+
+    if (allCurrencies.length > 0) {
+      // For now, use the first currency's data
+      // TODO: Add currency selection or combine data properly
+      const firstCurrency = allCurrencies[0]
+      departmentData = firstCurrency.by_department || []
+      currencyCode = firstCurrency.summary.currency_code
+    }
+  } else if ("by_department" in statistics) {
+    // Single currency
+    const singleCurrencyStats = statistics as CurrencyStatistics
+    departmentData = singleCurrencyStats.by_department || []
+    currencyCode = singleCurrencyStats.summary.currency_code
+  }
+
+  if (departmentData.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p>No department budget data available</p>
+            <p className="text-sm">Create budgets assigned to departments to see breakdown</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Process department data for display
+  const processedDepartments = departmentData.map((dept) => {
+    const totalAmount = safeNumber(dept.total_amount)
+    const spentAmount = safeNumber(dept.spent_amount)
+    const utilization = safeNumber(dept.avg_utilization)
+    const budgetCount = safeNumber(dept.count)
+
+    const status = getUtilizationStatus(utilization)
+    const riskLevel = getRiskLevel(utilization, budgetCount)
+    const efficiency = calculateEfficiency(utilization, budgetCount)
+
+    // Generate department code from name
+    const code = dept.department__name
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase())
+      .join("")
+      .substring(0, 4)
+
+    return {
+      id: dept.department__id,
+      name: dept.department__name,
+      code,
+      totalBudget: totalAmount,
+      spent: spentAmount,
+      utilization,
+      budgetCount,
+      status,
+      riskLevel,
+      efficiency,
+      remaining: totalAmount - spentAmount,
+    }
+  })
+
+  // Sort by total budget (descending)
+  processedDepartments.sort((a, b) => b.totalBudget - a.totalBudget)
+
+  // Prepare chart data
+  const chartData = processedDepartments.map((dept) => ({
     name: dept.code,
-    budget: dept.totalBudget / 1000,
-    spent: dept.spent / 1000,
+    budget: dept.totalBudget,
+    spent: dept.spent,
     utilization: dept.utilization,
     efficiency: dept.efficiency,
   }))
 
-  const pieData = departmentData.map((dept) => ({
+  const pieData = processedDepartments.map((dept) => ({
     name: dept.name,
     value: dept.totalBudget,
     color: getStatusColor(dept.status),
   }))
 
-  const radarData = departmentData.map((dept) => ({
+  const radarData = processedDepartments.map((dept) => ({
     department: dept.code,
     utilization: dept.utilization,
     efficiency: dept.efficiency,
-    budgetHealth: dept.status === "healthy" ? 100 : dept.status === "warning" ? 70 : 40,
+    budgetHealth:
+      dept.status === "healthy" ? 100 : dept.status === "warning" ? 70 : dept.status === "critical" ? 40 : 60,
   }))
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"]
+  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
 
   function getStatusColor(status: string) {
     switch (status) {
@@ -164,46 +250,23 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
     }
   }
 
-  function getTrendIcon(trend: string) {
-    switch (trend) {
-      case "up":
-        return <TrendingUp className="h-4 w-4 text-green-500" />
-      case "down":
-        return <TrendingDown className="h-4 w-4 text-red-500" />
-      default:
-        return <Activity className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
-                <div className="h-2 bg-gray-200 rounded w-full"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
+  function getTrendIcon(utilization: number) {
+    if (utilization >= 85) return <TrendingUp className="h-4 w-4 text-green-500" />
+    if (utilization < 50) return <TrendingDown className="h-4 w-4 text-red-500" />
+    return <Activity className="h-4 w-4 text-gray-500" />
   }
 
   return (
     <div className="space-y-6">
       {/* Department Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {departmentData.map((dept) => (
+        {processedDepartments.map((dept) => (
           <Card key={dept.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-blue-500" />
-                  <CardTitle className="text-lg">{dept.name}</CardTitle>
+                  <CardTitle className="text-lg truncate">{dept.name}</CardTitle>
                 </div>
                 <Badge variant="outline" className="text-xs">
                   {dept.code}
@@ -213,19 +276,19 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">${(dept.totalBudget / 1000).toFixed(0)}K</p>
+                  <p className="text-2xl font-bold">{formatCurrency(currencyCode, dept.totalBudget)}</p>
                   <p className="text-sm text-muted-foreground">Total Budget</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(dept.status)}
-                  {getTrendIcon(dept.trend)}
+                  {getTrendIcon(dept.utilization)}
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Utilization</span>
-                  <span className="font-medium">{dept.utilization}%</span>
+                  <span className="font-medium">{dept.utilization.toFixed(1)}%</span>
                 </div>
                 <Progress value={dept.utilization} className="h-2" />
               </div>
@@ -233,7 +296,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Spent</p>
-                  <p className="font-semibold">${(dept.spent / 1000).toFixed(0)}K</p>
+                  <p className="font-semibold">{formatCurrency(currencyCode, dept.spent)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Budgets</p>
@@ -279,12 +342,15 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis />
+                  <YAxis tickFormatter={(value) => formatCurrency(currencyCode, value)} />
                   <Tooltip
-                    formatter={(value: any, name: string) => [`$${value}K`, name === "budget" ? "Budget" : "Spent"]}
+                    formatter={(value: any, name: string) => [
+                      formatCurrency(currencyCode, value),
+                      name === "budget" ? "Budget" : "Spent",
+                    ]}
                   />
-                  <Bar dataKey="budget" fill="#3b82f6" name="Budget" />
-                  <Bar dataKey="spent" fill="#10b981" name="Spent" />
+                  <Bar dataKey="budget" fill="#3b82f6" name="budget" />
+                  <Bar dataKey="spent" fill="#10b981" name="spent" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -313,7 +379,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [`$${(value / 1000).toFixed(0)}K`, "Budget"]} />
+                  <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Budget"]} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -348,96 +414,48 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-12 grid-rows-8 gap-1 h-96">
-                {/* Programs & Services - Largest allocation */}
-                <div
-                  className="col-span-6 row-span-4 rounded-lg p-4 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("healthy") }}
-                >
-                  <div className="text-center">
-                    <div className="text-lg font-bold">Programs & Services</div>
-                    <div className="text-sm opacity-90">$2,500K</div>
-                    <div className="text-xs opacity-75">75% utilized</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
+                {processedDepartments.map((dept, index) => {
+                  // Calculate grid size based on budget proportion
+                  const totalBudget = processedDepartments.reduce((sum, d) => sum + d.totalBudget, 0)
+                  const proportion = dept.totalBudget / totalBudget
 
-                {/* Emergency Response - Second largest */}
-                <div
-                  className="col-span-6 row-span-3 rounded-lg p-3 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("critical") }}
-                >
-                  <div className="text-center">
-                    <div className="text-base font-bold">Emergency Response</div>
-                    <div className="text-sm opacity-90">$1,200K</div>
-                    <div className="text-xs opacity-75">90% utilized</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
+                  // Determine grid span based on proportion
+                  let colSpan = Math.max(2, Math.min(12, Math.round(proportion * 24)))
+                  let rowSpan = Math.max(1, Math.min(4, Math.round(proportion * 8)))
 
-                {/* Operations */}
-                <div
-                  className="col-span-4 row-span-3 rounded-lg p-3 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("warning") }}
-                >
-                  <div className="text-center">
-                    <div className="text-sm font-bold">Operations</div>
-                    <div className="text-xs opacity-90">$800K</div>
-                    <div className="text-xs opacity-75">90% used</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
+                  // Adjust for first few departments to ensure they fit
+                  if (index === 0) {
+                    colSpan = Math.min(6, colSpan)
+                    rowSpan = Math.min(4, rowSpan)
+                  } else if (index === 1) {
+                    colSpan = Math.min(6, colSpan)
+                    rowSpan = Math.min(3, rowSpan)
+                  } else {
+                    colSpan = Math.min(4, colSpan)
+                    rowSpan = Math.min(2, rowSpan)
+                  }
 
-                {/* Administration */}
-                <div
-                  className="col-span-4 row-span-3 rounded-lg p-3 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("warning") }}
-                >
-                  <div className="text-center">
-                    <div className="text-sm font-bold">Administration</div>
-                    <div className="text-xs opacity-90">$600K</div>
-                    <div className="text-xs opacity-75">90% used</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
-
-                {/* Marketing & Outreach */}
-                <div
-                  className="col-span-4 row-span-3 rounded-lg p-3 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("healthy") }}
-                >
-                  <div className="text-center">
-                    <div className="text-sm font-bold">Marketing</div>
-                    <div className="text-xs opacity-90">$450K</div>
-                    <div className="text-xs opacity-75">70% used</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
-
-                {/* Research & Development */}
-                <div
-                  className="col-span-6 row-span-1 rounded-lg p-2 flex items-center justify-center text-white font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("underutilized") }}
-                >
-                  <div className="text-center">
-                    <div className="text-xs font-bold">R&D - $350K (50%)</div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
-
-                {/* Emergency Response continuation */}
-                <div
-                  className="col-span-6 row-span-1 rounded-lg p-2 flex items-center justify-center text-white text-xs font-semibold relative overflow-hidden"
-                  style={{ backgroundColor: getStatusColor("critical"), opacity: 0.8 }}
-                >
-                  <div>High Priority - Immediate Attention Required</div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-                </div>
+                  return (
+                    <div
+                      key={dept.id}
+                      className={`col-span-${colSpan} row-span-${rowSpan} rounded-lg p-2 flex flex-col justify-center items-center text-white font-semibold relative overflow-hidden`}
+                      style={{ backgroundColor: getStatusColor(dept.status) }}
+                    >
+                      <div className="text-center">
+                        <div className="text-xs font-bold truncate">{dept.name}</div>
+                        <div className="text-xs opacity-90">{formatCurrency(currencyCode, dept.totalBudget)}</div>
+                        <div className="text-xs opacity-75">{dept.utilization.toFixed(0)}% utilized</div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
+                    </div>
+                  )
+                })}
               </div>
 
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor("healthy") }}></div>
-                  <span>Healthy (70-85%)</span>
+                  <span>Healthy (50-85%)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor("warning") }}></div>
@@ -449,7 +467,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: getStatusColor("underutilized") }}></div>
-                  <span>Under-utilized (&lt;70%)</span>
+                  <span>Under-utilized (&lt;50%)</span>
                 </div>
               </div>
             </CardContent>
