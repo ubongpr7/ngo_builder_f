@@ -20,12 +20,14 @@ import {
   User,
   FileText,
   Archive,
+  CreditCard,
 } from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
 import {
   useDeleteOrganizationalExpenseMutation,
   useApproveOrganizationalExpenseMutation,
   useRejectOrganizationalExpenseMutation,
+  useMarkOrganizationalExpensePaidMutation,
 } from "@/redux/features/finance/organizational-expenses"
 import { toast } from "react-toastify"
 
@@ -50,6 +52,7 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
   const [deleteExpense] = useDeleteOrganizationalExpenseMutation()
   const [approveExpense] = useApproveOrganizationalExpenseMutation()
   const [rejectExpense] = useRejectOrganizationalExpenseMutation()
+  const [markExpensePaid] = useMarkOrganizationalExpensePaidMutation()
 
   // Track dropdown open states for each expense
   const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
@@ -160,6 +163,33 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
       } catch (error) {
         toast.error("Failed to reject expense")
       }
+    }
+  }
+
+  const handleMarkAsPaid = async (expenseId: number) => {
+    closeDropdown(expenseId)
+
+    // Get payment details
+    const paymentDate = prompt("Enter payment date (YYYY-MM-DD):", new Date().toISOString().split("T")[0])
+    if (!paymentDate) return
+
+    const paymentMethod = prompt("Enter payment method (e.g., Bank Transfer, Cash, Check):", "Bank Transfer")
+    if (!paymentMethod) return
+
+    const transactionReference = prompt("Enter transaction reference (optional):", "")
+
+    try {
+      await markExpensePaid({
+        id: expenseId,
+        data: {
+          payment_date: paymentDate,
+          payment_method: paymentMethod,
+          transaction_reference: transactionReference || null,
+        },
+      }).unwrap()
+      toast.success("Expense marked as paid successfully")
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to mark expense as paid")
     }
   }
 
@@ -288,6 +318,12 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
                             Reject
                           </DropdownMenuItem>
                         </>
+                      )}
+                      {expense.status === "approved" && (
+                        <DropdownMenuItem onClick={() => handleMarkAsPaid(expense.id)} className="text-blue-600">
+                          <CreditCard className="h-4 w-4 mr-2" />
+                          Mark as Paid
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => handleDeleteExpense(expense.id)} className="text-red-600">
                         <Trash2 className="h-4 w-4 mr-2" />

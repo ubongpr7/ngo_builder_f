@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Loader2, AlertTriangle, CheckCircle, Plus, Edit } from "lucide-react"
+import { CalendarIcon, Loader2, AlertTriangle, CheckCircle, Plus, Edit, Clock, Lock } from "lucide-react"
 import { toast } from "react-toastify"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
@@ -123,9 +123,14 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
   }, [open, form])
 
   const watchedAmount = form.watch("amount")
-  const remainingBudget = Number.parseFloat(budgetItem?.remaining_amount || "0")
   const currentExpenseAmount = isEditing ? Number.parseFloat(expense?.amount || "0") : 0
-  const availableAmount = remainingBudget + currentExpenseAmount
+
+  // Use the new comprehensive budget properties
+  const trulyAvailableAmount = Number.parseFloat(budgetItem?.truly_available_amount || "0")
+  const availableAmount = trulyAvailableAmount + currentExpenseAmount // Add back current expense when editing
+  const committedAmount = Number.parseFloat(budgetItem?.committed_amount || "0")
+  const pendingAmount = Number.parseFloat(budgetItem?.pending_amount || "0")
+  const encumberedAmount = Number.parseFloat(budgetItem?.encumbered_amount || "0")
 
   const exceedsAvailableBudget = watchedAmount > availableAmount
   const requiresApproval =
@@ -238,9 +243,20 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
                     {budgetItem?.subcategory && <p className="text-sm text-gray-500">{budgetItem.subcategory}</p>}
                   </div>
                   <div>
-                    <span className="text-gray-600">Available Budget:</span>
-                    <p className={cn("font-medium", availableAmount > 0 ? "text-green-600" : "text-red-600")}>
-                      {formatCurrency(currencyCode, availableAmount)}
+                    <span className="text-gray-600">Budget Health:</span>
+                    <p
+                      className={cn(
+                        "font-medium",
+                        budgetItem?.budget_health === "HEALTHY"
+                          ? "text-green-600"
+                          : budgetItem?.budget_health === "CAUTION"
+                            ? "text-yellow-600"
+                            : budgetItem?.budget_health === "AT_RISK"
+                              ? "text-orange-600"
+                              : "text-red-600",
+                      )}
+                    >
+                      {budgetItem?.budget_health || "Unknown"}
                     </p>
                   </div>
                   <div>
@@ -248,12 +264,50 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
                     <p className="font-medium">{formatCurrency(currencyCode, budgetItem?.budgeted_amount)}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Already Spent:</span>
-                    <p className="font-medium text-orange-600">
-                      {formatCurrency(currencyCode, budgetItem?.spent_amount)}
+                    <span className="text-gray-600">Committed:</span>
+                    <p className="font-medium text-blue-600">{formatCurrency(currencyCode, committedAmount)}</p>
+                    <p className="text-xs text-gray-500">{budgetItem?.committed_percentage?.toFixed(1)}% of budget</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Pending Requests:</span>
+                    <p className="font-medium text-yellow-600">{formatCurrency(currencyCode, pendingAmount)}</p>
+                    <p className="text-xs text-gray-500">{budgetItem?.pending_expenses_count || 0} requests</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Truly Available:</span>
+                    <p className={cn("font-medium", availableAmount > 0 ? "text-green-600" : "text-red-600")}>
+                      {formatCurrency(currencyCode, availableAmount)}
                     </p>
+                    <p className="text-xs text-gray-500">After all obligations</p>
                   </div>
                 </div>
+
+                {/* Enhanced status indicators */}
+                <div className="mt-4 space-y-2">
+                  {budgetItem?.is_overcommitted && (
+                    <div className="flex items-center gap-2 p-2 bg-red-50 rounded-lg">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm text-red-700 font-medium">Budget is overcommitted</span>
+                    </div>
+                  )}
+
+                  {budgetItem?.has_pending_requests && (
+                    <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded-lg">
+                      <Clock className="h-4 w-4 text-yellow-600" />
+                      <span className="text-sm text-yellow-700">
+                        {budgetItem.pending_expenses_count} pending expense requests
+                      </span>
+                    </div>
+                  )}
+
+                  {budgetItem?.is_locked && (
+                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                      <Lock className="h-4 w-4 text-gray-600" />
+                      <span className="text-sm text-gray-700">Budget item is locked</span>
+                    </div>
+                  )}
+                </div>
+
                 {isEditing && (
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                     <div className="flex items-center gap-2 text-blue-700">
@@ -432,42 +486,69 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
               <div
                 className={cn(
                   "p-4 rounded-lg",
-                  exceedsAvailableBudget ? "bg-red-50" : requiresApproval ? "bg-yellow-50" : "bg-green-50",
+                  exceedsAvailableBudget
+                    ? "bg-red-50"
+                    : requiresApproval
+                      ? "bg-yellow-50"
+                      : budgetItem?.is_overcommitted
+                        ? "bg-orange-50"
+                        : "bg-green-50",
                 )}
               >
                 <div
                   className={cn(
                     "flex items-center gap-2",
-                    exceedsAvailableBudget ? "text-red-700" : requiresApproval ? "text-yellow-700" : "text-green-700",
+                    exceedsAvailableBudget
+                      ? "text-red-700"
+                      : requiresApproval
+                        ? "text-yellow-700"
+                        : budgetItem?.is_overcommitted
+                          ? "text-orange-700"
+                          : "text-green-700",
                   )}
                 >
                   {exceedsAvailableBudget ? (
                     <AlertTriangle className="h-4 w-4" />
                   ) : requiresApproval ? (
                     <AlertTriangle className="h-4 w-4" />
+                  ) : budgetItem?.is_overcommitted ? (
+                    <AlertTriangle className="h-4 w-4" />
                   ) : (
                     <CheckCircle className="h-4 w-4" />
                   )}
                   <span className="font-medium">
                     {exceedsAvailableBudget
-                      ? "Budget Exceeded"
+                      ? "Exceeds Available Budget"
                       : requiresApproval
                         ? "Approval Required"
-                        : "Expense Valid"}
+                        : budgetItem?.is_overcommitted
+                          ? "Budget Overcommitted"
+                          : "Expense Valid"}
                   </span>
                 </div>
                 <div
                   className={cn(
-                    "mt-2 text-sm",
-                    exceedsAvailableBudget ? "text-red-600" : requiresApproval ? "text-yellow-600" : "text-green-600",
+                    "mt-2 text-sm space-y-1",
+                    exceedsAvailableBudget
+                      ? "text-red-600"
+                      : requiresApproval
+                        ? "text-yellow-600"
+                        : budgetItem?.is_overcommitted
+                          ? "text-orange-600"
+                          : "text-green-600",
                   )}
                 >
                   <p>Expense Amount: {formatCurrency(currencyCode, watchedAmount)}</p>
-                  <p>Available Budget: {formatCurrency(currencyCode, availableAmount)}</p>
+                  <p>Truly Available: {formatCurrency(currencyCode, trulyAvailableAmount)}</p>
+                  <p>Current Utilization: {budgetItem?.utilization_percentage?.toFixed(1)}%</p>
                   {requiresApproval && (
                     <p>Approval Threshold: {formatCurrency(currencyCode, budgetItem?.approval_required_threshold)}</p>
                   )}
                   {isEditing && <p>Previous Amount: {formatCurrency(currencyCode, currentExpenseAmount)}</p>}
+                  <p>
+                    After This Expense:{" "}
+                    {formatCurrency(currencyCode, trulyAvailableAmount - watchedAmount + currentExpenseAmount)}
+                  </p>
                 </div>
               </div>
             )}

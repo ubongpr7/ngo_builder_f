@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import {
   BarChart,
   Bar,
@@ -10,13 +11,26 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
+  AreaChart,
+  Area,
+  ComposedChart,
 } from "recharts"
-import { TrendingUp, Activity, Calendar, DollarSign, Target } from "lucide-react"
+import {
+  TrendingUp,
+  Activity,
+  Calendar,
+  DollarSign,
+  Target,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  BarChart3,
+  PieChartIcon,
+} from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
 
 interface BudgetItemAnalyticsProps {
@@ -35,11 +49,32 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
     })
 
     if (!acc[month]) {
-      acc[month] = { month, amount: 0, count: 0 }
+      acc[month] = {
+        month,
+        paid: 0,
+        approved: 0,
+        pending: 0,
+        total: 0,
+        count: 0,
+      }
     }
 
-    acc[month].amount += Number.parseFloat(expense.amount)
+    const amount = Number.parseFloat(expense.amount)
+    acc[month].total += amount
     acc[month].count += 1
+
+    switch (expense.status) {
+      case "paid":
+        acc[month].paid += amount
+        break
+      case "approved":
+        acc[month].approved += amount
+        break
+      case "pending":
+      case "draft":
+        acc[month].pending += amount
+        break
+    }
 
     return acc
   }, {})
@@ -48,65 +83,135 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
     (a: any, b: any) => new Date(a.month).getTime() - new Date(b.month).getTime(),
   )
 
-  // Process expenses by type
+  // Process expenses by type and status
   const expensesByType = expenses.reduce((acc, expense) => {
     const type = expense.expense_type || "other"
 
     if (!acc[type]) {
-      acc[type] = { type, amount: 0, count: 0 }
+      acc[type] = {
+        type,
+        paid: 0,
+        approved: 0,
+        pending: 0,
+        rejected: 0,
+        total: 0,
+        count: 0,
+      }
     }
 
-    acc[type].amount += Number.parseFloat(expense.amount)
+    const amount = Number.parseFloat(expense.amount)
+    acc[type].total += amount
     acc[type].count += 1
+    acc[type][expense.status] = (acc[type][expense.status] || 0) + amount
 
     return acc
   }, {})
 
   const typeData = Object.values(expensesByType)
 
-  // Calculate trends
-  const totalSpent = Number.parseFloat(budgetItem.spent_amount || "0")
+  // Calculate comprehensive metrics
   const totalBudget = Number.parseFloat(budgetItem.budgeted_amount || "0")
-  const utilization = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0
+  const spentAmount = Number.parseFloat(budgetItem.spent_amount || "0")
+  const committedAmount = Number.parseFloat(budgetItem.committed_amount || "0")
+  const pendingAmount = Number.parseFloat(budgetItem.pending_amount || "0")
+  const approvedAmount = Number.parseFloat(budgetItem.approved_amount || "0")
+  const trulyAvailable = Number.parseFloat(budgetItem.truly_available_amount || "0")
 
-  const averageExpenseAmount = expenses.length > 0 ? totalSpent / expenses.length : 0
+  const spentPercentage = budgetItem.spent_percentage || 0
+  const committedPercentage = budgetItem.committed_percentage || 0
+  const utilizationPercentage = budgetItem.utilization_percentage || 0
+
+  // Budget breakdown data for pie chart
+  const budgetBreakdown = [
+    { name: "Spent", value: spentAmount, color: "#ef4444" },
+    { name: "Approved", value: approvedAmount, color: "#3b82f6" },
+    { name: "Pending", value: pendingAmount, color: "#f59e0b" },
+    { name: "Available", value: trulyAvailable, color: "#10b981" },
+  ].filter((item) => item.value > 0)
+
+  // Status distribution
+  const statusCounts = expenses.reduce((acc, expense) => {
+    acc[expense.status] = (acc[expense.status] || 0) + 1
+    return acc
+  }, {})
+
+  const statusData = Object.entries(statusCounts).map(([status, count]) => ({
+    status,
+    count,
+    percentage: ((count as number) / expenses.length) * 100,
+  }))
+
+  // Utilization trend data
+  const utilizationTrend = monthlyData.map((month: any) => ({
+    ...month,
+    cumulativeSpent: monthlyData
+      .filter((m: any) => new Date(m.month) <= new Date(month.month))
+      .reduce((sum: number, m: any) => sum + m.paid, 0),
+    utilizationRate:
+      totalBudget > 0
+        ? (monthlyData
+            .filter((m: any) => new Date(m.month) <= new Date(month.month))
+            .reduce((sum: number, m: any) => sum + m.paid, 0) /
+            totalBudget) *
+          100
+        : 0,
+  }))
 
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"]
 
+  const getHealthColor = (percentage: number) => {
+    if (percentage >= 100) return "text-red-600"
+    if (percentage >= 90) return "text-orange-600"
+    if (percentage >= 75) return "text-yellow-600"
+    return "text-green-600"
+  }
+
+  const getHealthIcon = (status: string) => {
+    switch (status) {
+      case "OVER_BUDGET":
+      case "OVERCOMMITTED":
+        return <AlertTriangle className="h-5 w-5 text-red-500" />
+      case "CRITICAL":
+      case "AT_RISK":
+        return <AlertTriangle className="h-5 w-5 text-orange-500" />
+      case "WARNING":
+      case "CAUTION":
+        return <Clock className="h-5 w-5 text-yellow-500" />
+      default:
+        return <CheckCircle className="h-5 w-5 text-green-500" />
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <CheckCircle className="h-5 w-5 text-green-500" />
+      case "approved":
+        return <CheckCircle className="h-5 w-5 text-blue-500" />
+      case "pending":
+      case "draft":
+        return <Clock className="h-5 w-5 text-yellow-500" />
+      case "rejected":
+        return <AlertTriangle className="h-5 w-5 text-red-500" />
+      default:
+        return <Clock className="h-5 w-5 text-gray-500" />
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Enhanced Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Expenses</p>
-                <p className="text-2xl font-bold">{expenses.length}</p>
-              </div>
-              <Activity className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Average Expense</p>
-                <p className="text-2xl font-bold">{formatCurrency(currencyCode, averageExpenseAmount)}</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Utilization Rate</p>
-                <p className="text-2xl font-bold">{utilization}%</p>
+                <p className="text-sm font-medium text-gray-600">Budget Health</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {getHealthIcon(budgetItem.budget_health)}
+                  <span className="text-lg font-bold">{budgetItem.budget_health}</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">{utilizationPercentage.toFixed(1)}% utilized</p>
               </div>
               <Target className="h-8 w-8 text-purple-500" />
             </div>
@@ -117,75 +222,109 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Burn Rate</p>
-                <p className="text-2xl font-bold">
-                  {expenses.length > 0 ? (totalSpent / expenses.length) : "0"}
-                </p>
-                <p className="text-sm text-gray-600">per expense</p>
+                <p className="text-sm font-medium text-gray-600">Spent Amount</p>
+                <p className="text-2xl font-bold">{formatCurrency(currencyCode, spentAmount)}</p>
+                <p className={`text-sm ${getHealthColor(spentPercentage)}`}>{spentPercentage.toFixed(1)}% of budget</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-500" />
+              <CreditCard className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Committed Amount</p>
+                <p className="text-2xl font-bold">{formatCurrency(currencyCode, committedAmount)}</p>
+                <p className={`text-sm ${getHealthColor(committedPercentage)}`}>
+                  {committedPercentage.toFixed(1)}% committed
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Truly Available</p>
+                <p className="text-2xl font-bold">{formatCurrency(currencyCode, trulyAvailable)}</p>
+                <p className="text-sm text-gray-500">After all obligations</p>
+              </div>
+              <DollarSign className="h-8 w-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Spending Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Monthly Spending Trend
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {monthlyData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Amount"]} />
-                  <Line type="monotone" dataKey="amount" stroke="#3b82f6" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No expense data available</p>
-                  <p className="text-sm">Add expenses to see trends</p>
-                </div>
+      {/* Budget Utilization Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Budget Utilization Breakdown
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Spent ({spentPercentage.toFixed(1)}%)</span>
+                <span>{formatCurrency(currencyCode, spentAmount)}</span>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <Progress value={spentPercentage} className="h-2" />
+            </div>
 
-        {/* Expenses by Type */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Committed ({committedPercentage.toFixed(1)}%)</span>
+                <span>{formatCurrency(currencyCode, committedAmount)}</span>
+              </div>
+              <Progress value={committedPercentage} className="h-2" />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Total Utilization ({utilizationPercentage.toFixed(1)}%)</span>
+                <span>{formatCurrency(currencyCode, committedAmount + pendingAmount)}</span>
+              </div>
+              <Progress value={utilizationPercentage} className="h-2" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Budget Breakdown Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Expenses by Type
+              <PieChartIcon className="h-5 w-5" />
+              Budget Breakdown
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {typeData.length > 0 ? (
+            {budgetBreakdown.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={typeData}
+                    data={budgetBreakdown}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ type, percent }) => `${type}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, value, percent }) =>
+                      `${name}: ${formatCurrency(currencyCode, value)} (${(percent * 100).toFixed(0)}%)`
+                    }
                     outerRadius={100}
                     fill="#8884d8"
-                    dataKey="amount"
+                    dataKey="value"
                   >
-                    {typeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {budgetBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Amount"]} />
@@ -194,40 +333,82 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
-                  <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No expense data available</p>
-                  <p className="text-sm">Add expenses to see breakdown</p>
+                  <PieChartIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No budget data available</p>
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Expense Volume by Month */}
+        {/* Monthly Spending Trend */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Expense Volume by Month
+              Monthly Spending Trend
             </CardTitle>
           </CardHeader>
           <CardContent>
             {monthlyData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}>
+                <ComposedChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#10b981" />
-                </BarChart>
+                  <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Amount"]} />
+                  <Bar dataKey="paid" fill="#10b981" name="Paid" />
+                  <Bar dataKey="approved" fill="#3b82f6" name="Approved" />
+                  <Bar dataKey="pending" fill="#f59e0b" name="Pending" />
+                </ComposedChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p>No expense data available</p>
-                  <p className="text-sm">Add expenses to see volume</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Utilization Trend */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Utilization Trend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {utilizationTrend.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={utilizationTrend}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value: any, name: string) => [
+                      name === "utilizationRate" ? `${value.toFixed(1)}%` : formatCurrency(currencyCode, value),
+                      name === "utilizationRate" ? "Utilization Rate" : "Cumulative Spent",
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="utilizationRate"
+                    stroke="#8b5cf6"
+                    fill="#8b5cf6"
+                    fillOpacity={0.3}
+                    name="Utilization Rate"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No utilization data available</p>
                 </div>
               </div>
             )}
@@ -238,8 +419,8 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Expense Type Breakdown
+              <BarChart3 className="h-5 w-5" />
+              Expense Type Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -250,15 +431,16 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                   <XAxis dataKey="type" />
                   <YAxis />
                   <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Amount"]} />
-                  <Bar dataKey="amount" fill="#f59e0b" />
+                  <Bar dataKey="paid" fill="#10b981" name="Paid" />
+                  <Bar dataKey="approved" fill="#3b82f6" name="Approved" />
+                  <Bar dataKey="pending" fill="#f59e0b" name="Pending" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
-                  <DollarSign className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No expense data available</p>
-                  <p className="text-sm">Add expenses to see breakdown</p>
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No expense type data available</p>
                 </div>
               </div>
             )}
@@ -266,44 +448,70 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Recent Expense Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {expenses.length > 0 ? (
+      {/* Enhanced Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Financial Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Financial Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
-              {expenses
-                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                .slice(0, 5)
-                .map((expense) => (
-                  <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{expense.title}</p>
-                      <p className="text-sm text-gray-600">
-                        {expense.expense_type} • {new Date(expense.expense_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{formatCurrency(currencyCode, expense.amount)}</p>
-                      <Badge variant="outline">{expense.status}</Badge>
-                    </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Total Budget</span>
+                <span className="font-medium">{formatCurrency(currencyCode, totalBudget)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Spent Amount</span>
+                <span className="font-medium text-green-600">{formatCurrency(currencyCode, spentAmount)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Committed Amount</span>
+                <span className="font-medium text-blue-600">{formatCurrency(currencyCode, committedAmount)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Pending Amount</span>
+                <span className="font-medium text-yellow-600">{formatCurrency(currencyCode, pendingAmount)}</span>
+              </div>
+              <div className="flex justify-between items-center border-t pt-2">
+                <span className="text-sm font-medium">Truly Available</span>
+                <span className="font-bold text-orange-600">{formatCurrency(currencyCode, trulyAvailable)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Status Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Expense Status Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {statusData.map((status) => (
+                <div key={status.status} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(status.status)}
+                    <span className="text-sm capitalize">{status.status.replace("_", " ")}</span>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{status.count}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {status.percentage.toFixed(0)}%
+                    </Badge>
+                  </div>
+                </div>
+              ))}
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <p>No recent activity</p>
-              <p className="text-sm">Expense activity will appear here</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
