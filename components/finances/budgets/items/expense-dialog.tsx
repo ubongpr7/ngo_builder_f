@@ -147,7 +147,6 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
         expense_date: format(data.expense_date, "yyyy-MM-dd"),
         vendor: data.vendor || "",
         notes: data.notes || "",
-        currency_id: budgetItem.budget?.currency?.id,
         status: requiresApproval ? "pending" : "draft",
       }
 
