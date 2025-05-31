@@ -329,7 +329,7 @@ export default function BudgetItemDetailPage() {
         <TabsList>
           <TabsTrigger value="expenses" className="gap-2">
             <FileText className="h-4 w-4" />
-            Expenses ({budgetItem.expenses_count || 0})
+            Expenses ({budgetItem.expenses?.length || 0})
           </TabsTrigger>
           <TabsTrigger value="overview" className="gap-2">
             <Target className="h-4 w-4" />
