@@ -107,7 +107,6 @@ export default function BudgetItemDetailPage() {
   const handleDialogSuccess = () => {
     refetchBudgetItem()
     refetchExpenses()
-    // Don't close dialog here, let the dialog handle it
   }
 
   const getStatusColor = (utilization: number) => {
@@ -344,7 +343,7 @@ export default function BudgetItemDetailPage() {
 
         <TabsContent value="expenses">
           <ExpensesList
-            expenses={expenses?.results || []}
+            expenses={expenses || []}
             isLoading={expensesLoading}
             onEditExpense={handleEditExpense}
             onAddExpense={handleAddExpense}
@@ -357,7 +356,7 @@ export default function BudgetItemDetailPage() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <BudgetItemAnalytics budgetItem={budgetItem} expenses={expenses?.results || []} />
+          <BudgetItemAnalytics budgetItem={budgetItem} expenses={expenses || []} />
         </TabsContent>
       </Tabs>
 
