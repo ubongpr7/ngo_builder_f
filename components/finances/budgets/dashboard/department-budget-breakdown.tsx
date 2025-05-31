@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Select from "react-select"
 import {
   BarChart,
   Bar,
@@ -21,34 +23,9 @@ import {
   PolarRadiusAxis,
   Radar,
 } from "recharts"
-import { Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Activity } from "lucide-react"
+import { Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Activity, Coins } from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
 import { useGetDepartmentalBreakdownQuery } from "@/redux/features/finance/budgets"
-
-interface DepartmentData {
-  department__name: string
-  department__id: number
-  count: number
-  total_amount: number
-  spent_amount: number
-  avg_utilization: number
-}
-
-interface CurrencyStatistics {
-  summary: {
-    currency_code: string
-    currency_name: string
-    total_budgets: number
-    total_allocated: number
-    total_spent: number
-    avg_utilization: number
-  }
-  by_department: DepartmentData[]
-}
-
-interface MultiCurrencyStatistics {
-  currencies: Record<string, CurrencyStatistics>
-}
 
 interface DepartmentBudgetBreakdownProps {
   queryParams: Record<string, any>
@@ -90,8 +67,47 @@ const calculateEfficiency = (utilization: number, budgetCount: number): number =
   return Math.round(utilizationScore * 0.7 + budgetCountScore * 0.3)
 }
 
+function getStatusColor(status: string) {
+  switch (status) {
+    case "healthy":
+      return "#10b981"
+    case "warning":
+      return "#f59e0b"
+    case "critical":
+      return "#ef4444"
+    case "underutilized":
+      return "#6b7280"
+    default:
+      return "#3b82f6"
+  }
+}
+
+function getStatusIcon(status: string) {
+  switch (status) {
+    case "healthy":
+      return <CheckCircle className="h-4 w-4 text-green-500" />
+    case "warning":
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+    case "critical":
+      return <AlertTriangle className="h-4 w-4 text-red-500" />
+    case "underutilized":
+      return <TrendingDown className="h-4 w-4 text-gray-500" />
+    default:
+      return <Activity className="h-4 w-4 text-blue-500" />
+  }
+}
+
+function getTrendIcon(utilization: number) {
+  if (utilization >= 85) return <TrendingUp className="h-4 w-4 text-green-500" />
+  if (utilization < 50) return <TrendingDown className="h-4 w-4 text-red-500" />
+  return <Activity className="h-4 w-4 text-gray-500" />
+}
+
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
+
 export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoading }: DepartmentBudgetBreakdownProps) {
   const { data: departmentalData, isLoading: deptLoading } = useGetDepartmentalBreakdownQuery(queryParams)
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
 
   const isLoading = parentLoading || deptLoading
 
@@ -144,8 +160,37 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
     )
   }
 
+  // Group departments by currency
+  const departmentsByCurrency: Record<string, any[]> = {}
+
+  departmentalAnalytics.forEach((analytics) => {
+    const currencyCode = analytics.department_info.currency_code
+    if (!departmentsByCurrency[currencyCode]) {
+      departmentsByCurrency[currencyCode] = []
+    }
+    departmentsByCurrency[currencyCode].push(analytics)
+  })
+
+  // Get available currencies
+  const availableCurrencies = Object.keys(departmentsByCurrency)
+
+  // Set default selected currency if not already set
+  if (!selectedCurrency && availableCurrencies.length > 0) {
+    setSelectedCurrency(availableCurrencies[0])
+  }
+
+  // Create currency options for dropdown
+  const currencyOptions = availableCurrencies.map((currency) => ({
+    value: currency,
+    label: `${currency} (${departmentsByCurrency[currency].length} departments)`,
+  }))
+
+  // Process department data for the selected currency
+  const currentCurrency = selectedCurrency || availableCurrencies[0]
+  const currentDepartments = departmentsByCurrency[currentCurrency] || []
+
   // Process department data for display
-  const processedDepartments = departmentalAnalytics.map((analytics:any) => {
+  const processedDepartments = currentDepartments.map((analytics) => {
     const dept = analytics.department_info
     const summary = analytics.summary
     const risk = analytics.risk_assessment
@@ -177,7 +222,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   // Sort by total budget (descending)
   processedDepartments.sort((a, b) => b.totalBudget - a.totalBudget)
 
-  // Prepare chart data
+  // Prepare chart data for the selected currency
   const chartData = processedDepartments.map((dept) => ({
     name: dept.code,
     budget: dept.totalBudget,
@@ -200,48 +245,37 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
       dept.status === "healthy" ? 100 : dept.status === "warning" ? 70 : dept.status === "critical" ? 40 : 60,
   }))
 
-  const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
-
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "healthy":
-        return "#10b981"
-      case "warning":
-        return "#f59e0b"
-      case "critical":
-        return "#ef4444"
-      case "underutilized":
-        return "#6b7280"
-      default:
-        return "#3b82f6"
-    }
-  }
-
-  function getStatusIcon(status: string) {
-    switch (status) {
-      case "healthy":
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case "warning":
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      case "critical":
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
-      case "underutilized":
-        return <TrendingDown className="h-4 w-4 text-gray-500" />
-      default:
-        return <Activity className="h-4 w-4 text-blue-500" />
-    }
-  }
-
-  function getTrendIcon(utilization: number) {
-    if (utilization >= 85) return <TrendingUp className="h-4 w-4 text-green-500" />
-    if (utilization < 50) return <TrendingDown className="h-4 w-4 text-red-500" />
-    return <Activity className="h-4 w-4 text-gray-500" />
-  }
-
   return (
     <div className="space-y-6">
+      {/* Currency Selector */}
+      {availableCurrencies.length > 1 && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-blue-900">Department Budget Analysis</h3>
+            <Badge variant="outline">{availableCurrencies.length} currencies</Badge>
+          </div>
+
+          <div className="w-full md:w-64">
+            <Select
+              value={currencyOptions.find((option) => option.value === currentCurrency)}
+              onChange={(option) => setSelectedCurrency(option?.value || availableCurrencies[0])}
+              options={currencyOptions}
+              className="w-full"
+              placeholder="Select currency"
+              formatOptionLabel={(option) => (
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4" />
+                  <span>{option.value}</span>
+                </div>
+              )}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Department Overview Cards */}
-      <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {processedDepartments.map((dept) => (
           <Card key={dept.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
@@ -317,17 +351,17 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
         <TabsContent value="comparison" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Department Budget vs Spending Comparison</CardTitle>
+              <CardTitle>Department Budget vs Spending Comparison ({currentCurrency})</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatCurrency("USD", value)} />
+                  <YAxis tickFormatter={(value) => formatCurrency(currentCurrency, value)} />
                   <Tooltip
                     formatter={(value: any, name: string) => [
-                      formatCurrency("USD", value),
+                      formatCurrency(currentCurrency, value),
                       name === "budget" ? "Budget" : "Spent",
                     ]}
                   />
@@ -342,7 +376,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
         <TabsContent value="distribution" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Budget Distribution by Department</CardTitle>
+              <CardTitle>Budget Distribution by Department ({currentCurrency})</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -361,7 +395,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [formatCurrency("USD", value), "Budget"]} />
+                  <Tooltip formatter={(value: any) => [formatCurrency(currentCurrency, value), "Budget"]} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -371,7 +405,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
         <TabsContent value="performance" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Department Performance Radar</CardTitle>
+              <CardTitle>Department Performance Radar ({currentCurrency})</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -392,7 +426,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
         <TabsContent value="allocation" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Budget Allocation Map</CardTitle>
+              <CardTitle>Budget Allocation Map ({currentCurrency})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-12 grid-rows-8 gap-1 h-96">
