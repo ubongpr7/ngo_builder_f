@@ -6,20 +6,7 @@ const backend = "finance_api"
 export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all organizational expenses
-    getOrganizationalExpenses: builder.query<
-      PaginatedResponse<OrganizationalExpense>,
-      {
-        status?: string
-        expense_type?: string
-        budget_item?: number
-        currency?: number
-        submitted_by?: number
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getOrganizationalExpenses: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
@@ -45,14 +32,7 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create organizational expense
-    createOrganizationalExpense: builder.mutation<
-      OrganizationalExpense,
-      Partial<OrganizationalExpense> & {
-        currency_id: number
-        budget_item_id?: number
-        approved_by_id?: number
-      }
-    >({
+    createOrganizationalExpense: builder.mutation({
       query: (expense) => ({
         url: `/${backend}/organizational-expenses/`,
         method: "POST",
@@ -61,17 +41,7 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Update organizational expense
-    updateOrganizationalExpense: builder.mutation<
-      OrganizationalExpense,
-      {
-        id: number
-        data: Partial<OrganizationalExpense> & {
-          currency_id?: number
-          budget_item_id?: number
-          approved_by_id?: number
-        }
-      }
-    >({
+    updateOrganizationalExpense: builder.mutation({
       query: ({ id, data }) => ({
         url: `/${backend}/organizational-expenses/${id}/`,
         method: "PATCH",
@@ -80,7 +50,7 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Delete organizational expense
-    deleteOrganizationalExpense: builder.mutation<void, number>({
+    deleteOrganizationalExpense: builder.mutation({
       query: (id) => ({
         url: `/${backend}/organizational-expenses/${id}/`,
         method: "DELETE",
@@ -88,7 +58,7 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Approve expense
-    approveOrganizationalExpense: builder.mutation<OrganizationalExpense, number>({
+    approveOrganizationalExpense: builder.mutation({
       query: (id) => ({
         url: `/${backend}/organizational-expenses/${id}/approve/`,
         method: "POST",
@@ -96,13 +66,7 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Reject expense
-    rejectOrganizationalExpense: builder.mutation<
-      OrganizationalExpense,
-      {
-        id: number
-        reason?: string
-      }
-    >({
+    rejectOrganizationalExpense: builder.mutation({
       query: ({ id, reason }) => ({
         url: `/${backend}/organizational-expenses/${id}/reject/`,
         method: "POST",
@@ -111,18 +75,8 @@ export const organizationalExpensesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Mark as paid
-    markOrganizationalExpensePaid: builder.mutation<
-      {
-        message: string
-        status: string
-      },
-      {
-        id: number
-        account_id?: number
-        reference?: string
-      }
-    >({
-      query: ({ id, ...data }) => ({
+    markOrganizationalExpensePaid: builder.mutation({
+      query: ({ id, data }) => ({
         url: `/${backend}/organizational-expenses/${id}/mark_paid/`,
         method: "POST",
         body: data,
