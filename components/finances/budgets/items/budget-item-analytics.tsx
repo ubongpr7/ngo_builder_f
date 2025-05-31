@@ -119,7 +119,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
               <div>
                 <p className="text-sm font-medium text-gray-600">Burn Rate</p>
                 <p className="text-2xl font-bold">
-                  {expenses.length > 0 ? (totalSpent / expenses.length).toFixed(0) : "0"}
+                  {expenses.length > 0 ? (totalSpent / expenses.length) : "0"}
                 </p>
                 <p className="text-sm text-gray-600">per expense</p>
               </div>
