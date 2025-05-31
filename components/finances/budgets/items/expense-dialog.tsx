@@ -266,7 +266,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
                   <div>
                     <span className="text-gray-600">Committed:</span>
                     <p className="font-medium text-blue-600">{formatCurrency(currencyCode, committedAmount)}</p>
-                    <p className="text-xs text-gray-500">{budgetItem?.committed_percentage?.toFixed(1)}% of budget</p>
+                    <p className="text-xs text-gray-500">{budgetItem?.committed_percentage}% of budget</p>
                   </div>
                   <div>
                     <span className="text-gray-600">Pending Requests:</span>
@@ -540,7 +540,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense = null, 
                 >
                   <p>Expense Amount: {formatCurrency(currencyCode, watchedAmount)}</p>
                   <p>Truly Available: {formatCurrency(currencyCode, trulyAvailableAmount)}</p>
-                  <p>Current Utilization: {budgetItem?.utilization_percentage?.toFixed(1)}%</p>
+                  <p>Current Utilization: {budgetItem?.utilization_percentage}%</p>
                   {requiresApproval && (
                     <p>Approval Threshold: {formatCurrency(currencyCode, budgetItem?.approval_required_threshold)}</p>
                   )}
