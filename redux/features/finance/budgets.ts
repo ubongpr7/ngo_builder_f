@@ -34,6 +34,34 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
         return `/${backend}/budgets/departmental_breakdown/${queryString ? `?${queryString}` : ""}`
       },
     }),
+    getBudgetUtilizationMatrix: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/budgets/utilization_matrix/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
+    getBudgetStatistics: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/budgets/statistics/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
 
     // Get budget by ID
     getBudgetById: builder.query<Budget, number>({
@@ -140,15 +168,15 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Get budget statistics
-    getBudgetStatistics: builder.query({
-      query: () => `/${backend}/budgets/statistics/`,
-    }),
+    
   }),
 })
 
 export const {
   useGetBudgetsQuery,
   useGetDepartmentalBreakdownQuery,
+  useGetBudgetUtilizationMatrixQuery,
+  useGetBudgetStatisticsQuery,
   useGetBudgetByIdQuery,
   useCreateBudgetMutation,
   useUpdateBudgetMutation,
@@ -158,7 +186,6 @@ export const {
   useActivateBudgetMutation,
   useCheckBudgetUtilizationMutation,
   useAddBudgetFundingMutation,
-  useGetBudgetUtilizationQuery,
-  useGetBudgetStatisticsQuery,
   useUpateBudgetFundingMutation,
+  useGetBudgetUtilizationQuery,
 } = budgetsApiSlice

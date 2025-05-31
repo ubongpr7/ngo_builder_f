@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import Select from "react-select"
 import {
   ScatterChart,
   Scatter,
@@ -19,125 +21,203 @@ import {
   BarChart,
   Bar,
 } from "recharts"
-import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Clock, Target, Activity, Zap, Eye } from "lucide-react"
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Target,
+  Activity,
+  Zap,
+  Eye,
+  Coins,
+} from "lucide-react"
+import { formatCurrency } from "@/lib/currency-utils"
+import { useGetBudgetUtilizationMatrixQuery } from "@/redux/features/finance/budgets"
+
+// Type definitions
+interface CurrencyInfo {
+  id: number
+  code: string
+  name: string
+}
+
+interface UtilizationSummary {
+  total_budgets: number
+  avg_utilization: number
+  avg_efficiency: number
+  avg_velocity: number
+  high_risk_count: number
+}
+
+interface UtilizationItem {
+  id: number
+  name: string
+  type: string
+  department: string
+  allocated: number
+  spent: number
+  remaining: number
+  utilization: number
+  efficiency: number
+  velocity: number
+  days_remaining: number | null
+  status: "healthy" | "warning" | "critical" | "underutilized"
+  trend: "up" | "down" | "stable"
+  risk_score: number
+  start_date: string | null
+  end_date: string | null
+  fiscal_year: number
+}
+
+interface ScatterDataItem {
+  x: number
+  y: number
+  z: number
+  name: string
+  status: string
+  risk_score: number
+}
+
+interface RiskMatrixItem {
+  name: string
+  utilization: number
+  risk_score: number
+  status: string
+}
+
+interface VelocityDataItem {
+  name: string
+  velocity: number
+  utilization: number
+  efficiency: number
+  index: number
+}
+
+interface CurrencyUtilizationData {
+  currency_info: CurrencyInfo
+  summary: UtilizationSummary
+  utilization_data: UtilizationItem[]
+  scatter_data: ScatterDataItem[]
+  risk_matrix: RiskMatrixItem[]
+  velocity_data: VelocityDataItem[]
+}
+
+interface MultiCurrencyUtilizationData {
+  currencies: Record<string, CurrencyUtilizationData>
+  generated_at: string
+  filters_applied: Record<string, any>
+  error?: string
+}
 
 interface BudgetUtilizationMatrixProps {
-  budgets: any[]
+  queryParams: Record<string, any>
   isLoading: boolean
 }
 
-export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizationMatrixProps) {
-  // Mock utilization data - replace with real calculations
-  const utilizationData = [
-    {
-      id: 1,
-      name: "Emergency Relief Fund",
-      type: "Emergency",
-      allocated: 500000,
-      spent: 425000,
-      utilization: 85,
-      efficiency: 92,
-      velocity: 15000, // spending per day
-      daysRemaining: 45,
-      status: "healthy",
-      trend: "stable",
-      riskScore: 25,
-    },
-    {
-      id: 2,
-      name: "Education Program 2024",
-      type: "Program",
-      allocated: 750000,
-      spent: 675000,
-      utilization: 90,
-      efficiency: 88,
-      velocity: 12000,
-      daysRemaining: 30,
-      status: "warning",
-      trend: "up",
-      riskScore: 65,
-    },
-    {
-      id: 3,
-      name: "Healthcare Initiative",
-      type: "Program",
-      allocated: 1200000,
-      spent: 840000,
-      utilization: 70,
-      efficiency: 95,
-      velocity: 18000,
-      daysRemaining: 60,
-      status: "healthy",
-      trend: "up",
-      riskScore: 20,
-    },
-    {
-      id: 4,
-      name: "Administrative Operations",
-      type: "Operational",
-      allocated: 300000,
-      spent: 285000,
-      utilization: 95,
-      efficiency: 78,
-      velocity: 8000,
-      daysRemaining: 15,
-      status: "critical",
-      trend: "up",
-      riskScore: 85,
-    },
-    {
-      id: 5,
-      name: "Research & Development",
-      type: "Project",
-      allocated: 400000,
-      spent: 200000,
-      utilization: 50,
-      efficiency: 96,
-      velocity: 5000,
-      daysRemaining: 120,
-      status: "underutilized",
-      trend: "down",
-      riskScore: 15,
-    },
-    {
-      id: 6,
-      name: "Marketing Campaign Q1",
-      type: "Marketing",
-      allocated: 150000,
-      spent: 135000,
-      utilization: 90,
-      efficiency: 85,
-      velocity: 4500,
-      daysRemaining: 20,
-      status: "warning",
-      trend: "stable",
-      riskScore: 55,
-    },
-  ]
+interface CurrencyOption {
+  value: string
+  label: string
+}
 
-  const scatterData = utilizationData.map((budget) => ({
-    x: budget.utilization,
-    y: budget.efficiency,
-    z: budget.allocated / 10000, // Size of bubble
-    name: budget.name,
-    status: budget.status,
-    riskScore: budget.riskScore,
-  }))
+export function BudgetUtilizationMatrix({ queryParams, isLoading: parentLoading }: BudgetUtilizationMatrixProps) {
+  const { data: utilizationData, isLoading: dataLoading, error } = useGetBudgetUtilizationMatrixQuery(queryParams)
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
 
-  const velocityData = utilizationData.map((budget, index) => ({
-    name: budget.name.substring(0, 15) + "...",
-    velocity: budget.velocity,
-    utilization: budget.utilization,
-    efficiency: budget.efficiency,
-    index,
-  }))
+  const isLoading = parentLoading || dataLoading
 
-  const riskMatrix = utilizationData.map((budget) => ({
-    name: budget.name,
-    utilization: budget.utilization,
-    riskScore: budget.riskScore,
-    status: budget.status,
-  }))
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-64 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !utilizationData) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+            <p>Error loading utilization data</p>
+            <p className="text-sm">Please try again later</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Handle both single currency and multi-currency data
+  let currencyData: CurrencyUtilizationData | null = null
+  let availableCurrencies: string[] = []
+  let currencyOptions: CurrencyOption[] = []
+
+  if ("currencies" in utilizationData) {
+    // Multi-currency data
+    const multiCurrencyData = utilizationData as MultiCurrencyUtilizationData
+    availableCurrencies = Object.keys(multiCurrencyData.currencies || {})
+
+    if (availableCurrencies.length === 0) {
+      return (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-muted-foreground">
+              <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p>No utilization data available</p>
+              <p className="text-sm">Create budgets to see utilization metrics</p>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    // Set default selected currency if not already set
+    if (!selectedCurrency && availableCurrencies.length > 0) {
+      setSelectedCurrency(availableCurrencies[0])
+    }
+
+    const currentCurrency = selectedCurrency || availableCurrencies[0]
+    currencyData = multiCurrencyData.currencies[currentCurrency]
+
+    // Create currency options for dropdown
+    currencyOptions = availableCurrencies.map((currencyId) => {
+      const currency = multiCurrencyData.currencies[currencyId].currency_info
+      return {
+        value: currencyId,
+        label: `${currency.code} (${multiCurrencyData.currencies[currencyId].summary.total_budgets} budgets)`,
+      }
+    })
+  } else {
+    // Single currency data
+    currencyData = utilizationData as CurrencyUtilizationData
+  }
+
+  if (!currencyData) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p>No utilization data available</p>
+            <p className="text-sm">Create budgets to see utilization metrics</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const { summary, utilization_data, scatter_data, risk_matrix, velocity_data, currency_info } = currencyData
+  const currencyCode = currency_info.code
 
   function getStatusColor(status: string) {
     switch (status) {
@@ -186,24 +266,40 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
     return { level: "Low", color: "default" }
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-64 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
+  // Handle currency selection change
+  const handleCurrencyChange = (option: CurrencyOption | null): void => {
+    setSelectedCurrency(option?.value || availableCurrencies[0])
   }
 
   return (
     <div className="space-y-6">
+      {/* Currency Selector */}
+      {availableCurrencies.length > 1 && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-blue-900">Budget Utilization Analysis</h3>
+            <Badge variant="outline">{availableCurrencies.length} currencies</Badge>
+          </div>
+
+          <div className="w-full md:w-64">
+            <Select<CurrencyOption>
+              value={currencyOptions.find((option) => option.value === selectedCurrency)}
+              onChange={handleCurrencyChange}
+              options={currencyOptions}
+              className="w-full"
+              placeholder="Select currency"
+              formatOptionLabel={(option) => (
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4" />
+                  <span>{option.label}</span>
+                </div>
+              )}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Utilization Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
@@ -211,9 +307,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-blue-600">Avg Utilization</p>
-                <p className="text-3xl font-bold text-blue-900">
-                  {Math.round(utilizationData.reduce((acc, b) => acc + b.utilization, 0) / utilizationData.length)}%
-                </p>
+                <p className="text-3xl font-bold text-blue-900">{summary.avg_utilization}%</p>
               </div>
               <Target className="h-8 w-8 text-blue-500" />
             </div>
@@ -225,9 +319,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600">Avg Efficiency</p>
-                <p className="text-3xl font-bold text-green-900">
-                  {Math.round(utilizationData.reduce((acc, b) => acc + b.efficiency, 0) / utilizationData.length)}%
-                </p>
+                <p className="text-3xl font-bold text-green-900">{summary.avg_efficiency}%</p>
               </div>
               <Zap className="h-8 w-8 text-green-500" />
             </div>
@@ -239,9 +331,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-orange-600">High Risk</p>
-                <p className="text-3xl font-bold text-orange-900">
-                  {utilizationData.filter((b) => b.riskScore >= 70).length}
-                </p>
+                <p className="text-3xl font-bold text-orange-900">{summary.high_risk_count}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-orange-500" />
             </div>
@@ -254,8 +344,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
               <div>
                 <p className="text-sm font-medium text-purple-600">Avg Velocity</p>
                 <p className="text-3xl font-bold text-purple-900">
-                  ${Math.round(utilizationData.reduce((acc, b) => acc + b.velocity, 0) / utilizationData.length / 1000)}
-                  K/day
+                  {formatCurrency(currencyCode, summary.avg_velocity)}/day
                 </p>
               </div>
               <Activity className="h-8 w-8 text-purple-500" />
@@ -269,7 +358,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
         {/* Utilization vs Efficiency Scatter */}
         <Card>
           <CardHeader>
-            <CardTitle>Utilization vs Efficiency Matrix</CardTitle>
+            <CardTitle>Utilization vs Efficiency Matrix ({currencyCode})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -287,15 +376,15 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                           <p className="font-semibold">{data.name}</p>
                           <p>Utilization: {data.x}%</p>
                           <p>Efficiency: {data.y}%</p>
-                          <p>Risk Score: {data.riskScore}</p>
+                          <p>Risk Score: {data.risk_score}</p>
                         </div>
                       )
                     }
                     return null
                   }}
                 />
-                <Scatter name="Budgets" data={scatterData} fill="#3b82f6">
-                  {scatterData.map((entry, index) => (
+                <Scatter name="Budgets" data={scatter_data} fill="#3b82f6">
+                  {scatter_data.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getStatusColor(entry.status)} />
                   ))}
                 </Scatter>
@@ -307,15 +396,15 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
         {/* Spending Velocity */}
         <Card>
           <CardHeader>
-            <CardTitle>Spending Velocity Analysis</CardTitle>
+            <CardTitle>Spending Velocity Analysis ({currencyCode})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={velocityData}>
+              <BarChart data={velocity_data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
-                <Tooltip formatter={(value: any) => [`$${value}/day`, "Velocity"]} />
+                <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value) + "/day", "Velocity"]} />
                 <Bar dataKey="velocity" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
@@ -325,14 +414,14 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
         {/* Risk Assessment Matrix */}
         <Card>
           <CardHeader>
-            <CardTitle>Risk Assessment Matrix</CardTitle>
+            <CardTitle>Risk Assessment Matrix ({currencyCode})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid />
                 <XAxis type="number" dataKey="utilization" name="Utilization" unit="%" domain={[0, 100]} />
-                <YAxis type="number" dataKey="riskScore" name="Risk Score" domain={[0, 100]} />
+                <YAxis type="number" dataKey="risk_score" name="Risk Score" domain={[0, 100]} />
                 <Tooltip
                   cursor={{ strokeDasharray: "3 3" }}
                   content={({ active, payload }) => {
@@ -342,7 +431,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                         <div className="bg-white p-3 border rounded shadow-lg">
                           <p className="font-semibold">{data.name}</p>
                           <p>Utilization: {data.utilization}%</p>
-                          <p>Risk Score: {data.riskScore}</p>
+                          <p>Risk Score: {data.risk_score}</p>
                           <p>Status: {data.status}</p>
                         </div>
                       )
@@ -350,8 +439,8 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                     return null
                   }}
                 />
-                <Scatter name="Risk" data={riskMatrix} fill="#ef4444">
-                  {riskMatrix.map((entry, index) => (
+                <Scatter name="Risk" data={risk_matrix} fill="#ef4444">
+                  {risk_matrix.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getStatusColor(entry.status)} />
                   ))}
                 </Scatter>
@@ -363,11 +452,11 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
         {/* Utilization Trends */}
         <Card>
           <CardHeader>
-            <CardTitle>Utilization Efficiency Trends</CardTitle>
+            <CardTitle>Utilization Efficiency Trends ({currencyCode})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={velocityData}>
+              <LineChart data={velocity_data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
@@ -383,7 +472,7 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
       {/* Detailed Utilization Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Budget Utilization Details</CardTitle>
+          <CardTitle>Budget Utilization Details ({currencyCode})</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -403,16 +492,16 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
               </TableRow>
             </TableHeader>
             <TableBody>
-              {utilizationData.map((budget) => {
-                const risk = getRiskLevel(budget.riskScore)
+              {utilization_data.map((budget) => {
+                const risk = getRiskLevel(budget.risk_score)
                 return (
                   <TableRow key={budget.id}>
                     <TableCell className="font-medium">{budget.name}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{budget.type}</Badge>
                     </TableCell>
-                    <TableCell>${budget.allocated}</TableCell>
-                    <TableCell>${budget.spent}</TableCell>
+                    <TableCell>{formatCurrency(currencyCode, budget.allocated)}</TableCell>
+                    <TableCell>{formatCurrency(currencyCode, budget.spent)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={budget.utilization} className="w-16 h-2" />
@@ -428,13 +517,13 @@ export function BudgetUtilizationMatrix({ budgets, isLoading }: BudgetUtilizatio
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Activity className="h-4 w-4 text-blue-500" />
-                        <span>${(budget.velocity / 1000).toFixed(1)}K/day</span>
+                        <span>{formatCurrency(currencyCode, budget.velocity)}/day</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span>{budget.daysRemaining} days</span>
+                        <span>{budget.days_remaining ?? "N/A"} days</span>
                       </div>
                     </TableCell>
                     <TableCell>
