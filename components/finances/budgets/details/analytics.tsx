@@ -36,6 +36,7 @@ import {
   CheckCircle,
   XCircle,
   Info,
+  Lock,
 } from "lucide-react"
 import type { Budget } from "@/types/finance"
 import { formatCurrency, formatPercentage } from "@/lib/currency-utils"
@@ -45,6 +46,16 @@ import { Skeleton } from "@/components/ui/skeleton"
 interface BudgetInsightsProps {
   budget: Budget | null
   isLoading?: boolean
+}
+
+// Safe date formatting helper
+const safeFormatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "N/A"
+  try {
+    return formatDate(dateString)
+  } catch (e) {
+    return "Invalid Date"
+  }
 }
 
 // Define color palettes for consistent visualization
@@ -120,21 +131,34 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
 
     // Enhanced budget timeline analysis with projections
     const today = new Date()
-    const startDate = new Date(budget.start_date)
-    const endDate = new Date(budget.end_date)
+    const startDate = budget.start_date ? new Date(budget.start_date) : today
+    const endDate = budget.end_date ? new Date(budget.end_date) : today
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24))
     const elapsedDays = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24))
     const remainingDays = Math.max(0, totalDays - elapsedDays)
-    const progressPercentage = Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100))
+    const progressPercentage = Math.min(100, Math.max(0, (elapsedDays / Math.max(totalDays, 1)) * 100))
 
     // Enhanced burn rate analysis with projections
-    const idealBurnRate = Number.parseFloat(budget.total_amount) / totalDays
+    const idealBurnRate = Number.parseFloat(budget.total_amount) / Math.max(totalDays, 1)
     const actualBurnRate = Number.parseFloat(budget.spent_amount) / Math.max(elapsedDays, 1)
     const projectedSpend = actualBurnRate * totalDays
     const variance = projectedSpend - Number.parseFloat(budget.total_amount)
-    const projectedEndDate = new Date(
-      startDate.getTime() + (Number.parseFloat(budget.total_amount) / actualBurnRate) * 24 * 60 * 60 * 1000,
-    )
+
+    // Calculate projected end date safely
+    let projectedEndDate = null
+    if (actualBurnRate > 0) {
+      try {
+        projectedEndDate = new Date(
+          startDate.getTime() + (Number.parseFloat(budget.total_amount) / actualBurnRate) * 24 * 60 * 60 * 1000,
+        )
+        // Validate the date is valid
+        if (isNaN(projectedEndDate.getTime())) {
+          projectedEndDate = null
+        }
+      } catch (e) {
+        projectedEndDate = null
+      }
+    }
 
     // Enhanced monthly spending trend with analysis
     const monthlyTrend =
@@ -308,7 +332,7 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
               {budget.formatted_amount || formatCurrency(budget.currency?.code, budget.total_amount)}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {formatDate(budget.start_date)} - {formatDate(budget.end_date)}
+              {safeFormatDate(budget.start_date)} - {safeFormatDate(budget.end_date)}
             </p>
             <div className="mt-2 flex items-center gap-2">
               <Badge variant={budget.budget_health === "HEALTHY" ? "default" : "destructive"}>
@@ -1009,7 +1033,7 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
 
                           <div className="text-sm text-gray-600">
                             <div>Funding Type: {source.funding_type_display}</div>
-                            {source.allocation_date && <div>Allocated: {formatDate(source.allocation_date)}</div>}
+                            {source.allocation_date && <div>Allocated: {safeFormatDate(source.allocation_date)}</div>}
                           </div>
 
                           {source.notes && <p className="text-sm text-gray-600">{source.notes}</p>}
@@ -1603,7 +1627,7 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Budget Period</span>
                       <span className="text-sm text-gray-500">
-                        {formatDate(budget.start_date)} - {formatDate(budget.end_date)}
+                        {safeFormatDate(budget.start_date)} - {safeFormatDate(budget.end_date)}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4 relative">
@@ -1678,7 +1702,8 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium">Projected Completion</span>
                       <span className="text-sm">
-                        {processedData?.timeline.projectedEndDate
+                        {processedData?.timeline.projectedEndDate &&
+                        !isNaN(processedData.timeline.projectedEndDate.getTime())
                           ? formatDate(processedData.timeline.projectedEndDate.toISOString())
                           : "N/A"}
                       </span>
@@ -1709,14 +1734,14 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
                       <Calendar className="h-4 w-4 text-blue-500" />
                       <div>
                         <div className="text-sm font-medium">Budget Start</div>
-                        <div className="text-xs text-gray-500">{formatDate(budget.start_date)}</div>
+                        <div className="text-xs text-gray-500">{safeFormatDate(budget.start_date)}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <Calendar className="h-4 w-4 text-green-500" />
                       <div>
                         <div className="text-sm font-medium">Budget End</div>
-                        <div className="text-xs text-gray-500">{formatDate(budget.end_date)}</div>
+                        <div className="text-xs text-gray-500">{safeFormatDate(budget.end_date)}</div>
                       </div>
                     </div>
                     {budget.approved_at && (
@@ -1724,7 +1749,7 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
                         <CheckCircle className="h-4 w-4 text-purple-500" />
                         <div>
                           <div className="text-sm font-medium">Approved</div>
-                          <div className="text-xs text-gray-500">{formatDate(budget.approved_at)}</div>
+                          <div className="text-xs text-gray-500">{safeFormatDate(budget.approved_at)}</div>
                         </div>
                       </div>
                     )}
@@ -1734,7 +1759,10 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
                         <div>
                           <div className="text-sm font-medium">Projected Completion</div>
                           <div className="text-xs text-gray-500">
-                            {formatDate(processedData.timeline.projectedEndDate.toISOString())}
+                            {processedData?.timeline.projectedEndDate &&
+                            !isNaN(processedData.timeline.projectedEndDate.getTime())
+                              ? formatDate(processedData.timeline.projectedEndDate.toISOString())
+                              : "N/A"}
                           </div>
                         </div>
                       </div>
@@ -1964,9 +1992,9 @@ export function BudgetInsights({ budget, isLoading = false }: BudgetInsightsProp
 
                 {/* Projection Status */}
                 <div
-                  className="mt-4 p-3 rounded-lg border-l-4 ${
-                  processedData?.burnRate.isOverBudget ? 'bg-red-50 border-red-500' : 'bg-green-50 border-green-500'
-                }"
+                  className={`mt-4 p-3 rounded-lg border-l-4 ${
+                    processedData?.burnRate.isOverBudget ? "bg-red-50 border-red-500" : "bg-green-50 border-green-500"
+                  }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {processedData?.burnRate.isOverBudget ? (
