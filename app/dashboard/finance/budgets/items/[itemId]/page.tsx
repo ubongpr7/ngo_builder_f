@@ -34,7 +34,7 @@ import { BudgetItemAnalytics } from "@/components/finances/budgets/items/budget-
 export default function BudgetItemDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const budgetItemId = Number(params.id)
+  const budgetItemId = Number(params.itemId)
 
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showExpenseDialog, setShowExpenseDialog] = useState(false)
