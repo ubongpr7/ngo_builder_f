@@ -20,6 +20,20 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
         return `/${backend}/budgets/${queryString ? `?${queryString}` : ""}`
       },
     }),
+    getDepartmentalBreakdown: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/budgets/departmental_breakdown/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
 
     // Get budget by ID
     getBudgetById: builder.query<Budget, number>({
@@ -134,6 +148,7 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetBudgetsQuery,
+  useGetDepartmentalBreakdownQuery,
   useGetBudgetByIdQuery,
   useCreateBudgetMutation,
   useUpdateBudgetMutation,

@@ -23,6 +23,7 @@ import {
 } from "recharts"
 import { Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target, Activity } from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
+import { useGetDepartmentalBreakdownQuery } from "@/redux/features/finance/budgets"
 
 interface DepartmentData {
   department__name: string
@@ -50,7 +51,7 @@ interface MultiCurrencyStatistics {
 }
 
 interface DepartmentBudgetBreakdownProps {
-  statistics: CurrencyStatistics | MultiCurrencyStatistics | null
+  queryParams: Record<string, any>
   isLoading: boolean
 }
 
@@ -89,7 +90,11 @@ const calculateEfficiency = (utilization: number, budgetCount: number): number =
   return Math.round(utilizationScore * 0.7 + budgetCountScore * 0.3)
 }
 
-export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentBudgetBreakdownProps) {
+export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoading }: DepartmentBudgetBreakdownProps) {
+  const { data: departmentalData, isLoading: deptLoading } = useGetDepartmentalBreakdownQuery(queryParams)
+
+  const isLoading = parentLoading || deptLoading
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -108,7 +113,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
     )
   }
 
-  if (!statistics) {
+  if (!departmentalData || !departmentalData.departmental_analytics) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -122,30 +127,10 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
     )
   }
 
-  // Handle both single currency and multi-currency statistics
-  let departmentData: DepartmentData[] = []
-  let currencyCode = "USD"
+  const departmentalAnalytics = departmentalData.departmental_analytics || []
+  const crossDeptSummary = departmentalData.cross_department_summary || {}
 
-  if ("currencies" in statistics) {
-    // Multi-currency: combine all department data
-    const multiCurrencyStats = statistics as MultiCurrencyStatistics
-    const allCurrencies = Object.values(multiCurrencyStats.currencies || {})
-
-    if (allCurrencies.length > 0) {
-      // For now, use the first currency's data
-      // TODO: Add currency selection or combine data properly
-      const firstCurrency = allCurrencies[0]
-      departmentData = firstCurrency.by_department || []
-      currencyCode = firstCurrency.summary.currency_code
-    }
-  } else if ("by_department" in statistics) {
-    // Single currency
-    const singleCurrencyStats = statistics as CurrencyStatistics
-    departmentData = singleCurrencyStats.by_department || []
-    currencyCode = singleCurrencyStats.summary.currency_code
-  }
-
-  if (departmentData.length === 0) {
+  if (departmentalAnalytics.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -160,35 +145,32 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
   }
 
   // Process department data for display
-  const processedDepartments = departmentData.map((dept) => {
-    const totalAmount = safeNumber(dept.total_amount)
-    const spentAmount = safeNumber(dept.spent_amount)
-    const utilization = safeNumber(dept.avg_utilization)
-    const budgetCount = safeNumber(dept.count)
-
-    const status = getUtilizationStatus(utilization)
-    const riskLevel = getRiskLevel(utilization, budgetCount)
-    const efficiency = calculateEfficiency(utilization, budgetCount)
-
-    // Generate department code from name
-    const code = dept.department__name
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("")
-      .substring(0, 4)
+  const processedDepartments = departmentalAnalytics.map((analytics:any) => {
+    const dept = analytics.department_info
+    const summary = analytics.summary
+    const risk = analytics.risk_assessment
+    const performance = analytics.performance_metrics
 
     return {
-      id: dept.department__id,
-      name: dept.department__name,
-      code,
-      totalBudget: totalAmount,
-      spent: spentAmount,
-      utilization,
-      budgetCount,
-      status,
-      riskLevel,
-      efficiency,
-      remaining: totalAmount - spentAmount,
+      id: dept.id,
+      name: dept.name,
+      code:
+        dept.code ||
+        dept.name
+          .split(" ")
+          .map((w) => w.charAt(0))
+          .join("")
+          .substring(0, 4),
+      currencyCode: dept.currency_code,
+      totalBudget: summary.total_allocated,
+      spent: summary.total_spent,
+      utilization: summary.avg_utilization,
+      budgetCount: summary.total_budgets,
+      status: getUtilizationStatus(summary.avg_utilization),
+      riskLevel: risk.overall_risk_score > 70 ? "high" : risk.overall_risk_score > 40 ? "medium" : "low",
+      efficiency: performance.budget_efficiency,
+      remaining: summary.total_remaining,
+      analytics: analytics,
     }
   })
 
@@ -276,7 +258,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{formatCurrency(currencyCode, dept.totalBudget)}</p>
+                  <p className="text-2xl font-bold">{formatCurrency(dept.currencyCode, dept.totalBudget)}</p>
                   <p className="text-sm text-muted-foreground">Total Budget</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -296,7 +278,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Spent</p>
-                  <p className="font-semibold">{formatCurrency(currencyCode, dept.spent)}</p>
+                  <p className="font-semibold">{formatCurrency(dept.currencyCode, dept.spent)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Budgets</p>
@@ -342,10 +324,10 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatCurrency(currencyCode, value)} />
+                  <YAxis tickFormatter={(value) => formatCurrency("USD", value)} />
                   <Tooltip
                     formatter={(value: any, name: string) => [
-                      formatCurrency(currencyCode, value),
+                      formatCurrency("USD", value),
                       name === "budget" ? "Budget" : "Spent",
                     ]}
                   />
@@ -379,7 +361,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [formatCurrency(currencyCode, value), "Budget"]} />
+                  <Tooltip formatter={(value: any) => [formatCurrency("USD", value), "Budget"]} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
@@ -443,7 +425,7 @@ export function DepartmentBudgetBreakdown({ statistics, isLoading }: DepartmentB
                     >
                       <div className="text-center">
                         <div className="text-xs font-bold truncate">{dept.name}</div>
-                        <div className="text-xs opacity-90">{formatCurrency(currencyCode, dept.totalBudget)}</div>
+                        <div className="text-xs opacity-90">{formatCurrency(dept.currencyCode, dept.totalBudget)}</div>
                         <div className="text-xs opacity-75">{dept.utilization.toFixed(0)}% utilized</div>
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>

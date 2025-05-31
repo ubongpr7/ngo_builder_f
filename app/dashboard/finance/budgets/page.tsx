@@ -23,7 +23,7 @@ export default function BudgetsPage() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
 
-  const { data: currencies, isLoading: currenciesLoading } = useGetCurrenciesQuery()
+  const { data: currencies, isLoading: currenciesLoading } = useGetCurrenciesQuery("")
   const { data: departments } = useGetDepartmentsQuery("")
 
   const [filters, setFilters] = useState({
@@ -166,7 +166,7 @@ export default function BudgetsPage() {
         </TabsContent>
 
         <TabsContent value="departments" className="space-y-6">
-          <DepartmentBudgetBreakdown statistics={statistics} isLoading={statsLoading} />
+          <DepartmentBudgetBreakdown queryParams={cleanQueryParams} isLoading={budgetsLoading} />
         </TabsContent>
 
         <TabsContent value="utilization" className="space-y-6">
