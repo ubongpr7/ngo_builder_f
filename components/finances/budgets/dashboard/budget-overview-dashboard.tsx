@@ -1,24 +1,17 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Area,
-  AreaChart,
-} from "recharts"
-import { AlertTriangle, DollarSign, Target, Activity, Calendar, Zap } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { AlertTriangle, DollarSign, Target, Activity, Zap, Coins } from "lucide-react"
 
-interface BudgetStatistics {
+interface CurrencyStatistics {
   summary: {
+    currency_id: number
+    currency_code: string
+    currency_name: string
     total_budgets: number
     total_allocated: number
     total_spent: number
@@ -42,27 +35,39 @@ interface BudgetStatistics {
     count: number
     total_amount: number
     spent_amount: number
-    avg_utilization: number
-  }>
-  monthly_trends: Array<{
-    month: string
-    month_name: string
-    budgets_created: number
-    total_allocated: number
-    total_spent: number
-    net_position: number
   }>
   by_department: Array<{
-    department: string
+    department__name: string
+    department__id: number
     count: number
     total_amount: number
     spent_amount: number
     avg_utilization: number
   }>
+  performance_metrics: {
+    budget_accuracy: number
+    approval_efficiency: number
+    spend_velocity: number
+    forecast_precision: number
+    resource_utilization: number
+  }
+  risk_analysis: {
+    overspend_risk: number
+    underspend_risk: number
+    timeline_risk: number
+    resource_risk: number
+    compliance_risk: number
+  }
+}
+
+interface MultiCurrencyStatistics {
+  currencies: Record<string, CurrencyStatistics>
+  generated_at: string
+  filters_applied: Record<string, any>
 }
 
 interface BudgetOverviewDashboardProps {
-  statistics: BudgetStatistics | null
+  statistics: CurrencyStatistics | MultiCurrencyStatistics | null
   isLoading: boolean
 }
 
@@ -102,42 +107,12 @@ const validateChartData = (data: any[]): any[] => {
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
 
-export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOverviewDashboardProps) {
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (!statistics) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
-            <p>Unable to load budget statistics</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const summary = statistics.summary || {}
-  const safeByType = validateChartData(statistics.by_type || [])
-  const safeByStatus = validateChartData(statistics.by_status || [])
-  const safeMonthlyTrends = validateChartData(statistics.monthly_trends || [])
-  const safeByDepartment = validateChartData(statistics.by_department || [])
+// Component to render single currency dashboard
+function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencyStatistics }) {
+  const summary = currencyStats.summary || {}
+  const safeByType = validateChartData(currencyStats.by_type || [])
+  const safeByStatus = validateChartData(currencyStats.by_status || [])
+  const safeByDepartment = validateChartData(currencyStats.by_department || [])
 
   // Create safe pie chart data
   const pieChartData =
@@ -163,22 +138,33 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
         }))
       : []
 
-  // Create safe trend data
-  const trendData =
-    safeMonthlyTrends.length > 0
-      ? safeMonthlyTrends.map((item) => ({
-          month: item.month_name || item.month || "Unknown",
-          allocated: safeNumber(item.total_allocated),
-          spent: safeNumber(item.total_spent),
-          net: safeNumber(item.net_position),
-          budgets: safeNumber(item.budgets_created),
+  // Create department data
+  const departmentData =
+    safeByDepartment.length > 0
+      ? safeByDepartment.map((item, index) => ({
+          department: item.department__name || "Unknown",
+          count: safeNumber(item.count),
+          amount: safeNumber(item.total_amount),
+          spent: safeNumber(item.spent_amount),
+          utilization: safeNumber(item.avg_utilization),
+          color: COLORS[index % COLORS.length],
         }))
       : []
 
   const hasData = safeNumber(summary.total_budgets) > 0
+  const currencyCode = summary.currency_code || "USD"
 
   return (
     <div className="space-y-6">
+      {/* Currency Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <Coins className="h-5 w-5 text-blue-600" />
+        <h3 className="text-lg font-semibold text-blue-900">
+          {summary.currency_name || "Unknown Currency"} ({currencyCode})
+        </h3>
+        <Badge variant="outline">{safeNumber(summary.total_budgets)} budgets</Badge>
+      </div>
+
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-blue-500">
@@ -199,7 +185,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
               <div>
                 <p className="text-sm font-medium text-green-600">Total Allocated</p>
                 <p className="text-3xl font-bold text-green-900">
-                  ${safeNumber(summary.total_allocated).toLocaleString()}
+                  {currencyCode} {safeNumber(summary.total_allocated).toLocaleString()}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
@@ -213,7 +199,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
               <div>
                 <p className="text-sm font-medium text-orange-600">Total Spent</p>
                 <p className="text-3xl font-bold text-orange-900">
-                  ${safeNumber(summary.total_spent).toLocaleString()}
+                  {currencyCode} {safeNumber(summary.total_spent).toLocaleString()}
                 </p>
               </div>
               <Activity className="h-8 w-8 text-orange-500" />
@@ -253,7 +239,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) => `${name}: $${safeNumber(value).toLocaleString()}`}
+                    label={({ name, value }) => `${name}: ${currencyCode} ${safeNumber(value).toLocaleString()}`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -262,7 +248,7 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`$${safeNumber(value).toLocaleString()}`, "Amount"]} />
+                  <Tooltip formatter={(value) => [`${currencyCode} ${safeNumber(value).toLocaleString()}`, "Amount"]} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -292,8 +278,13 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="status" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [safeNumber(value), "Count"]} />
-                  <Bar dataKey="count" fill="#3b82f6" />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      name === "count" ? safeNumber(value) : `${currencyCode} ${safeNumber(value).toLocaleString()}`,
+                      name === "count" ? "Count" : "Amount",
+                    ]}
+                  />
+                  <Bar dataKey="count" fill="#3b82f6" name="count" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -309,53 +300,147 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
         </Card>
       </div>
 
-      {/* Monthly Trends */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Monthly Budget Trends
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {trendData.length > 0 && trendData.some((item) => item.allocated > 0 || item.spent > 0) ? (
+      {/* Department Analysis */}
+      {departmentData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Budget by Department
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <ResponsiveContainer width="100%" height={400}>
-              <AreaChart data={trendData}>
+              <BarChart data={departmentData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="department" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`$${safeNumber(value).toLocaleString()}`, ""]} />
-                <Area
-                  type="monotone"
-                  dataKey="allocated"
-                  stackId="1"
-                  stroke="#3b82f6"
-                  fill="#3b82f6"
-                  fillOpacity={0.6}
-                  name="Allocated"
+                <Tooltip
+                  formatter={(value, name) => [
+                    `${currencyCode} ${safeNumber(value).toLocaleString()}`,
+                    name === "amount" ? "Allocated" : "Spent",
+                  ]}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="spent"
-                  stackId="2"
-                  stroke="#10b981"
-                  fill="#10b981"
-                  fillOpacity={0.6}
-                  name="Spent"
-                />
-              </AreaChart>
+                <Bar dataKey="amount" fill="#3b82f6" name="amount" />
+                <Bar dataKey="spent" fill="#10b981" name="spent" />
+              </BarChart>
             </ResponsiveContainer>
-          ) : (
-            <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>No trend data available</p>
-                <p className="text-sm">Budget trends will appear as you create and manage budgets</p>
-              </div>
-            </div>
-          )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOverviewDashboardProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("")
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!statistics) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+            <p>Unable to load budget statistics</p>
+          </div>
         </CardContent>
       </Card>
-    </div>
+    )
+  }
+
+  // Check if this is multicurrency data or single currency data
+  const isMultiCurrency = "currencies" in statistics
+  const isSingleCurrency = "summary" in statistics
+
+  if (isSingleCurrency) {
+    // Single currency statistics
+    return <SingleCurrencyDashboard currencyStats={statistics as CurrencyStatistics} />
+  }
+
+  if (isMultiCurrency) {
+    // Multiple currencies statistics
+    const multiCurrencyStats = statistics as MultiCurrencyStatistics
+    const currencies = Object.entries(multiCurrencyStats.currencies || {})
+
+    if (currencies.length === 0) {
+      return (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center text-muted-foreground">
+              <Coins className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p>No budget data available</p>
+              <p className="text-sm">Create your first budget to see statistics</p>
+            </div>
+          </CardContent>
+        </Card>
+      )
+    }
+
+    if (currencies.length === 1) {
+      // Only one currency, display it directly
+      return <SingleCurrencyDashboard currencyStats={currencies[0][1]} />
+    }
+
+    // Multiple currencies - show tabs
+    const defaultCurrency = selectedCurrency || currencies[0][0]
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Coins className="h-5 w-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-blue-900">Multi-Currency Budget Overview</h3>
+          <Badge variant="outline">{currencies.length} currencies</Badge>
+        </div>
+
+        <Tabs value={defaultCurrency} onValueChange={setSelectedCurrency}>
+          <TabsList className="grid w-full grid-cols-auto">
+            {currencies.map(([currencyId, currencyData]) => (
+              <TabsTrigger key={currencyId} value={currencyId} className="gap-2">
+                <Coins className="h-4 w-4" />
+                {currencyData.summary.currency_code}
+                <Badge variant="secondary" className="ml-1">
+                  {currencyData.summary.total_budgets}
+                </Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {currencies.map(([currencyId, currencyData]) => (
+            <TabsContent key={currencyId} value={currencyId}>
+              <SingleCurrencyDashboard currencyStats={currencyData} />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    )
+  }
+
+  // Fallback for unexpected data structure
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="text-center text-muted-foreground">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+          <p>Invalid statistics data format</p>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
