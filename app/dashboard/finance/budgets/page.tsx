@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,28 +32,18 @@ export default function BudgetsPage() {
     department: "",
     fiscal_year: "",
     ordering: "-created_at",
-    currency: 1,
+    currency: "", // Empty by default - not compulsory
   })
 
-  // Set default currency when currencies load
-  useEffect(() => {
-    if (currencies && currencies.length > 0 && filters.currency === 1) {
-      setFilters((prev) => ({
-        ...prev,
-        currency: currencies[0].id,
-      }))
-    }
-  }, [currencies, filters.currency])
-
-  // Build query parameters
+  // Build query parameters - only include non-empty values
   const queryParams = {
-    search: searchTerm,
+    search: searchTerm || undefined,
     budget_type: filters.budget_type || undefined,
     status: filters.status || undefined,
     department: filters.department || undefined,
     fiscal_year: filters.fiscal_year || undefined,
     ordering: filters.ordering,
-    currency: filters.currency,
+    currency: filters.currency || undefined,
     page_size: 50,
   }
 
@@ -81,6 +71,7 @@ export default function BudgetsPage() {
     if (filters.status) count++
     if (filters.department) count++
     if (filters.fiscal_year) count++
+    if (filters.currency) count++
     return count
   }
 

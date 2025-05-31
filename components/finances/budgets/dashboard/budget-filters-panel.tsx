@@ -1,6 +1,4 @@
 "use client"
-
-import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -17,7 +15,7 @@ interface BudgetFiltersPanelProps {
     department: string
     fiscal_year: string
     ordering: string
-    currency: number
+    currency: string
   }
   onFiltersChange: (filters: any) => void
   onClose: () => void
@@ -87,16 +85,10 @@ const customSelectStyles = {
 }
 
 export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: BudgetFiltersPanelProps) {
-  const [localFilters, setLocalFilters] = useState(filters)
   const { data: departments, isLoading: departmentsLoading } = useGetDepartmentsQuery("")
   const { data: currencies, isLoading: currenciesLoading } = useGetCurrenciesQuery("")
 
   const fiscalYears = generateFiscalYears()
-
-  // Sync with parent filters when they change
-  useEffect(() => {
-    setLocalFilters(filters)
-  }, [filters])
 
   const departmentOptions =
     departments?.map((dept: any) => ({
@@ -106,20 +98,16 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
 
   const currencyOptions =
     currencies?.map((currency: any) => ({
-      value: currency.id,
+      value: currency.id.toString(),
       label: `${currency.code} - ${currency.name}`,
       code: currency.code,
     })) || []
 
+  // Apply filter changes immediately
   const handleFilterChange = (key: string, value: any) => {
-    const newFilters = { ...localFilters, [key]: value }
-    setLocalFilters(newFilters)
-  }
-
-  const applyFilters = () => {
-    console.log("Applying filters:", localFilters)
-    onFiltersChange(localFilters)
-    onClose()
+    const newFilters = { ...filters, [key]: value }
+    console.log("Immediate filter change:", { key, value, newFilters })
+    onFiltersChange(newFilters)
   }
 
   const resetFilters = () => {
@@ -129,18 +117,18 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
       department: "",
       fiscal_year: "",
       ordering: "-created_at",
-      currency: currencies?.[0]?.id || 1,
+      currency: "",
     }
-    setLocalFilters(defaultFilters)
     onFiltersChange(defaultFilters)
   }
 
   const getActiveFiltersCount = () => {
     let count = 0
-    if (localFilters.budget_type) count++
-    if (localFilters.status) count++
-    if (localFilters.department) count++
-    if (localFilters.fiscal_year) count++
+    if (filters.budget_type) count++
+    if (filters.status) count++
+    if (filters.department) count++
+    if (filters.fiscal_year) count++
+    if (filters.currency) count++
     return count
   }
 
@@ -160,36 +148,26 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
             </Badge>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={resetFilters} className="gap-2">
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Currency Filter - Required */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium flex items-center gap-1">
-            Currency <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={currencyOptions.find((option) => option.value === localFilters.currency)}
-            onChange={(selectedOption: any) => handleFilterChange("currency", selectedOption?.value)}
-            options={currencyOptions}
-            isLoading={currenciesLoading}
-            isSearchable
-            placeholder="Select currency"
-            styles={customSelectStyles}
-          />
-        </div>
-
         {/* Active Filters */}
         {getActiveFiltersCount() > 0 && (
           <div className="space-y-2">
             <Label className="text-sm font-medium">Active Filters</Label>
             <div className="flex flex-wrap gap-2">
-              {localFilters.budget_type && (
+              {filters.budget_type && (
                 <Badge variant="outline" className="gap-1">
-                  Type: {BUDGET_TYPES.find((t) => t.value === localFilters.budget_type)?.label}
+                  Type: {BUDGET_TYPES.find((t) => t.value === filters.budget_type)?.label}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -200,17 +178,17 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
                   </Button>
                 </Badge>
               )}
-              {localFilters.status && (
+              {filters.status && (
                 <Badge variant="outline" className="gap-1">
-                  Status: {STATUS_OPTIONS.find((s) => s.value === localFilters.status)?.label}
+                  Status: {STATUS_OPTIONS.find((s) => s.value === filters.status)?.label}
                   <Button variant="ghost" size="sm" className="h-auto p-0 ml-1" onClick={() => removeFilter("status")}>
                     <X className="h-3 w-3" />
                   </Button>
                 </Badge>
               )}
-              {localFilters.department && (
+              {filters.department && (
                 <Badge variant="outline" className="gap-1">
-                  Dept: {departmentOptions.find((d: any) => d.value === localFilters.department)?.label}
+                  Dept: {departmentOptions.find((d: any) => d.value === filters.department)?.label}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -221,9 +199,9 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
                   </Button>
                 </Badge>
               )}
-              {localFilters.fiscal_year && (
+              {filters.fiscal_year && (
                 <Badge variant="outline" className="gap-1">
-                  FY: {localFilters.fiscal_year}
+                  FY: {filters.fiscal_year}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -234,16 +212,44 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
                   </Button>
                 </Badge>
               )}
+              {filters.currency && (
+                <Badge variant="outline" className="gap-1">
+                  Currency: {currencyOptions.find((c: any) => c.value === filters.currency)?.code}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 ml-1"
+                    onClick={() => removeFilter("currency")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
             </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Currency Filter - Optional */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Currency</Label>
+            <Select
+              value={currencyOptions.find((option) => option.value === filters.currency)}
+              onChange={(selectedOption: any) => handleFilterChange("currency", selectedOption?.value || "")}
+              options={currencyOptions}
+              isLoading={currenciesLoading}
+              isClearable
+              isSearchable
+              placeholder="All currencies"
+              styles={customSelectStyles}
+            />
+          </div>
+
           {/* Budget Type */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">Budget Type</Label>
             <Select
-              value={BUDGET_TYPES.find((option) => option.value === localFilters.budget_type)}
+              value={BUDGET_TYPES.find((option) => option.value === filters.budget_type)}
               onChange={(selectedOption: any) => handleFilterChange("budget_type", selectedOption?.value || "")}
               options={BUDGET_TYPES}
               isClearable
@@ -257,7 +263,7 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
           <div className="space-y-2">
             <Label className="text-sm font-medium">Status</Label>
             <Select
-              value={STATUS_OPTIONS.find((option) => option.value === localFilters.status)}
+              value={STATUS_OPTIONS.find((option) => option.value === filters.status)}
               onChange={(selectedOption: any) => handleFilterChange("status", selectedOption?.value || "")}
               options={STATUS_OPTIONS}
               isClearable
@@ -277,7 +283,7 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
           <div className="space-y-2">
             <Label className="text-sm font-medium">Department</Label>
             <Select
-              value={departmentOptions.find((option: any) => option.value === localFilters.department)}
+              value={departmentOptions.find((option: any) => option.value === filters.department)}
               onChange={(selectedOption: any) => handleFilterChange("department", selectedOption?.value || "")}
               options={departmentOptions}
               isLoading={departmentsLoading}
@@ -292,7 +298,7 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
           <div className="space-y-2">
             <Label className="text-sm font-medium">Fiscal Year</Label>
             <Select
-              value={fiscalYears.find((option) => option.value === localFilters.fiscal_year)}
+              value={fiscalYears.find((option) => option.value === filters.fiscal_year)}
               onChange={(selectedOption: any) => handleFilterChange("fiscal_year", selectedOption?.value || "")}
               options={fiscalYears}
               isClearable
@@ -301,30 +307,19 @@ export function BudgetFiltersPanel({ filters, onFiltersChange, onClose }: Budget
               styles={customSelectStyles}
             />
           </div>
-        </div>
 
-        {/* Sort Order */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Sort By</Label>
-          <Select
-            value={ORDERING_OPTIONS.find((option) => option.value === localFilters.ordering)}
-            onChange={(selectedOption: any) => handleFilterChange("ordering", selectedOption?.value || "-created_at")}
-            options={ORDERING_OPTIONS}
-            isSearchable
-            placeholder="Select sorting"
-            styles={customSelectStyles}
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t">
-          <Button onClick={applyFilters} className="flex-1">
-            Apply Filters
-          </Button>
-          <Button variant="outline" onClick={resetFilters} className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
+          {/* Sort Order */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Sort By</Label>
+            <Select
+              value={ORDERING_OPTIONS.find((option) => option.value === filters.ordering)}
+              onChange={(selectedOption: any) => handleFilterChange("ordering", selectedOption?.value || "-created_at")}
+              options={ORDERING_OPTIONS}
+              isSearchable
+              placeholder="Select sorting"
+              styles={customSelectStyles}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
