@@ -211,7 +211,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                   {getHealthIcon(budgetItem.budget_health)}
                   <span className="text-lg font-bold">{budgetItem.budget_health}</span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">{utilizationPercentage.toFixed(1)}% utilized</p>
+                <p className="text-sm text-gray-500 mt-1">{utilizationPercentage}% utilized</p>
               </div>
               <Target className="h-8 w-8 text-purple-500" />
             </div>
@@ -224,7 +224,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
               <div>
                 <p className="text-sm font-medium text-gray-600">Spent Amount</p>
                 <p className="text-2xl font-bold">{formatCurrency(currencyCode, spentAmount)}</p>
-                <p className={`text-sm ${getHealthColor(spentPercentage)}`}>{spentPercentage.toFixed(1)}% of budget</p>
+                <p className={`text-sm ${getHealthColor(spentPercentage)}`}>{spentPercentage}% of budget</p>
               </div>
               <CreditCard className="h-8 w-8 text-green-500" />
             </div>
@@ -238,7 +238,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                 <p className="text-sm font-medium text-gray-600">Committed Amount</p>
                 <p className="text-2xl font-bold">{formatCurrency(currencyCode, committedAmount)}</p>
                 <p className={`text-sm ${getHealthColor(committedPercentage)}`}>
-                  {committedPercentage.toFixed(1)}% committed
+                  {committedPercentage}% committed
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-blue-500" />
@@ -272,7 +272,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Spent ({spentPercentage.toFixed(1)}%)</span>
+                <span>Spent ({spentPercentage}%)</span>
                 <span>{formatCurrency(currencyCode, spentAmount)}</span>
               </div>
               <Progress value={spentPercentage} className="h-2" />
@@ -280,7 +280,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Committed ({committedPercentage.toFixed(1)}%)</span>
+                <span>Committed ({committedPercentage}%)</span>
                 <span>{formatCurrency(currencyCode, committedAmount)}</span>
               </div>
               <Progress value={committedPercentage} className="h-2" />
@@ -288,7 +288,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Total Utilization ({utilizationPercentage.toFixed(1)}%)</span>
+                <span>Total Utilization ({utilizationPercentage}%)</span>
                 <span>{formatCurrency(currencyCode, committedAmount + pendingAmount)}</span>
               </div>
               <Progress value={utilizationPercentage} className="h-2" />
@@ -317,7 +317,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                     cy="50%"
                     labelLine={false}
                     label={({ name, value, percent }) =>
-                      `${name}: ${formatCurrency(currencyCode, value)} (${(percent * 100).toFixed(0)}%)`
+                      `${name}: ${formatCurrency(currencyCode, value)} (${(percent * 100)}%)`
                     }
                     outerRadius={100}
                     fill="#8884d8"
@@ -390,7 +390,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                   <YAxis />
                   <Tooltip
                     formatter={(value: any, name: string) => [
-                      name === "utilizationRate" ? `${value.toFixed(1)}%` : formatCurrency(currencyCode, value),
+                      name === "utilizationRate" ? `${value}%` : formatCurrency(currencyCode, value),
                       name === "utilizationRate" ? "Utilization Rate" : "Cumulative Spent",
                     ]}
                   />
@@ -503,7 +503,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{status.count}</span>
                     <Badge variant="outline" className="text-xs">
-                      {status.percentage.toFixed(0)}%
+                      {status.percentage}%
                     </Badge>
                   </div>
                 </div>
