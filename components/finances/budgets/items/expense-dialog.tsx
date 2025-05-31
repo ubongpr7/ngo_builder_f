@@ -128,7 +128,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
 
     try {
       const payload = {
-        budget_item: budgetItem.id,
+        budget_item_id: budgetItem.id,
         title: data.title,
         description: data.description,
         expense_type: data.expense_type,
@@ -136,7 +136,7 @@ export function ExpenseDialog({ open, onOpenChange, budgetItem, expense, onSucce
         expense_date: format(data.expense_date, "yyyy-MM-dd"),
         vendor: data.vendor || "",
         notes: data.notes || "",
-        currency: budgetItem.budget?.currency?.id,
+        currency_id: budgetItem.budget?.currency?.id,
         status: requiresApproval ? "pending" : "draft",
       }
 
