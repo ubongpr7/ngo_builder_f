@@ -153,12 +153,12 @@ export default function BudgetItemDetailPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">Budgeted Amount</p>
+                <p className="text-sm font-medium text-blue-600">Budgeted</p>
                 <p className="text-2xl font-bold text-blue-900">
                   {formatCurrency(currencyCode, budgetItem.budgeted_amount)}
                 </p>
@@ -168,30 +168,32 @@ export default function BudgetItemDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-600">Amount Spent</p>
-                <p className="text-2xl font-bold text-orange-900">
-                  {formatCurrency(currencyCode, budgetItem.spent_amount)}
-                </p>
-              </div>
-              <Activity className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
         <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-600">Remaining</p>
+                <p className="text-sm font-medium text-green-600">Spent (Paid)</p>
                 <p className="text-2xl font-bold text-green-900">
-                  {formatCurrency(currencyCode, budgetItem.remaining_amount)}
+                  {formatCurrency(currencyCode, budgetItem.spent_amount)}
                 </p>
+                <p className="text-xs text-green-600">{budgetItem.spent_percentage?.toFixed(1)}%</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-orange-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-orange-600">Committed</p>
+                <p className="text-2xl font-bold text-orange-900">
+                  {formatCurrency(currencyCode, budgetItem.committed_amount)}
+                </p>
+                <p className="text-xs text-orange-600">{budgetItem.committed_percentage?.toFixed(1)}%</p>
+              </div>
+              <Activity className="h-8 w-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
@@ -200,12 +202,29 @@ export default function BudgetItemDetailPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-600">Utilization</p>
+                <p className="text-sm font-medium text-purple-600">Available</p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {formatCurrency(currencyCode, budgetItem.truly_available_amount)}
+                </p>
+                <p className="text-xs text-purple-600">After obligations</p>
+              </div>
+              <Target className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-yellow-600">Health</p>
                 <div className="flex items-center gap-2">
-                  <p className={`text-2xl font-bold ${getStatusColor(utilization)}`}>{utilization}%</p>
-                  {getStatusIcon(utilization)}
+                  <p className={`text-lg font-bold ${getStatusColor(budgetItem.utilization_percentage || 0)}`}>
+                    {budgetItem.budget_health?.replace("_", " ")}
+                  </p>
+                  {getStatusIcon(budgetItem.utilization_percentage || 0)}
                 </div>
-                <Progress value={Math.min(utilization, 100)} className="mt-2" />
+                <Progress value={Math.min(budgetItem.utilization_percentage || 0, 100)} className="mt-2" />
               </div>
             </div>
           </CardContent>
@@ -325,7 +344,7 @@ export default function BudgetItemDetailPage() {
 
         <TabsContent value="expenses">
           <ExpensesList
-            expenses={expenses|| []}
+            expenses={expenses?.results || []}
             isLoading={expensesLoading}
             onEditExpense={handleEditExpense}
             onAddExpense={handleAddExpense}
@@ -338,7 +357,7 @@ export default function BudgetItemDetailPage() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <BudgetItemAnalytics budgetItem={budgetItem} expenses={expenses || []} />
+          <BudgetItemAnalytics budgetItem={budgetItem} expenses={expenses?.results || []} />
         </TabsContent>
       </Tabs>
 
