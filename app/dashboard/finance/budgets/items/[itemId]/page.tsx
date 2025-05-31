@@ -176,7 +176,7 @@ export default function BudgetItemDetailPage() {
                 <p className="text-2xl font-bold text-green-900">
                   {formatCurrency(currencyCode, budgetItem.spent_amount)}
                 </p>
-                <p className="text-xs text-green-600">{budgetItem.spent_percentage?.toFixed(1)}%</p>
+                <p className="text-xs text-green-600">{budgetItem.spent_percentage}%</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
             </div>
@@ -191,7 +191,7 @@ export default function BudgetItemDetailPage() {
                 <p className="text-2xl font-bold text-orange-900">
                   {formatCurrency(currencyCode, budgetItem.committed_amount)}
                 </p>
-                <p className="text-xs text-orange-600">{budgetItem.committed_percentage?.toFixed(1)}%</p>
+                <p className="text-xs text-orange-600">{budgetItem.committed_percentage}%</p>
               </div>
               <Activity className="h-8 w-8 text-orange-500" />
             </div>

@@ -118,7 +118,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
                 <p className="text-2xl font-bold text-green-900">
                   {formatCurrency(currencyCode, budgetItem.spent_amount)}
                 </p>
-                <p className="text-sm text-green-600">{budgetItem.spent_percentage?.toFixed(1)}% of budget</p>
+                <p className="text-sm text-green-600">{budgetItem.spent_percentage}% of budget</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
             </div>
@@ -133,7 +133,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
                 <p className="text-2xl font-bold text-orange-900">
                   {formatCurrency(currencyCode, budgetItem.committed_amount)}
                 </p>
-                <p className="text-sm text-orange-600">{budgetItem.committed_percentage?.toFixed(1)}% of budget</p>
+                <p className="text-sm text-orange-600">{budgetItem.committed_percentage}% of budget</p>
               </div>
               <Shield className="h-8 w-8 text-orange-500" />
             </div>
@@ -242,7 +242,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Total Utilization</span>
-                  <span className="font-medium">{budgetItem.utilization_percentage?.toFixed(1)}%</span>
+                  <span className="font-medium">{budgetItem.utilization_percentage}%</span>
                 </div>
                 <Progress value={Math.min(budgetItem.utilization_percentage || 0, 100)} className="h-2" />
               </div>
@@ -251,7 +251,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Spending Progress</span>
-                <span className="font-medium">{budgetItem.spent_percentage?.toFixed(1)}%</span>
+                <span className="font-medium">{budgetItem.spent_percentage}%</span>
               </div>
               <Progress value={Math.min(budgetItem.spent_percentage || 0, 100)} className="h-2" />
             </div>
@@ -259,7 +259,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Commitment Level</span>
-                <span className="font-medium">{budgetItem.committed_percentage?.toFixed(1)}%</span>
+                <span className="font-medium">{budgetItem.committed_percentage}%</span>
               </div>
               <Progress value={Math.min(budgetItem.committed_percentage || 0, 100)} className="h-2" />
             </div>
@@ -283,7 +283,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
                 {formatCurrency(currencyCode, budgetItem.variance)}
               </p>
               <p className="text-sm text-gray-500">
-                {budgetItem.variance_percentage?.toFixed(1)}% {budgetItem.variance >= 0 ? "under" : "over"} budget
+                {budgetItem.variance_percentage}% {budgetItem.variance >= 0 ? "under" : "over"} budget
               </p>
             </div>
 
