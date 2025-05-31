@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { AlertTriangle, DollarSign, Target, Activity, Zap, Coins } from "lucide-react"
+import Select from "react-select"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface CurrencyStatistics {
   summary: {
@@ -185,7 +186,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
               <div>
                 <p className="text-sm font-medium text-green-600">Total Allocated</p>
                 <p className="text-3xl font-bold text-green-900">
-                  {currencyCode} {safeNumber(summary.total_allocated).toLocaleString()}
+                  {formatCurrency(currencyCode, summary.total_allocated)}
                 </p>
               </div>
               <DollarSign className="h-8 w-8 text-green-500" />
@@ -199,7 +200,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
               <div>
                 <p className="text-sm font-medium text-orange-600">Total Spent</p>
                 <p className="text-3xl font-bold text-orange-900">
-                  {currencyCode} {safeNumber(summary.total_spent).toLocaleString()}
+                  {formatCurrency(currencyCode, summary.total_spent)}
                 </p>
               </div>
               <Activity className="h-8 w-8 text-orange-500" />
@@ -239,7 +240,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value }) => `${name}: ${currencyCode} ${safeNumber(value).toLocaleString()}`}
+                    label={({ name, value }) => `${name}: ${formatCurrency(currencyCode, value)}`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -248,7 +249,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${currencyCode} ${safeNumber(value).toLocaleString()}`, "Amount"]} />
+                  <Tooltip formatter={(value) => [formatCurrency(currencyCode, value), "Amount"]} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -280,7 +281,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
                   <YAxis />
                   <Tooltip
                     formatter={(value, name) => [
-                      name === "count" ? safeNumber(value) : `${currencyCode} ${safeNumber(value).toLocaleString()}`,
+                      name === "count" ? safeNumber(value) : formatCurrency(currencyCode, value),
                       name === "count" ? "Count" : "Amount",
                     ]}
                   />
@@ -317,7 +318,7 @@ function SingleCurrencyDashboard({ currencyStats }: { currencyStats: CurrencySta
                 <YAxis />
                 <Tooltip
                   formatter={(value, name) => [
-                    `${currencyCode} ${safeNumber(value).toLocaleString()}`,
+                    formatCurrency(currencyCode, value),
                     name === "amount" ? "Allocated" : "Spent",
                   ]}
                 />
@@ -401,33 +402,53 @@ export function BudgetOverviewDashboard({ statistics, isLoading }: BudgetOvervie
     // Multiple currencies - show tabs
     const defaultCurrency = selectedCurrency || currencies[0][0]
 
+    // Replace the Tabs component with react-select
+    const currencyOptions = currencies.map(([currencyId, currencyData]) => ({
+      value: currencyId,
+      label: `${currencyData.summary.currency_code} (${currencyData.summary.total_budgets} budgets)`,
+      currencyCode: currencyData.summary.currency_code,
+      budgetCount: currencyData.summary.total_budgets,
+    }))
+
+    const selectedOption = currencyOptions.find((option) => option.value === defaultCurrency) || currencyOptions[0]
+
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Coins className="h-5 w-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-blue-900">Multi-Currency Budget Overview</h3>
-          <Badge variant="outline">{currencies.length} currencies</Badge>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-blue-600" />
+            <h3 className="text-lg font-semibold text-blue-900">Multi-Currency Budget Overview</h3>
+            <Badge variant="outline">{currencies.length} currencies</Badge>
+          </div>
+
+          <div className="w-full md:w-64">
+            <Select
+              value={selectedOption}
+              onChange={(option) => setSelectedCurrency(option?.value || currencies[0][0])}
+              options={currencyOptions}
+              className="w-full"
+              placeholder="Select currency"
+              formatOptionLabel={(option) => (
+                <div className="flex items-center gap-2">
+                  <Coins className="h-4 w-4" />
+                  <span>{option.currencyCode}</span>
+                  <Badge variant="secondary" className="ml-1">
+                    {option.budgetCount}
+                  </Badge>
+                </div>
+              )}
+            />
+          </div>
         </div>
 
-        <Tabs value={defaultCurrency} onValueChange={setSelectedCurrency}>
-          <TabsList className="grid w-full grid-cols-auto">
-            {currencies.map(([currencyId, currencyData]) => (
-              <TabsTrigger key={currencyId} value={currencyId} className="gap-2">
-                <Coins className="h-4 w-4" />
-                {currencyData.summary.currency_code}
-                <Badge variant="secondary" className="ml-1">
-                  {currencyData.summary.total_budgets}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {currencies.map(([currencyId, currencyData]) => (
-            <TabsContent key={currencyId} value={currencyId}>
-              <SingleCurrencyDashboard currencyStats={currencyData} />
-            </TabsContent>
-          ))}
-        </Tabs>
+        {currencies.map(
+          ([currencyId, currencyData]) =>
+            currencyId === defaultCurrency && (
+              <div key={currencyId}>
+                <SingleCurrencyDashboard currencyStats={currencyData} />
+              </div>
+            ),
+        )}
       </div>
     )
   }
