@@ -196,7 +196,7 @@ export default function BudgetItemDetailPage() {
               <div>
                 <p className="text-sm font-medium text-purple-600">Utilization</p>
                 <div className="flex items-center gap-2">
-                  <p className={`text-2xl font-bold ${getStatusColor(utilization)}`}>{utilization.toFixed(1)}%</p>
+                  <p className={`text-2xl font-bold ${getStatusColor(utilization)}`}>{utilization}%</p>
                   {getStatusIcon(utilization)}
                 </div>
                 <Progress value={Math.min(utilization, 100)} className="mt-2" />

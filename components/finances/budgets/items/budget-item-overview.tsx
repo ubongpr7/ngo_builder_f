@@ -53,7 +53,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
                     (Number.parseFloat(budgetItem.budgeted_amount) /
                       Number.parseFloat(budgetItem.budget?.total_amount || "1")) *
                     100
-                  ).toFixed(1)}
+                  )}
                   % of total budget
                 </p>
               </div>
@@ -85,7 +85,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
                 <p className="text-2xl font-bold text-green-900">
                   {formatCurrency(currencyCode, budgetItem.remaining_amount)}
                 </p>
-                <p className="text-sm text-green-600">{(100 - utilization).toFixed(1)}% remaining</p>
+                <p className="text-sm text-green-600">{(100 - utilization)}% remaining</p>
               </div>
               <TrendingUp className="h-8 w-8 text-green-500" />
             </div>
@@ -106,7 +106,7 @@ export function BudgetItemOverview({ budgetItem }: BudgetItemOverviewProps) {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Utilization Rate</span>
               <div className="flex items-center gap-2">
-                <span className={`font-bold ${utilizationStatus.color}`}>{utilization.toFixed(1)}%</span>
+                <span className={`font-bold ${utilizationStatus.color}`}>{utilization}%</span>
                 <Badge variant={utilization >= 85 ? "destructive" : "default"}>{utilizationStatus.status}</Badge>
               </div>
             </div>

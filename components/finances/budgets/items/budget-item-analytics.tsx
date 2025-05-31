@@ -106,7 +106,7 @@ export function BudgetItemAnalytics({ budgetItem, expenses }: BudgetItemAnalytic
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Utilization Rate</p>
-                <p className="text-2xl font-bold">{utilization.toFixed(1)}%</p>
+                <p className="text-2xl font-bold">{utilization}%</p>
               </div>
               <Target className="h-8 w-8 text-purple-500" />
             </div>
