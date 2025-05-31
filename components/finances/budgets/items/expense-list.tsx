@@ -37,44 +37,14 @@ interface ExpensesListProps {
   budgetItem: any
 }
 
-const STATUS_CONFIG = {
-  all: {
-    label: "All",
-    icon: FileText,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-  },
-  draft: {
-    label: "Draft",
-    icon: Archive,
-    color: "text-gray-600",
-    bgColor: "bg-gray-100",
-  },
-  pending: {
-    label: "Pending Approval",
-    icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
-  },
-  approved: {
-    label: "Approved",
-    icon: CheckCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-  },
-  paid: {
-    label: "Paid",
-    icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
-  },
-  rejected: {
-    label: "Rejected",
-    icon: XCircle,
-    color: "text-red-600",
-    bgColor: "bg-red-100",
-  },
-}
+const STATUS_TABS = [
+  { value: "all", label: "All", icon: FileText },
+  { value: "draft", label: "Draft", icon: Archive },
+  { value: "pending", label: "Pending", icon: Clock },
+  { value: "approved", label: "Approved", icon: CheckCircle },
+  { value: "paid", label: "Paid", icon: CheckCircle },
+  { value: "rejected", label: "Rejected", icon: XCircle },
+]
 
 export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense, budgetItem }: ExpensesListProps) {
   const [deleteExpense] = useDeleteOrganizationalExpenseMutation()
@@ -102,7 +72,7 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
   const statusTotals = useMemo(() => {
     const totals: Record<string, { count: number; amount: number }> = {}
 
-    Object.keys(STATUS_CONFIG).forEach((status) => {
+    Object.keys(groupedExpenses).forEach((status) => {
       const statusExpenses = groupedExpenses[status as keyof typeof groupedExpenses]
       totals[status] = {
         count: statusExpenses.length,
@@ -199,112 +169,138 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
   }
 
   const currencyCode = budgetItem?.budget?.currency?.code || "USD"
+  const currentExpenses = groupedExpenses[activeTab as keyof typeof groupedExpenses]
+  const currentTotal = statusTotals[activeTab]
 
   const renderExpenseTable = (expenseList: any[]) => {
     if (expenseList.length === 0) {
       return (
-        <div className="text-center py-8 text-muted-foreground">
-          <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <p>No expenses in this category</p>
-          <p className="text-sm">Add your first expense to start tracking</p>
-          <Button className="mt-4" onClick={onAddExpense}>
+        <div className="text-center py-12 text-muted-foreground">
+          <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses found</h3>
+          <p className="text-sm mb-4">
+            {activeTab === "all" ? "No expenses have been recorded yet" : `No ${activeTab} expenses found`}
+          </p>
+          <Button onClick={onAddExpense}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Expense
+            Add First Expense
           </Button>
         </div>
       )
     }
 
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Vendor</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Submitted By</TableHead>
-            <TableHead className="w-[50px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {expenseList.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{expense.title}</div>
-                  <div className="text-sm text-muted-foreground truncate max-w-[200px]">{expense.description}</div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{expense.expense_type?.replace("_", " ")}</Badge>
-              </TableCell>
-              <TableCell className="font-medium">{formatCurrency(currencyCode, expense.amount)}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  {new Date(expense.expense_date).toLocaleDateString()}
-                </div>
-              </TableCell>
-              <TableCell>{expense.vendor || "—"}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(expense.status)}
-                  <Badge className={getStatusColor(expense.status)}>{expense.status}</Badge>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">
-                    {expense.submitted_by?.first_name} {expense.submitted_by?.last_name}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu
-                  open={openDropdowns[expense.id] || false}
-                  onOpenChange={(open) => setOpenDropdowns((prev) => ({ ...prev, [expense.id]: open }))}
-                >
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleViewDetails(expense)}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    {expense.status === "pending" && (
-                      <>
-                        <DropdownMenuItem onClick={() => handleApproveExpense(expense.id)} className="text-green-600">
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleRejectExpense(expense.id)} className="text-red-600">
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Reject
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuItem onClick={() => handleDeleteExpense(expense.id)} className="text-red-600">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      <div className="space-y-4">
+        {/* Summary bar */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">{currentTotal.count}</span>{" "}
+              {currentTotal.count === 1 ? "expense" : "expenses"}
+            </div>
+            {currentTotal.amount > 0 && (
+              <div className="text-sm text-gray-600">
+                Total: <span className="font-medium">{formatCurrency(currencyCode, currentTotal.amount)}</span>
+              </div>
+            )}
+          </div>
+          <Button size="sm" onClick={onAddExpense}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Expense
+          </Button>
+        </div>
+
+        {/* Table */}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Title</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Vendor</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Submitted By</TableHead>
+              <TableHead className="w-[50px]">Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {expenseList.map((expense) => (
+              <TableRow key={expense.id}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{expense.title}</div>
+                    <div className="text-sm text-muted-foreground truncate max-w-[200px]">{expense.description}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{expense.expense_type?.replace("_", " ")}</Badge>
+                </TableCell>
+                <TableCell className="font-medium">{formatCurrency(currencyCode, expense.amount)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    {new Date(expense.expense_date).toLocaleDateString()}
+                  </div>
+                </TableCell>
+                <TableCell>{expense.vendor || "—"}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(expense.status)}
+                    <Badge className={getStatusColor(expense.status)}>{expense.status}</Badge>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm">
+                      {expense.submitted_by?.first_name} {expense.submitted_by?.last_name}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu
+                    open={openDropdowns[expense.id] || false}
+                    onOpenChange={(open) => setOpenDropdowns((prev) => ({ ...prev, [expense.id]: open }))}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleViewDetails(expense)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      {expense.status === "pending" && (
+                        <>
+                          <DropdownMenuItem onClick={() => handleApproveExpense(expense.id)} className="text-green-600">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleRejectExpense(expense.id)} className="text-red-600">
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      <DropdownMenuItem onClick={() => handleDeleteExpense(expense.id)} className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     )
   }
 
@@ -339,89 +335,28 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
-            {Object.entries(STATUS_CONFIG).map(([status, config]) => {
-              const Icon = config.icon
-              const total = statusTotals[status]
+            {STATUS_TABS.map((tab) => {
+              const Icon = tab.icon
+              const count = statusTotals[tab.value]?.count || 0
 
               return (
-                <TabsTrigger key={status} value={status} className="flex flex-col gap-1 h-auto py-3 px-2">
-                  <div className="flex items-center gap-1">
-                    <Icon className="h-4 w-4" />
-                    <span className="text-xs font-medium">{config.label}</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                      {total.count}
+                <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-2">
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                  {count > 0 && (
+                    <Badge variant="secondary" className="ml-1 text-xs">
+                      {count}
                     </Badge>
-                    {total.amount > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        {formatCurrency(currencyCode, total.amount)}
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </TabsTrigger>
               )
             })}
           </TabsList>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            {Object.entries(STATUS_CONFIG).map(([status, config]) => {
-              const Icon = config.icon
-              const total = statusTotals[status]
-
-              return (
-                <Card
-                  key={status}
-                  className={`border-l-4 ${
-                    status === "all"
-                      ? "border-l-gray-500"
-                      : status === "pending"
-                        ? "border-l-yellow-500"
-                        : status === "approved"
-                          ? "border-l-blue-500"
-                          : status === "paid"
-                            ? "border-l-green-500"
-                            : status === "rejected"
-                              ? "border-l-red-500"
-                              : "border-l-gray-500"
-                  }`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className={`text-sm font-medium ${config.color}`}>{config.label}</p>
-                        <p className="text-2xl font-bold">{total.count}</p>
-                        {total.amount > 0 && (
-                          <p className="text-sm text-muted-foreground">{formatCurrency(currencyCode, total.amount)}</p>
-                        )}
-                      </div>
-                      <Icon className={`h-8 w-8 ${config.color}`} />
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-
           {/* Tab Contents */}
-          {Object.keys(STATUS_CONFIG).map((status) => (
-            <TabsContent key={status} value={status} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">
-                    {STATUS_CONFIG[status as keyof typeof STATUS_CONFIG].label} Expenses
-                  </h3>
-                  <Badge variant="outline">{statusTotals[status].count} items</Badge>
-                  {statusTotals[status].amount > 0 && (
-                    <Badge variant="secondary">
-                      Total: {formatCurrency(currencyCode, statusTotals[status].amount)}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {renderExpenseTable(groupedExpenses[status as keyof typeof groupedExpenses])}
+          {STATUS_TABS.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value}>
+              {renderExpenseTable(groupedExpenses[tab.value as keyof typeof groupedExpenses])}
             </TabsContent>
           ))}
         </Tabs>
