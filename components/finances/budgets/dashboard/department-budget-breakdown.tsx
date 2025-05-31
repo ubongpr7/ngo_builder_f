@@ -27,6 +27,171 @@ import { Building2, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Target
 import { formatCurrency } from "@/lib/currency-utils"
 import { useGetDepartmentalBreakdownQuery } from "@/redux/features/finance/budgets"
 
+// Type definitions for the departmental breakdown data structure
+interface DepartmentInfo {
+  id: number
+  name: string
+  code: string | null
+  currency_id: number
+  currency_code: string
+}
+
+interface DepartmentSummary {
+  total_budgets: number
+  total_allocated: number
+  total_spent: number
+  total_remaining: number
+  avg_utilization: number
+}
+
+interface StatusBreakdownItem {
+  status: string
+  count: number
+  total_amount: number
+  spent_amount: number
+  avg_utilization: number
+}
+
+interface TypeBreakdownItem {
+  budget_type: string
+  count: number
+  total_amount: number
+  spent_amount: number
+  avg_utilization: number
+}
+
+interface MonthlyTrendItem {
+  month: string
+  month_name: string
+  budgets_created: number
+  total_allocated: number
+  total_spent: number
+  net_position: number
+}
+
+interface HealthMetrics {
+  healthy_budgets: number
+  warning_budgets: number
+  critical_budgets: number
+  underutilized_budgets: number
+  overbudget_count: number
+  near_deadline_count: number
+}
+
+interface BudgetDetail {
+  budget_id: number
+  title: string
+  budget_type: string
+  total_amount: number
+  spent_amount: number
+  remaining_amount: number
+  utilization_percentage: number
+  health_status: "healthy" | "warning" | "critical" | "underutilized" | "overbudget"
+  status: string
+  start_date: string | null
+  end_date: string | null
+  days_remaining: number | null
+  fiscal_year: number
+  created_at: string
+}
+
+interface PerformanceMetrics {
+  budget_efficiency: number
+  planning_score: number
+  execution_rate: number
+  on_time_delivery: number
+  resource_optimization: number
+}
+
+interface RiskAssessment {
+  financial_risk: number
+  timeline_risk: number
+  utilization_risk: number
+  capacity_risk: number
+  overall_risk_score: number
+}
+
+interface DepartmentAnalytics {
+  department_info: DepartmentInfo
+  summary: DepartmentSummary
+  status_breakdown: StatusBreakdownItem[]
+  type_breakdown: TypeBreakdownItem[]
+  monthly_trends: MonthlyTrendItem[]
+  health_metrics: HealthMetrics
+  budget_details: BudgetDetail[]
+  performance_metrics: PerformanceMetrics
+  risk_assessment: RiskAssessment
+}
+
+interface CrossDepartmentSummary {
+  total_departments: number
+  total_budgets: number
+  total_allocated: number
+  total_spent: number
+  avg_utilization: number
+  departments_at_risk: number
+  top_performing_department: string | null
+  currencies_involved: string[]
+}
+
+interface DepartmentalBreakdownResponse {
+  cross_department_summary: CrossDepartmentSummary
+  departmental_analytics: DepartmentAnalytics[]
+  generated_at: string
+  filters_applied: Record<string, any>
+  error?: string
+}
+
+// Processed department data for UI display
+interface ProcessedDepartment {
+  id: number
+  name: string
+  code: string
+  currencyCode: string
+  totalBudget: number
+  spent: number
+  utilization: number
+  budgetCount: number
+  status: UtilizationStatus
+  riskLevel: RiskLevel
+  efficiency: number
+  remaining: number
+  analytics: DepartmentAnalytics
+}
+
+// Chart data interfaces
+interface ChartDataItem {
+  name: string
+  budget: number
+  spent: number
+  utilization: number
+  efficiency: number
+}
+
+interface PieDataItem {
+  name: string
+  value: number
+  color: string
+}
+
+interface RadarDataItem {
+  department: string
+  utilization: number
+  efficiency: number
+  budgetHealth: number
+}
+
+// Currency option for select dropdown
+interface CurrencyOption {
+  value: string
+  label: string
+}
+
+// Status and risk level types
+type UtilizationStatus = "healthy" | "warning" | "critical" | "underutilized"
+type RiskLevel = "low" | "medium" | "high"
+
+// Component props interface
 interface DepartmentBudgetBreakdownProps {
   queryParams: Record<string, any>
   isLoading: boolean
@@ -40,7 +205,7 @@ const safeNumber = (value: any, defaultValue = 0): number => {
 }
 
 // Helper function to determine status based on utilization
-const getUtilizationStatus = (utilization: number): string => {
+const getUtilizationStatus = (utilization: number): UtilizationStatus => {
   if (utilization >= 95) return "critical"
   if (utilization >= 85) return "warning"
   if (utilization < 50) return "underutilized"
@@ -48,7 +213,7 @@ const getUtilizationStatus = (utilization: number): string => {
 }
 
 // Helper function to determine risk level
-const getRiskLevel = (utilization: number, budgetCount: number): string => {
+const getRiskLevel = (utilization: number, budgetCount: number): RiskLevel => {
   if (utilization >= 95 || budgetCount === 0) return "high"
   if (utilization >= 85 || budgetCount <= 2) return "medium"
   return "low"
@@ -67,7 +232,7 @@ const calculateEfficiency = (utilization: number, budgetCount: number): number =
   return Math.round(utilizationScore * 0.7 + budgetCountScore * 0.3)
 }
 
-function getStatusColor(status: string) {
+function getStatusColor(status: UtilizationStatus): string {
   switch (status) {
     case "healthy":
       return "#10b981"
@@ -82,7 +247,7 @@ function getStatusColor(status: string) {
   }
 }
 
-function getStatusIcon(status: string) {
+function getStatusIcon(status: UtilizationStatus): JSX.Element {
   switch (status) {
     case "healthy":
       return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -97,7 +262,7 @@ function getStatusIcon(status: string) {
   }
 }
 
-function getTrendIcon(utilization: number) {
+function getTrendIcon(utilization: number): JSX.Element {
   if (utilization >= 85) return <TrendingUp className="h-4 w-4 text-green-500" />
   if (utilization < 50) return <TrendingDown className="h-4 w-4 text-red-500" />
   return <Activity className="h-4 w-4 text-gray-500" />
@@ -105,8 +270,17 @@ function getTrendIcon(utilization: number) {
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f97316"]
 
+// Custom tooltip formatter for charts
+const formatTooltipValue = (value: any, name: string, currency: string): [string, string] => {
+  if (name === "budget" || name === "spent") {
+    return [formatCurrency(currency, value), name === "budget" ? "Budget" : "Spent"]
+  }
+  return [String(value), name]
+}
+
 export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoading }: DepartmentBudgetBreakdownProps) {
-  const { data: departmentalData, isLoading: deptLoading } = useGetDepartmentalBreakdownQuery(queryParams)
+  const { data: departmentalData, isLoading: deptLoading, error } = useGetDepartmentalBreakdownQuery(queryParams)
+
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null)
 
   const isLoading = parentLoading || deptLoading
@@ -114,7 +288,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
@@ -129,7 +303,23 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
     )
   }
 
-  if (!departmentalData || !departmentalData.departmental_analytics) {
+  if (error || !departmentalData) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <Building2 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p>Error loading department data</p>
+            <p className="text-sm">Please try again later</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const typedDepartmentalData = departmentalData as DepartmentalBreakdownResponse
+
+  if (!typedDepartmentalData.departmental_analytics) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -143,8 +333,8 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
     )
   }
 
-  const departmentalAnalytics = departmentalData.departmental_analytics || []
-  const crossDeptSummary = departmentalData.cross_department_summary || {}
+  const departmentalAnalytics: DepartmentAnalytics[] = typedDepartmentalData.departmental_analytics
+  const crossDeptSummary: CrossDepartmentSummary = typedDepartmentalData.cross_department_summary
 
   if (departmentalAnalytics.length === 0) {
     return (
@@ -161,9 +351,9 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   }
 
   // Group departments by currency
-  const departmentsByCurrency: Record<string, any[]> = {}
+  const departmentsByCurrency: Record<string, DepartmentAnalytics[]> = {}
 
-  departmentalAnalytics.forEach((analytics) => {
+  departmentalAnalytics.forEach((analytics: DepartmentAnalytics) => {
     const currencyCode = analytics.department_info.currency_code
     if (!departmentsByCurrency[currencyCode]) {
       departmentsByCurrency[currencyCode] = []
@@ -172,7 +362,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   })
 
   // Get available currencies
-  const availableCurrencies = Object.keys(departmentsByCurrency)
+  const availableCurrencies: string[] = Object.keys(departmentsByCurrency)
 
   // Set default selected currency if not already set
   if (!selectedCurrency && availableCurrencies.length > 0) {
@@ -180,17 +370,17 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   }
 
   // Create currency options for dropdown
-  const currencyOptions = availableCurrencies.map((currency) => ({
+  const currencyOptions: CurrencyOption[] = availableCurrencies.map((currency: string) => ({
     value: currency,
     label: `${currency} (${departmentsByCurrency[currency].length} departments)`,
   }))
 
   // Process department data for the selected currency
-  const currentCurrency = selectedCurrency || availableCurrencies[0]
-  const currentDepartments = departmentsByCurrency[currentCurrency] || []
+  const currentCurrency: string = selectedCurrency || availableCurrencies[0]
+  const currentDepartments: DepartmentAnalytics[] = departmentsByCurrency[currentCurrency] || []
 
   // Process department data for display
-  const processedDepartments = currentDepartments.map((analytics) => {
+  const processedDepartments: ProcessedDepartment[] = currentDepartments.map((analytics: DepartmentAnalytics) => {
     const dept = analytics.department_info
     const summary = analytics.summary
     const risk = analytics.risk_assessment
@@ -203,27 +393,28 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
         dept.code ||
         dept.name
           .split(" ")
-          .map((w) => w.charAt(0))
+          .map((w: string) => w.charAt(0))
           .join("")
           .substring(0, 4),
       currencyCode: dept.currency_code,
-      totalBudget: summary.total_allocated,
-      spent: summary.total_spent,
-      utilization: summary.avg_utilization,
-      budgetCount: summary.total_budgets,
-      status: getUtilizationStatus(summary.avg_utilization),
-      riskLevel: risk.overall_risk_score > 70 ? "high" : risk.overall_risk_score > 40 ? "medium" : "low",
-      efficiency: performance.budget_efficiency,
-      remaining: summary.total_remaining,
+      totalBudget: safeNumber(summary.total_allocated),
+      spent: safeNumber(summary.total_spent),
+      utilization: safeNumber(summary.avg_utilization),
+      budgetCount: safeNumber(summary.total_budgets),
+      status: getUtilizationStatus(safeNumber(summary.avg_utilization)),
+      riskLevel:
+        safeNumber(risk.overall_risk_score) > 70 ? "high" : safeNumber(risk.overall_risk_score) > 40 ? "medium" : "low",
+      efficiency: safeNumber(performance.budget_efficiency),
+      remaining: safeNumber(summary.total_remaining),
       analytics: analytics,
     }
   })
 
   // Sort by total budget (descending)
-  processedDepartments.sort((a, b) => b.totalBudget - a.totalBudget)
+  processedDepartments.sort((a: ProcessedDepartment, b: ProcessedDepartment) => b.totalBudget - a.totalBudget)
 
   // Prepare chart data for the selected currency
-  const chartData = processedDepartments.map((dept) => ({
+  const chartData: ChartDataItem[] = processedDepartments.map((dept: ProcessedDepartment) => ({
     name: dept.code,
     budget: dept.totalBudget,
     spent: dept.spent,
@@ -231,19 +422,24 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
     efficiency: dept.efficiency,
   }))
 
-  const pieData = processedDepartments.map((dept) => ({
+  const pieData: PieDataItem[] = processedDepartments.map((dept: ProcessedDepartment) => ({
     name: dept.name,
     value: dept.totalBudget,
     color: getStatusColor(dept.status),
   }))
 
-  const radarData = processedDepartments.map((dept) => ({
+  const radarData: RadarDataItem[] = processedDepartments.map((dept: ProcessedDepartment) => ({
     department: dept.code,
     utilization: dept.utilization,
     efficiency: dept.efficiency,
     budgetHealth:
       dept.status === "healthy" ? 100 : dept.status === "warning" ? 70 : dept.status === "critical" ? 40 : 60,
   }))
+
+  // Handle currency selection change
+  const handleCurrencyChange = (option: CurrencyOption | null): void => {
+    setSelectedCurrency(option?.value || availableCurrencies[0])
+  }
 
   return (
     <div className="space-y-6">
@@ -257,13 +453,13 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
           </div>
 
           <div className="w-full md:w-64">
-            <Select
-              value={currencyOptions.find((option) => option.value === currentCurrency)}
-              onChange={(option) => setSelectedCurrency(option?.value || availableCurrencies[0])}
+            <Select<CurrencyOption>
+              value={currencyOptions.find((option: CurrencyOption) => option.value === currentCurrency)}
+              onChange={handleCurrencyChange}
               options={currencyOptions}
               className="w-full"
               placeholder="Select currency"
-              formatOptionLabel={(option) => (
+              formatOptionLabel={(option: CurrencyOption) => (
                 <div className="flex items-center gap-2">
                   <Coins className="h-4 w-4" />
                   <span>{option.value}</span>
@@ -275,8 +471,8 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
       )}
 
       {/* Department Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {processedDepartments.map((dept) => (
+      <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
+        {processedDepartments.map((dept: ProcessedDepartment) => (
           <Card key={dept.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -358,13 +554,8 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => formatCurrency(currentCurrency, value)} />
-                  <Tooltip
-                    formatter={(value: any, name: string) => [
-                      formatCurrency(currentCurrency, value),
-                      name === "budget" ? "Budget" : "Spent",
-                    ]}
-                  />
+                  <YAxis tickFormatter={(value: number) => formatCurrency(currentCurrency, value)} />
+                  <Tooltip formatter={(value: any, name: string) => formatTooltipValue(value, name, currentCurrency)} />
                   <Bar dataKey="budget" fill="#3b82f6" name="budget" />
                   <Bar dataKey="spent" fill="#10b981" name="spent" />
                 </BarChart>
@@ -386,12 +577,14 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }: { name: string; percent: number }) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
                     outerRadius={120}
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((entry: PieDataItem, index: number) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -430,9 +623,12 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-12 grid-rows-8 gap-1 h-96">
-                {processedDepartments.map((dept, index) => {
+                {processedDepartments.map((dept: ProcessedDepartment, index: number) => {
                   // Calculate grid size based on budget proportion
-                  const totalBudget = processedDepartments.reduce((sum, d) => sum + d.totalBudget, 0)
+                  const totalBudget = processedDepartments.reduce(
+                    (sum: number, d: ProcessedDepartment) => sum + d.totalBudget,
+                    0,
+                  )
                   const proportion = dept.totalBudget / totalBudget
 
                   // Determine grid span based on proportion
