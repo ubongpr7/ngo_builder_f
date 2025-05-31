@@ -197,9 +197,31 @@ export function BudgetUtilizationMatrix({ queryParams, isLoading: parentLoading 
         label: `${currency.code} (${multiCurrencyData.currencies[currencyId].summary.total_budgets} budgets)`,
       }
     })
-  } else {
+  } else if ("currency_info" in utilizationData) {
     // Single currency data
     currencyData = utilizationData as CurrencyUtilizationData
+    availableCurrencies = [currencyData.currency_info.id.toString()]
+
+    // Create a single option for the dropdown (even though it won't be used)
+    currencyOptions = [
+      {
+        value: currencyData.currency_info.id.toString(),
+        label: `${currencyData.currency_info.code} (${currencyData.summary.total_budgets} budgets)`,
+      },
+    ]
+  } else {
+    // Handle unexpected data structure
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-yellow-500" />
+            <p>Invalid utilization data format</p>
+            <p className="text-sm">Please check the API response structure</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   if (!currencyData) {
@@ -273,16 +295,21 @@ export function BudgetUtilizationMatrix({ queryParams, isLoading: parentLoading 
 
   return (
     <div className="space-y-6">
-      {/* Currency Selector */}
-      {availableCurrencies.length > 1 && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-blue-900">Budget Utilization Analysis</h3>
-            <Badge variant="outline">{availableCurrencies.length} currencies</Badge>
-          </div>
+      {/* Currency Selector - Always show */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-2">
+          <Coins className="h-5 w-5 text-blue-600" />
+          <h3 className="text-lg font-semibold text-blue-900">Budget Utilization Analysis</h3>
+          {currencyData && (
+            <Badge variant="outline">
+              {currencyData.currency_info.name} ({currencyData.summary.total_budgets} budgets)
+            </Badge>
+          )}
+        </div>
 
-          <div className="w-full md:w-64">
+        {/* Always show currency selector */}
+        <div className="w-full md:w-64">
+          {availableCurrencies.length > 1 ? (
             <Select<CurrencyOption>
               value={currencyOptions.find((option) => option.value === selectedCurrency)}
               onChange={handleCurrencyChange}
@@ -296,9 +323,21 @@ export function BudgetUtilizationMatrix({ queryParams, isLoading: parentLoading 
                 </div>
               )}
             />
-          </div>
+          ) : currencyData ? (
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-gray-50">
+              <Coins className="h-4 w-4 text-blue-500" />
+              <span className="text-sm font-medium">
+                {currencyData.currency_info.code} - {currencyData.currency_info.name}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-gray-50">
+              <Coins className="h-4 w-4 text-gray-400" />
+              <span className="text-sm text-gray-500">No currency data</span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Utilization Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
