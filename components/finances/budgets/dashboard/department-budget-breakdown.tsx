@@ -241,7 +241,7 @@ export function DepartmentBudgetBreakdown({ queryParams, isLoading: parentLoadin
   return (
     <div className="space-y-6">
       {/* Department Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1  lg:grid-cols-2 gap-6">
         {processedDepartments.map((dept) => (
           <Card key={dept.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
