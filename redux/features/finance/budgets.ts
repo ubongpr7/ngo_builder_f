@@ -62,6 +62,20 @@ export const budgetsApiSlice = apiSlice.injectEndpoints({
         return `/${backend}/budgets/statistics/${queryString ? `?${queryString}` : ""}`
       },
     }),
+    getBudgetHealth: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/budgets/health_indicators/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
 
     // Get budget by ID
     getBudgetById: builder.query<Budget, number>({
@@ -177,6 +191,7 @@ export const {
   useGetDepartmentalBreakdownQuery,
   useGetBudgetUtilizationMatrixQuery,
   useGetBudgetStatisticsQuery,
+  useGetBudgetHealthQuery,
   useGetBudgetByIdQuery,
   useCreateBudgetMutation,
   useUpdateBudgetMutation,
