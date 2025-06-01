@@ -58,12 +58,20 @@ import type { DonationCampaign } from "@/types/finance"
 import { format, differenceInDays, isAfter } from "date-fns"
 import { toast } from "react-toastify"
 import Image from "next/image"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface CampaignCardProps {
   campaign: DonationCampaign
   onEdit: (campaign: DonationCampaign) => void
   onDelete: (campaign: DonationCampaign) => void
   onView: (campaign: DonationCampaign) => void
+}
+
+interface CurrencyTotal {
+  code: string
+  total_raised: number
+  total_target: number
+  campaign_count: number
 }
 
 function CampaignCardSkeleton() {
@@ -108,6 +116,9 @@ function CampaignCardSkeleton() {
 }
 
 function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps) {
+  // Add state to control dropdown open/close
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
   const progressPercentage = campaign.progress_percentage || 0
   const daysRemaining = differenceInDays(new Date(campaign.end_date), new Date())
   const isExpired = daysRemaining < 0
@@ -175,6 +186,25 @@ function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps)
     return (campaign.campaign_status || campaign.status).replace("_", " ")
   }
 
+  // Handle dropdown actions with proper state management
+  const handleEdit = () => {
+    setDropdownOpen(false) // Close dropdown first
+    setTimeout(() => onEdit(campaign), 100) // Small delay to ensure dropdown closes
+  }
+
+  const handleDelete = () => {
+    setDropdownOpen(false) // Close dropdown first
+    setTimeout(() => onDelete(campaign), 100) // Small delay to ensure dropdown closes
+  }
+
+  const handleView = () => {
+    setDropdownOpen(false) // Close dropdown first
+    setTimeout(() => onView(campaign), 100) // Small delay to ensure dropdown closes
+  }
+
+  // Get currency code for formatting
+  const currencyCode = campaign.target_currency?.code || "USD"
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden">
       <div className="relative">
@@ -207,7 +237,7 @@ function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps)
         </div>
 
         <div className="absolute top-3 left-3">
-          <DropdownMenu>
+          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="secondary"
@@ -219,16 +249,16 @@ function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps)
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onView(campaign)}>
+              <DropdownMenuItem onClick={handleView}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(campaign)}>
+              <DropdownMenuItem onClick={handleEdit}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Campaign
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onDelete(campaign)} className="text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
@@ -269,14 +299,9 @@ function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps)
           <Progress value={progressPercentage} className="h-2" />
           <div className="flex justify-between items-center text-sm">
             <span className="font-semibold text-green-600">
-              {campaign.formatted_current_amount ||
-                `${campaign.target_currency?.code} ${(campaign.current_amount || 0).toLocaleString()}`}
+              {formatCurrency(currencyCode, campaign.current_amount || 0)}
             </span>
-            <span className="text-muted-foreground">
-              of{" "}
-              {campaign.formatted_target_amount ||
-                `${campaign.target_currency?.code} ${campaign.target_amount.toLocaleString()}`}
-            </span>
+            <span className="text-muted-foreground">of {formatCurrency(currencyCode, campaign.target_amount)}</span>
           </div>
         </div>
 
@@ -380,7 +405,7 @@ export function EnhancedCampaignListView() {
   const { data: dashboardStats } = useGetDashboardStatsQuery()
   const [deleteCampaign, { isLoading: isDeleting }] = useDeleteDonationCampaignMutation()
 
-  const campaigns = campaignsResponse || []
+  const campaigns = campaignsResponse?.results || []
 
   const filteredCampaigns = campaigns.filter((campaign: DonationCampaign) => {
     switch (selectedTab) {
@@ -399,14 +424,21 @@ export function EnhancedCampaignListView() {
     }
   })
 
+  // Enhanced handlers with proper state management
   const handleEdit = (campaign: DonationCampaign) => {
     setEditingCampaign(campaign)
-    setShowCreateDialog(true)
+    // Use setTimeout to ensure any open dropdowns are closed first
+    setTimeout(() => {
+      setShowCreateDialog(true)
+    }, 150)
   }
 
   const handleDeleteClick = (campaign: DonationCampaign) => {
     setCampaignToDelete(campaign)
-    setDeleteDialogOpen(true)
+    // Use setTimeout to ensure any open dropdowns are closed first
+    setTimeout(() => {
+      setDeleteDialogOpen(true)
+    }, 150)
   }
 
   const handleDeleteConfirm = async () => {
@@ -437,6 +469,7 @@ export function EnhancedCampaignListView() {
   }
 
   const handleView = (campaign: DonationCampaign) => {
+    // Navigate to campaign detail page
     window.location.href = `/campaigns/${campaign.id}`
   }
 
@@ -446,15 +479,45 @@ export function EnhancedCampaignListView() {
     setEditingCampaign(undefined)
   }
 
-  // Enhanced statistics calculations
+  // Close any open dialogs when component unmounts or when needed
+  const handleDialogClose = () => {
+    setShowCreateDialog(false)
+    setEditingCampaign(undefined)
+  }
+
+  // Enhanced statistics calculations with proper multicurrency handling
   const stats = dashboardStats || {
     summary: { total_campaigns: 0, active_campaigns: 0, completed_campaigns: 0 },
     health_distribution: {},
     status_distribution: {},
   }
 
-  const totalRaised = campaigns.reduce((sum: number, c: DonationCampaign) => sum + (c.current_amount || 0), 0)
-  const totalTarget = campaigns.reduce((sum: number, c: DonationCampaign) => sum + (c.target_amount || 0), 0)
+  // Group campaigns by currency for proper totals
+  const currencyTotals = campaigns.reduce((acc: Record<string, CurrencyTotal>, campaign: DonationCampaign) => {
+    const currencyCode = campaign.target_currency?.code || "USD"
+
+    if (!acc[currencyCode]) {
+      acc[currencyCode] = {
+        code: currencyCode,
+        total_raised: 0,
+        total_target: 0,
+        campaign_count: 0,
+      }
+    }
+
+    acc[currencyCode].total_raised += campaign.current_amount || 0
+    acc[currencyCode].total_target += campaign.target_amount || 0
+    acc[currencyCode].campaign_count += 1
+
+    return acc
+  }, {})
+
+  // Get the primary currency totals (most common currency or USD)
+  const currencyEntries = Object.values(currencyTotals)
+  const primaryCurrency =
+    currencyEntries.length > 0
+      ? currencyEntries.reduce((prev, current) => (prev.campaign_count > current.campaign_count ? prev : current))
+      : { code: "USD", total_raised: 0, total_target: 0, campaign_count: 0 }
 
   const avgProgress =
     campaigns.length > 0
@@ -531,7 +594,7 @@ export function EnhancedCampaignListView() {
       {/* Analytics Dashboard */}
       {showAnalytics && <CampaignAnalyticsDashboard campaigns={campaigns} dashboardStats={dashboardStats} />}
 
-      {/* Enhanced Summary Cards */}
+      {/* Enhanced Summary Cards with Multicurrency Support */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -554,10 +617,40 @@ export function EnhancedCampaignListView() {
               <div className="p-2 bg-green-100 rounded-lg">
                 <DollarSign className="h-5 w-5 text-green-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Total Raised</p>
-                <p className="text-2xl font-bold">${totalRaised.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">of ${totalTarget.toLocaleString()} target</p>
+                {currencyEntries.length > 0 ? (
+                  <div className="space-y-1">
+                    <p className="text-2xl font-bold">
+                      {formatCurrency(primaryCurrency.code, primaryCurrency.total_raised)}
+                    </p>
+                    {currencyEntries.length > 1 && (
+                      <div className="space-y-0.5">
+                        {currencyEntries
+                          .filter((c) => c.code !== primaryCurrency.code)
+                          .slice(0, 2)
+                          .map((currency) => (
+                            <p key={currency.code} className="text-xs text-muted-foreground">
+                              + {formatCurrency(currency.code, currency.total_raised)}
+                            </p>
+                          ))}
+                        {currencyEntries.length > 3 && (
+                          <p className="text-xs text-muted-foreground">
+                            + {currencyEntries.length - 3} more currencies
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      of {formatCurrency(primaryCurrency.code, primaryCurrency.total_target)} target
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-2xl font-bold">{formatCurrency("USD", 0)}</p>
+                    <p className="text-xs text-muted-foreground">No campaigns yet</p>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -595,6 +688,44 @@ export function EnhancedCampaignListView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Multicurrency Breakdown Card */}
+      {currencyEntries.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Multicurrency Breakdown</CardTitle>
+            <CardDescription>Campaign totals by currency</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {currencyEntries.map((currency) => (
+                <div key={currency.code} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold">{currency.code}</h4>
+                    <Badge variant="outline">{currency.campaign_count} campaigns</Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Raised:</span>
+                      <span className="font-medium text-green-600">
+                        {formatCurrency(currency.code, currency.total_raised)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Target:</span>
+                      <span className="font-medium">{formatCurrency(currency.code, currency.total_target)}</span>
+                    </div>
+                    <Progress
+                      value={currency.total_target > 0 ? (currency.total_raised / currency.total_target) * 100 : 0}
+                      className="h-2 mt-2"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Enhanced Search and Filters */}
       <Card>
@@ -723,7 +854,7 @@ export function EnhancedCampaignListView() {
       <AddEditCampaignDialog
         campaign={editingCampaign}
         open={showCreateDialog}
-        setOpen={setShowCreateDialog}
+        setOpen={handleDialogClose}
         onSuccess={handleSuccess}
       />
 
