@@ -18,11 +18,14 @@ interface FlutterwavePaymentProps {
   donationData: {
     id: number
     amount: number
-    currency: string
+    currency:  {code: string
+    id:number
+    name:string
+  }
+    d_type: "one-time" | "recurring" | "in-kind"
     donor_email: string
     donor_name: string
     donor_phone?: string
-    type: "one-time" | "recurring" | "in-kind"
     payment_plan_id?: string
     campaign_id?: string
   }
@@ -37,7 +40,7 @@ interface FlutterwaveResponse {
   tx_ref: string
   flw_ref: string
   amount: number
-  currency: string
+  currency:string
   customer: {
     email: string
     name: string
@@ -75,7 +78,7 @@ export function FlutterwavePayment({
         public_key: bankAccount.api_key,
         tx_ref,
         amount: donationData.amount,
-        currency: donationData.currency,
+        currency: donationData.currency?.code,
         payment_options: donationData.d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
         ...(donationData.d_type === "recurring" &&
           donationData.payment_plan_id && {
@@ -223,7 +226,7 @@ export function FlutterwavePayment({
       </Card>
     )
   }
-
+console.log(flutterwaveConfig, bankAccount)
   // Show error if no API key found
   if (!bankAccount?.api_key) {
     return (
