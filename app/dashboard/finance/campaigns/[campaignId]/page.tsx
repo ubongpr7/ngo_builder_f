@@ -19,6 +19,7 @@ import {
   Activity,
   RefreshCw,
   ImageIcon,
+  Edit,
 } from "lucide-react"
 import {
   useGetDonationCampaignByIdQuery,
@@ -42,7 +43,7 @@ import { MLInsights } from "./components/MLInsights"
 import { CampaignSettings } from "./components/CampaignSettings"
 import { RecentActivity } from "./components/RecentActivity"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
+import { AddEditCampaignDialog } from "@/components/finances/campaign/add-edit-campaign-dialog"
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658", "#FF7C7C"]
 
 const HEALTH_COLORS = {
@@ -90,7 +91,7 @@ export default function ComprehensiveCampaignDashboard() {
   // Mutations
   const [updateMonetaryFields] = useUpdateCampaignMonetaryFieldsMutation()
   const [exportData] = useExportCampaignDataMutation()
-
+  const [openEditDialog, setOpenEditDialog] = useState(false)
   // Generate ML-like insights
   useEffect(() => {
     if (analytics && trends && donorAnalysis) {
@@ -239,26 +240,17 @@ export default function ComprehensiveCampaignDashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={handleUpdateMonetary}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Update Metrics
+            <Button onClick={()=>setOpenEditDialog(true)}  variant="outline" size="sm">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
             </Button>
-            <Button variant="outline" size="sm" onClick={handleRefreshAll} disabled={refreshing}>
-              <Activity className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-              Refresh All
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleExport("csv")}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            <AddEditCampaignDialog 
+            campaign={campaign}
+            onSuccess={handleRefreshAll}
+            setOpen={setOpenEditDialog}
+            open={openEditDialog}
+             />
+
           </div>
         </div>
 
