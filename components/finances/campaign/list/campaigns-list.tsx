@@ -405,7 +405,7 @@ export function EnhancedCampaignListView() {
   const { data: dashboardStats } = useGetDashboardStatsQuery()
   const [deleteCampaign, { isLoading: isDeleting }] = useDeleteDonationCampaignMutation()
 
-  const campaigns = campaignsResponse?.results || []
+  const campaigns = campaignsResponse || []
 
   const filteredCampaigns = campaigns.filter((campaign: DonationCampaign) => {
     switch (selectedTab) {
