@@ -66,7 +66,7 @@ export function FlutterwavePayment({
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
 
   // Generate unique transaction reference
-  const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
+  const tx_ref = `donation_${donationData.d_type}_${donationData.id}_${Date.now()}`
 
   // Initialize Flutterwave config when bank account data is available
   useEffect(() => {
