@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserPlus, LogIn, Heart } from "lucide-react"
 import VerificationLoginForm from "@/components/membership/MembershipLogin"
-
+import MembershipRegister from "./membership/MembershipRegister"
 interface AuthDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -56,14 +56,7 @@ export function AuthDialog({
           </TabsContent>
 
           <TabsContent value="register">
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Registration form would go here. For now, please use the login form.
-              </p>
-              <Button variant="outline" onClick={() => setActiveTab("login")} className="w-full">
-                Go to Login
-              </Button>
-            </div>
+            <MembershipRegister/>
           </TabsContent>
         </Tabs>
 

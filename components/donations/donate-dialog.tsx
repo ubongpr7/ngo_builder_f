@@ -160,6 +160,11 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     { value: "comparable_sales", label: "Comparable Sales" },
   ]
 
+  const recurringPaymentMethodOptions: SelectOption[] = [
+    { value: "credit_card", label: "Credit Card", icon: <CreditCard className="h-4 w-4" /> },
+    { value: "debit_card", label: "Debit Card", icon: <CreditCard className="h-4 w-4" /> },
+  ]
+
   // Get currencies from API
   const { data: currencies = [] } = useGetCurrenciesQuery()
   const currencyOptions = currencies.map((currency: CurrencyInterface) => ({
@@ -635,8 +640,10 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <div className="mt-2">
                         <Select
                           name="payment_method"
-                          options={paymentMethodOptions}
-                          value={paymentMethodOptions.find((option) => option.value === recurringForm.payment_method)}
+                          options={recurringPaymentMethodOptions}
+                          value={recurringPaymentMethodOptions.find(
+                            (option) => option.value === recurringForm.payment_method,
+                          )}
                           onChange={(option) =>
                             setRecurringForm({ ...recurringForm, payment_method: option?.value || "" })
                           }
