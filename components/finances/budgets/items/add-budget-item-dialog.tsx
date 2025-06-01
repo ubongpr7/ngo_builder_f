@@ -133,7 +133,7 @@ export function AddBudgetItemDialog({
     // Validate budget amount doesn't exceed available amount
     if (data.budgeted_amount > availableAmount) {
       toast.error(
-        `Budget amount cannot exceed available budget of ${budgetCurrency.code} ${availableAmount.toLocaleString()}`,
+        `Budget amount cannot exceed available budget of ${formatCurrency(budgetCurrency.code, availableAmount)}`,
       )
       return
     }
