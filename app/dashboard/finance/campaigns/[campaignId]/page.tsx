@@ -33,15 +33,15 @@ import {
   useExportCampaignDataMutation,
 } from "@/redux/features/finance/donation-campaigns"
 import { formatCurrency } from "@/lib/currency-utils"
-import { CampaignOverview } from "./components/CampaignOverview"
-import { FinancialMetrics } from "./components/FinancialMetrics"
-import { DonorAnalytics } from "./components/DonorAnalytics"
-import { TrendsAnalysis } from "./components/TrendsAnalysis"
-import { PaymentAnalysis } from "./components/PaymentAnalysis"
-import { BankAccountManagement } from "./components/BankAccountManagement"
-import { MLInsights } from "./components/MLInsights"
-import { CampaignSettings } from "./components/CampaignSettings"
-import { RecentActivity } from "./components/RecentActivity"
+import { CampaignOverview } from "@/components/finances/campaign/list/components/CampaignOverview"
+import { FinancialMetrics } from "@/components/finances/campaign/list/components/FinancialMetrics"
+import { DonorAnalytics } from "@/components/finances/campaign/list/components/DonorAnalytics"
+import { TrendsAnalysis } from "@/components/finances/campaign/list/components/TrendsAnalysis"
+import { PaymentAnalysis } from "@/components/finances/campaign/list/components/PaymentAnalysis"
+import { BankAccountManagement } from "@/components/finances/campaign/list/components/BankAccountManagement"
+import { MLInsights } from "@/components/finances/campaign/list/components/MLInsights"
+import { CampaignSettings } from "@/components/finances/campaign/list/components/CampaignSettings"
+import { RecentActivity } from "@/components/finances/campaign/list/components/RecentActivity"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AddEditCampaignDialog } from "@/components/finances/campaign/add-edit-campaign-dialog"
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658", "#FF7C7C"]
@@ -328,7 +328,7 @@ export default function ComprehensiveCampaignDashboard() {
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-6">
-            <RecentActivity donations={donations} campaignId={campaignId} />
+            <RecentActivity  campaignId={campaignId} />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
