@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/currency-utils"
-import { TrendingUp, CheckCircle, AlertCircle, DollarSign } from "lucide-react"
+import { TrendingUp, CheckCircle, AlertCircle, DollarSign, ImageIcon } from "lucide-react"
 
 const HEALTH_COLORS = {
   EXCELLENT: "#10B981",
@@ -57,7 +57,7 @@ export function CampaignOverview({ campaign, analytics }: CampaignOverviewProps)
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Progress</span>
-              <span className="font-medium">{analytics.financial_metrics?.progress_percentage}%</span>
+              <span className="font-medium">{analytics.financial_metrics?.progress_percentage?.toFixed(1)}%</span>
             </div>
             <Progress value={analytics.financial_metrics?.progress_percentage} className="h-3" />
           </div>
@@ -122,6 +122,60 @@ export function CampaignOverview({ campaign, analytics }: CampaignOverviewProps)
           </div>
         </CardContent>
       </Card>
+
+      {/* Campaign Media Section */}
+      {(campaign?.image || campaign?.video) && (
+        <div className="col-span-1 md:col-span-2 lg:col-span-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ImageIcon className="h-5 w-5 mr-2" />
+                Campaign Media
+              </CardTitle>
+              <CardDescription>Visual content for this campaign</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Campaign Image */}
+                {campaign?.image && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Campaign Image</h4>
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <img
+                        src={campaign.image || "/placeholder.svg"}
+                        alt={campaign.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          target.src = "/placeholder.svg?height=300&width=400&text=Image+Not+Found"
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Campaign Video */}
+                {campaign?.video && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Campaign Video</h4>
+                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                      <video
+                        src={campaign.video}
+                        controls
+                        className="w-full h-full object-cover"
+                        poster={campaign.image || undefined}
+                      >
+                        <source src={campaign.video} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

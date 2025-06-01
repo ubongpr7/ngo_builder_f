@@ -18,6 +18,7 @@ import {
   Banknote,
   Activity,
   RefreshCw,
+  ImageIcon,
 } from "lucide-react"
 import {
   useGetDonationCampaignByIdQuery,
@@ -40,6 +41,7 @@ import { BankAccountManagement } from "./components/BankAccountManagement"
 import { MLInsights } from "./components/MLInsights"
 import { CampaignSettings } from "./components/CampaignSettings"
 import { RecentActivity } from "./components/RecentActivity"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82CA9D", "#FFC658", "#FF7C7C"]
 
@@ -122,7 +124,7 @@ export default function ComprehensiveCampaignDashboard() {
       insights.push({
         type: "alert",
         title: "Low Donor Retention",
-        description: `Only ${retentionRate}% of donors are repeat contributors. Consider implementing donor engagement strategies.`,
+        description: `Only ${retentionRate.toFixed(1)}% of donors are repeat contributors. Consider implementing donor engagement strategies.`,
         confidence: 95,
         impact: "high",
         actionable: true,
@@ -261,7 +263,64 @@ export default function ComprehensiveCampaignDashboard() {
         </div>
 
         {/* Campaign Overview Cards */}
-        <CampaignOverview campaign={campaign} analytics={analytics} />
+        <div className="space-y-6">
+          <CampaignOverview campaign={campaign} analytics={analytics} />
+
+          {/* Campaign Media Section */}
+          {(campaign?.image || campaign?.video) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <ImageIcon className="h-5 w-5 mr-2" />
+                  Campaign Media
+                </CardTitle>
+                <CardDescription>Visual content for this campaign</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Campaign Image */}
+                  {campaign?.image && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium">Campaign Image</h4>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
+                        <img
+                          src={campaign.image || "/placeholder.svg"}
+                          alt={campaign.title}
+                          className="w-full h-full object-cover transition-opacity duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/placeholder.svg?height=300&width=400&text=Image+Not+Found"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Campaign Video */}
+                  {campaign?.video && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium">Campaign Video</h4>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
+                        <video
+                          src={campaign.video}
+                          controls
+                          className="w-full h-full object-cover"
+                          poster={campaign.image || undefined}
+                          preload="metadata"
+                        >
+                          <source src={campaign.video} type="video/mp4" />
+                          <source src={campaign.video} type="video/webm" />
+                          <source src={campaign.video} type="video/ogg" />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* ML Insights */}
         {mlInsights.length > 0 && <MLInsights insights={mlInsights} />}
