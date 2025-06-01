@@ -20,6 +20,7 @@ import { useCreateInKindDonationMutation } from "@/redux/features/finance/in-kin
 import { formatCurrency } from "@/lib/currency-utils"
 import Select from "react-select"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
+import { PaymentHandler } from "../payments/payment-handler"
 
 interface DonationDialogProps {
   open: boolean
@@ -46,6 +47,9 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
   const [activeTab, setActiveTab] = useState(recurring ? "recurring" : "one-time")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const formRef = useRef<HTMLDivElement>(null)
+  // Add this state to the DonationDialog component
+  const [showPayment, setShowPayment] = useState(false)
+  const [currentDonation, setCurrentDonation] = useState<any>(null)
 
   // Mutations
   const [createDonation, { isLoading: isCreatingDonation }] = useCreateDonationMutation()
@@ -331,42 +335,74 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     }
   }, [errors])
 
+  // Update the handleOneTimeSubmit function
   const handleOneTimeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateOneTimeForm()) return
 
     try {
-      await createDonation({
+      const result = await createDonation({
         ...oneTimeForm,
         amount: Number.parseFloat(oneTimeForm.amount),
         campaign: oneTimeForm.campaign ? Number.parseInt(oneTimeForm.campaign) : null,
       }).unwrap()
 
-      toast.success("Donation created successfully! You will be redirected to payment.")
-      setOpen(false)
-      // Here you would typically redirect to payment processor
+      // Set current donation and show payment
+      setCurrentDonation({
+        id: result.id,
+        amount: Number.parseFloat(oneTimeForm.amount),
+        currency: oneTimeForm.currency,
+        donor_email: oneTimeForm.donor_email,
+        donor_name: oneTimeForm.donor_name,
+        donor_phone: oneTimeForm.donor_phone,
+        type: "one-time",
+      })
+      setShowPayment(true)
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create donation")
     }
   }
 
+  // Update the handleRecurringSubmit function
   const handleRecurringSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateRecurringForm()) return
 
     try {
-      await createRecurringDonation({
+      const result = await createRecurringDonation({
         ...recurringForm,
         amount: Number.parseFloat(recurringForm.amount),
         campaign: recurringForm.campaign ? Number.parseInt(recurringForm.campaign) : null,
       }).unwrap()
 
-      toast.success("Recurring donation created successfully! You will be redirected to payment setup.")
-      setOpen(false)
-      // Here you would typically redirect to payment processor for subscription setup
+      // Set current donation and show payment
+      setCurrentDonation({
+        id: result.id,
+        amount: Number.parseFloat(recurringForm.amount),
+        currency: recurringForm.currency,
+        donor_email: user?.email || "",
+        donor_name: user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : "",
+        donor_phone: "",
+        type: "recurring",
+        payment_plan_id: result.payment_plan_id, // If your API returns this
+      })
+      setShowPayment(true)
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to create recurring donation")
     }
+  }
+
+  // Add this function to handle payment completion
+  const handlePaymentComplete = () => {
+    toast.success("Payment completed successfully!")
+    setShowPayment(false)
+    setOpen(false)
+  }
+
+  // Add this function to handle payment cancellation
+  const handlePaymentCancel = () => {
+    toast.info("Payment cancelled")
+    setShowPayment(false)
   }
 
   const handleInKindSubmit = async (e: React.FormEvent) => {
@@ -376,19 +412,17 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     try {
       await createInKindDonation({
         ...inKindForm,
-        quantity: Number.parseInt(inKindForm.quantity),
-        estimated_value: Number.parseFloat(inKindForm.estimated_value),
         campaign: inKindForm.campaign ? Number.parseInt(inKindForm.campaign) : null,
-        pickup_required: inKindForm.pickup_required,
       }).unwrap()
 
-      toast.success("In-kind donation pledge created successfully! We will contact you soon.")
+      toast.success("In-Kind Donation Pledge submitted successfully!")
       setOpen(false)
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create in-kind donation")
+      toast.error(error?.data?.message || "Failed to create in-kind donation pledge")
     }
   }
 
+  // Modify the return statement to conditionally show payment or form
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger}
@@ -396,601 +430,625 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <Heart className="h-6 w-6 mr-2 text-red-500" />
-            Make a Donation
+            {showPayment ? "Complete Payment" : "Make a Donation"}
           </DialogTitle>
           <DialogDescription>
-            {selectedCampaign
-              ? `Support the "${selectedCampaign.title}" campaign`
-              : "Choose how you'd like to support our mission"}
+            {showPayment
+              ? "Complete your donation payment"
+              : selectedCampaign
+                ? `Support the "${selectedCampaign.title}" campaign`
+                : "Choose how you'd like to support our mission"}
           </DialogDescription>
         </DialogHeader>
 
-        <div ref={formRef}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="one-time" className="flex items-center">
-                <Heart className="h-4 w-4 mr-2" />
-                One-Time
-              </TabsTrigger>
-              <TabsTrigger value="recurring" className="flex items-center">
-                <Repeat className="h-4 w-4 mr-2" />
-                Recurring
-              </TabsTrigger>
-              <TabsTrigger value="in-kind" className="flex items-center">
-                <Gift className="h-4 w-4 mr-2" />
-                In-Kind
-              </TabsTrigger>
-            </TabsList>
+        {showPayment && currentDonation ? (
+          <PaymentHandler
+            donationData={currentDonation}
+            onComplete={handlePaymentComplete}
+            onCancel={handlePaymentCancel}
+          />
+        ) : (
+          <div ref={formRef}>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="one-time" className="flex items-center">
+                  <Heart className="h-4 w-4 mr-2" />
+                  One-Time
+                </TabsTrigger>
+                <TabsTrigger value="recurring" className="flex items-center">
+                  <Repeat className="h-4 w-4 mr-2" />
+                  Recurring
+                </TabsTrigger>
+                <TabsTrigger value="in-kind" className="flex items-center">
+                  <Gift className="h-4 w-4 mr-2" />
+                  In-Kind
+                </TabsTrigger>
+              </TabsList>
 
-            {/* One-Time Donation Form */}
-            <TabsContent value="one-time">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Heart className="h-5 w-5 mr-2 text-red-500" />
-                    One-Time Donation
-                  </CardTitle>
-                  <CardDescription>Make a single donation to support our cause</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleOneTimeSubmit} className="space-y-6">
-                    {/* Amount and Currency */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="amount">Donation Amount *</Label>
-                        <Input
-                          id="amount"
-                          name="amount"
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          placeholder="0.00"
-                          value={oneTimeForm.amount}
-                          onChange={(e) => setOneTimeForm({ ...oneTimeForm, amount: e.target.value })}
-                          className={errors.amount ? "border-red-500" : ""}
-                        />
-                        {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="currency">Currency *</Label>
-                        <Select
-                          name="currency"
-                          options={currencyOptions}
-                          value={currencyOptions.find((option) => option.value === oneTimeForm.currency)}
-                          onChange={(option) => setOneTimeForm({ ...oneTimeForm, currency: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select currency"
-                          isSearchable
-                        />
-                        {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency}</p>}
-                      </div>
-                    </div>
-
-                    {/* Payment Method */}
-                    <div>
-                      <Label>Payment Method *</Label>
-                      <div className="mt-2">
-                        <Select
-                          name="payment_method"
-                          options={paymentMethodOptions}
-                          value={paymentMethodOptions.find((option) => option.value === oneTimeForm.payment_method)}
-                          onChange={(option) => setOneTimeForm({ ...oneTimeForm, payment_method: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select payment method"
-                          components={{ Option: OptionWithIcon }}
-                        />
-                      </div>
-                      {errors.payment_method && <p className="text-red-500 text-sm mt-1">{errors.payment_method}</p>}
-                    </div>
-
-                    {/* Anonymous Donation */}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="anonymous"
-                        checked={oneTimeForm.is_anonymous}
-                        onCheckedChange={(checked) => setOneTimeForm({ ...oneTimeForm, is_anonymous: !!checked })}
-                      />
-                      <Label htmlFor="anonymous">Make this donation anonymous</Label>
-                    </div>
-
-                    {/* Donor Information */}
-                    {!oneTimeForm.is_anonymous && (
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Donor Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="donor_name">Full Name *</Label>
-                            <Input
-                              id="donor_name"
-                              name="donor_name"
-                              value={oneTimeForm.donor_name}
-                              onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_name: e.target.value })}
-                              className={errors.donor_name ? "border-red-500" : ""}
-                            />
-                            {errors.donor_name && <p className="text-red-500 text-sm mt-1">{errors.donor_name}</p>}
-                          </div>
-                          <div>
-                            <Label htmlFor="donor_email">Email Address *</Label>
-                            <Input
-                              id="donor_email"
-                              name="donor_email"
-                              type="email"
-                              value={oneTimeForm.donor_email}
-                              onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_email: e.target.value })}
-                              className={errors.donor_email ? "border-red-500" : ""}
-                            />
-                            {errors.donor_email && <p className="text-red-500 text-sm mt-1">{errors.donor_email}</p>}
-                          </div>
+              {/* One-Time Donation Form */}
+              <TabsContent value="one-time">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Heart className="h-5 w-5 mr-2 text-red-500" />
+                      One-Time Donation
+                    </CardTitle>
+                    <CardDescription>Make a single donation to support our cause</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleOneTimeSubmit} className="space-y-6">
+                      {/* Amount and Currency */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="amount">Donation Amount *</Label>
+                          <Input
+                            id="amount"
+                            name="amount"
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="0.00"
+                            value={oneTimeForm.amount}
+                            onChange={(e) => setOneTimeForm({ ...oneTimeForm, amount: e.target.value })}
+                            className={errors.amount ? "border-red-500" : ""}
+                          />
+                          {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
                         </div>
                         <div>
-                          <Label htmlFor="donor_phone">Phone Number (Optional)</Label>
+                          <Label htmlFor="currency">Currency *</Label>
+                          <Select
+                            name="currency"
+                            options={currencyOptions}
+                            value={currencyOptions.find((option) => option.value === oneTimeForm.currency)}
+                            onChange={(option) => setOneTimeForm({ ...oneTimeForm, currency: option?.value || "" })}
+                            styles={selectStyles}
+                            placeholder="Select currency"
+                            isSearchable
+                          />
+                          {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency}</p>}
+                        </div>
+                      </div>
+
+                      {/* Payment Method */}
+                      <div>
+                        <Label>Payment Method *</Label>
+                        <div className="mt-2">
+                          <Select
+                            name="payment_method"
+                            options={paymentMethodOptions}
+                            value={paymentMethodOptions.find((option) => option.value === oneTimeForm.payment_method)}
+                            onChange={(option) =>
+                              setOneTimeForm({ ...oneTimeForm, payment_method: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select payment method"
+                            components={{ Option: OptionWithIcon }}
+                          />
+                        </div>
+                        {errors.payment_method && <p className="text-red-500 text-sm mt-1">{errors.payment_method}</p>}
+                      </div>
+
+                      {/* Anonymous Donation */}
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="anonymous"
+                          checked={oneTimeForm.is_anonymous}
+                          onCheckedChange={(checked) => setOneTimeForm({ ...oneTimeForm, is_anonymous: !!checked })}
+                        />
+                        <Label htmlFor="anonymous">Make this donation anonymous</Label>
+                      </div>
+
+                      {/* Donor Information */}
+                      {!oneTimeForm.is_anonymous && (
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Donor Information</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="donor_name">Full Name *</Label>
+                              <Input
+                                id="donor_name"
+                                name="donor_name"
+                                value={oneTimeForm.donor_name}
+                                onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_name: e.target.value })}
+                                className={errors.donor_name ? "border-red-500" : ""}
+                              />
+                              {errors.donor_name && <p className="text-red-500 text-sm mt-1">{errors.donor_name}</p>}
+                            </div>
+                            <div>
+                              <Label htmlFor="donor_email">Email Address *</Label>
+                              <Input
+                                id="donor_email"
+                                name="donor_email"
+                                type="email"
+                                value={oneTimeForm.donor_email}
+                                onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_email: e.target.value })}
+                                className={errors.donor_email ? "border-red-500" : ""}
+                              />
+                              {errors.donor_email && <p className="text-red-500 text-sm mt-1">{errors.donor_email}</p>}
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="donor_phone">Phone Number (Optional)</Label>
+                            <Input
+                              id="donor_phone"
+                              name="donor_phone"
+                              value={oneTimeForm.donor_phone}
+                              onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_phone: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Message */}
+                      <div>
+                        <Label htmlFor="message">Message (Optional)</Label>
+                        <Textarea
+                          id="message"
+                          name="message"
+                          placeholder="Leave a message with your donation..."
+                          value={oneTimeForm.message}
+                          onChange={(e) => setOneTimeForm({ ...oneTimeForm, message: e.target.value })}
+                        />
+                      </div>
+
+                      {/* Opt-ins */}
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="marketing_opt_in"
+                            checked={oneTimeForm.marketing_opt_in}
+                            onCheckedChange={(checked) =>
+                              setOneTimeForm({ ...oneTimeForm, marketing_opt_in: !!checked })
+                            }
+                          />
+                          <Label htmlFor="marketing_opt_in">I'd like to receive updates about this campaign</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="newsletter_opt_in"
+                            checked={oneTimeForm.newsletter_opt_in}
+                            onCheckedChange={(checked) =>
+                              setOneTimeForm({ ...oneTimeForm, newsletter_opt_in: !!checked })
+                            }
+                          />
+                          <Label htmlFor="newsletter_opt_in">Subscribe to our newsletter</Label>
+                        </div>
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={isCreatingDonation}>
+                        {isCreatingDonation
+                          ? "Processing..."
+                          : `Donate ${formatCurrency(oneTimeForm.currency, Number.parseFloat(oneTimeForm.amount) || 0)}`}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Recurring Donation Form */}
+              <TabsContent value="recurring">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Repeat className="h-5 w-5 mr-2 text-blue-500" />
+                      Recurring Donation
+                    </CardTitle>
+                    <CardDescription>Set up a recurring donation to provide ongoing support</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleRecurringSubmit} className="space-y-6">
+                      {/* Amount, Currency, and Frequency */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="recurring_amount">Amount *</Label>
                           <Input
-                            id="donor_phone"
-                            name="donor_phone"
-                            value={oneTimeForm.donor_phone}
-                            onChange={(e) => setOneTimeForm({ ...oneTimeForm, donor_phone: e.target.value })}
+                            id="recurring_amount"
+                            name="amount"
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="0.00"
+                            value={recurringForm.amount}
+                            onChange={(e) => setRecurringForm({ ...recurringForm, amount: e.target.value })}
+                            className={errors.amount ? "border-red-500" : ""}
+                          />
+                          {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="recurring_currency">Currency *</Label>
+                          <Select
+                            name="currency"
+                            options={currencyOptions}
+                            value={currencyOptions.find((option) => option.value === recurringForm.currency)}
+                            onChange={(option) => setRecurringForm({ ...recurringForm, currency: option?.value || "" })}
+                            styles={selectStyles}
+                            placeholder="Select currency"
+                            isSearchable
+                          />
+                          {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="frequency">Frequency *</Label>
+                          <Select
+                            name="frequency"
+                            options={frequencyOptions}
+                            value={frequencyOptions.find((option) => option.value === recurringForm.frequency)}
+                            onChange={(option) =>
+                              setRecurringForm({ ...recurringForm, frequency: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select frequency"
+                          />
+                          {errors.frequency && <p className="text-red-500 text-sm mt-1">{errors.frequency}</p>}
+                        </div>
+                      </div>
+
+                      {/* Payment Method */}
+                      <div>
+                        <Label>Payment Method *</Label>
+                        <div className="mt-2">
+                          <Select
+                            name="payment_method"
+                            options={recurringPaymentMethodOptions}
+                            value={recurringPaymentMethodOptions.find(
+                              (option) => option.value === recurringForm.payment_method,
+                            )}
+                            onChange={(option) =>
+                              setRecurringForm({ ...recurringForm, payment_method: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select payment method"
+                            components={{ Option: OptionWithIcon }}
+                          />
+                        </div>
+                        {errors.payment_method && <p className="text-red-500 text-sm mt-1">{errors.payment_method}</p>}
+                      </div>
+
+                      {/* Dates */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="start_date">Start Date *</Label>
+                          <Input
+                            id="start_date"
+                            name="start_date"
+                            type="date"
+                            value={recurringForm.start_date}
+                            onChange={(e) => setRecurringForm({ ...recurringForm, start_date: e.target.value })}
+                            className={errors.start_date ? "border-red-500" : ""}
+                          />
+                          {errors.start_date && <p className="text-red-500 text-sm mt-1">{errors.start_date}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="end_date">End Date (Optional)</Label>
+                          <Input
+                            id="end_date"
+                            name="end_date"
+                            type="date"
+                            value={recurringForm.end_date}
+                            onChange={(e) => setRecurringForm({ ...recurringForm, end_date: e.target.value })}
+                            className={errors.end_date ? "border-red-500" : ""}
+                          />
+                          {errors.end_date && <p className="text-red-500 text-sm mt-1">{errors.end_date}</p>}
+                        </div>
+                      </div>
+
+                      {/* Anonymous */}
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="recurring_anonymous"
+                          checked={recurringForm.is_anonymous}
+                          onCheckedChange={(checked) => setRecurringForm({ ...recurringForm, is_anonymous: !!checked })}
+                        />
+                        <Label htmlFor="recurring_anonymous">Make this donation anonymous</Label>
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <Label htmlFor="recurring_notes">Notes (Optional)</Label>
+                        <Textarea
+                          id="recurring_notes"
+                          name="notes"
+                          placeholder="Any additional notes about your recurring donation..."
+                          value={recurringForm.notes}
+                          onChange={(e) => setRecurringForm({ ...recurringForm, notes: e.target.value })}
+                        />
+                      </div>
+
+                      <Button type="submit" className="w-full" disabled={isCreatingRecurring}>
+                        {isCreatingRecurring
+                          ? "Setting up..."
+                          : `Set up ${formatCurrency(recurringForm.currency, Number.parseFloat(recurringForm.amount) || 0)} ${recurringForm.frequency} donation`}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* In-Kind Donation Form */}
+              <TabsContent value="in-kind">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Gift className="h-5 w-5 mr-2 text-green-500" />
+                      In-Kind Donation
+                    </CardTitle>
+                    <CardDescription>Donate goods, services, or other non-monetary items</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleInKindSubmit} className="space-y-6">
+                      {/* Item Description */}
+                      <div>
+                        <Label htmlFor="item_description">Item Description *</Label>
+                        <Textarea
+                          id="item_description"
+                          name="item_description"
+                          placeholder="Describe what you're donating in detail..."
+                          value={inKindForm.item_description}
+                          onChange={(e) => setInKindForm({ ...inKindForm, item_description: e.target.value })}
+                          className={errors.item_description ? "border-red-500" : ""}
+                        />
+                        {errors.item_description && (
+                          <p className="text-red-500 text-sm mt-1">{errors.item_description}</p>
+                        )}
+                      </div>
+
+                      {/* Category and Details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="category">Category *</Label>
+                          <Select
+                            name="category"
+                            options={inKindCategoryOptions}
+                            value={inKindCategoryOptions.find((option) => option.value === inKindForm.category)}
+                            onChange={(option) => setInKindForm({ ...inKindForm, category: option?.value || "" })}
+                            styles={selectStyles}
+                            placeholder="Select category"
+                            isSearchable
+                          />
+                          {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="brand_model">Brand/Model (Optional)</Label>
+                          <Input
+                            id="brand_model"
+                            name="brand_model"
+                            value={inKindForm.brand_model}
+                            onChange={(e) => setInKindForm({ ...inKindForm, brand_model: e.target.value })}
                           />
                         </div>
                       </div>
-                    )}
 
-                    {/* Message */}
-                    <div>
-                      <Label htmlFor="message">Message (Optional)</Label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        placeholder="Leave a message with your donation..."
-                        value={oneTimeForm.message}
-                        onChange={(e) => setOneTimeForm({ ...oneTimeForm, message: e.target.value })}
-                      />
-                    </div>
+                      {/* Quantity and Condition */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="quantity">Quantity *</Label>
+                          <Input
+                            id="quantity"
+                            name="quantity"
+                            type="number"
+                            min="1"
+                            value={inKindForm.quantity}
+                            onChange={(e) => setInKindForm({ ...inKindForm, quantity: e.target.value })}
+                            className={errors.quantity ? "border-red-500" : ""}
+                          />
+                          {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+                        </div>
+                        <div>
+                          <Label htmlFor="unit_of_measure">Unit *</Label>
+                          <Select
+                            id="unit_of_measure"
+                            name="unit_of_measure"
+                            options={unitOptions}
+                            value={unitOptions.find((option) => option.value === inKindForm.unit_of_measure)}
+                            onChange={(option) =>
+                              setInKindForm({ ...inKindForm, unit_of_measure: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select unit"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="condition">Condition *</Label>
+                          <Select
+                            id="condition"
+                            name="condition"
+                            options={conditionOptions}
+                            value={conditionOptions.find((option) => option.value === inKindForm.condition)}
+                            onChange={(option) => setInKindForm({ ...inKindForm, condition: option?.value || "" })}
+                            styles={selectStyles}
+                            placeholder="Select condition"
+                          />
+                        </div>
+                      </div>
 
-                    {/* Opt-ins */}
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="marketing_opt_in"
-                          checked={oneTimeForm.marketing_opt_in}
-                          onCheckedChange={(checked) => setOneTimeForm({ ...oneTimeForm, marketing_opt_in: !!checked })}
-                        />
-                        <Label htmlFor="marketing_opt_in">I'd like to receive updates about this campaign</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="newsletter_opt_in"
-                          checked={oneTimeForm.newsletter_opt_in}
-                          onCheckedChange={(checked) =>
-                            setOneTimeForm({ ...oneTimeForm, newsletter_opt_in: !!checked })
-                          }
-                        />
-                        <Label htmlFor="newsletter_opt_in">Subscribe to our newsletter</Label>
-                      </div>
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isCreatingDonation}>
-                      {isCreatingDonation
-                        ? "Processing..."
-                        : `Donate ${formatCurrency(oneTimeForm.currency, Number.parseFloat(oneTimeForm.amount) || 0)}`}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Recurring Donation Form */}
-            <TabsContent value="recurring">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Repeat className="h-5 w-5 mr-2 text-blue-500" />
-                    Recurring Donation
-                  </CardTitle>
-                  <CardDescription>Set up a recurring donation to provide ongoing support</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleRecurringSubmit} className="space-y-6">
-                    {/* Amount, Currency, and Frequency */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="recurring_amount">Amount *</Label>
-                        <Input
-                          id="recurring_amount"
-                          name="amount"
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          placeholder="0.00"
-                          value={recurringForm.amount}
-                          onChange={(e) => setRecurringForm({ ...recurringForm, amount: e.target.value })}
-                          className={errors.amount ? "border-red-500" : ""}
-                        />
-                        {errors.amount && <p className="text-red-500 text-sm mt-1">{errors.amount}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="recurring_currency">Currency *</Label>
-                        <Select
-                          name="currency"
-                          options={currencyOptions}
-                          value={currencyOptions.find((option) => option.value === recurringForm.currency)}
-                          onChange={(option) => setRecurringForm({ ...recurringForm, currency: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select currency"
-                          isSearchable
-                        />
-                        {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="frequency">Frequency *</Label>
-                        <Select
-                          name="frequency"
-                          options={frequencyOptions}
-                          value={frequencyOptions.find((option) => option.value === recurringForm.frequency)}
-                          onChange={(option) => setRecurringForm({ ...recurringForm, frequency: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select frequency"
-                        />
-                        {errors.frequency && <p className="text-red-500 text-sm mt-1">{errors.frequency}</p>}
-                      </div>
-                    </div>
-
-                    {/* Payment Method */}
-                    <div>
-                      <Label>Payment Method *</Label>
-                      <div className="mt-2">
-                        <Select
-                          name="payment_method"
-                          options={recurringPaymentMethodOptions}
-                          value={recurringPaymentMethodOptions.find(
-                            (option) => option.value === recurringForm.payment_method,
+                      {/* Valuation */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="estimated_value">Estimated Value *</Label>
+                          <Input
+                            id="estimated_value"
+                            name="estimated_value"
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="0.00"
+                            value={inKindForm.estimated_value}
+                            onChange={(e) => setInKindForm({ ...inKindForm, estimated_value: e.target.value })}
+                            className={errors.estimated_value ? "border-red-500" : ""}
+                          />
+                          {errors.estimated_value && (
+                            <p className="text-red-500 text-sm mt-1">{errors.estimated_value}</p>
                           )}
-                          onChange={(option) =>
-                            setRecurringForm({ ...recurringForm, payment_method: option?.value || "" })
-                          }
-                          styles={selectStyles}
-                          placeholder="Select payment method"
-                          components={{ Option: OptionWithIcon }}
-                        />
-                      </div>
-                      {errors.payment_method && <p className="text-red-500 text-sm mt-1">{errors.payment_method}</p>}
-                    </div>
-
-                    {/* Dates */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="start_date">Start Date *</Label>
-                        <Input
-                          id="start_date"
-                          name="start_date"
-                          type="date"
-                          value={recurringForm.start_date}
-                          onChange={(e) => setRecurringForm({ ...recurringForm, start_date: e.target.value })}
-                          className={errors.start_date ? "border-red-500" : ""}
-                        />
-                        {errors.start_date && <p className="text-red-500 text-sm mt-1">{errors.start_date}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="end_date">End Date (Optional)</Label>
-                        <Input
-                          id="end_date"
-                          name="end_date"
-                          type="date"
-                          value={recurringForm.end_date}
-                          onChange={(e) => setRecurringForm({ ...recurringForm, end_date: e.target.value })}
-                          className={errors.end_date ? "border-red-500" : ""}
-                        />
-                        {errors.end_date && <p className="text-red-500 text-sm mt-1">{errors.end_date}</p>}
-                      </div>
-                    </div>
-
-                    {/* Anonymous */}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="recurring_anonymous"
-                        checked={recurringForm.is_anonymous}
-                        onCheckedChange={(checked) => setRecurringForm({ ...recurringForm, is_anonymous: !!checked })}
-                      />
-                      <Label htmlFor="recurring_anonymous">Make this donation anonymous</Label>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <Label htmlFor="recurring_notes">Notes (Optional)</Label>
-                      <Textarea
-                        id="recurring_notes"
-                        name="notes"
-                        placeholder="Any additional notes about your recurring donation..."
-                        value={recurringForm.notes}
-                        onChange={(e) => setRecurringForm({ ...recurringForm, notes: e.target.value })}
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isCreatingRecurring}>
-                      {isCreatingRecurring
-                        ? "Setting up..."
-                        : `Set up ${formatCurrency(recurringForm.currency, Number.parseFloat(recurringForm.amount) || 0)} ${recurringForm.frequency} donation`}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* In-Kind Donation Form */}
-            <TabsContent value="in-kind">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Gift className="h-5 w-5 mr-2 text-green-500" />
-                    In-Kind Donation
-                  </CardTitle>
-                  <CardDescription>Donate goods, services, or other non-monetary items</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleInKindSubmit} className="space-y-6">
-                    {/* Item Description */}
-                    <div>
-                      <Label htmlFor="item_description">Item Description *</Label>
-                      <Textarea
-                        id="item_description"
-                        name="item_description"
-                        placeholder="Describe what you're donating in detail..."
-                        value={inKindForm.item_description}
-                        onChange={(e) => setInKindForm({ ...inKindForm, item_description: e.target.value })}
-                        className={errors.item_description ? "border-red-500" : ""}
-                      />
-                      {errors.item_description && (
-                        <p className="text-red-500 text-sm mt-1">{errors.item_description}</p>
-                      )}
-                    </div>
-
-                    {/* Category and Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="category">Category *</Label>
-                        <Select
-                          name="category"
-                          options={inKindCategoryOptions}
-                          value={inKindCategoryOptions.find((option) => option.value === inKindForm.category)}
-                          onChange={(option) => setInKindForm({ ...inKindForm, category: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select category"
-                          isSearchable
-                        />
-                        {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="brand_model">Brand/Model (Optional)</Label>
-                        <Input
-                          id="brand_model"
-                          name="brand_model"
-                          value={inKindForm.brand_model}
-                          onChange={(e) => setInKindForm({ ...inKindForm, brand_model: e.target.value })}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Quantity and Condition */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="quantity">Quantity *</Label>
-                        <Input
-                          id="quantity"
-                          name="quantity"
-                          type="number"
-                          min="1"
-                          value={inKindForm.quantity}
-                          onChange={(e) => setInKindForm({ ...inKindForm, quantity: e.target.value })}
-                          className={errors.quantity ? "border-red-500" : ""}
-                        />
-                        {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="unit_of_measure">Unit *</Label>
-                        <Select
-                          id="unit_of_measure"
-                          name="unit_of_measure"
-                          options={unitOptions}
-                          value={unitOptions.find((option) => option.value === inKindForm.unit_of_measure)}
-                          onChange={(option) => setInKindForm({ ...inKindForm, unit_of_measure: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select unit"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="condition">Condition *</Label>
-                        <Select
-                          id="condition"
-                          name="condition"
-                          options={conditionOptions}
-                          value={conditionOptions.find((option) => option.value === inKindForm.condition)}
-                          onChange={(option) => setInKindForm({ ...inKindForm, condition: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select condition"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Valuation */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="estimated_value">Estimated Value *</Label>
-                        <Input
-                          id="estimated_value"
-                          name="estimated_value"
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          placeholder="0.00"
-                          value={inKindForm.estimated_value}
-                          onChange={(e) => setInKindForm({ ...inKindForm, estimated_value: e.target.value })}
-                          className={errors.estimated_value ? "border-red-500" : ""}
-                        />
-                        {errors.estimated_value && (
-                          <p className="text-red-500 text-sm mt-1">{errors.estimated_value}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="valuation_currency">Currency *</Label>
-                        <Select
-                          name="valuation_currency"
-                          options={currencyOptions}
-                          value={currencyOptions.find((option) => option.value === inKindForm.valuation_currency)}
-                          onChange={(option) =>
-                            setInKindForm({ ...inKindForm, valuation_currency: option?.value || "" })
-                          }
-                          styles={selectStyles}
-                          placeholder="Select currency"
-                          isSearchable
-                        />
-                        {errors.valuation_currency && (
-                          <p className="text-red-500 text-sm mt-1">{errors.valuation_currency}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="valuation_method">Valuation Method *</Label>
-                        <Select
-                          id="valuation_method"
-                          name="valuation_method"
-                          options={valuationMethodOptions}
-                          value={valuationMethodOptions.find((option) => option.value === inKindForm.valuation_method)}
-                          onChange={(option) => setInKindForm({ ...inKindForm, valuation_method: option?.value || "" })}
-                          styles={selectStyles}
-                          placeholder="Select valuation method"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Anonymous */}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="inkind_anonymous"
-                        checked={inKindForm.is_anonymous}
-                        onCheckedChange={(checked) => setInKindForm({ ...inKindForm, is_anonymous: !!checked })}
-                      />
-                      <Label htmlFor="inkind_anonymous">Make this donation anonymous</Label>
-                    </div>
-
-                    {/* Donor Information */}
-                    {!inKindForm.is_anonymous && (
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Donor Information</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="inkind_donor_name">Full Name *</Label>
-                            <Input
-                              id="inkind_donor_name"
-                              name="donor_name"
-                              value={inKindForm.donor_name}
-                              onChange={(e) => setInKindForm({ ...inKindForm, donor_name: e.target.value })}
-                              className={errors.donor_name ? "border-red-500" : ""}
-                            />
-                            {errors.donor_name && <p className="text-red-500 text-sm mt-1">{errors.donor_name}</p>}
-                          </div>
-                          <div>
-                            <Label htmlFor="inkind_donor_email">Email Address *</Label>
-                            <Input
-                              id="inkind_donor_email"
-                              name="donor_email"
-                              type="email"
-                              value={inKindForm.donor_email}
-                              onChange={(e) => setInKindForm({ ...inKindForm, donor_email: e.target.value })}
-                              className={errors.donor_email ? "border-red-500" : ""}
-                            />
-                            {errors.donor_email && <p className="text-red-500 text-sm mt-1">{errors.donor_email}</p>}
-                          </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="inkind_donor_phone">Phone Number (Optional)</Label>
-                            <Input
-                              id="inkind_donor_phone"
-                              name="donor_phone"
-                              value={inKindForm.donor_phone}
-                              onChange={(e) => setInKindForm({ ...inKindForm, donor_phone: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="donor_organization">Organization (Optional)</Label>
-                            <Input
-                              id="donor_organization"
-                              name="donor_organization"
-                              value={inKindForm.donor_organization}
-                              onChange={(e) => setInKindForm({ ...inKindForm, donor_organization: e.target.value })}
-                            />
-                          </div>
+                        <div>
+                          <Label htmlFor="valuation_currency">Currency *</Label>
+                          <Select
+                            name="valuation_currency"
+                            options={currencyOptions}
+                            value={currencyOptions.find((option) => option.value === inKindForm.valuation_currency)}
+                            onChange={(option) =>
+                              setInKindForm({ ...inKindForm, valuation_currency: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select currency"
+                            isSearchable
+                          />
+                          {errors.valuation_currency && (
+                            <p className="text-red-500 text-sm mt-1">{errors.valuation_currency}</p>
+                          )}
+                        </div>
+                        <div>
+                          <Label htmlFor="valuation_method">Valuation Method *</Label>
+                          <Select
+                            id="valuation_method"
+                            name="valuation_method"
+                            options={valuationMethodOptions}
+                            value={valuationMethodOptions.find(
+                              (option) => option.value === inKindForm.valuation_method,
+                            )}
+                            onChange={(option) =>
+                              setInKindForm({ ...inKindForm, valuation_method: option?.value || "" })
+                            }
+                            styles={selectStyles}
+                            placeholder="Select valuation method"
+                          />
                         </div>
                       </div>
-                    )}
 
-                    {/* Logistics */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Logistics</h4>
+                      {/* Anonymous */}
                       <div className="flex items-center space-x-2">
                         <Checkbox
-                          id="pickup_required"
-                          checked={inKindForm.pickup_required}
-                          onCheckedChange={(checked) => setInKindForm({ ...inKindForm, pickup_required: !!checked })}
+                          id="inkind_anonymous"
+                          checked={inKindForm.is_anonymous}
+                          onCheckedChange={(checked) => setInKindForm({ ...inKindForm, is_anonymous: !!checked })}
                         />
-                        <Label htmlFor="pickup_required">Pickup required (we'll arrange collection)</Label>
+                        <Label htmlFor="inkind_anonymous">Make this donation anonymous</Label>
                       </div>
 
+                      {/* Donor Information */}
+                      {!inKindForm.is_anonymous && (
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Donor Information</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="inkind_donor_name">Full Name *</Label>
+                              <Input
+                                id="inkind_donor_name"
+                                name="donor_name"
+                                value={inKindForm.donor_name}
+                                onChange={(e) => setInKindForm({ ...inKindForm, donor_name: e.target.value })}
+                                className={errors.donor_name ? "border-red-500" : ""}
+                              />
+                              {errors.donor_name && <p className="text-red-500 text-sm mt-1">{errors.donor_name}</p>}
+                            </div>
+                            <div>
+                              <Label htmlFor="inkind_donor_email">Email Address *</Label>
+                              <Input
+                                id="inkind_donor_email"
+                                name="donor_email"
+                                type="email"
+                                value={inKindForm.donor_email}
+                                onChange={(e) => setInKindForm({ ...inKindForm, donor_email: e.target.value })}
+                                className={errors.donor_email ? "border-red-500" : ""}
+                              />
+                              {errors.donor_email && <p className="text-red-500 text-sm mt-1">{errors.donor_email}</p>}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="inkind_donor_phone">Phone Number (Optional)</Label>
+                              <Input
+                                id="inkind_donor_phone"
+                                name="donor_phone"
+                                value={inKindForm.donor_phone}
+                                onChange={(e) => setInKindForm({ ...inKindForm, donor_phone: e.target.value })}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="donor_organization">Organization (Optional)</Label>
+                              <Input
+                                id="donor_organization"
+                                name="donor_organization"
+                                value={inKindForm.donor_organization}
+                                onChange={(e) => setInKindForm({ ...inKindForm, donor_organization: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Logistics */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Logistics</h4>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="pickup_required"
+                            checked={inKindForm.pickup_required}
+                            onCheckedChange={(checked) => setInKindForm({ ...inKindForm, pickup_required: !!checked })}
+                          />
+                          <Label htmlFor="pickup_required">Pickup required (we'll arrange collection)</Label>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="delivery_address">Delivery/Pickup Address (Optional)</Label>
+                          <Textarea
+                            id="delivery_address"
+                            name="delivery_address"
+                            placeholder="Enter the address where items can be collected or delivered..."
+                            value={inKindForm.delivery_address}
+                            onChange={(e) => setInKindForm({ ...inKindForm, delivery_address: e.target.value })}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="expected_delivery_date">Expected Delivery Date (Optional)</Label>
+                          <Input
+                            id="expected_delivery_date"
+                            name="expected_delivery_date"
+                            type="date"
+                            value={inKindForm.expected_delivery_date}
+                            onChange={(e) => setInKindForm({ ...inKindForm, expected_delivery_date: e.target.value })}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="special_handling_requirements">
+                            Special Handling Requirements (Optional)
+                          </Label>
+                          <Textarea
+                            id="special_handling_requirements"
+                            name="special_handling_requirements"
+                            placeholder="Any special handling, storage, or transportation requirements..."
+                            value={inKindForm.special_handling_requirements}
+                            onChange={(e) =>
+                              setInKindForm({ ...inKindForm, special_handling_requirements: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {/* Notes */}
                       <div>
-                        <Label htmlFor="delivery_address">Delivery/Pickup Address (Optional)</Label>
+                        <Label htmlFor="inkind_notes">Additional Notes (Optional)</Label>
                         <Textarea
-                          id="delivery_address"
-                          name="delivery_address"
-                          placeholder="Enter the address where items can be collected or delivered..."
-                          value={inKindForm.delivery_address}
-                          onChange={(e) => setInKindForm({ ...inKindForm, delivery_address: e.target.value })}
+                          id="inkind_notes"
+                          name="notes"
+                          placeholder="Any additional information about your donation..."
+                          value={inKindForm.notes}
+                          onChange={(e) => setInKindForm({ ...inKindForm, notes: e.target.value })}
                         />
                       </div>
 
-                      <div>
-                        <Label htmlFor="expected_delivery_date">Expected Delivery Date (Optional)</Label>
-                        <Input
-                          id="expected_delivery_date"
-                          name="expected_delivery_date"
-                          type="date"
-                          value={inKindForm.expected_delivery_date}
-                          onChange={(e) => setInKindForm({ ...inKindForm, expected_delivery_date: e.target.value })}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="special_handling_requirements">Special Handling Requirements (Optional)</Label>
-                        <Textarea
-                          id="special_handling_requirements"
-                          name="special_handling_requirements"
-                          placeholder="Any special handling, storage, or transportation requirements..."
-                          value={inKindForm.special_handling_requirements}
-                          onChange={(e) =>
-                            setInKindForm({ ...inKindForm, special_handling_requirements: e.target.value })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <Label htmlFor="inkind_notes">Additional Notes (Optional)</Label>
-                      <Textarea
-                        id="inkind_notes"
-                        name="notes"
-                        placeholder="Any additional information about your donation..."
-                        value={inKindForm.notes}
-                        onChange={(e) => setInKindForm({ ...inKindForm, notes: e.target.value })}
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full" disabled={isCreatingInKind}>
-                      {isCreatingInKind ? "Creating pledge..." : "Submit In-Kind Donation Pledge"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+                      <Button type="submit" className="w-full" disabled={isCreatingInKind}>
+                        {isCreatingInKind ? "Creating pledge..." : "Submit In-Kind Donation Pledge"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
