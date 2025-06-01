@@ -541,7 +541,7 @@ export default function ComprehensiveCampaignDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {donations?.results?.slice(0, 5)?.map((donation) => (
+                  {donations?.slice(0, 5)?.map((donation) => (
                     <div key={donation.id} className="flex justify-between items-center">
                       <div>
                         <div className="font-medium">
@@ -720,7 +720,7 @@ export default function ComprehensiveCampaignDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {donations?.results?.map((donation) => (
+                  {donations?.map((donation) => (
                     <TableRow key={donation.id}>
                       <TableCell>
                         <div>
