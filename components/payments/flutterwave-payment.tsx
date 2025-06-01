@@ -60,7 +60,7 @@ export function FlutterwavePayment({
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
 
-  // Generate unique transaction reference
+
   const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
 
   const config = {
