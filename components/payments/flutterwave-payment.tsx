@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import {
   useVerifyFlutterwavePaymentMutation,
 } from "@/redux/features/finance/payment"
 import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
+
 interface FlutterwavePaymentProps {
   donationData: {
     id: number
@@ -53,58 +54,55 @@ export function FlutterwavePayment({
 }: FlutterwavePaymentProps) {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle")
   const [isInitiating, setIsInitiating] = useState(false)
+  const [flutterwaveConfig, setFlutterwaveConfig] = useState<any>(null)
+
+  // Fetch bank account data
+  const { data: bankAccount, isLoading: isLoadingAccount, error: bankAccountError } = useGetBankAccountByIdQuery(1)
 
   // Payment status mutations based on donation type
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
-    const { data:bankAccount}=useGetBankAccountByIdQuery(1)
-  // Debug environment variables
-  console.log("=== FLUTTERWAVE DEBUG ===")
-  console.log("Environment:", process.env.NODE_ENV)
-  console.log("Public Key:", process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY)
-  console.log(
-    "All NEXT_PUBLIC vars:",
-    Object.keys(process.env).filter((key) => key.startsWith("NEXT_PUBLIC")),
-  )
-  console.log("========================")
 
   // Generate unique transaction reference
   const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
 
-  // Get the public key with fallback
-  const publicKey = bankAccount?.api_key
+  // Initialize Flutterwave config when bank account data is available
+  useEffect(() => {
+    if (bankAccount?.api_key) {
+      const config = {
+        public_key: bankAccount.api_key,
+        tx_ref,
+        amount: donationData.amount,
+        currency: donationData.currency,
+        payment_options: donationData.type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
+        ...(donationData.type === "recurring" &&
+          donationData.payment_plan_id && {
+            payment_plan: donationData.payment_plan_id,
+          }),
+        customer: {
+          email: donationData.donor_email,
+          phone_number: donationData.donor_phone || "",
+          name: donationData.donor_name,
+        },
+        customizations: {
+          title: "Donation Payment",
+          description: `${donationData.type === "recurring" ? "Recurring" : "One-time"} donation payment`,
+          logo: "/logo.png",
+        },
+        meta: {
+          donation_id: donationData.id,
+          donation_type: donationData.type,
+          campaign_id: donationData.campaign_id || null,
+          donor_email: donationData.donor_email,
+        },
+      }
+      setFlutterwaveConfig(config)
+    }
+  }, [bankAccount, donationData, tx_ref])
 
-  const config = {
-    public_key: publicKey || "",
-    tx_ref,
-    amount: donationData.amount,
-    currency: donationData.currency,
-    payment_options: donationData.type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
-    ...(donationData.type === "recurring" &&
-      donationData.payment_plan_id && {
-        payment_plan: donationData.payment_plan_id,
-      }),
-    customer: {
-      email: donationData.donor_email,
-      phone_number: donationData.donor_phone || "",
-      name: donationData.donor_name,
-    },
-    customizations: {
-      title: "Donation Payment",
-      description: `${donationData.type === "recurring" ? "Recurring" : "One-time"} donation payment`,
-      logo: "/logo.png",
-    },
-    meta: {
-      donation_id: donationData.id,
-      donation_type: donationData.type,
-      campaign_id: donationData.campaign_id || null,
-      donor_email: donationData.donor_email,
-    },
-  }
-
-  const handleFlutterPayment = useFlutterwave(config)
+  const handleFlutterPayment = useFlutterwave(flutterwaveConfig || {})
 
   const getPaymentStatusMutation = () => {
     switch (donationData.type) {
@@ -147,7 +145,7 @@ export function FlutterwavePayment({
   }
 
   const initiatePayment = () => {
-    if (!publicKey) {
+    if (!flutterwaveConfig?.public_key) {
       toast.error("Payment system not configured. Please contact support.")
       return
     }
@@ -187,6 +185,60 @@ export function FlutterwavePayment({
       style: "currency",
       currency: currency,
     }).format(amount)
+  }
+
+  // Show loading state while fetching bank account
+  if (isLoadingAccount) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <Loader2 className="h-8 w-8 animate-spin mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Loading Payment System</h3>
+          <p className="text-gray-600 text-center">Please wait while we set up your payment...</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show error state if bank account fetch failed
+  if (bankAccountError) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <XCircle className="h-16 w-16 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Payment System Error</h3>
+          <p className="text-gray-600 text-center mb-4">
+            Unable to load payment configuration. Please try again or contact support.
+          </p>
+          <div className="flex gap-2 w-full">
+            <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
+              Retry
+            </Button>
+            <Button onClick={onCancel} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Show error if no API key found
+  if (!bankAccount?.api_key) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <XCircle className="h-16 w-16 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Payment Configuration Missing</h3>
+          <p className="text-gray-600 text-center mb-4">
+            Payment system is not properly configured. Please contact support.
+          </p>
+          <Button onClick={onCancel} variant="outline" className="w-full">
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   if (paymentStatus === "success") {
@@ -256,17 +308,16 @@ export function FlutterwavePayment({
           </div>
         </div>
 
-        {/* Debug Information */}
-        <div className="bg-yellow-50 p-3 rounded-lg text-sm">
+        {/* Debug Information - Remove in production */}
+        <div className="bg-green-50 p-3 rounded-lg text-sm">
           <p>
-            <strong>Debug Info:</strong>
+            <strong>Payment System Ready:</strong>
           </p>
-          <p>Environment: {process.env.NODE_ENV}</p>
-          <p>Public Key: {publicKey ? `${publicKey.substring(0, 15)}...` : "Not found"}</p>
-          <p>Key Length: {publicKey?.length || 0}</p>
+          <p>API Key: {bankAccount.api_key ? `${bankAccount.api_key.substring(0, 15)}...` : "Not found"}</p>
+          <p>Config Ready: {flutterwaveConfig ? "✅ Yes" : "❌ No"}</p>
         </div>
 
-        <Button onClick={initiatePayment} disabled={isInitiating || !publicKey} className="w-full">
+        <Button onClick={initiatePayment} disabled={isInitiating || !flutterwaveConfig?.public_key} className="w-full">
           {isInitiating ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -280,15 +331,6 @@ export function FlutterwavePayment({
         <Button onClick={onCancel} variant="outline" className="w-full">
           Cancel
         </Button>
-
-        {!publicKey && (
-          <div className="bg-red-50 p-3 rounded-lg">
-            <p className="text-red-600 text-sm font-medium">Flutterwave public key not configured</p>
-            <p className="text-red-500 text-xs mt-1">
-              Expected: NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY environment variable
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   )
