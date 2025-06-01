@@ -199,7 +199,7 @@ export function BudgetFundingBreakdown({ budget, isLoading = false }: BudgetOver
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">{budget.name}</h1>
+          <h1 className="text-3xl font-bold">{budget.title}</h1>
           <p className="text-muted-foreground">
             {budgetMetrics.timeline.startDate} - {budgetMetrics.timeline.endDate} • {budget.budget_type} Budget
           </p>

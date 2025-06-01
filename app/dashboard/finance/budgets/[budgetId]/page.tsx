@@ -73,22 +73,24 @@ export default function BudgetDetailPage() {
       <BudgetDetailHeader budget={budget} onEdit={()=>refetch()} />
 
       {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6"> {/* Changed to 6 columns */}
+      <Tabs defaultValue="items" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4"> 
+        {/* 
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="funding">Funding</TabsTrigger>
-          <TabsTrigger value="items">Items ({budget.items_count || 0})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
+           */}
+           <TabsTrigger value="items">Items ({budget.items_count || 0})</TabsTrigger>
+          <TabsTrigger value="funding">Funding</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="insight">Insight</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
+          {/* Overview Tab         
+            <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BudgetFundingBreakdown budget={budget} />
-            <BudgetActivityTimeline budget={budget} />
           </div>
         </TabsContent>
+          */}
 
         {/* Funding Section with Nested Tabs */}
         <TabsContent value="funding" className="space-y-6">
