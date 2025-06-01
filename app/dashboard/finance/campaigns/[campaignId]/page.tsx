@@ -266,60 +266,7 @@ export default function ComprehensiveCampaignDashboard() {
         <div className="space-y-6">
           <CampaignOverview campaign={campaign} analytics={analytics} />
 
-          {/* Campaign Media Section */}
-          {(campaign?.image || campaign?.video) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <ImageIcon className="h-5 w-5 mr-2" />
-                  Campaign Media
-                </CardTitle>
-                <CardDescription>Visual content for this campaign</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Campaign Image */}
-                  {campaign?.image && (
-                    <div className="space-y-3">
-                      <h4 className="font-medium">Campaign Image</h4>
-                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
-                        <img
-                          src={campaign.image || "/placeholder.svg"}
-                          alt={campaign.title}
-                          className="w-full h-full object-cover transition-opacity duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg?height=300&width=400&text=Image+Not+Found"
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Campaign Video */}
-                  {campaign?.video && (
-                    <div className="space-y-3">
-                      <h4 className="font-medium">Campaign Video</h4>
-                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
-                        <video
-                          src={campaign.video}
-                          controls
-                          className="w-full h-full object-cover"
-                          poster={campaign.image || undefined}
-                          preload="metadata"
-                        >
-                          <source src={campaign.video} type="video/mp4" />
-                          <source src={campaign.video} type="video/webm" />
-                          <source src={campaign.video} type="video/ogg" />
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+         
         </div>
 
         {/* ML Insights */}
