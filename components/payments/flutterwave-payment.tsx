@@ -70,7 +70,7 @@ export function FlutterwavePayment({
 
   // Payment status mutations based on donation type
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
-  const {ata:donationData}=useGetDonationByIdQuery(donationDataId)
+  const {data:donationData}=useGetDonationByIdQuery(donationDataId)
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
