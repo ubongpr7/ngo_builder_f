@@ -15,6 +15,7 @@ import { ArrowLeft } from "lucide-react"
 import { BudgetInsights } from "@/components/finances/budgets/details/analytics"
 import { BudgetFundingSection } from "@/components/finances/budgets/details/budget-funding"
 
+
 export default function BudgetDetailPage() {
   const params = useParams()
   const router = useRouter()
