@@ -12,7 +12,7 @@ import {
   useUpdateInKindDonationPaymentStatusMutation,
   useVerifyFlutterwavePaymentMutation,
 } from "@/redux/features/finance/payment"
-
+import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
 interface FlutterwavePaymentProps {
   donationData: {
     id: number
@@ -59,7 +59,7 @@ export function FlutterwavePayment({
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
-
+    const { data:bankAccount}=useGetBankAccountByIdQuery(1)
   // Debug environment variables
   console.log("=== FLUTTERWAVE DEBUG ===")
   console.log("Environment:", process.env.NODE_ENV)
@@ -74,7 +74,7 @@ export function FlutterwavePayment({
   const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
 
   // Get the public key with fallback
-  const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY
+  const publicKey = bankAccount?.api_key
 
   const config = {
     public_key: publicKey || "",
