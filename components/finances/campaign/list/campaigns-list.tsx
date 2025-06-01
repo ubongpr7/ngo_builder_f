@@ -59,7 +59,7 @@ import { format, differenceInDays, isAfter } from "date-fns"
 import { toast } from "react-toastify"
 import Image from "next/image"
 import { formatCurrency } from "@/lib/currency-utils"
-
+import { useRouter } from "next/navigation"
 interface CampaignCardProps {
   campaign: DonationCampaign
   onEdit: (campaign: DonationCampaign) => void
@@ -118,6 +118,7 @@ function CampaignCardSkeleton() {
 function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps) {
   // Add state to control dropdown open/close
   const [dropdownOpen, setDropdownOpen] = useState(false)
+    const router = useRouter()
 
   const progressPercentage = campaign.progress_percentage || 0
   const daysRemaining = differenceInDays(new Date(campaign.end_date), new Date())
@@ -469,8 +470,7 @@ export function EnhancedCampaignListView() {
   }
 
   const handleView = (campaign: DonationCampaign) => {
-    // Navigate to campaign detail page
-    window.location.href = `/campaigns/${campaign.id}`
+    router.push(`/dashboard/finance/campaigns/${campaign.id}`)
   }
 
   const handleSuccess = () => {
