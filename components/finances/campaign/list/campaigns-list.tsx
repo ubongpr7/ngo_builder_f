@@ -199,8 +199,7 @@ function CampaignCard({ campaign, onEdit, onDelete, onView }: CampaignCardProps)
   }
 
   const handleView = () => {
-    setDropdownOpen(false) // Close dropdown first
-    setTimeout(() => onView(campaign), 100) // Small delay to ensure dropdown closes
+    router.push(`/dashboard/finance/campaigns/${campaign.id}`)
   }
 
   // Get currency code for formatting
@@ -469,7 +468,7 @@ export function EnhancedCampaignListView() {
     }
   }
 
-  const handleView = (campaign: DonationCampaign) => {
+  const handleView = () => {
     router.push(`/dashboard/finance/campaigns/${campaign.id}`)
   }
 
