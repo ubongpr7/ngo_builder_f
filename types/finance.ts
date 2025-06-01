@@ -110,8 +110,6 @@ export interface BankAccount {
   compliance_status: "compliant" | "pending_review" | "non_compliant"
   last_reconciled_date?: string
   auto_reconciliation_enabled: boolean
-  
-
 }
 
 // Exchange Rate Types
@@ -197,8 +195,6 @@ export interface DonationCampaign {
   recurring_donations: RecurringDonation[]
   in_kind_donations: InKindDonation[]
 }
-
-
 
 // Donation Types
 export interface Donation {
@@ -364,8 +360,8 @@ export interface FundingSource {
   campaign?: DonationCampaign
   grant?: Grant
   donation_id: number
-  campaign_id:number
-  grant_id:number
+  campaign_id: number
+  grant_id: number
   amount_available: string
   amount_allocated: string
   is_active: boolean
@@ -373,6 +369,7 @@ export interface FundingSource {
   amount_remaining: string
   formatted_amount: string
 }
+
 export interface FundingSourceDetail extends FundingSource {
   budgets_count?: number
   total_budgets_funded?: string
@@ -441,6 +438,143 @@ export interface Budget {
   budget_funding: BudgetFunding[]
   funding_breakdown: FundingBreakdown[]
   allocated_amount?: number
+  recent_activity:any
+  // Core calculations (enhanced)
+  pending_amount?: string
+  committed_amount?: string
+  approved_amount?: string
+  rejected_amount?: string
+  total_requested_amount?: string
+  unallocated_amount?: string
+  available_amount?: string
+  encumbered_amount?: string
+  truly_available_amount?: string
+
+  // Percentages (enhanced)
+  committed_percentage?: string
+  utilization_percentage?: string
+  allocation_percentage?: string
+
+  // Variance calculations (enhanced)
+  variance?: string
+  variance_percentage?: string
+  committed_variance?: string
+  allocation_variance?: string
+
+  // Funding calculations (enhanced)
+  funding_gap?: string
+  funding_surplus?: string
+  funding_utilization_percentage?: string
+
+  // Status and health (enhanced)
+  budget_health?: string
+  utilization_status?: string
+  funding_status?: string
+
+  // Boolean status checks (enhanced)
+  is_over_budget?: boolean
+  is_overcommitted?: boolean
+  is_fully_allocated?: boolean
+  is_fully_funded?: boolean
+  has_pending_requests?: boolean
+  is_expired?: boolean
+  is_active_period?: boolean
+  can_allocate_more?: boolean
+  is_locked_for_allocation?: boolean
+
+  // Time-based calculations (enhanced)
+  days_remaining?: number
+  days_elapsed?: number
+  total_budget_days?: number
+  progress_percentage?: string
+  burn_rate?: string
+  projected_total_spend?: string
+  projected_variance?: string
+
+  // Efficiency metrics (enhanced)
+  spending_efficiency?: string
+  allocation_efficiency?: string
+  funding_efficiency?: string
+
+  // Item-level aggregations (enhanced)
+  total_budget_items_count?: number
+  active_budget_items_count?: number
+  over_budget_items_count?: number
+  critical_items_count?: number
+
+  // Enhanced formatting (enhanced)
+  formatted_spent_amount?: string
+  formatted_committed_amount?: string
+  formatted_pending_amount?: string
+  formatted_remaining_amount?: string
+  formatted_available_amount?: string
+  formatted_variance?: string
+  formatted_funding_gap?: string
+
+  // NEW FUND ALLOCATION FIELDS (additions)
+  // Core allocation amounts
+  total_fund_allocations?: string
+  active_fund_allocations?: string
+  allocation_gap?: string
+  allocation_surplus?: string
+  available_from_allocations?: string
+  truly_available_from_allocations?: string
+
+  // Allocation percentages
+  allocation_coverage_percentage?: string
+  funding_realization_percentage?: string
+  allocation_utilization_percentage?: string
+
+  // Enhanced status
+  allocation_status?: string
+  comprehensive_funding_status?: string
+
+  // Enhanced boolean checks
+  is_fully_allocated_from_accounts?: boolean
+
+  // Enhanced formatting
+  formatted_allocation_gap?: string
+  formatted_total_fund_allocations?: string
+  formatted_available_from_allocations?: string
+
+  // NEW FUND ALLOCATION RELATIONSHIPS (additions)
+  fund_allocations?: FundAllocation[]
+
+  // ENHANCED ANALYSIS DATA (existing + new)
+  // Existing summaries
+  financial_summary?: FinancialSummary
+  performance_metrics?: PerformanceMetrics
+  status_summary?: StatusSummary
+
+  // New summaries
+  enhanced_financial_summary?: EnhancedFinancialSummary
+  allocation_summary?: AllocationSummary
+  funding_vs_allocation_analysis?: FundingVsAllocationAnalysis
+
+  // Existing analysis
+  expense_summary?: ExpenseSummary[]
+  category_breakdown?: CategoryBreakdown[]
+  monthly_spending_trend?: MonthlyTrend[]
+  budget_utilization_by_item?: ItemUtilization[]
+  funding_vs_spending_analysis?: FundingVsSpendingAnalysis
+  budget_alerts?: BudgetAlert[]
+  recent_expenses?: OrganizationalExpense[]
+  funding_sources_summary?: FundingSourceSummary[]
+
+  // New analysis
+  fund_allocations_breakdown?: FundAllocationBreakdown[]
+  allocation_utilization_analysis?: AllocationUtilizationAnalysis
+  funding_vs_allocation_timeline?: FundingAllocationTimeline[]
+
+  // Statistics (existing + new)
+  items_count?: number
+  expenses_count?: number
+  funding_sources_count?: number
+  allocations_count?: number
+  active_allocations_count?: number
+  paid_expenses_count?: number
+  pending_expenses_count?: number
+  approved_expenses_count?: number
 }
 
 export interface BudgetFunding {
@@ -450,8 +584,6 @@ export interface BudgetFunding {
   allocation_date: string
   notes?: string
 }
-
-
 
 export interface BudgetStatistics {
   total_budgets: number
@@ -521,7 +653,7 @@ export interface BudgetItem {
   remaining_amount: string
   spent_percentage: string
   formatted_amount: string
-  currency:Currency
+  currency: Currency
 }
 
 // Organizational Expense Types
@@ -928,4 +1060,160 @@ export interface BankAccountSummary extends BankAccount {
   next_maintenance_fee_date?: string
   average_monthly_balance: string
   transaction_volume_30_days: string
+}
+
+// NEW FUND ALLOCATION INTERFACES
+export interface EnhancedFinancialSummary {
+  // Original financial data
+  total_budget: string
+  allocated: string
+  unallocated: string
+  spent: string
+  committed: string
+  pending: string
+  remaining: string
+  truly_available: string
+
+  // Fund allocation data
+  total_fund_allocations: string
+  active_fund_allocations: string
+  allocation_gap: string
+  allocation_surplus: string
+  available_from_allocations: string
+  truly_available_from_allocations: string
+
+  // Funding source data
+  total_funding_allocated: string
+  funding_gap: string
+  funding_surplus: string
+
+  currency: string
+}
+
+export interface AllocationSummary {
+  total_allocations: string
+  active_allocations: string
+  allocation_gap: string
+  allocation_surplus: string
+  coverage_percentage: string
+  utilization_percentage: string
+  available_amount: string
+  truly_available_amount: string
+  currency: string
+}
+
+export interface FundingVsAllocationAnalysis {
+  funding_sources_total: string
+  fund_allocations_total: string
+  realization_percentage: string
+  allocation_coverage: string
+  funding_efficiency: string
+  allocation_utilization: string
+  gap_analysis: {
+    funding_gap: string
+    allocation_gap: string
+    total_gap: string
+  }
+  surplus_analysis: {
+    funding_surplus: string
+    allocation_surplus: string
+    total_surplus: string
+  }
+  recommendations: string[]
+  currency: string
+}
+
+export interface FundAllocationBreakdown {
+  account_id: number
+  account_name: string
+  account_type: string
+  amount_allocated: string
+  percentage_of_total: number
+  allocation_date: string
+  allocated_by: string
+  purpose: string
+  is_active: boolean
+  currency_code: string
+  formatted_amount: string
+}
+
+export interface AllocationUtilizationAnalysis {
+  total_allocated: string
+  total_spent: string
+  utilization_percentage: string
+  remaining_allocation: string
+  efficiency_score: string
+  by_account: {
+    account_name: string
+    allocated: string
+    utilized: string
+    utilization_rate: string
+    remaining: string
+  }[]
+  trends: {
+    period: string
+    allocated: string
+    utilized: string
+    efficiency: string
+  }[]
+  currency: string
+}
+
+export interface FundingAllocationTimeline {
+  period: string
+  funding_planned: string
+  funding_received: string
+  allocations_made: string
+  spending_actual: string
+  cumulative_funding: string
+  cumulative_allocations: string
+  cumulative_spending: string
+  realization_rate: string
+  utilization_rate: string
+}
+
+// PLACEHOLDER INTERFACES FOR EXISTING TYPES REFERENCED BUT NOT DEFINED
+export interface PerformanceMetrics {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface StatusSummary {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface ExpenseSummary {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface CategoryBreakdown {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface MonthlyTrend {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface ItemUtilization {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface FundingVsSpendingAnalysis {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface BudgetAlert {
+  // Placeholder for existing interface
+  [key: string]: any
+}
+
+export interface FundingSourceSummary {
+  // Placeholder for existing interface
+  [key: string]: any
 }
