@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useState } from "react"
+import { useState } from "react"
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import {
   useUpdateInKindDonationPaymentStatusMutation,
   useVerifyFlutterwavePaymentMutation,
 } from "@/redux/features/finance/payment"
-import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
+
 interface FlutterwavePaymentProps {
   donationData: {
     id: number
@@ -53,17 +53,31 @@ export function FlutterwavePayment({
 }: FlutterwavePaymentProps) {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle")
   const [isInitiating, setIsInitiating] = useState(false)
-    const {data:bankAccount}=useGetBankAccountByIdQuery(1)
+
+  // Payment status mutations based on donation type
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
 
+  // Debug environment variables
+  console.log("=== FLUTTERWAVE DEBUG ===")
+  console.log("Environment:", process.env.NODE_ENV)
+  console.log("Public Key:", process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY)
+  console.log(
+    "All NEXT_PUBLIC vars:",
+    Object.keys(process.env).filter((key) => key.startsWith("NEXT_PUBLIC")),
+  )
+  console.log("========================")
 
+  // Generate unique transaction reference
   const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
 
+  // Get the public key with fallback
+  const publicKey = process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY
+
   const config = {
-    public_key: bankAccount?.api_key || "",
+    public_key: publicKey || "",
     tx_ref,
     amount: donationData.amount,
     currency: donationData.currency,
@@ -85,7 +99,6 @@ export function FlutterwavePayment({
     meta: {
       donation_id: donationData.id,
       donation_type: donationData.type,
-      // Add any other custom data you want to receive in webhook
       campaign_id: donationData.campaign_id || null,
       donor_email: donationData.donor_email,
     },
@@ -134,6 +147,11 @@ export function FlutterwavePayment({
   }
 
   const initiatePayment = () => {
+    if (!publicKey) {
+      toast.error("Payment system not configured. Please contact support.")
+      return
+    }
+
     setIsInitiating(true)
     setPaymentStatus("processing")
 
@@ -238,7 +256,17 @@ export function FlutterwavePayment({
           </div>
         </div>
 
-        <Button onClick={initiatePayment} disabled={isInitiating || !config.public_key} className="w-full">
+        {/* Debug Information */}
+        <div className="bg-yellow-50 p-3 rounded-lg text-sm">
+          <p>
+            <strong>Debug Info:</strong>
+          </p>
+          <p>Environment: {process.env.NODE_ENV}</p>
+          <p>Public Key: {publicKey ? `${publicKey.substring(0, 15)}...` : "Not found"}</p>
+          <p>Key Length: {publicKey?.length || 0}</p>
+        </div>
+
+        <Button onClick={initiatePayment} disabled={isInitiating || !publicKey} className="w-full">
           {isInitiating ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -253,8 +281,13 @@ export function FlutterwavePayment({
           Cancel
         </Button>
 
-        {!config.public_key && (
-          <p className="text-red-500 text-sm text-center">Flutterwave public key not configured</p>
+        {!publicKey && (
+          <div className="bg-red-50 p-3 rounded-lg">
+            <p className="text-red-600 text-sm font-medium">Flutterwave public key not configured</p>
+            <p className="text-red-500 text-xs mt-1">
+              Expected: NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY environment variable
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>
