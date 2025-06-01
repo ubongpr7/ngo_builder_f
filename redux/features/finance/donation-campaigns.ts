@@ -88,7 +88,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
         })
 
         const queryString = queryParams.toString()
-        return `/${backend}/donation-campaigns/${campaignId}/donations/${queryString ? `?${queryString}` : ""}`
+        return `/${backend}/donation-campaigns/${campaignId}/donation_analysis/${queryString ? `?${queryString}` : ""}`
       },
     }),
 
