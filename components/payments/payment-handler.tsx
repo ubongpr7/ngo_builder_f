@@ -2,19 +2,9 @@
 
 import { useState } from "react"
 import { FlutterwavePayment } from "./flutterwave-payment"
-import { toast } from "react-toastify"
 
 interface PaymentHandlerProps {
-  donationData: {
-    id: number
-    amount: number
-    currency: string
-    donor_email: string
-    donor_name: string
-    donor_phone?: string
-    type: "one-time" | "recurring" | "in-kind"
-    payment_plan_id?: string
-  }
+  donationData: number
   onComplete: () => void
   onCancel: () => void
 }
@@ -25,16 +15,22 @@ export function PaymentHandler({ donationData, onComplete, onCancel }: PaymentHa
   const handlePaymentSuccess = (response: any) => {
     setIsProcessing(true)
 
-    // Wait a moment before completing to show success state
+    // Show success message and complete after a short delay
     setTimeout(() => {
       setIsProcessing(false)
       onComplete()
-    }, 2000)
+    }, 1500)
   }
 
   const handlePaymentError = (error: any) => {
     console.error("Payment error:", error)
-    toast.error("Payment failed. Please try again later.")
+    // Don't show additional toast here as it's already shown in FlutterwavePayment
+    // Just call onCancel to go back to the form
+    onCancel()
+  }
+
+  const handleCancel = () => {
+    onCancel()
   }
 
   return (
@@ -42,7 +38,7 @@ export function PaymentHandler({ donationData, onComplete, onCancel }: PaymentHa
       donationDataId={donationData.id}
       onPaymentSuccess={handlePaymentSuccess}
       onPaymentError={handlePaymentError}
-      onCancel={onCancel}
+      onCancel={handleCancel}
     />
   )
 }

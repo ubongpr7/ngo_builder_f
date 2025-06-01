@@ -102,7 +102,6 @@ export function FlutterwavePayment({
           donor_email: donationData.donor_email,
         },
       }
-      console.log("Flutterwave config:", config)
       setFlutterwaveConfig(config)
     }
   }, [bankAccount, donationData, tx_ref, d_type])
@@ -162,25 +161,54 @@ export function FlutterwavePayment({
       callback: async (response: FlutterwaveResponse) => {
         console.log("Payment response:", response)
 
-        if (response.status === "successful") {
-          setPaymentStatus("success")
-          toast.success("Payment successful!")
-          onPaymentSuccess(response)
-        } else {
-          setPaymentStatus("failed")
-          toast.error("Payment failed. Please try again.")
-          onPaymentError(response)
-        }
+        try {
+          if (response.status === "successful") {
+            // Update payment status in backend
+            await handlePaymentUpdate(response, "completed")
+            setPaymentStatus("success")
+            toast.success("Payment successful!")
 
-        closePaymentModal()
-        setIsInitiating(false)
+            // Close Flutterwave modal first
+            closePaymentModal()
+
+            // Then call success callback after a short delay
+            setTimeout(() => {
+              onPaymentSuccess(response)
+            }, 500)
+          } else {
+            await handlePaymentUpdate(response, "failed")
+            setPaymentStatus("failed")
+            toast.error("Payment failed. Please try again.")
+
+            closePaymentModal()
+            setTimeout(() => {
+              onPaymentError(response)
+            }, 500)
+          }
+        } catch (error) {
+          console.error("Error processing payment callback:", error)
+          setPaymentStatus("failed")
+          toast.error("Error processing payment. Please contact support.")
+
+          closePaymentModal()
+          setTimeout(() => {
+            onPaymentError(error)
+          }, 500)
+        } finally {
+          setIsInitiating(false)
+        }
       },
       onClose: () => {
-        console.log("Payment modal closed")
+        console.log("Payment modal closed by user")
         setIsInitiating(false)
+
+        // Only reset status if we're still processing
         if (paymentStatus === "processing") {
           setPaymentStatus("idle")
         }
+
+        // Don't call onCancel here as it might be called after successful payment
+        // The user might have just closed the modal after completing payment
       },
     })
   }
@@ -339,17 +367,6 @@ export function FlutterwavePayment({
             <span className="text-sm text-gray-600">Donor:</span>
             <span className="font-semibold">{donationData.donor_name}</span>
           </div>
-        </div>
-
-        {/* Debug Information - Remove in production */}
-        <div className="bg-green-50 p-3 rounded-lg text-sm">
-          <p>
-            <strong>Payment System Ready:</strong>
-          </p>
-          <p>API Key: {bankAccount.api_key ? `${bankAccount.api_key.substring(0, 15)}...` : "Not found"}</p>
-          <p>Config Ready: {flutterwaveConfig ? "✅ Yes" : "❌ No"}</p>
-          <p>Currency: {donationData.currency?.code || "USD"}</p>
-          <p>Donation Type: {d_type}</p>
         </div>
 
         <Button onClick={initiatePayment} disabled={isInitiating || !flutterwaveConfig?.public_key} className="w-full">
