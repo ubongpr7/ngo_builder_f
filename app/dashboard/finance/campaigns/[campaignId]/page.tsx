@@ -295,10 +295,12 @@ export default function ComprehensiveCampaignDashboard() {
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2">
+            {/* 
+              <TabsTrigger value="settings" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
+            */}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
