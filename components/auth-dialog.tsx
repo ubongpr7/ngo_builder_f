@@ -4,9 +4,8 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Heart, UserPlus, LogIn } from "lucide-react"
-import MembershipRegister from "@/components/membership/MembershipRegister"
-import MembershipLogin from "@/components/membership/MembershipLogin"
+import { UserPlus, LogIn, Heart } from "lucide-react"
+import VerificationLoginForm from "@/components/membership/MembershipLogin"
 
 interface AuthDialogProps {
   open: boolean
@@ -20,79 +19,61 @@ export function AuthDialog({
   open,
   onOpenChange,
   onAuthSuccess,
-  title = "Join Our Community to Donate",
-  description = "Please login or register to continue with your donation. As a member, you'll be able to track your donations and stay updated on our impact.",
+  title = "Join Our Community",
+  description = "Please login or register to continue",
 }: AuthDialogProps) {
   const [activeTab, setActiveTab] = useState("login")
 
   const handleAuthSuccess = () => {
     onAuthSuccess?.()
-    onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-green-600" />
+          <DialogTitle className="flex items-center">
+            <Heart className="h-6 w-6 mr-2 text-red-500" />
             {title}
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login" className="flex items-center gap-2">
-                <LogIn className="h-4 w-4" />
-                Login
-              </TabsTrigger>
-              <TabsTrigger value="register" className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Register
-              </TabsTrigger>
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login" className="flex items-center">
+              <LogIn className="h-4 w-4 mr-2" />
+              Login
+            </TabsTrigger>
+            <TabsTrigger value="register" className="flex items-center">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Register
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="login" className="mt-6">
-              <div className="space-y-4">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold">Welcome Back!</h3>
-                  <p className="text-sm text-gray-600">Login to your account to continue</p>
-                </div>
-                <MembershipLogin />
-              </div>
-            </TabsContent>
+          <TabsContent value="login">
+            <VerificationLoginForm  />
+          </TabsContent>
 
-            <TabsContent value="register" className="mt-6">
-              <div className="space-y-4">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold">Join Our Mission!</h3>
-                  <p className="text-sm text-gray-600">Create an account to become part of our community</p>
-                </div>
-                <MembershipRegister />
-              </div>
-            </TabsContent>
-          </Tabs>
+          <TabsContent value="register">
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                Registration form would go here. For now, please use the login form.
+              </p>
+              <Button variant="outline" onClick={() => setActiveTab("login")} className="w-full">
+                Go to Login
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h4 className="font-semibold text-green-800 mb-2">Why become a member?</h4>
-            <ul className="text-sm text-green-700 space-y-1">
-              <li>• Track your donation history</li>
-              <li>• Receive impact updates</li>
-              <li>• Access exclusive member content</li>
-              <li>• Connect with our community</li>
-            </ul>
-          </div>
-
-          <div className="mt-4 text-center">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
-              Continue as Guest
-            </Button>
-            <p className="text-xs text-gray-500 mt-2">
-              You can still donate as a guest, but you'll miss out on member benefits
-            </p>
-          </div>
+        <div className="border-t pt-4 text-center">
+          <p className="text-sm text-muted-foreground mb-2">
+            <span className="font-medium">Authentication Required</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            You must be logged in to make a donation. This helps us track contributions and provide receipts.
+          </p>
         </div>
       </DialogContent>
     </Dialog>
