@@ -76,8 +76,8 @@ export function FlutterwavePayment({
         tx_ref,
         amount: donationData.amount,
         currency: donationData.currency,
-        payment_options: donationData.type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
-        ...(donationData.type === "recurring" &&
+        payment_options: donationData.d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
+        ...(donationData.d_type === "recurring" &&
           donationData.payment_plan_id && {
             payment_plan: donationData.payment_plan_id,
           }),
@@ -88,16 +88,17 @@ export function FlutterwavePayment({
         },
         customizations: {
           title: "Donation Payment",
-          description: `${donationData.type === "recurring" ? "Recurring" : "One-time"} donation payment`,
+          description: `${donationData.d_type === "recurring" ? "Recurring" : "One-time"} donation payment`,
           logo: "/logo.png",
         },
         meta: {
           donation_id: donationData.id,
-          donation_type: donationData.type,
+          donation_type: donationData.d_type,
           campaign_id: donationData.campaign_id || null,
           donor_email: donationData.donor_email,
         },
       }
+      console.log("Flutterwave config:", config)
       setFlutterwaveConfig(config)
     }
   }, [bankAccount, donationData, tx_ref])
@@ -105,7 +106,7 @@ export function FlutterwavePayment({
   const handleFlutterPayment = useFlutterwave(flutterwaveConfig || {})
 
   const getPaymentStatusMutation = () => {
-    switch (donationData.type) {
+    switch (donationData.d_type) {
       case "one-time":
         return updateDonationPaymentStatus
       case "recurring":
@@ -248,7 +249,7 @@ export function FlutterwavePayment({
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Payment Successful!</h3>
           <p className="text-gray-600 text-center mb-4">
-            Thank you for your {donationData.type} donation of{" "}
+            Thank you for your {donationData.d_type} donation of{" "}
             {formatAmount(donationData.amount, donationData.currency)}.
           </p>
           <Button onClick={() => (window.location.href = "/donations")} className="w-full">
@@ -289,7 +290,7 @@ export function FlutterwavePayment({
           Complete Payment
         </CardTitle>
         <CardDescription>
-          {donationData.type === "recurring" ? "Set up recurring payment" : "Complete your donation"}
+          {donationData.d_type === "recurring" ? "Set up recurring payment" : "Complete your donation"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -300,7 +301,7 @@ export function FlutterwavePayment({
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Type:</span>
-            <span className="font-semibold capitalize">{donationData.type}</span>
+            <span className="font-semibold capitalize">{donationData.d_type}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Donor:</span>
