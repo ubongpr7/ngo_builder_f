@@ -75,9 +75,9 @@ export function FlutterwavePayment({
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
     
-  const d_type = donationData.d_type || "one-time";
+  const d_type = donationData?.d_type || "one-time";
 
-  const tx_ref = `donation_${d_type}_${donationData.id}_${Date.now()}`
+  const tx_ref = `donation_${d_type}_${donationData?.id}_${Date.now()}`
 
   useEffect(() => {
     if (bankAccount?.api_key) {
