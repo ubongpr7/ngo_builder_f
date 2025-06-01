@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { formatCurrency } from "@/lib/currency-utils"
 import { format, parseISO } from "date-fns"
-import { Activity, DollarSign, Clock, Filter, RefreshCw, Heart, Repeat, Gift, Download } from "lucide-react"
+import { Activity, DollarSign, Clock, Filter, RefreshCw, Heart, Repeat, Gift } from "lucide-react"
 import { useGetCampaignDonationsQuery } from "@/redux/features/finance/donation-campaigns"
 
 interface RecentActivityProps {
@@ -27,6 +27,8 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
     page: 1,
     page_size: 20,
   })
+
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const {
     data: donations,
@@ -109,6 +111,15 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
     })
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      await refetch()
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Activity Header */}
@@ -118,13 +129,9 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
           <p className="text-muted-foreground">All donations and campaign activities</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
           </Button>
         </div>
       </div>
