@@ -20,6 +20,7 @@ import { useCreateInKindDonationMutation } from "@/redux/features/finance/in-kin
 import { formatCurrency } from "@/lib/currency-utils"
 import Select from "react-select"
 import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
+// Add this import at the top with other imports
 import { PaymentHandler } from "../payments/payment-handler"
 
 interface DonationDialogProps {
@@ -59,13 +60,13 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
   // Form states
   const [oneTimeForm, setOneTimeForm] = useState({
     amount: "",
-    currency: "USD",
+    currency: "1", // Default to USD ID (adjust based on your currency IDs)
     payment_method: "credit_card",
     is_anonymous: false,
     donor_name: user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : "",
     donor_email: user?.email || "",
     donor_phone: "",
-    campaign: selectedCampaign?.id || "",
+    campaign: selectedCampaign?.id?.toString() || "",
     message: "",
     marketing_opt_in: false,
     newsletter_opt_in: false,
@@ -73,11 +74,11 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
 
   const [recurringForm, setRecurringForm] = useState({
     amount: "",
-    currency: "USD",
+    currency: "1", // Default to USD ID
     frequency: "monthly",
     payment_method: "credit_card",
     is_anonymous: false,
-    campaign: selectedCampaign?.id || "",
+    campaign: selectedCampaign?.id?.toString() || "",
     start_date: new Date().toISOString().split("T")[0],
     end_date: "",
     notes: "",
@@ -91,9 +92,9 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     quantity: "1",
     unit_of_measure: "",
     estimated_value: "",
-    valuation_currency: "USD",
+    valuation_currency: "1", // Default to USD ID
     valuation_method: "",
-    campaign: selectedCampaign?.id || "",
+    campaign: selectedCampaign?.id?.toString() || "",
     is_anonymous: false,
     donor_name: user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : "",
     donor_email: user?.email || "",
@@ -171,17 +172,18 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
 
   // Get currencies from API
   const { data: currencies = [] } = useGetCurrenciesQuery()
+  // Update the currency options mapping
   const currencyOptions = currencies.map((currency: CurrencyInterface) => ({
-    value: currency.id.toString(),
+    value: currency.id.toString(), // Use ID as value
     label: `${currency.code} - ${currency.name}`,
   })) || [
-    // Fallback options if API fails
-    { value: "USD", label: "USD - US Dollar" },
-    { value: "EUR", label: "EUR - Euro" },
-    { value: "GBP", label: "GBP - British Pound" },
-    { value: "NGN", label: "NGN - Nigerian Naira" },
-    { value: "GHS", label: "GHS - Ghanaian Cedi" },
-    { value: "KES", label: "KES - Kenyan Shilling" },
+    // Fallback options if API fails - use IDs if you know them
+    { value: "1", label: "USD - US Dollar" },
+    { value: "2", label: "EUR - Euro" },
+    { value: "3", label: "GBP - British Pound" },
+    { value: "4", label: "NGN - Nigerian Naira" },
+    { value: "5", label: "GHS - Ghanaian Cedi" },
+    { value: "6", label: "KES - Kenyan Shilling" },
   ]
 
   // Custom styles for react-select
@@ -335,31 +337,60 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     }
   }, [errors])
 
+  // Add helper function to get currency code from ID
+  const getCurrencyCode = (currencyId: string) => {
+    const currency = currencies.find((c: CurrencyInterface) => c.id.toString() === currencyId)
+    return currency?.code || "USD"
+  }
+
   // Update the handleOneTimeSubmit function
   const handleOneTimeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateOneTimeForm()) return
 
     try {
-      const result = await createDonation({
-        ...oneTimeForm,
+      // Format data according to DonationSerializer expectations
+      const formattedData = {
+        // Foreign key fields with _id suffix
+        donor_id: user?.id || null,
+        campaign_id: oneTimeForm.campaign ? Number.parseInt(oneTimeForm.campaign) : null,
+        currency_id: Number.parseInt(oneTimeForm.currency), // Convert currency to ID
+
+        // Direct fields
         amount: Number.parseFloat(oneTimeForm.amount),
-        campaign: oneTimeForm.campaign ? Number.parseInt(oneTimeForm.campaign) : null,
-      }).unwrap()
+        payment_method: oneTimeForm.payment_method,
+        is_anonymous: oneTimeForm.is_anonymous,
+        donor_name: oneTimeForm.is_anonymous ? null : oneTimeForm.donor_name,
+        donor_email: oneTimeForm.is_anonymous ? null : oneTimeForm.donor_email,
+        donor_phone: oneTimeForm.is_anonymous ? null : oneTimeForm.donor_phone,
+
+        // Optional fields
+        marketing_opt_in: oneTimeForm.marketing_opt_in,
+        newsletter_opt_in: oneTimeForm.newsletter_opt_in,
+        notes: oneTimeForm.message || null,
+
+        // Default values
+        donation_source: "website",
+        tax_deductible: true,
+      }
+
+      const result = await createDonation(formattedData).unwrap()
 
       // Set current donation and show payment
       setCurrentDonation({
         id: result.id,
         amount: Number.parseFloat(oneTimeForm.amount),
-        currency: oneTimeForm.currency,
+        currency: getCurrencyCode(oneTimeForm.currency), // Convert ID back to code for Flutterwave
         donor_email: oneTimeForm.donor_email,
         donor_name: oneTimeForm.donor_name,
         donor_phone: oneTimeForm.donor_phone,
         type: "one-time",
+        campaign_id: oneTimeForm.campaign ? Number.parseInt(oneTimeForm.campaign) : null,
       })
       setShowPayment(true)
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create donation")
+      console.error("Donation creation error:", error)
+      toast.error(error?.data?.message || error?.data?.detail || "Failed to create donation")
     }
   }
 
@@ -369,26 +400,45 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     if (!validateRecurringForm()) return
 
     try {
-      const result = await createRecurringDonation({
-        ...recurringForm,
+      // Format data according to RecurringDonationSerializer expectations
+      const formattedData = {
+        // Foreign key fields with _id suffix
+        donor_id: user?.id || null,
+        campaign_id: recurringForm.campaign ? Number.parseInt(recurringForm.campaign) : null,
+        currency_id: Number.parseInt(recurringForm.currency), // Convert currency to ID
+
+        // Direct fields
         amount: Number.parseFloat(recurringForm.amount),
-        campaign: recurringForm.campaign ? Number.parseInt(recurringForm.campaign) : null,
-      }).unwrap()
+        frequency: recurringForm.frequency,
+        payment_method: recurringForm.payment_method,
+        is_anonymous: recurringForm.is_anonymous,
+        start_date: recurringForm.start_date,
+        end_date: recurringForm.end_date || null,
+        notes: recurringForm.notes || null,
+
+        // Default values
+        status: "active",
+        max_failed_payments: 3,
+      }
+
+      const result = await createRecurringDonation(formattedData).unwrap()
 
       // Set current donation and show payment
       setCurrentDonation({
         id: result.id,
         amount: Number.parseFloat(recurringForm.amount),
-        currency: recurringForm.currency,
+        currency: getCurrencyCode(recurringForm.currency), // Convert ID back to code for Flutterwave
         donor_email: user?.email || "",
         donor_name: user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : "",
         donor_phone: "",
         type: "recurring",
-        payment_plan_id: result.payment_plan_id, // If your API returns this
+        campaign_id: recurringForm.campaign ? Number.parseInt(recurringForm.campaign) : null,
+        payment_plan_id: result.subscription_id,
       })
       setShowPayment(true)
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create recurring donation")
+      console.error("Recurring donation creation error:", error)
+      toast.error(error?.data?.message || error?.data?.detail || "Failed to create recurring donation")
     }
   }
 
@@ -405,20 +455,55 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     setShowPayment(false)
   }
 
+  // Update the handleInKindSubmit function
   const handleInKindSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateInKindForm()) return
 
     try {
-      await createInKindDonation({
-        ...inKindForm,
-        campaign: inKindForm.campaign ? Number.parseInt(inKindForm.campaign) : null,
-      }).unwrap()
+      // Format data according to InKindDonationSerializer expectations
+      const formattedData = {
+        // Foreign key fields with _id suffix
+        donor_id: user?.id || null,
+        campaign_id: inKindForm.campaign ? Number.parseInt(inKindForm.campaign) : null,
+        valuation_currency_id: Number.parseInt(inKindForm.valuation_currency), // Note: valuation_currency_id
+
+        // Direct fields
+        item_description: inKindForm.item_description,
+        category: inKindForm.category,
+        brand_model: inKindForm.brand_model || null,
+        condition: inKindForm.condition || null,
+        quantity: Number.parseInt(inKindForm.quantity),
+        unit_of_measure: inKindForm.unit_of_measure || null,
+        estimated_value: Number.parseFloat(inKindForm.estimated_value),
+        valuation_method: inKindForm.valuation_method || null,
+
+        // Donor information
+        is_anonymous: inKindForm.is_anonymous,
+        donor_name: inKindForm.is_anonymous ? null : inKindForm.donor_name,
+        donor_email: inKindForm.is_anonymous ? null : inKindForm.donor_email,
+        donor_phone: inKindForm.is_anonymous ? null : inKindForm.donor_phone,
+        donor_organization: inKindForm.donor_organization || null,
+
+        // Logistics
+        pickup_required: inKindForm.pickup_required,
+        delivery_address: inKindForm.delivery_address || null,
+        special_handling_requirements: inKindForm.special_handling_requirements || null,
+        expected_delivery_date: inKindForm.expected_delivery_date || null,
+        notes: inKindForm.notes || null,
+
+        // Default values
+        status: "pledged",
+        tax_deductible: true,
+      }
+
+      await createInKindDonation(formattedData).unwrap()
 
       toast.success("In-Kind Donation Pledge submitted successfully!")
       setOpen(false)
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to create in-kind donation pledge")
+      console.error("In-kind donation creation error:", error)
+      toast.error(error?.data?.message || error?.data?.detail || "Failed to create in-kind donation pledge")
     }
   }
 
