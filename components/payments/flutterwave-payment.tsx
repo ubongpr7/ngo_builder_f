@@ -14,27 +14,9 @@ import {
 } from "@/redux/features/finance/payment"
 import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
 import { useGetDonationByIdQuery } from "@/redux/features/finance/donations"
-interface donationDataInterface {
-    id: number
-    amount: number
-    d_type: "one-time" | "recurring" | "in-kind"
-    donor_email: string
-    donor_name: string
-    donor_phone?: string
-    payment_plan_id?: string
-    campaign_id?: string
-  }
 
 interface FlutterwavePaymentProps {
-//   donationData: {
-//     id: number
-//     amount: number
-//     currency:  {code: string
-//     id:number
-//     name:string
-//   }
-donationDataId: number
-  
+  donationDataId: number
   onPaymentSuccess: (response: any) => void
   onPaymentError: (error: any) => void
   onCancel: () => void
@@ -46,7 +28,7 @@ interface FlutterwaveResponse {
   tx_ref: string
   flw_ref: string
   amount: number
-  currency:string
+  currency: string
   customer: {
     email: string
     name: string
@@ -65,36 +47,48 @@ export function FlutterwavePayment({
   const [isInitiating, setIsInitiating] = useState(false)
   const [flutterwaveConfig, setFlutterwaveConfig] = useState<any>(null)
 
-  // Fetch bank account data
+  // Fetch donation and bank account data
+  const {
+    data: donationData,
+    isLoading: isLoadingDonation,
+    error: donationError,
+  } = useGetDonationByIdQuery(donationDataId)
+
   const { data: bankAccount, isLoading: isLoadingAccount, error: bankAccountError } = useGetBankAccountByIdQuery(1)
 
-  // Payment status mutations based on donation type
+  // Payment status mutations
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
-  const {data:donationData}=useGetDonationByIdQuery(donationDataId)
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
-    
-  const d_type = donationData?.d_type || "one-time";
 
+  // Determine if we're still loading any required data
+  const isLoading = isLoadingDonation || isLoadingAccount
+  const hasError = donationError || bankAccountError
+
+  // Get donation type safely
+  const d_type = donationData?.d_type || "one-time"
+
+  // Generate transaction reference
   const tx_ref = `donation_${d_type}_${donationData?.id}_${Date.now()}`
 
+  // Initialize Flutterwave config when both donation and bank account data are available
   useEffect(() => {
-    if (bankAccount?.api_key) {
+    if (bankAccount?.api_key && donationData) {
       const config = {
         public_key: bankAccount.api_key,
         tx_ref,
         amount: donationData.amount,
-        currency: donationData.currency?.code,
+        currency: donationData.currency?.code || "USD",
         payment_options: d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
         ...(d_type === "recurring" &&
           donationData.payment_plan_id && {
             payment_plan: donationData.payment_plan_id,
           }),
         customer: {
-          email: donationData.donor_email,
+          email: donationData.donor_email || "",
           phone_number: donationData.donor_phone || "",
-          name: donationData.donor_name,
+          name: donationData.donor_name || "",
         },
         customizations: {
           title: "Donation Payment",
@@ -111,7 +105,7 @@ export function FlutterwavePayment({
       console.log("Flutterwave config:", config)
       setFlutterwaveConfig(config)
     }
-  }, [bankAccount, donationData, tx_ref])
+  }, [bankAccount, donationData, tx_ref, d_type])
 
   const handleFlutterPayment = useFlutterwave(flutterwaveConfig || {})
 
@@ -133,7 +127,7 @@ export function FlutterwavePayment({
       const updateMutation = getPaymentStatusMutation()
 
       await updateMutation({
-        id: donationData.id,
+        id: donationData?.id,
         data: {
           status,
           transaction_data: {
@@ -198,28 +192,36 @@ export function FlutterwavePayment({
     }).format(amount)
   }
 
-  // Show loading state while fetching bank account
-  if (isLoadingAccount) {
+  // Show loading state while fetching donation or bank account data
+  if (isLoading) {
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="flex flex-col items-center justify-center p-6">
           <Loader2 className="h-8 w-8 animate-spin mb-4" />
           <h3 className="text-lg font-semibold mb-2">Loading Payment System</h3>
-          <p className="text-gray-600 text-center">Please wait while we set up your payment...</p>
+          <p className="text-gray-600 text-center">
+            {isLoadingDonation && isLoadingAccount
+              ? "Loading donation and payment configuration..."
+              : isLoadingDonation
+                ? "Loading donation details..."
+                : "Loading payment configuration..."}
+          </p>
         </CardContent>
       </Card>
     )
   }
 
-  // Show error state if bank account fetch failed
-  if (bankAccountError) {
+  // Show error state if any fetch failed
+  if (hasError) {
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardContent className="flex flex-col items-center justify-center p-6">
           <XCircle className="h-16 w-16 text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Payment System Error</h3>
+          <h3 className="text-lg font-semibold mb-2">Loading Error</h3>
           <p className="text-gray-600 text-center mb-4">
-            Unable to load payment configuration. Please try again or contact support.
+            {donationError
+              ? "Unable to load donation details. Please try again."
+              : "Unable to load payment configuration. Please try again."}
           </p>
           <div className="flex gap-2 w-full">
             <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
@@ -233,7 +235,25 @@ export function FlutterwavePayment({
       </Card>
     )
   }
-console.log(flutterwaveConfig, bankAccount)
+
+  // Show error if donation data is missing
+  if (!donationData) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <XCircle className="h-16 w-16 text-red-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Donation Not Found</h3>
+          <p className="text-gray-600 text-center mb-4">
+            The donation details could not be found. Please try creating a new donation.
+          </p>
+          <Button onClick={onCancel} variant="outline" className="w-full">
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
   // Show error if no API key found
   if (!bankAccount?.api_key) {
     return (
@@ -260,7 +280,7 @@ console.log(flutterwaveConfig, bankAccount)
           <h3 className="text-lg font-semibold mb-2">Payment Successful!</h3>
           <p className="text-gray-600 text-center mb-4">
             Thank you for your {d_type} donation of{" "}
-            {formatAmount(donationData.amount, donationData.currency)}.
+            {formatAmount(donationData.amount, donationData.currency?.code || "USD")}.
           </p>
           <Button onClick={() => (window.location.href = "/donations")} className="w-full">
             View Donations
@@ -307,7 +327,9 @@ console.log(flutterwaveConfig, bankAccount)
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Amount:</span>
-            <span className="font-semibold">{formatAmount(donationData.amount, donationData.currency)}</span>
+            <span className="font-semibold">
+              {formatAmount(donationData.amount, donationData.currency?.code || "USD")}
+            </span>
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Type:</span>
@@ -326,6 +348,8 @@ console.log(flutterwaveConfig, bankAccount)
           </p>
           <p>API Key: {bankAccount.api_key ? `${bankAccount.api_key.substring(0, 15)}...` : "Not found"}</p>
           <p>Config Ready: {flutterwaveConfig ? "✅ Yes" : "❌ No"}</p>
+          <p>Currency: {donationData.currency?.code || "USD"}</p>
+          <p>Donation Type: {d_type}</p>
         </div>
 
         <Button onClick={initiatePayment} disabled={isInitiating || !flutterwaveConfig?.public_key} className="w-full">
@@ -335,7 +359,7 @@ console.log(flutterwaveConfig, bankAccount)
               Processing...
             </>
           ) : (
-            `Pay ${formatAmount(donationData.amount, donationData.currency)}`
+            `Pay ${formatAmount(donationData.amount, donationData.currency?.code || "USD")}`
           )}
         </Button>
 
