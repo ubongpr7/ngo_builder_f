@@ -13,15 +13,10 @@ import {
   useVerifyFlutterwavePaymentMutation,
 } from "@/redux/features/finance/payment"
 import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
-
-interface FlutterwavePaymentProps {
-  donationData: {
+import { useGetDonationByIdQuery } from "@/redux/features/finance/donations"
+interface donationDataInterface {
     id: number
     amount: number
-    currency:  {code: string
-    id:number
-    name:string
-  }
     d_type: "one-time" | "recurring" | "in-kind"
     donor_email: string
     donor_name: string
@@ -29,6 +24,17 @@ interface FlutterwavePaymentProps {
     payment_plan_id?: string
     campaign_id?: string
   }
+
+interface FlutterwavePaymentProps {
+//   donationData: {
+//     id: number
+//     amount: number
+//     currency:  {code: string
+//     id:number
+//     name:string
+//   }
+donationDataId: number
+  
   onPaymentSuccess: (response: any) => void
   onPaymentError: (error: any) => void
   onCancel: () => void
@@ -50,7 +56,7 @@ interface FlutterwaveResponse {
 }
 
 export function FlutterwavePayment({
-  donationData,
+  donationDataId,
   onPaymentSuccess,
   onPaymentError,
   onCancel,
@@ -64,14 +70,15 @@ export function FlutterwavePayment({
 
   // Payment status mutations based on donation type
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
+  const [data:donationData]=useGetDonationByIdQuery(donationDataId)
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
+    
+  const d_type = donationData.d_type || "one-time";
 
-  // Generate unique transaction reference
-  const tx_ref = `donation_${donationData.d_type}_${donationData.id}_${Date.now()}`
+  const tx_ref = `donation_${d_type}_${donationData.id}_${Date.now()}`
 
-  // Initialize Flutterwave config when bank account data is available
   useEffect(() => {
     if (bankAccount?.api_key) {
       const config = {
@@ -79,8 +86,8 @@ export function FlutterwavePayment({
         tx_ref,
         amount: donationData.amount,
         currency: donationData.currency?.code,
-        payment_options: donationData.d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
-        ...(donationData.d_type === "recurring" &&
+        payment_options: d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
+        ...(d_type === "recurring" &&
           donationData.payment_plan_id && {
             payment_plan: donationData.payment_plan_id,
           }),
@@ -91,12 +98,12 @@ export function FlutterwavePayment({
         },
         customizations: {
           title: "Donation Payment",
-          description: `${donationData.d_type === "recurring" ? "Recurring" : "One-time"} donation payment`,
+          description: `${d_type === "recurring" ? "Recurring" : "One-time"} donation payment`,
           logo: "/logo.png",
         },
         meta: {
           donation_id: donationData.id,
-          donation_type: donationData.d_type,
+          donation_type: d_type,
           campaign_id: donationData.campaign_id || null,
           donor_email: donationData.donor_email,
         },
@@ -109,7 +116,7 @@ export function FlutterwavePayment({
   const handleFlutterPayment = useFlutterwave(flutterwaveConfig || {})
 
   const getPaymentStatusMutation = () => {
-    switch (donationData.d_type) {
+    switch (d_type) {
       case "one-time":
         return updateDonationPaymentStatus
       case "recurring":
@@ -252,7 +259,7 @@ console.log(flutterwaveConfig, bankAccount)
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Payment Successful!</h3>
           <p className="text-gray-600 text-center mb-4">
-            Thank you for your {donationData.d_type} donation of{" "}
+            Thank you for your {d_type} donation of{" "}
             {formatAmount(donationData.amount, donationData.currency)}.
           </p>
           <Button onClick={() => (window.location.href = "/donations")} className="w-full">
@@ -293,7 +300,7 @@ console.log(flutterwaveConfig, bankAccount)
           Complete Payment
         </CardTitle>
         <CardDescription>
-          {donationData.d_type === "recurring" ? "Set up recurring payment" : "Complete your donation"}
+          {d_type === "recurring" ? "Set up recurring payment" : "Complete your donation"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -304,7 +311,7 @@ console.log(flutterwaveConfig, bankAccount)
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Type:</span>
-            <span className="font-semibold capitalize">{donationData.d_type}</span>
+            <span className="font-semibold capitalize">{d_type}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Donor:</span>

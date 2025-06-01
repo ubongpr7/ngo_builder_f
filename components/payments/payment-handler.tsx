@@ -39,7 +39,7 @@ export function PaymentHandler({ donationData, onComplete, onCancel }: PaymentHa
 
   return (
     <FlutterwavePayment
-      donationData={donationData}
+      donationDataId={donationData.id}
       onPaymentSuccess={handlePaymentSuccess}
       onPaymentError={handlePaymentError}
       onCancel={onCancel}
