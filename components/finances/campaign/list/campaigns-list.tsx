@@ -389,7 +389,7 @@ export function EnhancedCampaignListView() {
   const [editingCampaign, setEditingCampaign] = useState<DonationCampaign | undefined>()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [campaignToDelete, setCampaignToDelete] = useState<DonationCampaign | null>(null)
-
+    const router=useRouter()
   const {
     data: campaignsResponse,
     isLoading,
