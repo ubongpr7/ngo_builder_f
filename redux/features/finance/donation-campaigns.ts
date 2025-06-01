@@ -65,15 +65,71 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Campaign Donations
-    getCampaignDonations: builder.query<
-      PaginatedResponse<Donation>,
+   getCampaignDonations: builder.query<
+      {
+        results: Array<{
+          id: number
+          type: "regular" | "recurring" | "in_kind"
+          donor: {
+            id: number | null
+            name: string
+            email: string | null
+          }
+          amount: number
+          currency: {
+            code: string
+            symbol: string
+          }
+          status: string
+          donation_date: string | null
+          payment_method: string | null
+          is_anonymous: boolean
+          message: string
+          frequency?: string
+          next_payment_date?: string | null
+          description?: string
+          item_type?: string
+          quantity?: number
+          created_at: string | null
+        }>
+        count: number
+        next: boolean
+        previous: boolean
+        page: number
+        page_size: number
+        total_pages: number
+        summary: {
+          total_donations: number
+          regular_donations: {
+            count: number
+            total: number
+          }
+          recurring_donations: {
+            count: number
+            total: number
+          }
+          in_kind_donations: {
+            count: number
+            total: number
+          }
+        }
+        filters_applied: {
+          type: string
+          start_date: string | null
+          end_date: string | null
+          min_amount: number | null
+          max_amount: number | null
+          status: string | null
+        }
+      },
       {
         campaignId: number
+        type?: "all" | "regular" | "recurring" | "in_kind"
         start_date?: string
         end_date?: string
         min_amount?: number
         max_amount?: number
+        status?: string
         page?: number
         page_size?: number
       }
@@ -88,7 +144,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
         })
 
         const queryString = queryParams.toString()
-        return `/${backend}/donation-campaigns/${campaignId}/donation_analysis/${queryString ? `?${queryString}` : ""}`
+        return `/${backend}/donation-campaigns/${campaignId}/donations/${queryString ? `?${queryString}` : ""}`
       },
     }),
 
