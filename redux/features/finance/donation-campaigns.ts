@@ -5,7 +5,7 @@ const backend = "finance_api"
 
 export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Existing endpoints
+    // Campaign List and Detail Endpoints
     getDonationCampaigns: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
@@ -23,11 +23,6 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
 
     getDonationCampaignById: builder.query<DonationCampaign, number>({
       query: (id) => `/${backend}/donation-campaigns/${id}/`,
-    }),
-
-    // Enhanced detail endpoint with comprehensive data
-    getDonationCampaignDetail: builder.query<DonationCampaign, number>({
-      query: (id) => `/${backend}/donation-campaigns/${id}/detail/`,
     }),
 
     getActiveDonationCampaigns: builder.query<DonationCampaign[], void>({
@@ -70,7 +65,19 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    getCampaignDonations: builder.query({
+    // Campaign Donations
+    getCampaignDonations: builder.query<
+      PaginatedResponse<Donation>,
+      {
+        campaignId: number
+        start_date?: string
+        end_date?: string
+        min_amount?: number
+        max_amount?: number
+        page?: number
+        page_size?: number
+      }
+    >({
       query: ({ campaignId, ...params }) => {
         const queryParams = new URLSearchParams()
 
@@ -85,7 +92,25 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       },
     }),
 
-    // MISSING ENDPOINTS - Enhanced Analytics
+    // Dashboard Statistics
+    getDashboardStats: builder.query<
+      {
+        summary: {
+          total_campaigns: number
+          active_campaigns: number
+          completed_campaigns: number
+        }
+        health_distribution: Record<string, number>
+        status_distribution: Record<string, number>
+        top_performing: DonationCampaign[]
+        recent_campaigns: DonationCampaign[]
+      },
+      void
+    >({
+      query: () => `/${backend}/donation-campaigns/dashboard_stats/`,
+    }),
+
+    // Comprehensive Analytics
     getCampaignComprehensiveAnalytics: builder.query<
       {
         campaign_info: {
@@ -147,7 +172,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${backend}/donation-campaigns/${id}/comprehensive_analytics/`,
     }),
 
-    // MISSING ENDPOINTS - Donation Trends
+    // Donation Trends
     getCampaignDonationTrends: builder.query<
       {
         daily_trends: Array<{
@@ -174,7 +199,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       query: ({ id, period = 30 }) => `/${backend}/donation-campaigns/${id}/donation_trends/?period=${period}`,
     }),
 
-    // MISSING ENDPOINTS - Donor Analysis
+    // Donor Analysis
     getCampaignDonorAnalysis: builder.query<
       {
         segments: {
@@ -201,7 +226,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${backend}/donation-campaigns/${id}/donor_analysis/`,
     }),
 
-    // MISSING ENDPOINTS - Payment Analysis
+    // Payment Analysis
     getCampaignPaymentAnalysis: builder.query<
       {
         payment_methods: Array<{
@@ -233,25 +258,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${backend}/donation-campaigns/${id}/payment_analysis/`,
     }),
 
-    // MISSING ENDPOINTS - Dashboard Stats
-    getDashboardStats: builder.query<
-      {
-        summary: {
-          total_campaigns: number
-          active_campaigns: number
-          completed_campaigns: number
-        }
-        health_distribution: Record<string, number>
-        status_distribution: Record<string, number>
-        top_performing: DonationCampaign[]
-        recent_campaigns: DonationCampaign[]
-      },
-      void
-    >({
-      query: () => `/${backend}/donation-campaigns/dashboard_stats/`,
-    }),
-
-    // MISSING ENDPOINTS - Bank Account Management
+    // Bank Account Management
     getBankAccounts: builder.query<
       {
         campaign_title: string
@@ -278,7 +285,6 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      
     }),
 
     setPrimaryBankAccount: builder.mutation<
@@ -292,7 +298,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // MISSING ENDPOINTS - Donation Options for Public Display
+    // Donation Options for Public Display
     getCampaignDonationOptions: builder.query<
       {
         campaign_title: string
@@ -315,7 +321,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       query: (id) => `/${backend}/donation-campaigns/${id}/donation_options/`,
     }),
 
-    // MISSING ENDPOINTS - Update Monetary Fields
+    // Update Monetary Fields
     updateCampaignMonetaryFields: builder.mutation<
       {
         message: string
@@ -332,7 +338,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Enhanced milestone checking
+    // Check Campaign Milestones
     checkCampaignMilestones: builder.mutation<
       {
         progress_percentage: number
@@ -351,7 +357,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Enhanced deadline extension
+    // Extend Campaign Deadline
     extendCampaignDeadline: builder.mutation<
       {
         message: string
@@ -374,7 +380,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
-    // MISSING ENDPOINTS - Export Data
+    // Export Campaign Data
     exportCampaignData: builder.mutation<Blob, { id: number; format?: string }>({
       query: ({ id, format = "csv" }) => ({
         url: `/${backend}/donation-campaigns/${id}/export_data/?format=${format}`,
@@ -398,11 +404,51 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
     >({
       query: (id) => `/${backend}/donation-campaigns/${id}/detailed_statistics/`,
     }),
+
+    // Enhanced detail endpoint with comprehensive data
+    getDonationCampaignDetail: builder.query<DonationCampaign, number>({
+      query: (id) => `/${backend}/donation-campaigns/${id}/detail/`,
+    }),
+
+    // Analytics endpoint (legacy)
+    getCampaignAnalytics: builder.query<
+      {
+        financial_metrics: {
+          current_amount: number
+          total_donations_amount: number
+          total_recurring_amount: number
+          total_in_kind_amount: number
+          net_donations_amount: number
+          progress_percentage: number
+          amount_remaining: number
+          daily_fundraising_rate: number
+          projected_final_amount: number
+        }
+        donor_metrics: {
+          total_donors_count: number
+          total_donations_count: number
+          average_donation_amount: number
+          largest_donation_amount: number
+        }
+        time_metrics: {
+          days_remaining: number
+          days_elapsed: number
+          time_progress_percentage: number
+          campaign_status: string
+          fundraising_health: string
+        }
+        breakdown: any
+        performance: any
+      },
+      number
+    >({
+      query: (id) => `/${backend}/donation-campaigns/${id}/analytics/`,
+    }),
   }),
 })
 
 export const {
-  // Existing hooks
+  // Campaign List and Detail Endpoints
   useGetDonationCampaignsQuery,
   useGetDonationCampaignByIdQuery,
   useGetActiveDonationCampaignsQuery,
@@ -410,28 +456,47 @@ export const {
   useCreateDonationCampaignMutation,
   useUpdateDonationCampaignMutation,
   useDeleteDonationCampaignMutation,
-  useGetCampaignDonationsQuery,
-  useGetCampaignDetailedStatisticsQuery,
-  useCheckCampaignMilestonesMutation,
-  useExtendCampaignDeadlineMutation,
 
-  // NEW HOOKS - Enhanced Analytics
-  useGetDonationCampaignDetailQuery,
-  useGetCampaignComprehensiveAnalyticsQuery,
-  useGetCampaignDonationTrendsQuery,
-  useGetCampaignDonorAnalysisQuery,
-  useGetCampaignPaymentAnalysisQuery,
+  // Campaign Donations
+  useGetCampaignDonationsQuery,
+
+  // Dashboard Statistics
   useGetDashboardStatsQuery,
 
-  // NEW HOOKS - Bank Account Management
+  // Comprehensive Analytics
+  useGetCampaignComprehensiveAnalyticsQuery,
+
+  // Donation Trends
+  useGetCampaignDonationTrendsQuery,
+
+  // Donor Analysis
+  useGetCampaignDonorAnalysisQuery,
+
+  // Payment Analysis
+  useGetCampaignPaymentAnalysisQuery,
+
+  // Bank Account Management
   useGetBankAccountsQuery,
   useAddBankAccountToCampaignMutation,
   useSetPrimaryBankAccountMutation,
 
-  // NEW HOOKS - Public Display
+  // Donation Options for Public Display
   useGetCampaignDonationOptionsQuery,
 
-  // NEW HOOKS - Utility
+  // Update Monetary Fields
   useUpdateCampaignMonetaryFieldsMutation,
+
+  // Check Campaign Milestones
+  useCheckCampaignMilestonesMutation,
+
+  // Extend Campaign Deadline
+  useExtendCampaignDeadlineMutation,
+
+  // Export Campaign Data
   useExportCampaignDataMutation,
+
+  // Legacy endpoints
+  useGetCampaignDetailedStatisticsQuery,
+  useGetDonationCampaignDetailQuery,
+  useGetCampaignAnalyticsQuery,
 } = donationCampaignsApiSlice
