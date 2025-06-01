@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { CampaignListView } from "@/components/finances/campaign/campaign-list-view"
+import { EnhancedCampaignListView } from "@/components/finances/campaign/list/campaigns-list"
 import { DashboardSkeleton } from "@/components/finances/dashboard/dashboard-skeleton"
 
 export default function CampaignsPage() {
@@ -7,7 +7,7 @@ export default function CampaignsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={<DashboardSkeleton />}>
-          <CampaignListView />
+          <EnhancedCampaignListView />
         </Suspense>
       </div>
     </div>

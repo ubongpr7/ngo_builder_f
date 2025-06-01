@@ -32,6 +32,7 @@ import {
   useUpdateFundAllocationMutation,
 } from "@/redux/features/finance/fund-allocations"
 import { DateInput } from "@/components/ui/date-input"
+import { formatCurrency } from "@/lib/currency-utils"
 
 const fundAllocationSchema = z.object({
   source_account_id: z.number().min(1, "Bank account is required"),
