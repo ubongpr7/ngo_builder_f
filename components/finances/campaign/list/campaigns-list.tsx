@@ -47,7 +47,7 @@ import {
   Zap,
   TrendingDown,
 } from "lucide-react"
-import { AddEditCampaignDialog } from "../enhanced-campaign-form"
+import { AddEditCampaignDialog } from "../add-edit-campaign-dialog"
 import { CampaignAnalyticsDashboard } from "./campaign-analytics-dashboard"
 import {
   useGetDonationCampaignsQuery,
