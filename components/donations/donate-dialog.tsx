@@ -14,13 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "react-toastify"
 import { Heart, Repeat, Gift, DollarSign, CreditCard } from "lucide-react"
 import { useAuth } from "@/redux/features/users/useAuth"
-import {
-  useCreateDonationMutation,
-} from "@/redux/features/finance/donations"
+import { useCreateDonationMutation } from "@/redux/features/finance/donations"
 import { useCreateRecurringDonationMutation } from "@/redux/features/finance/recurring-donations"
 import { useCreateInKindDonationMutation } from "@/redux/features/finance/in-kind-donations"
 import { formatCurrency } from "@/lib/currency-utils"
 import Select from "react-select"
+import { useGetCurrenciesQuery } from "@/redux/features/common/typeOF"
 
 interface DonationDialogProps {
   open: boolean
@@ -34,6 +33,12 @@ interface SelectOption {
   value: string
   label: string
   icon?: React.ReactNode
+}
+
+interface CurrencyInterface {
+  id: number
+  code: string
+  name: string
 }
 
 export function DonationDialog({ open, setOpen, recurring = false, selectedCampaign, trigger }: DonationDialogProps) {
@@ -124,7 +129,44 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     { value: "other", label: "Other" },
   ]
 
-  const currencyOptions: SelectOption[] = [
+  const conditionOptions: SelectOption[] = [
+    { value: "new", label: "New" },
+    { value: "excellent", label: "Excellent" },
+    { value: "good", label: "Good" },
+    { value: "fair", label: "Fair" },
+    { value: "poor", label: "Poor" },
+    { value: "damaged", label: "Damaged" },
+  ]
+
+  const unitOptions: SelectOption[] = [
+    { value: "pieces", label: "Pieces" },
+    { value: "boxes", label: "Boxes" },
+    { value: "pallets", label: "Pallets" },
+    { value: "hours", label: "Hours" },
+    { value: "days", label: "Days" },
+    { value: "kg", label: "Kilograms" },
+    { value: "liters", label: "Liters" },
+    { value: "meters", label: "Meters" },
+    { value: "square_meters", label: "Square Meters" },
+    { value: "sets", label: "Sets" },
+  ]
+
+  const valuationMethodOptions: SelectOption[] = [
+    { value: "market_price", label: "Market Price" },
+    { value: "receipt", label: "Receipt" },
+    { value: "appraisal", label: "Professional Appraisal" },
+    { value: "purchase_price", label: "Purchase Price" },
+    { value: "replacement_cost", label: "Replacement Cost" },
+    { value: "comparable_sales", label: "Comparable Sales" },
+  ]
+
+  // Get currencies from API
+  const { data: currencies = [] } = useGetCurrenciesQuery()
+  const currencyOptions = currencies.map((currency: CurrencyInterface) => ({
+    value: currency.id.toString(),
+    label: `${currency.code} - ${currency.name}`,
+  })) || [
+    // Fallback options if API fails
     { value: "USD", label: "USD - US Dollar" },
     { value: "EUR", label: "EUR - Euro" },
     { value: "GBP", label: "GBP - British Pound" },
@@ -736,23 +778,27 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                         {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
                       </div>
                       <div>
-                        <Label htmlFor="unit_of_measure">Unit (Optional)</Label>
-                        <Input
+                        <Label htmlFor="unit_of_measure">Unit *</Label>
+                        <Select
                           id="unit_of_measure"
                           name="unit_of_measure"
-                          placeholder="e.g., boxes, pieces, hours"
-                          value={inKindForm.unit_of_measure}
-                          onChange={(e) => setInKindForm({ ...inKindForm, unit_of_measure: e.target.value })}
+                          options={unitOptions}
+                          value={unitOptions.find((option) => option.value === inKindForm.unit_of_measure)}
+                          onChange={(option) => setInKindForm({ ...inKindForm, unit_of_measure: option?.value || "" })}
+                          styles={selectStyles}
+                          placeholder="Select unit"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="condition">Condition (Optional)</Label>
-                        <Input
+                        <Label htmlFor="condition">Condition *</Label>
+                        <Select
                           id="condition"
                           name="condition"
-                          placeholder="e.g., New, Good, Fair"
-                          value={inKindForm.condition}
-                          onChange={(e) => setInKindForm({ ...inKindForm, condition: e.target.value })}
+                          options={conditionOptions}
+                          value={conditionOptions.find((option) => option.value === inKindForm.condition)}
+                          onChange={(option) => setInKindForm({ ...inKindForm, condition: option?.value || "" })}
+                          styles={selectStyles}
+                          placeholder="Select condition"
                         />
                       </div>
                     </div>
@@ -794,13 +840,15 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                         )}
                       </div>
                       <div>
-                        <Label htmlFor="valuation_method">Valuation Method (Optional)</Label>
-                        <Input
+                        <Label htmlFor="valuation_method">Valuation Method *</Label>
+                        <Select
                           id="valuation_method"
                           name="valuation_method"
-                          placeholder="e.g., Market price, Receipt"
-                          value={inKindForm.valuation_method}
-                          onChange={(e) => setInKindForm({ ...inKindForm, valuation_method: e.target.value })}
+                          options={valuationMethodOptions}
+                          value={valuationMethodOptions.find((option) => option.value === inKindForm.valuation_method)}
+                          onChange={(option) => setInKindForm({ ...inKindForm, valuation_method: option?.value || "" })}
+                          styles={selectStyles}
+                          placeholder="Select valuation method"
                         />
                       </div>
                     </div>
