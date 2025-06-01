@@ -263,7 +263,7 @@ export function AddEditCampaignDialog({ campaign, onSuccess, open, setOpen }: Ca
       if (values.minimum_goal) {
         formData.append("minimum_goal", values.minimum_goal)
       }
-      formData.append("target_currency", values.target_currency)
+      formData.append("target_currency_id", values.target_currency)
       formData.append("start_date", format(values.start_date, "yyyy-MM-dd"))
       formData.append("end_date", format(values.end_date, "yyyy-MM-dd"))
       formData.append("is_active", values.is_active.toString())
