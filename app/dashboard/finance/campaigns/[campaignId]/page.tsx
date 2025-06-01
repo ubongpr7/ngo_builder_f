@@ -85,7 +85,7 @@ interface MLInsight {
 export default function ComprehensiveCampaignDashboard() {
   const params = useParams()
   const router = useRouter()
-  const campaignId = Number(params.id)
+  const campaignId = Number(params.campaignId)
   const [activeTab, setActiveTab] = useState("overview")
   const [refreshing, setRefreshing] = useState(false)
   const [mlInsights, setMlInsights] = useState<MLInsight[]>([])
