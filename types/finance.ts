@@ -61,6 +61,7 @@ export interface FinancialInstitution {
 export interface BankAccount {
   id: number
   name: string
+  api_key: string
   account_number: string
   account_type:
     | "checking"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useState } from "react"
 import { useFlutterwave, closePaymentModal } from "flutterwave-react-v3"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,7 @@ import {
   useUpdateInKindDonationPaymentStatusMutation,
   useVerifyFlutterwavePaymentMutation,
 } from "@/redux/features/finance/payment"
-
+import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
 interface FlutterwavePaymentProps {
   donationData: {
     id: number
@@ -53,8 +53,7 @@ export function FlutterwavePayment({
 }: FlutterwavePaymentProps) {
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle")
   const [isInitiating, setIsInitiating] = useState(false)
-
-  // Payment status mutations based on donation type
+    const {data:bankAccount}=useGetBankAccountByIdQuery(1)
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
@@ -64,7 +63,7 @@ export function FlutterwavePayment({
   const tx_ref = `donation_${donationData.type}_${donationData.id}_${Date.now()}`
 
   const config = {
-    public_key: process.env.NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY || "",
+    public_key: bankAccount?.api_key || "",
     tx_ref,
     amount: donationData.amount,
     currency: donationData.currency,
