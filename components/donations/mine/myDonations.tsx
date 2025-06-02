@@ -46,7 +46,7 @@ export function UserDonations() {
     refetch: refetchRecurring,
   } = useGetMyRecurringDonationsQuery({})
 
-const recurringDonationsData= recurringDonationsData || []
+const recurringDonations= recurringDonationsData || []
 const inKindDonations = inKindDonationsData || []
 const regularDonations = regularDonationsData || []
 
