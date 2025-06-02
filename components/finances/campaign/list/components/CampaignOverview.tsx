@@ -86,7 +86,7 @@ export function CampaignOverview({ campaign, analytics }: CampaignOverviewProps)
         <CardContent>
           <div className="text-center space-y-2">
             <div
-              className="text-3xl font-bold"
+              className="text-xl font-bold"
               style={{ color: getHealthColor(analytics.campaign_info?.fundraising_health) }}
             >
               {analytics.campaign_info?.fundraising_health?.replace(/_/g, " ")}
