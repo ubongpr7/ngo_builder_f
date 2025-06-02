@@ -225,13 +225,7 @@ export function FlutterwavePayment({
         <CardContent className="flex flex-col items-center justify-center p-6">
           <Loader2 className="h-8 w-8 animate-spin mb-4" />
           <h3 className="text-lg font-semibold mb-2">Loading Payment System</h3>
-          <p className="text-gray-600 text-center">
-            {isLoadingDonation && isLoadingAccount
-              ? "Loading donation and payment configuration..."
-              : isLoadingDonation
-                ? "Loading donation details..."
-                : "Loading payment configuration..."}
-          </p>
+          
         </CardContent>
       </Card>
     )
