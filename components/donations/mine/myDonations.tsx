@@ -23,36 +23,89 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react"
-
+import { useGetMyDonationsQuery } from "@/redux/features/finance/donations"
+import { useGetMyInKindDonationsQuery } from "@/redux/features/finance/in-kind-donations"
+import { useGetMyRecurringDonationsQuery } from "@/redux/features/finance/recurring-donations"
 import Link from "next/link"
 
 interface UserDonationsProps {
   userId?: number
 }
-import { useGetMyDonationsQuery } from "@/redux/features/finance/donations"
-import { useGetMyInKindDonationsQuery } from "@/redux/features/finance/in-kind-donations"
-import { useGetMyRecurringDonationsQuery } from "@/redux/features/finance/recurring-donations"
-export function UserDonations() {
+
+// Type definitions for better type safety
+interface RegularDonation {
+  id: number
+  campaign?: string
+  project?: string
+  amount: number
+  currency?: { code: string }
+  status: string
+  donation_date: string
+  payment_method?: string
+  is_recent?: boolean
+  days_since_donation?: number
+  formatted_amount?: string
+  net_amount?: number
+  formatted_net_amount?: string
+  processor_fee_percentage?: number
+}
+
+interface InKindDonation {
+  id: number
+  campaign?: string
+  project?: string
+  item_description: string
+  category?: string
+  quantity: number
+  estimated_value: number
+  valuation_currency?: { code: string }
+  status: string
+  donation_date: string
+  received_date?: string
+  is_overdue?: boolean
+  formatted_estimated_value?: string
+  effective_value?: number
+  formatted_effective_value?: string
+}
+
+interface RecurringDonation {
+  id: number
+  campaign?: string
+  project?: string
+  amount: number
+  currency?: { code: string }
+  frequency: string
+  status: string
+  next_payment_date?: string
+  payment_count: number
+  success_rate?: number
+  is_healthy?: boolean
+  is_at_risk?: boolean
+  days_until_next_payment?: number
+  subscription_age_months?: number
+  formatted_amount?: string
+  total_donated?: number
+  formatted_total_donated?: string
+}
+
+export function UserDonations({ userId }: UserDonationsProps) {
   const [activeTab, setActiveTab] = useState("regular")
 
   // Fetch all donation types
-  const { data: regularDonationsData, isLoading: isLoadingRegular, refetch: refetchRegular } = useGetMyDonationsQuery({})
+  const { data: regularDonations, isLoading: isLoadingRegular, refetch: refetchRegular } = useGetMyDonationsQuery({})
 
-  const { data: inKindDonationsData, isLoading: isLoadingInKind, refetch: refetchInKind } = useGetMyInKindDonationsQuery({})
+  const { data: inKindDonations, isLoading: isLoadingInKind, refetch: refetchInKind } = useGetMyInKindDonationsQuery({})
 
   const {
-    data: recurringDonationsData,
+    data: recurringDonations,
     isLoading: isLoadingRecurring,
     refetch: refetchRecurring,
   } = useGetMyRecurringDonationsQuery({})
 
-const recurringDonations= recurringDonationsData || []
-const inKindDonations = inKindDonationsData || []
-const regularDonations = regularDonationsData || []
-
-
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
+    const statusLower = status?.toLowerCase() || ""
+
+    switch (statusLower) {
       case "completed":
       case "active":
         return (
@@ -92,6 +145,22 @@ const regularDonations = regularDonationsData || []
     await Promise.all([refetchRegular(), refetchInKind(), refetchRecurring()])
   }
 
+  const formatDate = (dateString: string) => {
+    try {
+      return format(parseISO(dateString), "MMM dd, yyyy")
+    } catch {
+      return "Invalid date"
+    }
+  }
+
+  const formatDateTime = (dateString: string) => {
+    try {
+      return format(parseISO(dateString), "MMM dd, yyyy HH:mm")
+    } catch {
+      return "Invalid date"
+    }
+  }
+
   // Regular Donations Component
   const RegularDonationsTab = () => (
     <div className="space-y-4">
@@ -100,7 +169,7 @@ const regularDonations = regularDonationsData || []
           <RefreshCw className="h-8 w-8 animate-spin" />
         </div>
       ) : regularDonations?.length ? (
-        regularDonations?.map((donation: any) => (
+        regularDonations?.map((donation: RegularDonation) => (
           <Card key={donation.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -119,7 +188,7 @@ const regularDonations = regularDonationsData || []
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(parseISO(donation.donation_date), "MMM dd, yyyy")}</span>
+                        <span>{formatDate(donation.donation_date)}</span>
                       </div>
                       {donation.payment_method && (
                         <div className="flex items-center space-x-1">
@@ -143,7 +212,11 @@ const regularDonations = regularDonationsData || []
                     {donation.formatted_amount || formatCurrency(donation.currency?.code || "USD", donation.amount)}
                   </div>
                   {donation.net_amount && (
-                    <div className="text-sm text-muted-foreground">Net: {donation.formatted_net_amount}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Net:{" "}
+                      {donation.formatted_net_amount ||
+                        formatCurrency(donation.currency?.code || "USD", donation.net_amount)}
+                    </div>
                   )}
                   {donation.processor_fee_percentage && (
                     <div className="text-xs text-muted-foreground">Fee: {donation.processor_fee_percentage}%</div>
@@ -171,7 +244,7 @@ const regularDonations = regularDonationsData || []
           <RefreshCw className="h-8 w-8 animate-spin" />
         </div>
       ) : inKindDonations?.length ? (
-        inKindDonations?.map((donation: any) => (
+        inKindDonations?.map((donation: InKindDonation) => (
           <Card key={donation.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -196,12 +269,12 @@ const regularDonations = regularDonationsData || []
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-2">
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(parseISO(donation.donation_date), "MMM dd, yyyy")}</span>
+                        <span>{formatDate(donation.donation_date)}</span>
                       </div>
                       {donation.received_date && (
                         <div className="flex items-center space-x-1">
                           <Package className="h-4 w-4" />
-                          <span>Received {format(parseISO(donation.received_date), "MMM dd")}</span>
+                          <span>Received {formatDate(donation.received_date)}</span>
                         </div>
                       )}
                     </div>
@@ -220,7 +293,9 @@ const regularDonations = regularDonationsData || []
                   <div className="text-sm text-muted-foreground">Estimated Value</div>
                   {donation.effective_value && donation.effective_value !== donation.estimated_value && (
                     <div className="text-sm text-muted-foreground mt-1">
-                      Effective: {donation.formatted_effective_value}
+                      Effective:{" "}
+                      {donation.formatted_effective_value ||
+                        formatCurrency(donation.valuation_currency?.code || "USD", donation.effective_value)}
                     </div>
                   )}
                 </div>
@@ -246,7 +321,7 @@ const regularDonations = regularDonationsData || []
           <RefreshCw className="h-8 w-8 animate-spin" />
         </div>
       ) : recurringDonations?.length ? (
-        recurringDonations?.map((donation: any) => (
+        recurringDonations?.map((donation: RecurringDonation) => (
           <Card key={donation.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
@@ -278,8 +353,7 @@ const regularDonations = regularDonationsData || []
                       </p>
                       {donation.next_payment_date && (
                         <p className="text-sm">
-                          <span className="font-medium">Next Payment:</span>{" "}
-                          {format(parseISO(donation.next_payment_date), "MMM dd, yyyy")}
+                          <span className="font-medium">Next Payment:</span> {formatDate(donation.next_payment_date)}
                         </p>
                       )}
                       {donation.days_until_next_payment !== undefined && (
@@ -293,13 +367,13 @@ const regularDonations = regularDonationsData || []
                         <TrendingUp className="h-4 w-4" />
                         <span>{donation.payment_count} payments made</span>
                       </div>
-                      {donation.success_rate && (
+                      {donation.success_rate !== undefined && (
                         <div className="flex items-center space-x-1">
                           <span>Success rate: {donation.success_rate}%</span>
                         </div>
                       )}
                     </div>
-                    {donation.subscription_age_months && (
+                    {donation.subscription_age_months !== undefined && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Active for {donation.subscription_age_months} months
                       </p>
@@ -313,7 +387,9 @@ const regularDonations = regularDonationsData || []
                   <div className="text-sm text-muted-foreground">per {donation.frequency}</div>
                   {donation.total_donated && (
                     <div className="text-sm font-medium text-green-600 mt-1">
-                      Total: {donation.formatted_total_donated}
+                      Total:{" "}
+                      {donation.formatted_total_donated ||
+                        formatCurrency(donation.currency?.code || "USD", donation.total_donated)}
                     </div>
                   )}
                 </div>
@@ -331,7 +407,7 @@ const regularDonations = regularDonationsData || []
     </div>
   )
 
-  // Calculate totals for summary
+  // Calculate totals for summary - safely handle undefined data
   const totalRegular = regularDonations?.length || 0
   const totalInKind = inKindDonations?.length || 0
   const totalRecurring = recurringDonations?.length || 0
