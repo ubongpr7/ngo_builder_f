@@ -88,7 +88,7 @@ interface RecurringDonation {
   formatted_total_donated?: string
 }
 
-export function UserDonations({ userId }: UserDonationsProps) {
+export function UserDonations() {
   const [activeTab, setActiveTab] = useState("regular")
 
   // Fetch all donation types
