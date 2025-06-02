@@ -179,11 +179,11 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                     </div>
                     {donation.project && (
-                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project?.title}</p>
                     )}
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
@@ -254,7 +254,7 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                     </div>
                     <div className="space-y-1">
@@ -331,7 +331,7 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                       {donation.is_healthy && (
                         <Badge variant="outline" className="bg-green-50 text-green-700">
@@ -345,7 +345,7 @@ export function UserDonations() {
                       )}
                     </div>
                     {donation.project && (
-                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project?.title}</p>
                     )}
                     <div className="space-y-1">
                       <p className="text-sm">
