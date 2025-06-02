@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import { FlutterwavePayment } from "./flutterwave-payment"
+import { DonationCampaign } from "@/types/finance"
 
 interface PaymentHandlerProps {
-  donationData: number
+  donationData: any
   onComplete: () => void
   onCancel: () => void
 }
@@ -35,7 +36,7 @@ export function PaymentHandler({ donationData, onComplete, onCancel }: PaymentHa
 
   return (
     <FlutterwavePayment
-      donationDataId={donationData.id}
+      donationData={donationData}
       onPaymentSuccess={handlePaymentSuccess}
       onPaymentError={handlePaymentError}
       onCancel={handleCancel}

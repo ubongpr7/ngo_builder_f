@@ -51,7 +51,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
   // Add this state to the DonationDialog component
   const [showPayment, setShowPayment] = useState(false)
   const [currentDonation, setCurrentDonation] = useState<any>(null)
-
+  const [donationType, setDonationType] = useState<"one-time" | "recurring" | "in-kind">("one-time")
   // Mutations
   const [createDonation, { isLoading: isCreatingDonation }] = useCreateDonationMutation()
   const [createRecurringDonation, { isLoading: isCreatingRecurring }] = useCreateRecurringDonationMutation()
@@ -170,7 +170,6 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     { value: "debit_card", label: "Debit Card", icon: <CreditCard className="h-4 w-4" /> },
   ]
 
-  // Get currencies from API
   const { data: currencies = [] } = useGetCurrenciesQuery()
   // Update the currency options mapping
   const currencyOptions = currencies.map((currency: CurrencyInterface) => ({
@@ -377,6 +376,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
       const result = await createDonation(formattedData).unwrap()
 
       // Set current donation and show payment
+      
       setCurrentDonation({
         id: result.id,
         amount: Number.parseFloat(oneTimeForm.amount),

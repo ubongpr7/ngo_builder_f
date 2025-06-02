@@ -14,9 +14,12 @@ import {
 } from "@/redux/features/finance/payment"
 import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accounts"
 import { useGetDonationByIdQuery } from "@/redux/features/finance/donations"
+import { useGetInKindDonationByIdQuery } from "@/redux/features/finance/in-kind-donations"
+import { useGetRecurringDonationByIdQuery } from "@/redux/features/finance/recurring-donations"
+
 
 interface FlutterwavePaymentProps {
-  donationDataId: number
+  donationData: any
   onPaymentSuccess: (response: any) => void
   onPaymentError: (error: any) => void
   onCancel: () => void
@@ -35,10 +38,11 @@ interface FlutterwaveResponse {
     phone_number: string
   }
   payment_type?: string
+
 }
 
 export function FlutterwavePayment({
-  donationDataId,
+  donationData,
   onPaymentSuccess,
   onPaymentError,
   onCancel,
@@ -46,17 +50,18 @@ export function FlutterwavePayment({
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle")
   const [isInitiating, setIsInitiating] = useState(false)
   const [flutterwaveConfig, setFlutterwaveConfig] = useState<any>(null)
+  const d_type = donationData?.type || "one-time"
+  const donationDataId = donationData?.id
 
   // Fetch donation and bank account data
-  const {
-    data: donationData,
-    isLoading: isLoadingDonation,
-    error: donationError,
-  } = useGetDonationByIdQuery(donationDataId)
+  // const {
+  //   data: donationData,
+  //   isLoading: isLoadingDonation,
+  //   error: donationError,
+  // } = useGetDonationByIdQuery(donationDataId)
 
   const { data: bankAccount, isLoading: isLoadingAccount, error: bankAccountError } = useGetBankAccountByIdQuery(1)
-
-  // Payment status mutations
+  
   const [updateDonationPaymentStatus] = useUpdateDonationPaymentStatusMutation()
   const [updateRecurringDonationPaymentStatus] = useUpdateRecurringDonationPaymentStatusMutation()
   const [updateInKindDonationPaymentStatus] = useUpdateInKindDonationPaymentStatusMutation()
@@ -67,7 +72,6 @@ export function FlutterwavePayment({
   const hasError = donationError || bankAccountError
 
   // Get donation type safely
-  const d_type = donationData?.d_type || "one-time"
 
   // Generate transaction reference
   const tx_ref = `donation_${d_type}_${donationData?.id}_${Date.now()}`
@@ -79,7 +83,7 @@ export function FlutterwavePayment({
         public_key: bankAccount.api_key,
         tx_ref,
         amount: donationData.amount,
-        currency: donationData.currency?.code || "USD",
+        currency: donationData.currency || "USD",
         payment_options: d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
         ...(d_type === "recurring" &&
           donationData.payment_plan_id && {
@@ -163,20 +167,14 @@ export function FlutterwavePayment({
 
         try {
           if (response.status === "successful") {
-            // Update payment status in backend
-            await handlePaymentUpdate(response, "completed")
             setPaymentStatus("success")
             toast.success("Payment successful!")
-
-            // Close Flutterwave modal first
             closePaymentModal()
-
-            // Then call success callback after a short delay
             setTimeout(() => {
               onPaymentSuccess(response)
             }, 500)
           } else {
-            await handlePaymentUpdate(response, "failed")
+            // await handlePaymentUpdate(response, "failed")
             setPaymentStatus("failed")
             toast.error("Payment failed. Please try again.")
 
