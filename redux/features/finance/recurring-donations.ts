@@ -6,20 +6,7 @@ const backend = "finance_api"
 export const recurringDonationsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all recurring donations
-    getRecurringDonations: builder.query<
-      PaginatedResponse<RecurringDonation>,
-      {
-        status?: string
-        frequency?: string
-        currency?: number
-        campaign?: number
-        project?: number
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getRecurringDonations: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
@@ -31,6 +18,20 @@ export const recurringDonationsApiSlice = apiSlice.injectEndpoints({
 
         const queryString = queryParams.toString()
         return `/${backend}/recurring-donations/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
+    getMyRecurringDonations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/recurring-donations/my_donations/${queryString ? `?${queryString}` : ""}`
       },
     }),
 
@@ -91,6 +92,7 @@ export const recurringDonationsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetRecurringDonationsQuery,
+  useGetMyRecurringDonationsQuery,
   useGetRecurringDonationByIdQuery,
   useGetDueRecurringPaymentsQuery,
   useCreateRecurringDonationMutation,

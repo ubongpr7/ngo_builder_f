@@ -20,6 +20,20 @@ export const donationsApiSlice = apiSlice.injectEndpoints({
         return `/${backend}/donations/${queryString ? `?${queryString}` : ""}`
       },
     }),
+    getMyDonations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/donations/my_donations/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
 
     // Get donation by ID
     getDonationById: builder.query<Donation, number>({
@@ -182,6 +196,7 @@ export const donationsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetDonationsQuery,
+  useGetMyDonationsQuery,
   useGetDonationByIdQuery,
   useGetRecentDonationsQuery,
   useCreateDonationMutation,

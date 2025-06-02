@@ -6,20 +6,7 @@ const backend = "finance_api"
 export const inKindDonationsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Get all in-kind donations
-    getInKindDonations: builder.query<
-      PaginatedResponse<InKindDonation>,
-      {
-        status?: string
-        category?: string
-        valuation_currency?: number
-        campaign?: number
-        project?: number
-        search?: string
-        ordering?: string
-        page?: number
-        page_size?: number
-      }
-    >({
+    getInKindDonations: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams()
 
@@ -31,6 +18,20 @@ export const inKindDonationsApiSlice = apiSlice.injectEndpoints({
 
         const queryString = queryParams.toString()
         return `/${backend}/in-kind-donations/${queryString ? `?${queryString}` : ""}`
+      },
+    }),
+    getMyInKindDonations: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams()
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.append(key, value.toString())
+          }
+        })
+
+        const queryString = queryParams.toString()
+        return `/${backend}/in-kind-donations/my_donations/${queryString ? `?${queryString}` : ""}`
       },
     }),
 
@@ -90,6 +91,7 @@ export const inKindDonationsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetInKindDonationsQuery,
+  useGetMyInKindDonationsQuery,
   useGetInKindDonationByIdQuery,
   useCreateInKindDonationMutation,
   useUpdateInKindDonationMutation,
