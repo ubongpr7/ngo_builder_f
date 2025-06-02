@@ -1,11 +1,11 @@
-[02/Jun/2025 07:11:25] "GET /notification_api/notifications/recent/?limit=12 HTTP/1.0" 200 9501
+[02/Jun/2025 09:58:17] "GET /notification_api/notifications/recent/?limit=12 HTTP/1.0" 200 9479
 web-1     | ============================================================
 web-1     | FLUTTERWAVE WEBHOOK RECEIVED
 web-1     | ============================================================
 web-1     | Step 1: Request method: POST
 web-1     | Step 2: Request details
 web-1     |   - Content-Type: application/json
-web-1     |   - Content-Length: 1004
+web-1     |   - Content-Length: 1069
 web-1     |   - User-Agent: Unknown
 web-1     | Step 3: Headers analysis
 web-1     |   - Found signature header FLUTTERWAVE_SECRET_HASH: prosuj@Pr7
@@ -14,9 +14,9 @@ web-1     | Step 4: Signature extraction
 web-1     |   - verif-hash header: prosuj@Pr7
 web-1     |   - Signature present: Yes
 web-1     | Step 5: Request body processing
-web-1     |   - Raw body length: 1004
+web-1     |   - Raw body length: 1069
 web-1     |   - Body decoded successfully
-web-1     |   - Body content: {"event":"charge.completed","data":{"id":9398344,"tx_ref":"donation_one-time_21_1748848025228","flw_ref":"RAVE_PROD_SAN/DFQU4966174884812883316044","device_fingerprint":"N/A","amount":100,"currency":"NGN","charged_amount":100,"app_fee":1.4,"merchant_fee":0,"processor_response":"RECURRENT_TRANSACTION_RATE_LIMIT_EXCEEDED","auth_model":"PIN","ip":"54.75.161.64","narration":"CARD Transaction ","status":"failed","payment_type":"card","created_at":"2025-06-02T07:08:45.000Z","account_id":2610791,"customer":{"id":3304652,"name":"Ubong Prosper Johnny","phone_number":"07042042034","email":"ravesb_4813f6014ede84546892_ubongpr7@gmail.com","created_at":"2025-06-01T22:47:12.000Z"},"card":{"first_6digits":"507881","last_4digits":"4821","issuer":"MAESTRO  DEBIT","country":"NG","type":"MAESTRO","expiry":"05/30"}},"meta_data":{"__CheckoutInitAddress":"https://www.destinybuilders.africa/donate","donation_id":"21","donation_type":"one-time","donor_email":"ubongpr11@gmail.com"},"event.type":"CARD_TRANSACTION"}
+web-1     |   - Body content: {"event":"charge.completed","data":{"id":9398688,"tx_ref":"donation_one-time_25_1748858138999","flw_ref":"RAVE_PROD_SAN/RXOT1498174885828490816502","device_fingerprint":"N/A","amount":200,"currency":"NGN","charged_amount":200,"app_fee":2.8,"merchant_fee":0,"processor_response":"Approved by Financial Institution","auth_model":"PIN","ip":"52.209.154.143","narration":"CARD Transaction ","status":"successful","payment_type":"card","created_at":"2025-06-02T09:58:01.000Z","account_id":2610791,"customer":{"id":3304652,"name":"Ubong Prosper Johnny","phone_number":"07042042034","email":"ravesb_4813f6014ede84546892_ubongpr7@gmail.com","created_at":"2025-06-01T22:47:12.000Z"},"card":{"first_6digits":"539983","last_4digits":"4547","issuer":"MASTERCARD GUARANTY TRUST BANK Mastercard Naira Debit Card  ","country":"NG","type":"MASTERCARD","expiry":"12/28"}},"meta_data":{"__CheckoutInitAddress":"https://www.destinybuilders.africa/donate","donation_id":"25","donation_type":"one-time","campaign_id":"2","donor_email":"ubongpr11@gmail.com"},"event.type":"CARD_TRANSACTION"}
 web-1     | Step 6: JSON parsing
 web-1     |   - JSON parsed successfully
 web-1     |   - Event type: charge.completed
@@ -24,119 +24,22 @@ web-1     |   - Data keys: ['event', 'data', 'meta_data', 'event.type']
 web-1     |   - Full data: {
 web-1     |   "event": "charge.completed",
 web-1     |   "data": {
-web-1     |     "id": 9398344,
-web-1     |     "tx_ref": "donation_one-time_21_1748848025228",
-web-1     |     "flw_ref": "RAVE_PROD_SAN/DFQU4966174884812883316044",
+web-1     |     "id": 9398688,
+web-1     |     "tx_ref": "donation_one-time_25_1748858138999",
+web-1     |     "flw_ref": "RAVE_PROD_SAN/RXOT1498174885828490816502",
 web-1     |     "device_fingerprint": "N/A",
-web-1     |     "amount": 100,
+web-1     |     "amount": 200,
 web-1     |     "currency": "NGN",
-web-1     |     "charged_amount": 100,
-web-1     |     "app_fee": 1.4,
-web-1     |     "merchant_fee": 0,
-web-1     |     "processor_response": "RECURRENT_TRANSACTION_RATE_LIMIT_EXCEEDED",
-web-1     |     "auth_model": "PIN",
-web-1     |     "ip": "54.75.161.64",
-web-1     |     "narration": "CARD Transaction ",
-web-1     |     "status": "failed",
-web-1     |     "payment_type": "card",
-web-1     |     "created_at": "2025-06-02T07:08:45.000Z",
-web-1     |     "account_id": 2610791,
-web-1     |     "customer": {
-web-1     |       "id": 3304652,
-web-1     |       "name": "Ubong Prosper Johnny",
-web-1     |       "phone_number": "07042042034",
-web-1     |       "email": "ravesb_4813f6014ede84546892_ubongpr7@gmail.com",
-web-1     |       "created_at": "2025-06-01T22:47:12.000Z"
-web-1     |     },
-web-1     |     "card": {
-web-1     |       "first_6digits": "507881",
-web-1     |       "last_4digits": "4821",
-web-1     |       "issuer": "MAESTRO  DEBIT",
-web-1     |       "country": "NG",
-web-1     |       "type": "MAESTRO",
-web-1     |       "expiry": "05/30"
-web-1     |     }
-web-1     |   },
-web-1     |   "meta_data": {
-web-1     |     "__CheckoutInitAddress": "https://www.destinybuilders.africa/donate",
-web-1     |     "donation_id": "21",
-web-1     |     "donation_type": "one-time",
-web-1     |     "donor_email": "ubongpr11@gmail.com"
-web-1     |   },
-web-1     |   "event.type": "CARD_TRANSACTION"
-web-1     | }
-web-1     | Step 7: Signature verification
-web-1     |     Signature Verification Details:
-web-1     |     - Secret hash configured: Yes
-web-1     |     - Secret hash value: prosuj@Pr7
-web-1     |     - Received signature: prosuj@Pr7
-web-1     |     - Method 1: Direct comparison
-web-1     |     SUCCESS: Direct comparison matched
-web-1     | SUCCESS: Signature verification passed
-web-1     | Step 8: Event processing
-web-1     |   - Event type: charge.completed
-web-1     |   - Event data keys: ['id', 'tx_ref', 'flw_ref', 'device_fingerprint', 'amount', 'currency', 'charged_amount', 'app_fee', 'merchant_fee', 'processor_response', 'auth_model', 'ip', 'narration', 'status', 'payment_type', 'created_at', 'account_id', 'customer', 'card']
-web-1     | Step 9: Metadata extraction
-web-1     |   - Metadata: {}
-web-1     |   - Donation ID: None
-web-1     |   - Donation type: one-time
-web-1     | Step 10: Event type processing
-web-1     |     Processing event: charge.completed
-web-1     |     Handling payment completion
-web-1     |     - Donation ID: None
-web-1     |     - Donation type: one-time
-web-1     |     WARNING: No donation_id found - treating as test webhook
-web-1     |   - Processing result: {'success': True, 'message': 'Test webhook acknowledged (no donation_id)'}
-web-1     | Step 11: Sending response
-web-1     | SUCCESS: Webhook processed successfully
-web-1     |   - Response data: {'status': 'success', 'message': 'Test webhook acknowledged (no donation_id)', 'event_type': 'charge.completed'}
-web-1     | ============================================================
-web-1     | WEBHOOK PROCESSING COMPLETE
-web-1     | ============================================================
-web-1     | [02/Jun/2025 07:11:47] "POST /finance/test_webhook/ HTTP/1.0" 200 112
-web-1     | [02/Jun/2025 07:12:17] "GET /notification_api/notifications/recent/?limit=12 HTTP/1.0" 200 9501
-web-1     | [02/Jun/2025 07:12:25] "GET /notification_api/notifications/recent/?limit=12 HTTP/1.0" 200 9501
-web-1     | ============================================================
-web-1     | FLUTTERWAVE WEBHOOK RECEIVED
-web-1     | ============================================================
-web-1     | Step 1: Request method: POST
-web-1     | Step 2: Request details
-web-1     |   - Content-Type: application/json
-web-1     |   - Content-Length: 1049
-web-1     |   - User-Agent: Unknown
-web-1     | Step 3: Headers analysis
-web-1     |   - Found signature header FLUTTERWAVE_SECRET_HASH: prosuj@Pr7
-web-1     |   - Found signature header VERIF_HASH: prosuj@Pr7
-web-1     | Step 4: Signature extraction
-web-1     |   - verif-hash header: prosuj@Pr7
-web-1     |   - Signature present: Yes
-web-1     | Step 5: Request body processing
-web-1     |   - Raw body length: 1049
-web-1     |   - Body decoded successfully
-web-1     |   - Body content: {"event":"charge.completed","data":{"id":9398366,"tx_ref":"donation_one-time_21_1748848025228","flw_ref":"RAVE_PROD_SAN/QIXJ0313174884833951416261","device_fingerprint":"N/A","amount":100,"currency":"NGN","charged_amount":100,"app_fee":1.4,"merchant_fee":0,"processor_response":"Approved by Financial Institution","auth_model":"PIN","ip":"54.75.161.64","narration":"CARD Transaction ","status":"successful","payment_type":"card","created_at":"2025-06-02T07:12:16.000Z","account_id":2610791,"customer":{"id":3304652,"name":"Ubong Prosper Johnny","phone_number":"07042042034","email":"ravesb_4813f6014ede84546892_ubongpr7@gmail.com","created_at":"2025-06-01T22:47:12.000Z"},"card":{"first_6digits":"539983","last_4digits":"4547","issuer":"MASTERCARD GUARANTY TRUST BANK Mastercard Naira Debit Card  ","country":"NG","type":"MASTERCARD","expiry":"12/28"}},"meta_data":{"__CheckoutInitAddress":"https://www.destinybuilders.africa/donate","donation_id":"21","donation_type":"one-time","donor_email":"ubongpr11@gmail.com"},"event.type":"CARD_TRANSACTION"}
-web-1     | Step 6: JSON parsing
-web-1     |   - JSON parsed successfully
-web-1     |   - Event type: charge.completed
-web-1     |   - Data keys: ['event', 'data', 'meta_data', 'event.type']
-web-1     |   - Full data: {
-web-1     |   "event": "charge.completed",
-web-1     |   "data": {
-web-1     |     "id": 9398366,
-web-1     |     "tx_ref": "donation_one-time_21_1748848025228",
-web-1     |     "flw_ref": "RAVE_PROD_SAN/QIXJ0313174884833951416261",
-web-1     |     "device_fingerprint": "N/A",
-web-1     |     "amount": 100,
-web-1     |     "currency": "NGN",
-web-1     |     "charged_amount": 100,
-web-1     |     "app_fee": 1.4,
+web-1     |     "charged_amount": 200,
+web-1     |     "app_fee": 2.8,
 web-1     |     "merchant_fee": 0,
 web-1     |     "processor_response": "Approved by Financial Institution",
 web-1     |     "auth_model": "PIN",
-web-1     |     "ip": "54.75.161.64",
+web-1     |     "ip": "52.209.154.143",
 web-1     |     "narration": "CARD Transaction ",
 web-1     |     "status": "successful",
 web-1     |     "payment_type": "card",
-web-1     |     "created_at": "2025-06-02T07:12:16.000Z",
+web-1     |     "created_at": "2025-06-02T09:58:01.000Z",
 web-1     |     "account_id": 2610791,
 web-1     |     "customer": {
 web-1     |       "id": 3304652,
@@ -156,8 +59,9 @@ web-1     |     }
 web-1     |   },
 web-1     |   "meta_data": {
 web-1     |     "__CheckoutInitAddress": "https://www.destinybuilders.africa/donate",
-web-1     |     "donation_id": "21",
+web-1     |     "donation_id": "25",
 web-1     |     "donation_type": "one-time",
+web-1     |     "campaign_id": "2",
 web-1     |     "donor_email": "ubongpr11@gmail.com"
 web-1     |   },
 web-1     |   "event.type": "CARD_TRANSACTION"
@@ -174,24 +78,46 @@ web-1     | Step 8: Event processing
 web-1     |   - Event type: charge.completed
 web-1     |   - Event data keys: ['id', 'tx_ref', 'flw_ref', 'device_fingerprint', 'amount', 'currency', 'charged_amount', 'app_fee', 'merchant_fee', 'processor_response', 'auth_model', 'ip', 'narration', 'status', 'payment_type', 'created_at', 'account_id', 'customer', 'card']
 web-1     | Step 9: Metadata extraction
-web-1     |   - Metadata: {}
-web-1     |   - Donation ID: None
+web-1     |   - Metadata: {'__CheckoutInitAddress': 'https://www.destinybuilders.africa/donate', 'donation_id': '25', 'donation_type': 'one-time', 'campaign_id': '2', 'donor_email': 'ubongpr11@gmail.com'}
+web-1     |   - Donation ID: 25
 web-1     |   - Donation type: one-time
+web-1     |   - Donor email: ubongpr11@gmail.com
 web-1     | Step 10: Event type processing
 web-1     |     Processing event: charge.completed
 web-1     |     Handling payment completion
-web-1     |     - Donation ID: None
+web-1     |     - Donation ID: 25
 web-1     |     - Donation type: one-time
-web-1     |     WARNING: No donation_id found - treating as test webhook
-web-1     |   - Processing result: {'success': True, 'message': 'Test webhook acknowledged (no donation_id)'}
+web-1     |       Updating donation 25 with currency conversion
+web-1     |       - Found donation: Prosper Ubong - NGN 200.00 (Pending)
+web-1     |       - Set transaction_id: 9398688
+web-1     |       - Set reference_number: RAVE_PROD_SAN/RXOT1498174885828490816502
+web-1     |       - Set bank_reference: donation_one-time_25_1748858138999
+web-1     |       - Checking for currency conversion needs...
+web-1     |       - Donation currency: NGN
+web-1     |       - Campaign currency: EUR
+web-1     |       - Currency conversion needed: NGN → EUR
+web-1     |         Getting exchange rate: NGN → EUR
+web-1     |         WARNING: No exchange rate available, creating 1:1 rate
+web-1     |         Created system user: system_webhook
+web-1     |       - Exchange rate applied: 1.00000000
+web-1     |       - Original amount: NGN 200.00
+web-1     |       - Converted amount: EUR 200.0000000000
+web-1     |       - Exchange rate source: Fallback 1:1 rate (webhook)
+web-1     |       - Set payment_method: credit_card
+web-1     |       - Set processor_fee: 2.8
+web-1     |       - Status updated: pending → completed
+web-1     |       - Set processed_date from webhook: 2025-06-02 09:58:01+00:00
+web-1     |       SUCCESS: Comprehensively updated donation 25
+web-1     |       - Status change: pending → completed
+web-1     |       - Transaction ID: 9398688
+web-1     |       - Reference: RAVE_PROD_SAN/RXOT1498174885828490816502
+web-1     |       - Currency conversion: NGN 200.00 → EUR 200.0000000000
+web-1     |     - Update result: {'success': True, 'message': 'Donation 25 updated successfully with currency conversion', 'status_change': 'pending → completed', 'transaction_id': '9398688', 'reference_number': 'RAVE_PROD_SAN/RXOT1498174885828490816502', 'amount': '200.00', 'currency': 'NGN', 'converted_amount': '200.0000000000', 'converted_currency': 'EUR', 'exchange_rate': '1.00000000'}
+web-1     |   - Processing result: {'success': True, 'message': 'Donation 25 updated successfully with currency conversion', 'status_change': 'pending → completed', 'transaction_id': '9398688', 'reference_number': 'RAVE_PROD_SAN/RXOT1498174885828490816502', 'amount': '200.00', 'currency': 'NGN', 'converted_amount': '200.0000000000', 'converted_currency': 'EUR', 'exchange_rate': '1.00000000'}
 web-1     | Step 11: Sending response
 web-1     | SUCCESS: Webhook processed successfully
-web-1     |   - Response data: {'status': 'success', 'message': 'Test webhook acknowledged (no donation_id)', 'event_type': 'charge.completed'}
+web-1     |   - Response data: {'status': 'success', 'message': 'Donation 25 updated successfully with currency conversion', 'event_type': 'charge.completed', 'donation_id': '25'}
 web-1     | ============================================================
 web-1     | WEBHOOK PROCESSING COMPLETE
 web-1     | ============================================================
-web-1     | [02/Jun/2025 07:12:58] "POST /finance/test_webhook/ HTTP/1.0" 200 112
-web-1     | [02/Jun/2025 07:13:02] "OPTIONS /finance_api/donations/21/payment-status/ HTTP/1.0" 200 0
-web-1     
-
-
+web-1     | [

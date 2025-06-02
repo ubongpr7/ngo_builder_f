@@ -89,9 +89,9 @@ export function FinancialMetrics({ analytics, detailed = false }: FinancialMetri
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold">{analytics.financial_metrics?.progress_percentage}%</div>
+          <div className="text-3xl font-bold">{analytics.financial_metrics?.progress_percentage?.toFixed(2)}%</div>
           <div className="text-sm text-muted-foreground mt-1">
-            Min goal: {analytics.financial_metrics?.minimum_goal_percentage}%
+            Min goal: {analytics.financial_metrics?.minimum_goal_percentage?.toFixed(2)}%
           </div>
         </CardContent>
       </Card>

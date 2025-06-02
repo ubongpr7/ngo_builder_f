@@ -167,7 +167,7 @@ export function PaymentAnalysis({ paymentAnalysis, analytics }: PaymentAnalysisP
                     <td className="p-2 text-right">
                       {formatCurrency(analytics.campaign_info?.currency, method.total_fees)}
                     </td>
-                    <td className="p-2 text-right">{((method.total_fees / method.total) * 100)}%</td>
+                    <td className="p-2 text-right">{((method.total_fees / method.total) * 100).toFixed(2)}%</td>
                   </tr>
                 ))}
               </tbody>

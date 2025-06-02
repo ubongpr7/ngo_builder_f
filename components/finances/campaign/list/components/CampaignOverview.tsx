@@ -59,7 +59,7 @@ export function CampaignOverview({ campaign, analytics }: CampaignOverviewProps)
               <span>Progress</span>
               <span className="font-medium">{analytics.financial_metrics?.progress_percentage?.toFixed(1)}%</span>
             </div>
-            <Progress value={analytics.financial_metrics?.progress_percentage} className="h-3" />
+            <Progress value={analytics.financial_metrics?.progress_percentage.toFixed(2)} className="h-3" />
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-2">
