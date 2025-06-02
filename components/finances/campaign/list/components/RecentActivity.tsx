@@ -155,7 +155,7 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
               <div className="flex items-center space-x-2">
                 <Repeat className="h-5 w-5 text-blue-500" />
                 <div>
-                  <div className="text-2xl font-bold">{Number(donations.summary.total_donations)-Number(donations.summary.recurring_donations.count)}</div>
+                  <div className="text-2xl font-bold">{Number(donations.summary.total_donations)-Number(donations.summary.regular_donations.count)}</div>
                   <div className="text-sm text-muted-foreground">Recurring</div>
                 </div>
               </div>
