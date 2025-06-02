@@ -68,8 +68,8 @@ export function FlutterwavePayment({
   const [verifyPayment] = useVerifyFlutterwavePaymentMutation()
 
   // Determine if we're still loading any required data
-  const isLoading = isLoadingDonation || isLoadingAccount
-  const hasError = donationError || bankAccountError
+  const isLoading =  isLoadingAccount
+  const hasError =  bankAccountError
 
   // Get donation type safely
 
