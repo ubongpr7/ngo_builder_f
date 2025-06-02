@@ -141,7 +141,7 @@ export default function ComprehensiveCampaignDashboard() {
       insights.push({
         type: "opportunity",
         title: "Momentum Building",
-        description: `Donations have increased by ${Math.round((avgRecent / avgEarlier - 1) * 100)}% in the last week. Consider amplifying marketing efforts.`,
+        description: `Donations have increased by ${Math.round((avgRecent / (avgEarlier - 1)) * 100)}% in the last week. Consider amplifying marketing efforts.`,
         confidence: 78,
         impact: "medium",
         actionable: true,
@@ -261,8 +261,8 @@ export default function ComprehensiveCampaignDashboard() {
          
         </div>
 
-        {/* ML Insights */}
-        {mlInsights.length > 0 && <MLInsights insights={mlInsights} />}
+        {/* ML Insights         {mlInsights.length > 0 && <MLInsights insights={mlInsights} />}
+      */}
 
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
