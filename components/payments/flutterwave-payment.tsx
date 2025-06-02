@@ -238,11 +238,7 @@ export function FlutterwavePayment({
         <CardContent className="flex flex-col items-center justify-center p-6">
           <XCircle className="h-16 w-16 text-red-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2">Loading Error</h3>
-          <p className="text-gray-600 text-center mb-4">
-            {donationError
-              ? "Unable to load donation details. Please try again."
-              : "Unable to load payment configuration. Please try again."}
-          </p>
+          
           <div className="flex gap-2 w-full">
             <Button onClick={() => window.location.reload()} variant="outline" className="flex-1">
               Retry
