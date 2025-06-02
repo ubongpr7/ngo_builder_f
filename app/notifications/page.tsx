@@ -111,6 +111,7 @@ export default function NotificationsPage() {
   const handleMarkAsRead = async (id: number) => {
     try {
       await markAsRead(id).unwrap()
+      refetch()
       toast.success("Notification marked as read")
     } catch (error) {
       toast.error("Failed to mark notification as read")
@@ -122,6 +123,7 @@ export default function NotificationsPage() {
     try {
       const category = currentCategory !== "all" ? currentCategory : undefined
       await markAllAsRead(category).unwrap()
+      refetch()
       toast.success("All notifications marked as read")
     } catch (error) {
       toast.error("Failed to mark all notifications as read")
