@@ -279,10 +279,12 @@ export default function ComprehensiveCampaignDashboard() {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Donors</span>
             </TabsTrigger>
+            {/*}
             <TabsTrigger value="trends" className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Trends</span>
             </TabsTrigger>
+            */}
             <TabsTrigger value="payments" className="flex items-center space-x-2">
               <Banknote className="h-4 w-4" />
               <span className="hidden sm:inline">Payments</span>
@@ -314,11 +316,11 @@ export default function ComprehensiveCampaignDashboard() {
           <TabsContent value="donors" className="space-y-6">
             <DonorAnalytics donorAnalysis={donorAnalysis} analytics={analytics} />
           </TabsContent>
-
+              {/* }
           <TabsContent value="trends" className="space-y-6">
             <TrendsAnalysis trends={trends} analytics={analytics} />
           </TabsContent>
-
+              */}
           <TabsContent value="payments" className="space-y-6">
             <PaymentAnalysis paymentAnalysis={paymentAnalysis} analytics={analytics} />
           </TabsContent>

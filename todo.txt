@@ -121,3 +121,101 @@ web-1     | ============================================================
 web-1     | WEBHOOK PROCESSING COMPLETE
 web-1     | ============================================================
 web-1     | [
+
+
+FLUTTERWAVE WEBHOOK RECEIVED
+web-1     | ============================================================
+web-1     | Step 1: Request method: POST
+web-1     | Step 2: Request details
+web-1     |   - Content-Type: application/json
+web-1     |   - Content-Length: 1058
+web-1     |   - User-Agent: Unknown
+web-1     | Step 3: Headers analysis
+web-1     |   - Found signature header FLUTTERWAVE_SECRET_HASH: prosuj@Pr7
+web-1     |   - Found signature header VERIF_HASH: prosuj@Pr7
+web-1     | Step 4: Signature extraction
+web-1     |   - verif-hash header: prosuj@Pr7
+web-1     |   - Signature present: Yes
+web-1     | Step 5: Request body processing
+web-1     |   - Raw body length: 1058
+web-1     |   - Body decoded successfully
+web-1     |   - Body content: {"event":"charge.completed","data":{"id":9398999,"tx_ref":"donation_recurring_3_1748866730214","flw_ref":"RAVE_PROD_SAN/DOMM6113174886683879816763","device_fingerprint":"N/A","amount":100,"currency":"NGN","charged_amount":100,"app_fee":1.4,"merchant_fee":0,"processor_response":"Approved by Financial Institution","auth_model":"PIN","ip":"54.75.161.64","narration":"CARD Transaction ","status":"successful","payment_type":"card","created_at":"2025-06-02T12:20:35.000Z","account_id":2610791,"customer":{"id":3304985,"name":"Ubong Prosper Johnny","phone_number":null,"email":"ravesb_4813f6014ede84546892_ubongpr7@gmail.com","created_at":"2025-06-02T12:20:35.000Z"},"card":{"first_6digits":"539983","last_4digits":"4547","issuer":"MASTERCARD GUARANTY TRUST BANK Mastercard Naira Debit Card  ","country":"NG","type":"MASTERCARD","expiry":"12/28"}},"meta_data":{"__CheckoutInitAddress":"https://www.destinybuilders.africa/donate","donation_id":"3","donation_type":"recurring","campaign_id":"2","donor_email":"ubongpr11@gmail.com"},"event.type":"CARD_TRANSACTION"}
+web-1     | Step 6: JSON parsing
+web-1     |   - JSON parsed successfully
+web-1     |   - Event type: charge.completed
+web-1     |   - Data keys: ['event', 'data', 'meta_data', 'event.type']
+web-1     |   - Full data: {
+web-1     |   "event": "charge.completed",
+web-1     |   "data": {
+web-1     |     "id": 9398999,
+web-1     |     "tx_ref": "donation_recurring_3_1748866730214",
+web-1     |     "flw_ref": "RAVE_PROD_SAN/DOMM6113174886683879816763",
+web-1     |     "device_fingerprint": "N/A",
+web-1     |     "amount": 100,
+web-1     |     "currency": "NGN",
+web-1     |     "charged_amount": 100,
+web-1     |     "app_fee": 1.4,
+web-1     |     "merchant_fee": 0,
+web-1     |     "processor_response": "Approved by Financial Institution",
+web-1     |     "auth_model": "PIN",
+web-1     |     "ip": "54.75.161.64",
+web-1     |     "narration": "CARD Transaction ",
+web-1     |     "status": "successful",
+web-1     |     "payment_type": "card",
+web-1     |     "created_at": "2025-06-02T12:20:35.000Z",
+web-1     |     "account_id": 2610791,
+web-1     |     "customer": {
+web-1     |       "id": 3304985,
+web-1     |       "name": "Ubong Prosper Johnny",
+web-1     |       "phone_number": null,
+web-1     |       "email": "ravesb_4813f6014ede84546892_ubongpr7@gmail.com",
+web-1     |       "created_at": "2025-06-02T12:20:35.000Z"
+web-1     |     },
+web-1     |     "card": {
+web-1     |       "first_6digits": "539983",
+web-1     |       "last_4digits": "4547",
+web-1     |       "issuer": "MASTERCARD GUARANTY TRUST BANK Mastercard Naira Debit Card  ",
+web-1     |       "country": "NG",
+web-1     |       "type": "MASTERCARD",
+web-1     |       "expiry": "12/28"
+web-1     |     }
+web-1     |   },
+web-1     |   "meta_data": {
+web-1     |     "__CheckoutInitAddress": "https://www.destinybuilders.africa/donate",
+web-1     |     "donation_id": "3",
+web-1     |     "donation_type": "recurring",
+web-1     |     "campaign_id": "2",
+web-1     |     "donor_email": "ubongpr11@gmail.com"
+web-1     |   },
+web-1     |   "event.type": "CARD_TRANSACTION"
+web-1     | }
+web-1     | Step 7: Signature verification
+web-1     |     Signature Verification Details:
+web-1     |     - Secret hash configured: Yes
+web-1     |     - Secret hash value: prosuj@Pr7
+web-1     |     - Received signature: prosuj@Pr7
+web-1     |     - Method 1: Direct comparison
+web-1     |     SUCCESS: Direct comparison matched
+web-1     | SUCCESS: Signature verification passed
+web-1     | Step 8: Event processing
+web-1     |   - Event type: charge.completed
+web-1     |   - Event data keys: ['id', 'tx_ref', 'flw_ref', 'device_fingerprint', 'amount', 'currency', 'charged_amount', 'app_fee', 'merchant_fee', 'processor_response', 'auth_model', 'ip', 'narration', 'status', 'payment_type', 'created_at', 'account_id', 'customer', 'card']
+web-1     | Step 9: Metadata extraction
+web-1     |   - Metadata: {'__CheckoutInitAddress': 'https://www.destinybuilders.africa/donate', 'donation_id': '3', 'donation_type': 'recurring', 'campaign_id': '2', 'donor_email': 'ubongpr11@gmail.com'}
+web-1     |   - Donation ID: 3
+web-1     |   - Donation type: recurring
+web-1     |   - Donor email: ubongpr11@gmail.com
+web-1     | Step 10: Event type processing
+web-1     |     Processing event: charge.completed
+web-1     |     Handling payment completion
+web-1     |     - Donation ID: 3
+web-1     |     - Donation type: recurring
+web-1     |     ERROR: Unsupported donation type for currency conversion: recurring
+web-1     |   - Processing result: {'success': False, 'error': 'Unsupported donation type: recurring'}
+web-1     | Step 11: Sending response
+web-1     | ERROR: Webhook processing failed: Unsupported donation type: recurring
+web-1     |   - Response data: {'status': 'error', 'message': 'Unsupported donation type: recurring', 'event_type': 'charge.completed', 'donation_id': '3'}
+web-1     | ============================================================
+web-1     | WEBHOOK PROCESSING COMPLETE
+web-1     | ============================================================
+web-1     | [02/Jun/2025
