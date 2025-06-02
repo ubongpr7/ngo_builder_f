@@ -30,15 +30,25 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
 
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // Transform filters to use donation_ prefixes for API call
+  const apiFilters = {
+    type: filters.type, // type doesn't need prefix
+    donation_status: filters.status,
+    donation_start_date: filters.start_date,
+    donation_end_date: filters.end_date,
+    donation_min_amount: filters.min_amount ? Number(filters.min_amount) : undefined,
+    donation_max_amount: filters.max_amount ? Number(filters.max_amount) : undefined,
+    page: filters.page,
+    page_size: filters.page_size,
+  }
+
   const {
     data: donations,
     isLoading,
     refetch,
   } = useGetCampaignDonationsQuery({
     campaignId,
-    ...filters,
-    min_amount: filters.min_amount ? Number(filters.min_amount) : undefined,
-    max_amount: filters.max_amount ? Number(filters.max_amount) : undefined,
+    ...apiFilters,
   })
 
   const getDonationTypeIcon = (type: string) => {
@@ -155,7 +165,9 @@ export function RecentActivity({ campaignId }: RecentActivityProps) {
               <div className="flex items-center space-x-2">
                 <Repeat className="h-5 w-5 text-blue-500" />
                 <div>
-                  <div className="text-2xl font-bold">{Number(donations.summary.total_donations)-Number(donations.summary.regular_donations.count)}</div>
+                  <div className="text-2xl font-bold">
+                    {Number(donations.summary.total_donations) - Number(donations.summary.regular_donations.count)}
+                  </div>
                   <div className="text-sm text-muted-foreground">Recurring</div>
                 </div>
               </div>
