@@ -22,6 +22,16 @@ import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSli
 import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, Receipt } from "lucide-react"
 import { toast } from "react-toastify"
+import { useGetBudgetItemsQuery } from "@/redux/features/finance/budget-items"
+
+// ADDED: Type for budget items
+interface BudgetItem {
+  id: number
+  title: string
+  description?: string
+  allocated_amount: number
+  // Add other fields as needed from your API response
+}
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -33,13 +43,14 @@ const formSchema = z.object({
       invalid_type_error: "Date is required",
     })
     .refine((date) => {
-      // Ensure date is not in the future
       const today = new Date()
-      today.setHours(0, 0, 0, 0) // Reset time to start of day for fair comparison
+      today.setHours(0, 0, 0, 0)
       return date <= today
     }, "Date cannot be in the future"),
   category: z.string().min(1, "Category is required"),
   incurred_by: z.number().optional(),
+  // ADDED: Budget item field
+  budget_item: z.number().optional().nullable(),
   receipt: z.instanceof(File).optional(),
   notes: z.string().optional(),
 })
@@ -63,16 +74,33 @@ interface AddExpenseDialogProps {
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
 }
+interface TeamMember{
+  id: number
+  first_name: string
+  last_name: string
+  username: string
+}
 
 export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
+  
+  // ADDED: Fetch budget items for the project
+  const { data: budgetItems = [], isLoading: isLoadingBudgetItems } = useGetBudgetItemsQuery({
+    budget__project: projectId,
+  })
 
+  
   const today = new Date()
-
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
 
-  const teamMemberOptions = teamMembers?.map((user:{first_name:string,last_name:string,username:string,id:number}) => ({
+  // ADDED: Format budget items for select
+  const budgetItemOptions = (budgetItems as BudgetItem[]).map(item => ({
+    value: item.id,
+    label: `${item.title} - $${item.allocated_amount}`,
+  }))
+
+  const teamMemberOptions = teamMembers?.map(user => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
   }))
@@ -91,6 +119,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       amount: undefined,
       date_incurred: new Date(),
       category: "",
+      budget_item: null, // ADDED: Default value
       notes: "",
     },
   })
@@ -99,7 +128,6 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
     setIsSubmitting(true)
 
     try {
-      // Create form data for file upload
       const formData = new FormData()
       formData.append("project", projectId.toString())
       formData.append("title", data.title)
@@ -107,6 +135,11 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       formData.append("amount", data.amount.toString())
       formData.append("date_incurred", data.date_incurred.toISOString().split("T")[0])
       formData.append("category", data.category)
+
+      // ADDED: Append budget item if selected
+      if (data.budget_item) {
+        formData.append("budget_item", data.budget_item.toString())
+      }
 
       if (data.incurred_by) {
         formData.append("incurred_by", data.incurred_by.toString())
@@ -120,12 +153,10 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
         formData.append("notes", data.notes)
       }
 
-      // Set status to pending
       formData.append("status", "pending")
 
       await createExpense(formData).unwrap()
-      toast.success("Expense Added", )
-      
+      toast.success("Expense Added")
 
       reset()
       onOpenChange(false)
@@ -142,7 +173,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          reset() // Reset form when dialog closes
+          reset()
         }
         onOpenChange(isOpen)
       }}
@@ -185,12 +216,39 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
                     id="date_incurred"
                     value={field.value}
                     onChange={field.onChange}
-                    maxDate={today} // Restrict to today and earlier
+                    maxDate={today}
                     error={errors.date_incurred?.message}
                   />
                 )}
               />
             </div>
+          </div>
+
+          {/* ADDED: Budget Item Select Field */}
+          <div className="space-y-2">
+            <Label htmlFor="budget_item">Budget Item (Optional)</Label>
+            <Controller
+              control={control}
+              name="budget_item"
+              render={({ field }) => (
+                <Select
+                  inputId="budget_item"
+                  options={budgetItemOptions}
+                  value={budgetItemOptions.find(option => option.value === field.value)}
+                  onChange={(option) => field.onChange(option?.value || null)}
+                  placeholder={
+                    isLoadingBudgetItems 
+                      ? "Loading budget items..." 
+                      : "Select a budget item"
+                  }
+                  isLoading={isLoadingBudgetItems}
+                  isClearable
+                  classNames={{
+                    control: () => "input",
+                  }}
+                />
+              )}
+            />
           </div>
 
           <div className="space-y-2">
