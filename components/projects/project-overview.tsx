@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Calendar, Users, Clock, DollarSign, CheckCircle } from "lucide-react"
 import type { Project } from "@/types/project"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface ProjectOverviewProps {
   project: Project
@@ -159,14 +160,14 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
                 <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Total Budget</span>
               </div>
-              <span className="font-medium">${project.budget.toLocaleString()}</span>
+              <span className="font-medium">{formatCurrency(project?.currency?.code || "USD",project.budget)}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
                 <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Funds Allocated</span>
               </div>
-              <span className="font-medium">${project.funds_allocated?.toLocaleString()}</span>
+              <span className="font-medium">{formatCurrency(project?.currency?.code || "USD",project.funds_allocated)}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
@@ -174,7 +175,7 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
                 <span>Funds Spent</span>
               </div>
               <span className={`font-medium ${project.funds_spent > project.budget ? "text-red-500" : ""}`}>
-                ${project.funds_spent.toLocaleString()}
+                ${formatCurrency(project?.currency?.code || "USD",project.funds_spent)}
               </span>
             </div>
             <div className="flex justify-between">
@@ -183,7 +184,7 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
                 <span>Remaining Budget</span>
               </div>
               <span
-                className={`font-medium ${(project.budget - project.funds_spent) < 0 ? "text-red-500" : "text-green-500"}`}
+                className={`font-medium ${formatCurrency(project?.currency?.code || "USD",(project.budget - project.funds_spent))} < 0 ? "text-red-500" : "text-green-500"}`}
               >
                 ${(project.budget - project.funds_spent).toLocaleString()}
               </span>
