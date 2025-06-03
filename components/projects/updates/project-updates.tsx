@@ -362,9 +362,9 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
               <div className="space-y-1">
                 <div className="text-sm text-gray-500">Total Funds Spent</div>
                 <div className="text-2xl font-bold">
-                  $
+                  
                   {typeof statistics.total_funds_spent === "number"
-                    ? statistics.total_funds_spent.toLocaleString()
+                    ? formatCurrency(currency_code,statistics.total_funds_spent)
                     : "0.00"}
                 </div>
               </div>
