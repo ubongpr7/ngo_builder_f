@@ -29,7 +29,7 @@ interface BudgetItem {
   id: number
   title: string
   description?: string
-  allocated_amount: number
+  amount: number
   // Add other fields as needed from your API response
 }
 
@@ -97,10 +97,10 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
   // ADDED: Format budget items for select
   const budgetItemOptions = (budgetItems as BudgetItem[]).map(item => ({
     value: item.id,
-    label: `${item.title} - $${item.allocated_amount}`,
+    label: `${item.title} - $${item.amount}`,
   }))
 
-  const teamMemberOptions = teamMembers?.map(user => ({
+  const teamMemberOptions = (teamMembers as TeamMember[])?.map(user => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
   }))
