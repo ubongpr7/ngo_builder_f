@@ -40,9 +40,10 @@ interface ProjectExpensesProps {
   isManager?: boolean
   is_DB_admin?: boolean
   isTeamMember?: boolean
+  projectCurrencyCode: string
 }
 
-export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectExpensesProps) {
+export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember,projectCurrencyCode }: ProjectExpensesProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [filters, setFilters] = useState<any>({})
@@ -468,6 +469,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
       <AddExpenseDialog
         projectId={projectId}
         open={addExpenseOpen}
+        projectCurrencyCode={projectCurrencyCode}
         onOpenChange={setAddExpenseOpen}
         onSuccess={refresh}
       />

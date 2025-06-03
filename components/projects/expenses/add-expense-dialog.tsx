@@ -83,11 +83,13 @@ const EXPENSE_CATEGORIES = [
 interface AddExpenseDialogProps {
   projectId: number
   open: boolean
+  projectCurrencyCode: string
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+
 }
 
-export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
+export function AddExpenseDialog({ projectId,projectCurrencyCode, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
   
@@ -100,7 +102,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
 
   const budgetItemOptions = (budgetItems as BudgetItem[]).map(item => ({
     value: item.id,
-    label: `${item.title} - ${formatCurrency(item.currency.code, item.amount)}`,
+    label: `${item.title} - ${formatCurrency(projectCurrencyCode, item.amount)}`,
     truly_available_amount: item.truly_available_amount,
     approval_required_threshold: item.approval_required_threshold,
   }))
