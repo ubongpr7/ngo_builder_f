@@ -1,5 +1,6 @@
 import  type { Task } from "./tasks"
 import type { Milestone } from "./milestone"
+import { Currency } from "./finance";
 
 
 export interface UserData {
@@ -22,7 +23,6 @@ export interface UserData {
     password:string;
   }
   
-
 export interface Project {
   id: number
   title: string
@@ -35,6 +35,7 @@ export interface Project {
   created_by: UserData
   created_at: string
   days_remaining: number
+  currency:Currency
   updated_at: string
   budget_utilization?: number
   team_member_details?: ProjectUser[]

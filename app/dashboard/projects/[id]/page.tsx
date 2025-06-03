@@ -32,6 +32,7 @@ import { useGetLoggedInProfileRolesQuery } from "@/redux/features/profile/readPr
 import { usePermissions } from "@/components/permissionHander"
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 import { ProjectDocuments } from "@/components/projects/project-documents"
+import { formatCurrency } from "@/lib/currency-utils"
 
 export default function ProjectDetail() {
   const { id } = useParams()
@@ -165,13 +166,6 @@ export default function ProjectDetail() {
     }
   }
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
-  }
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -270,7 +264,7 @@ export default function ProjectDetail() {
                     ? "Budget fully utilized"
                     : project.status === "planned" || project.status === "submitted"
                       ? "No funds spent yet"
-                      : `${formatCurrency(project.funds_spent)} spent of ${formatCurrency(project.budget)} budget`}
+                      : `${formatCurrency(project?.currency?.code || "USD",project.funds_spent)} spent of ${formatCurrency(project?.currency?.code || "USD",project.budget)} budget`}
                 </p>
               </div>
 
@@ -296,9 +290,9 @@ export default function ProjectDetail() {
 
             <div className="space-y-1">
               <div className="text-sm text-gray-500">Budget</div>
-              <div className="text-2xl font-bold">{formatCurrency(project.budget)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(project?.currency?.code || "USD",project.budget)}</div>
               <div className="flex justify-between text-sm">
-                <span>Spent: {formatCurrency(project.funds_spent)}</span>
+                <span>Spent: {formatCurrency(project?.currency?.code || "USD",project.funds_spent)}</span>
                 <span className={project.funds_spent > project.budget ? "text-red-500" : "text-green-500"}>
                   {Math.round((project.funds_spent / project.budget) * 100)}%
                 </span>
