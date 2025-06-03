@@ -134,6 +134,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const [createExpense] = useCreateExpenseMutation()
   
   const { data: budgetItems = [], isLoading: isLoadingBudgetItems } = useGetBudgetItemsQuery({
@@ -265,6 +266,17 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     }
   };
 
+  // Scroll to first error field
+  const scrollToFirstError = () => {
+    const errorElements = formRef.current?.querySelectorAll('.error-field');
+    if (errorElements && errorElements.length > 0) {
+      errorElements[0].scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  };
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
 
@@ -272,6 +284,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     if (!receiptFile) {
       setFileError("Receipt is required");
       setIsSubmitting(false);
+      scrollToFirstError();
       return;
     }
 
@@ -280,6 +293,8 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       
       if (selectedBudgetItem && data.amount > selectedBudgetItem.truly_available_amount) {
         toast.error("Expense amount exceeds the truly available budget");
+        setIsSubmitting(false);
+        scrollToFirstError();
         return;
       }
 
@@ -294,10 +309,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       formData.append("date_incurred", formattedDate);
       
       formData.append("category", data.category)
-
-      if (data.budget_item) {
-        formData.append("budget_item", data.budget_item.toString())
-      }
+      formData.append("budget_item", data.budget_item.toString())
 
       if (data.incurred_by) {
         formData.append("incurred_by", data.incurred_by.toString())
@@ -309,8 +321,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
 
       // Append receipt file
       formData.append("receipt", receiptFile);
-
-      // Set status based on approval requirements
 
       await createExpense(formData).unwrap()
       toast.success("Expense Added")
@@ -343,6 +353,9 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       } else {
         toast.error("Error adding expense. Please try again.");
       }
+      
+      // Scroll to first error after toast
+      setTimeout(scrollToFirstError, 300);
     } finally {
       setIsSubmitting(false)
     }
@@ -376,9 +389,16 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form 
+          ref={formRef}
+          onSubmit={handleSubmit(onSubmit)} 
+          className="space-y-6"
+        >
           {/* Budget Item Selection */}
-          <div className="space-y-2">
+          <div 
+            id="container-budget_item" 
+            className={cn("space-y-2", errors.budget_item && "error-field")}
+          >
             <Label htmlFor="budget_item">Budget Item *</Label>
             <Controller
               control={control}
@@ -447,7 +467,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
 
           {/* Expense Details */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div 
+              id="container-amount" 
+              className={cn("space-y-2", (errors.amount || exceedsAvailableBudget) && "error-field")}
+            >
               <Label htmlFor="amount">Amount ({projectCurrencyCode}) *</Label>
               <Input 
                 id="amount" 
@@ -470,7 +493,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
               )}
             </div>
 
-            <div className="space-y-2">
+            <div 
+              id="container-date_incurred" 
+              className={cn("space-y-2", errors.date_incurred && "error-field")}
+            >
               <Label htmlFor="date_incurred">Date Incurred *</Label>
               <Controller
                 control={control}
@@ -492,7 +518,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div 
+            id="container-title" 
+            className={cn("space-y-2", errors.title && "error-field")}
+          >
             <Label htmlFor="title">Title *</Label>
             <Input id="title" {...register("title")} />
             {errors.title && (
@@ -500,7 +529,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             )}
           </div>
 
-          <div className="space-y-2">
+          <div 
+            id="container-description" 
+            className={cn("space-y-2", errors.description && "error-field")}
+          >
             <Label htmlFor="description">Description *</Label>
             <Textarea id="description" {...register("description")} />
             {errors.description && (
@@ -508,7 +540,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             )}
           </div>
 
-          <div className="space-y-2">
+          <div 
+            id="container-category" 
+            className={cn("space-y-2", errors.category && "error-field")}
+          >
             <Label htmlFor="category">Category *</Label>
             <Controller
               control={control}
@@ -531,7 +566,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             )}
           </div>
 
-          <div className="space-y-2">
+          <div 
+            id="container-incurred_by" 
+            className="space-y-2"
+          >
             <Label htmlFor="incurred_by">Incurred By</Label>
             <Controller
               control={control}
@@ -555,13 +593,19 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             />
           </div>
 
-          <div className="space-y-2">
+          <div 
+            id="container-notes" 
+            className="space-y-2"
+          >
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea id="notes" {...register("notes")} />
           </div>
 
           {/* Receipt Upload Field */}
-          <div className="space-y-2">
+          <div 
+            id="container-receipt" 
+            className={cn("space-y-2", fileError && "error-field")}
+          >
             <Label htmlFor="receipt">Receipt *</Label>
             <div className="flex items-center gap-2">
               <input
