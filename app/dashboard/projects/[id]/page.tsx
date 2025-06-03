@@ -401,6 +401,7 @@ export default function ProjectDetail() {
         <TabsContent value="updates" className="space-y-4">
           <ProjectUpdates
             projectId={projectId}
+            currency_code={project?.currency?.code || "USD"}
             isManager={isManager}
             is_DB_admin={is_DB_admin}
             isTeamMember={isTeamMember}

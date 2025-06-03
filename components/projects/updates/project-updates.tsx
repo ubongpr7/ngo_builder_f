@@ -43,15 +43,17 @@ import {
   useDeleteUpdateMutation,
 } from "@/redux/features/projects/updateApiSlice"
 import { UpdateGalleryView } from "./update-gallery-view"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface ProjectUpdatesProps {
   projectId: number
   isManager?: boolean
   is_DB_admin?: boolean
   isTeamMember?: boolean
+  currency_code: string
 }
 
-export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember }: ProjectUpdatesProps) {
+export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember, currency_code }: ProjectUpdatesProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("all")
   const [viewMode, setViewMode] = useState<"list" | "timeline" | "gallery">("list")
@@ -425,7 +427,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                           {update.funds_spent_today > 0 && (
                             <Badge className="bg-blue-100 text-blue-800 border-blue-300">
                               <DollarSign className="mr-1 h-3 w-3" />$
-                              {Number(update.funds_spent_today).toLocaleString()}
+                              {formatCurrency(currency_code,update.funds_spent_today)}
                             </Badge>
                           )}
                           {(isManager || isTeamMember) && (
