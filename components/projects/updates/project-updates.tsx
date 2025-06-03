@@ -640,6 +640,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
           <EditUpdateDialog
             projectId={projectId}
             update={selectedUpdate}
+            currency_code={currency_code}
             open={editUpdateOpen}
             onOpenChange={setEditUpdateOpen}
             onSuccess={refetch}

@@ -62,9 +62,10 @@ interface EditUpdateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  currency_code?: string
 }
 
-export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSuccess }: EditUpdateDialogProps) {
+export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSuccess,currency_code }: EditUpdateDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
@@ -304,7 +305,7 @@ export function EditUpdateDialog({ projectId, update, open, onOpenChange, onSucc
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="funds_spent_today">Funds Spent Today ($)</Label>
+                    <Label htmlFor="funds_spent_today">Funds Spent Today {currency_code}</Label>
                     <Input 
                       id="funds_spent_today" 
                       type="number" 
