@@ -25,6 +25,7 @@ import { formatCurrency } from "@/lib/currency-utils"
 import { cn } from "@/lib/utils"
 import { Loader2, AlertTriangle, CheckCircle, File, X } from "lucide-react"
 import { toast } from "react-toastify"
+import { format } from "date-fns"
 
 interface TeamMember {
   id: number
@@ -287,7 +288,8 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       formData.append("title", data.title)
       formData.append("description", data.description)
       formData.append("amount", data.amount.toString())
-      formData.append("date_incurred", data.date_incurred.toISOString().split("T")[0])
+      
+      formData.append("date_incurred", format(data.date_incurred, "yyyy-MM-dd"))
       formData.append("category", data.category)
 
       if (data.budget_item) {
