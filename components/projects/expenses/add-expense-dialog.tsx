@@ -311,7 +311,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       formData.append("receipt", receiptFile);
 
       // Set status based on approval requirements
-      formData.append("status", requiresApproval ? "pending" : "draft")
 
       await createExpense(formData).unwrap()
       toast.success("Expense Added")
