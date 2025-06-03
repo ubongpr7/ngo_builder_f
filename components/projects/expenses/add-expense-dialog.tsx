@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -16,15 +16,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DateInput } from "@/components/ui/date-input" // Changed import
+import { DateInput } from "@/components/ui/date-input"
 import Select from "react-select"
 import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
 import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { useGetBudgetItemsQuery } from "@/redux/features/finance/budget-items"
 import { formatCurrency } from "@/lib/currency-utils"
 import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { Loader2, AlertTriangle, CheckCircle } from "lucide-react"
+import { Loader2, AlertTriangle, CheckCircle, File, X } from "lucide-react"
 import { toast } from "react-toastify"
 
 interface TeamMember {
@@ -70,6 +69,18 @@ const formSchema = z.object({
   incurred_by: z.number().optional(),
   budget_item: z.number({ required_error: "Budget item is required" }),
   notes: z.string().optional(),
+  receipt: z.instanceof(File, { message: "Receipt is required" })
+    .refine(file => {
+      const validTypes = [
+        "image/jpeg", 
+        "image/png", 
+        "image/gif", 
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ];
+      return validTypes.includes(file.type);
+    }, "Only JPEG, PNG, GIF, PDF, DOC, and DOCX files are allowed")
 }).superRefine((data, ctx) => {
   if (data.budget_item) {
     const budgetItem = budgetItemsData.find(item => item.id === data.budget_item);
@@ -106,7 +117,6 @@ interface AddExpenseDialogProps {
   onSuccess?: () => void
 }
 
-// Custom styles for React Select
 const selectStyles = {
   control: (provided: any) => ({
     ...provided,
@@ -131,13 +141,15 @@ let budgetItemsData: BudgetItem[] = [];
 
 export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [createExpense] = useCreateExpenseMutation()
   
   const { data: budgetItems = [], isLoading: isLoadingBudgetItems } = useGetBudgetItemsQuery({
     budget__project: projectId,
   })
   
-  // Store budget items in module-level variable for zod validation
   budgetItemsData = budgetItems as BudgetItem[];
   
   const today = new Date()
@@ -163,6 +175,8 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     reset,
     setValue,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -174,19 +188,17 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       category: "",
       budget_item: undefined,
       notes: "",
+      receipt: undefined,
     },
   })
 
-  // Watch budget item and amount for validation summary
   const watchedBudgetItem = watch("budget_item")
   const watchedAmount = watch("amount")
   
-  // Find selected budget item
   const selectedBudgetItem = (budgetItems as BudgetItem[]).find(
     item => item.id === watchedBudgetItem
   )
   
-  // Validation states
   const exceedsAvailableBudget = selectedBudgetItem && 
     watchedAmount > selectedBudgetItem.truly_available_amount
     
@@ -195,11 +207,9 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     watchedAmount > selectedBudgetItem.approval_required_threshold &&
     !exceedsAvailableBudget
 
-  // Prevent amount from exceeding available budget
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // Allow empty input for better UX
     if (value === "") {
       setValue("amount", 0);
       return;
@@ -208,7 +218,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     const newAmount = parseFloat(value);
     
     if (selectedBudgetItem && !isNaN(newAmount)) {
-      // Clamp value to available budget
       const clampedAmount = Math.min(
         newAmount, 
         selectedBudgetItem.truly_available_amount
@@ -220,13 +229,69 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("receipt", { 
+          type: "manual", 
+          message: "File size exceeds 5MB limit" 
+        });
+        return;
+      }
+      
+      // Validate file type
+      const validTypes = [
+        "image/jpeg", 
+        "image/png", 
+        "image/gif", 
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ];
+      
+      if (!validTypes.includes(file.type)) {
+        setError("receipt", { 
+          type: "manual", 
+          message: "Invalid file type (JPEG, PNG, GIF, PDF, DOC/DOCX only)" 
+        });
+        return;
+      }
+      
+      clearErrors("receipt");
+      setReceiptFile(file);
+      setValue("receipt", file);
+      
+      // Create preview if it's an image
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setReceiptPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setReceiptPreview(null);
+      }
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    setValue("receipt", undefined as any);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    clearErrors("receipt");
+  };
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
 
     try {
       const selectedBudgetItem = (budgetItems as BudgetItem[]).find(item => item.id === data.budget_item);
       
-      // Double-check validation before submission
       if (selectedBudgetItem && data.amount > selectedBudgetItem.truly_available_amount) {
         toast.error("Expense amount exceeds the truly available budget");
         return;
@@ -252,13 +317,18 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
         formData.append("notes", data.notes)
       }
 
+      // Append receipt file
+      if (data.receipt) {
+        formData.append("receipt", data.receipt);
+      }
+
       // Set status based on approval requirements
       formData.append("status", requiresApproval ? "pending" : "draft")
 
       await createExpense(formData).unwrap()
       toast.success("Expense Added")
 
-      reset()
+      resetForm()
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
@@ -268,12 +338,21 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     }
   }
 
+  const resetForm = () => {
+    reset();
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) {
-          reset()
+          resetForm();
         }
         onOpenChange(isOpen)
       }}
@@ -300,7 +379,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                   value={budgetItemOptions.find(option => option.value === field.value)}
                   onChange={(option) => {
                     field.onChange(option?.value || null);
-                    // Reset amount when budget item changes
                     setValue("amount", 0);
                   }}
                   placeholder={
@@ -470,6 +548,67 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea id="notes" {...register("notes")} />
           </div>
+
+          {/* Receipt Upload Field */}
+          <div className="space-y-2">
+            <Label htmlFor="receipt">Receipt *</Label>
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                id="receipt"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choose File
+              </Button>
+              {receiptFile && (
+                <div className="flex items-center">
+                  <span className="text-sm truncate max-w-xs">{receiptFile.name}</span>
+                  <Button 
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRemoveFile}
+                    className="ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            {errors.receipt && (
+              <p className="text-sm text-red-500">{errors.receipt.message}</p>
+            )}
+          </div>
+
+          {/* Receipt Preview */}
+          {receiptPreview && (
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h3 className="font-medium mb-2">Receipt Preview</h3>
+              {receiptFile?.type.startsWith("image/") ? (
+                <img 
+                  src={receiptPreview} 
+                  alt="Receipt preview" 
+                  className="max-h-48 object-contain mx-auto"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-4">
+                  <File className="h-16 w-16 text-gray-400" />
+                  <p className="mt-2 text-sm font-medium">{receiptFile?.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {Math.round((receiptFile?.size || 0) / 1024)} KB
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Validation Summary */}
           {selectedBudgetItem && watchedAmount > 0 && (
