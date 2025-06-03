@@ -633,7 +633,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
       )}
 
       {/* Dialogs */}
-      <AddUpdateDialog projectId={projectId} open={addUpdateOpen} onOpenChange={setAddUpdateOpen} onSuccess={refetch} />
+      <AddUpdateDialog projectId={projectId}currency_code={currency_code}  open={addUpdateOpen} onOpenChange={setAddUpdateOpen} onSuccess={refetch} />
 
       {selectedUpdate && (
         <>

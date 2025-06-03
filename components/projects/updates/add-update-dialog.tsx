@@ -50,9 +50,10 @@ interface AddUpdateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
+  currency_code: string
 }
 
-export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: AddUpdateDialogProps) {
+export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess,currency_code }: AddUpdateDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const [mediaFiles, setMediaFiles] = useState<File[]>([])
@@ -251,7 +252,7 @@ export function AddUpdateDialog({ projectId, open, onOpenChange, onSuccess }: Ad
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="funds_spent_today">Funds Spent Today ($)</Label>
+                  <Label htmlFor="funds_spent_today">Funds Spent Today {currency_code}</Label>
                   <Input 
                     id="funds_spent_today" 
                     type="number" 
