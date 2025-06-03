@@ -307,7 +307,7 @@ export function ExpensesList({ expenses, isLoading, onEditExpense, onAddExpense,
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
-                      {expense.status === "pending" && (
+                      {expense.status in ["pending",'draft']  && (
                         <>
                           <DropdownMenuItem onClick={() => handleApproveExpense(expense.id)} className="text-green-600">
                             <CheckCircle className="h-4 w-4 mr-2" />
