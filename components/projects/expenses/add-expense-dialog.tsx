@@ -23,9 +23,9 @@ import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSl
 import { useGetBudgetItemsQuery } from "@/redux/features/finance/budget-items"
 import { formatCurrency } from "@/lib/currency-utils"
 import { cn } from "@/lib/utils"
+import { format } from "date-fns"
 import { Loader2, AlertTriangle, CheckCircle, File, X } from "lucide-react"
 import { toast } from "react-toastify"
-import { format } from "date-fns"
 
 interface TeamMember {
   id: number
@@ -289,7 +289,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       formData.append("description", data.description)
       formData.append("amount", data.amount.toString())
       
-      formData.append("date_incurred", format(data.date_incurred, "yyyy-MM-dd"))
+      // Format date as YYYY-MM-DD
+      const formattedDate = format(data.date_incurred, "yyyy-MM-dd");
+      formData.append("date_incurred", formattedDate);
+      
       formData.append("category", data.category)
 
       if (data.budget_item) {
@@ -316,8 +319,31 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       resetForm()
       onOpenChange(false)
       onSuccess?.()
-    } catch (error) {
-      toast.error("Error adding expense")
+    } catch (error: any) {
+      console.error("Error adding expense:", error);
+      
+      // Handle API validation errors
+      if (error.data) {
+        // Handle field-specific errors
+        if (typeof error.data === 'object') {
+          const firstErrorKey = Object.keys(error.data)[0];
+          const firstErrorMessage = Array.isArray(error.data[firstErrorKey]) 
+            ? error.data[firstErrorKey][0]
+            : error.data[firstErrorKey];
+            
+          toast.error(`${firstErrorKey}: ${firstErrorMessage}`);
+        } 
+        // Handle non-field errors
+        else if (typeof error.data === 'string') {
+          toast.error(error.data);
+        }
+        // Handle DRF validation errors
+        else if (error.data.detail) {
+          toast.error(error.data.detail);
+        }
+      } else {
+        toast.error("Error adding expense. Please try again.");
+      }
     } finally {
       setIsSubmitting(false)
     }
