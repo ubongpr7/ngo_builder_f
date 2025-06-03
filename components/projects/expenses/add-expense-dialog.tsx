@@ -332,6 +332,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
+      console.error("Error adding expense:", error)
       toast.error("Error adding expense")
     } finally {
       setIsSubmitting(false)
