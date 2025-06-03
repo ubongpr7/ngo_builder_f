@@ -157,21 +157,18 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
           <CardContent className="space-y-3">
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
-                <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Total Budget</span>
               </div>
               <span className="font-medium">{formatCurrency(project?.currency?.code || "USD",project.budget)}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
-                <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Funds Allocated</span>
               </div>
               <span className="font-medium">{formatCurrency(project?.currency?.code || "USD",project.funds_allocated)}</span>
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
-                <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Funds Spent</span>
               </div>
               <span className={`font-medium ${project.funds_spent > project.budget ? "text-red-500" : ""}`}>
@@ -180,7 +177,6 @@ export function ProjectOverview({ project, isManager, is_DB_admin }: ProjectOver
             </div>
             <div className="flex justify-between">
               <div className="flex items-center text-sm">
-                <DollarSign className="mr-2 h-4 w-4 text-gray-500" />
                 <span>Remaining Budget</span>
               </div>
               <span
