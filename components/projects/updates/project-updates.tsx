@@ -342,7 +342,7 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
           */}
         </div>
         <div className="text-sm text-gray-500">
-          {filteredUpdates?.length} updates • ${totalFundsSpent.toLocaleString()} total spent
+          {filteredUpdates?.length} updates • {formatCurrency(currency_code, totalFundsSpent)} total spent
         </div>
       </div>
 
@@ -426,7 +426,6 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                         <div className="flex items-center gap-2">
                           {update.funds_spent_today > 0 && (
                             <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-                              <DollarSign className="mr-1 h-3 w-3" />$
                               {formatCurrency(currency_code,update.funds_spent_today)}
                             </Badge>
                           )}
