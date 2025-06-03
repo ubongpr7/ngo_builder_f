@@ -37,7 +37,7 @@ interface TeamMember {
 interface BudgetItem {
   id: number
   title: string
-  amount: number
+  budgeted_amount: number
   currency: {
     id: number
     code: string
@@ -102,11 +102,11 @@ export function AddExpenseDialog({ projectId,projectCurrencyCode, open, onOpenCh
 
   const budgetItemOptions = (budgetItems as BudgetItem[]).map(item => ({
     value: item.id,
-    label: `${item.title} - ${formatCurrency(projectCurrencyCode, item.amount)}`,
+    label: `${item.title} - ${formatCurrency(projectCurrencyCode, item.budgeted_amount)}`,
     truly_available_amount: item.truly_available_amount,
     approval_required_threshold: item.approval_required_threshold,
   }))
-
+console.log("Budget Item Options:", budgetItemOptions)
   const teamMemberOptions = (teamMembers as TeamMember[])?.map(user => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
