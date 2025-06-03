@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import Select from "react-select"
 import {
   Dialog,
   DialogContent,
@@ -12,16 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DateInput } from "@/components/ui/date-input"
-import Select from "react-select"
-import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
-import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { Loader2, Receipt } from "lucide-react"
 import { toast } from "react-toastify"
+import { useGetProjectTeamMembersQuery } from "@/redux/features/users/userApiSlice"
+import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSlice"
 import { useGetBudgetItemsQuery } from "@/redux/features/finance/budget-items"
 import { formatCurrency } from "@/lib/currency-utils"
 
@@ -32,7 +32,6 @@ interface TeamMember {
   username: string
   email: string
 }
-
 // Updated BudgetItem interface
 interface BudgetItem {
   id: number
@@ -82,14 +81,13 @@ const EXPENSE_CATEGORIES = [
 
 interface AddExpenseDialogProps {
   projectId: number
-  open: boolean
   projectCurrencyCode: string
+  open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
-
 }
 
-export function AddExpenseDialog({ projectId,projectCurrencyCode, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
+export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
   
@@ -106,7 +104,7 @@ export function AddExpenseDialog({ projectId,projectCurrencyCode, open, onOpenCh
     truly_available_amount: item.truly_available_amount,
     approval_required_threshold: item.approval_required_threshold,
   }))
-console.log("Budget Item Options:", budgetItemOptions)
+
   const teamMemberOptions = (teamMembers as TeamMember[])?.map(user => ({
     value: user.id,
     label: `${user.first_name} ${user.last_name} (${user.username})`,
@@ -132,11 +130,12 @@ console.log("Budget Item Options:", budgetItemOptions)
     },
   })
 
+  const [selectedBudgetItem, setSelectedBudgetItem] = useState<BudgetItem | null>(null)
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
 
     try {
-      const selectedBudgetItem = (budgetItems as BudgetItem[]).find(item => item.id === data.budget_item);
       if (selectedBudgetItem) {
         const { truly_available_amount, approval_required_threshold } = selectedBudgetItem;
 
@@ -194,6 +193,7 @@ console.log("Budget Item Options:", budgetItemOptions)
       onOpenChange={(isOpen) => {
         if (!isOpen) {
           reset()
+          setSelectedBudgetItem(null) // Reset selected budget item when dialog closes
         }
         onOpenChange(isOpen)
       }}
@@ -245,7 +245,7 @@ console.log("Budget Item Options:", budgetItemOptions)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="budget_item">Budget Item (Optional)</Label>
+            <Label htmlFor="budget_item">Budget Item *</Label>
             <Controller
               control={control}
               name="budget_item"
@@ -256,6 +256,7 @@ console.log("Budget Item Options:", budgetItemOptions)
                   value={budgetItemOptions.find(option => option.value === field.value)}
                   onChange={(option) => {
                     field.onChange(option?.value || null);
+                    setSelectedBudgetItem(option ? budgetItems.find(item => item.id === option.value) : null);
                     if (option) {
                       setValue("amount", 0); // Reset amount when budget item changes
                     }
@@ -273,6 +274,7 @@ console.log("Budget Item Options:", budgetItemOptions)
                 />
               )}
             />
+            {errors.budget_item && <p className="text-sm text-red-500">{errors.budget_item.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -331,6 +333,17 @@ console.log("Budget Item Options:", budgetItemOptions)
             <Textarea id="notes" {...register("notes")} />
             {errors.notes && <p className="text-sm text-red-500">{errors.notes.message}</p>}
           </div>
+
+          {/* Summary Section */}
+          {selectedBudgetItem && (
+            <div className="p-4 border rounded-lg mt-4">
+              <h3 className="font-medium">Summary</h3>
+              <p>Selected Budget Item: {selectedBudgetItem.title}</p>
+              <p>Truly Available Amount: {formatCurrency(projectCurrencyCode, selectedBudgetItem.truly_available_amount)}</p>
+              <p>Approval Required Threshold: {selectedBudgetItem.approval_required_threshold ? formatCurrency(projectCurrencyCode, selectedBudgetItem.approval_required_threshold) : "N/A"}</p>
+              <p>Expense Amount: {formatCurrency(projectCurrencyCode, Number(getValues("amount")))}</p>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
