@@ -23,14 +23,28 @@ import { useCreateExpenseMutation } from "@/redux/features/projects/expenseApiSl
 import { Loader2, Receipt } from "lucide-react"
 import { toast } from "react-toastify"
 import { useGetBudgetItemsQuery } from "@/redux/features/finance/budget-items"
+import { formatCurrency } from "@/lib/currency-utils"
 
-// ADDED: Type for budget items
+interface TeamMember {
+  id: number
+  first_name: string
+  last_name: string
+  username: string
+  email: string
+}
+
+// Updated BudgetItem interface
 interface BudgetItem {
   id: number
   title: string
-  description?: string
   amount: number
-  // Add other fields as needed from your API response
+  currency: {
+    id: number
+    code: string
+    name: string
+  }
+  truly_available_amount: number; // Added for validation
+  approval_required_threshold?: number; // Added for approval check
 }
 
 const formSchema = z.object({
@@ -49,9 +63,7 @@ const formSchema = z.object({
     }, "Date cannot be in the future"),
   category: z.string().min(1, "Category is required"),
   incurred_by: z.number().optional(),
-  // ADDED: Budget item field
   budget_item: z.number().optional().nullable(),
-  receipt: z.instanceof(File).optional(),
   notes: z.string().optional(),
 })
 
@@ -74,30 +86,23 @@ interface AddExpenseDialogProps {
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
 }
-interface TeamMember{
-  id: number
-  first_name: string
-  last_name: string
-  username: string
-}
 
 export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
   
-  // ADDED: Fetch budget items for the project
   const { data: budgetItems = [], isLoading: isLoadingBudgetItems } = useGetBudgetItemsQuery({
     budget__project: projectId,
   })
 
-  
   const today = new Date()
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
 
-  // ADDED: Format budget items for select
   const budgetItemOptions = (budgetItems as BudgetItem[]).map(item => ({
     value: item.id,
-    label: `${item.title} - $${item.amount}`,
+    label: `${item.title} - ${formatCurrency(item.currency.code, item.amount)}`,
+    truly_available_amount: item.truly_available_amount,
+    approval_required_threshold: item.approval_required_threshold,
   }))
 
   const teamMemberOptions = (teamMembers as TeamMember[])?.map(user => ({
@@ -110,6 +115,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -119,7 +125,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       amount: undefined,
       date_incurred: new Date(),
       category: "",
-      budget_item: null, // ADDED: Default value
+      budget_item: null,
       notes: "",
     },
   })
@@ -128,6 +134,23 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
     setIsSubmitting(true)
 
     try {
+      const selectedBudgetItem = (budgetItems as BudgetItem[]).find(item => item.id === data.budget_item);
+      if (selectedBudgetItem) {
+        const { truly_available_amount, approval_required_threshold } = selectedBudgetItem;
+
+        // Check if the expense amount exceeds the truly available amount
+        if (data.amount > truly_available_amount) {
+          toast.error("Expense amount exceeds the truly available budget for the selected item.");
+          return;
+        }
+
+        // Check if the expense requires approval
+        if (approval_required_threshold && data.amount > approval_required_threshold) {
+          toast.error("Expense amount requires approval.");
+          return;
+        }
+      }
+
       const formData = new FormData()
       formData.append("project", projectId.toString())
       formData.append("title", data.title)
@@ -136,17 +159,12 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
       formData.append("date_incurred", data.date_incurred.toISOString().split("T")[0])
       formData.append("category", data.category)
 
-      // ADDED: Append budget item if selected
       if (data.budget_item) {
         formData.append("budget_item", data.budget_item.toString())
       }
 
       if (data.incurred_by) {
         formData.append("incurred_by", data.incurred_by.toString())
-      }
-
-      if (data.receipt) {
-        formData.append("receipt", data.receipt)
       }
 
       if (data.notes) {
@@ -201,7 +219,7 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount ($) *</Label>
+              <Label htmlFor="amount">Amount *</Label>
               <Input id="amount" type="number" step="0.01" {...register("amount")} />
               {errors.amount && <p className="text-sm text-red-500">{errors.amount.message}</p>}
             </div>
@@ -224,7 +242,6 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
             </div>
           </div>
 
-          {/* ADDED: Budget Item Select Field */}
           <div className="space-y-2">
             <Label htmlFor="budget_item">Budget Item (Optional)</Label>
             <Controller
@@ -235,7 +252,12 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
                   inputId="budget_item"
                   options={budgetItemOptions}
                   value={budgetItemOptions.find(option => option.value === field.value)}
-                  onChange={(option) => field.onChange(option?.value || null)}
+                  onChange={(option) => {
+                    field.onChange(option?.value || null);
+                    if (option) {
+                      setValue("amount", 0); // Reset amount when budget item changes
+                    }
+                  }}
                   placeholder={
                     isLoadingBudgetItems 
                       ? "Loading budget items..." 
@@ -300,23 +322,6 @@ export function AddExpenseDialog({ projectId, open, onOpenChange, onSuccess }: A
                 No team members found for this project. Only project team members can be assigned expenses.
               </p>
             )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="receipt">Receipt (Optional)</Label>
-            <Input
-              id="receipt"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  // @ts-ignore - setValue is not properly typed for File objects
-                  control._formValues.receipt = file
-                }
-              }}
-            />
-            {errors.receipt && <p className="text-sm text-red-500">{errors.receipt.message}</p>}
           </div>
 
           <div className="space-y-2">
