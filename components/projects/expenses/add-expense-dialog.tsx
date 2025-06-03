@@ -69,18 +69,6 @@ const formSchema = z.object({
   incurred_by: z.number().optional(),
   budget_item: z.number({ required_error: "Budget item is required" }),
   notes: z.string().optional(),
-  receipt: z.instanceof(File, { message: "Receipt is required" })
-    .refine(file => {
-      const validTypes = [
-        "image/jpeg", 
-        "image/png", 
-        "image/gif", 
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ];
-      return validTypes.includes(file.type);
-    }, "Only JPEG, PNG, GIF, PDF, DOC, and DOCX files are allowed")
 }).superRefine((data, ctx) => {
   if (data.budget_item) {
     const budgetItem = budgetItemsData.find(item => item.id === data.budget_item);
@@ -143,6 +131,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [createExpense] = useCreateExpenseMutation()
   
@@ -175,8 +164,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     reset,
     setValue,
     watch,
-    setError,
-    clearErrors,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -188,7 +175,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       category: "",
       budget_item: undefined,
       notes: "",
-      receipt: undefined,
     },
   })
 
@@ -231,13 +217,12 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setFileError(null);
+    
     if (file) {
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        setError("receipt", { 
-          type: "manual", 
-          message: "File size exceeds 5MB limit" 
-        });
+        setFileError("File size exceeds 5MB limit");
         return;
       }
       
@@ -252,16 +237,11 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       ];
       
       if (!validTypes.includes(file.type)) {
-        setError("receipt", { 
-          type: "manual", 
-          message: "Invalid file type (JPEG, PNG, GIF, PDF, DOC/DOCX only)" 
-        });
+        setFileError("Invalid file type (JPEG, PNG, GIF, PDF, DOC/DOCX only)");
         return;
       }
       
-      clearErrors("receipt");
       setReceiptFile(file);
-      setValue("receipt", file);
       
       // Create preview if it's an image
       if (file.type.startsWith("image/")) {
@@ -279,15 +259,20 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
   const handleRemoveFile = () => {
     setReceiptFile(null);
     setReceiptPreview(null);
-    setValue("receipt", undefined as any);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    clearErrors("receipt");
   };
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
+
+    // Validate receipt file
+    if (!receiptFile) {
+      setFileError("Receipt is required");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const selectedBudgetItem = (budgetItems as BudgetItem[]).find(item => item.id === data.budget_item);
@@ -318,9 +303,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       }
 
       // Append receipt file
-      if (data.receipt) {
-        formData.append("receipt", data.receipt);
-      }
+      formData.append("receipt", receiptFile);
 
       // Set status based on approval requirements
       formData.append("status", requiresApproval ? "pending" : "draft")
@@ -332,7 +315,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
       onOpenChange(false)
       onSuccess?.()
     } catch (error) {
-      console.error("Error adding expense:", error)
       toast.error("Error adding expense")
     } finally {
       setIsSubmitting(false)
@@ -343,6 +325,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     reset();
     setReceiptFile(null);
     setReceiptPreview(null);
+    setFileError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -584,8 +567,8 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                 </div>
               )}
             </div>
-            {errors.receipt && (
-              <p className="text-sm text-red-500">{errors.receipt.message}</p>
+            {fileError && (
+              <p className="text-sm text-red-500">{fileError}</p>
             )}
           </div>
 
