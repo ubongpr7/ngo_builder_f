@@ -50,43 +50,45 @@ interface BudgetItem {
   utilization_percentage: number
 }
 
-const formSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(5, "Description must be at least 5 characters"),
-  amount: z.coerce
-    .number()
-    .positive("Amount must be positive")
-    .refine((val) => val > 0, "Amount must be greater than 0"),
-  date_incurred: z
-    .date({
-      required_error: "Date is required",
-      invalid_type_error: "Date is required",
-    })
-    .refine((date) => {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return date <= today
-    }, "Date cannot be in the future"),
-  category: z.string().min(1, "Category is required"),
-  incurred_by: z.number().optional(),
-  budget_item: z.number({ required_error: "Budget item is required" }),
-  notes: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (data.budget_item) {
-    const budgetItem = budgetItemsData.find(item => item.id === data.budget_item);
-    if (budgetItem) {
-      if (data.amount > budgetItem.truly_available_amount) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Expense amount exceeds available budget",
-          path: ["amount"],
-        });
+// Create dynamic schema based on budget items
+const createFormSchema = (budgetItems: BudgetItem[]) => 
+  z.object({
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    description: z.string().min(5, "Description must be at least 5 characters"),
+    amount: z.coerce
+      .number()
+      .positive("Amount must be positive")
+      .refine(val => val > 0, "Amount must be greater than 0"),
+    date_incurred: z
+      .date({
+        required_error: "Date is required",
+        invalid_type_error: "Date is required",
+      })
+      .refine(date => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        return date <= today
+      }, "Date cannot be in the future"),
+    category: z.string().min(1, "Category is required"),
+    incurred_by: z.number().optional(),
+    budget_item: z.number({ required_error: "Budget item is required" }),
+    notes: z.string().optional(),
+  }).superRefine((data, ctx) => {
+    if (data.budget_item) {
+      const budgetItem = budgetItems.find(item => item.id === data.budget_item);
+      if (budgetItem) {
+        if (data.amount > budgetItem.truly_available_amount) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Amount exceeds available budget",
+            path: ["amount"],
+          });
+        }
       }
     }
-  }
-});
+  });
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<ReturnType<typeof createFormSchema>>
 
 const EXPENSE_CATEGORIES = [
   { value: "Travel", label: "Travel" },
@@ -107,7 +109,6 @@ interface AddExpenseDialogProps {
   onSuccess?: () => void
 }
 
-// Custom styles for React Select
 const selectStyles = {
   control: (provided: any) => ({
     ...provided,
@@ -128,8 +129,6 @@ const selectStyles = {
   }),
 }
 
-let budgetItemsData: BudgetItem[] = [];
-
 export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenChange, onSuccess }: AddExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [createExpense] = useCreateExpenseMutation()
@@ -137,9 +136,6 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
   const { data: budgetItems = [], isLoading: isLoadingBudgetItems } = useGetBudgetItemsQuery({
     budget__project: projectId,
   })
-  
-  // Store budget items in module-level variable for zod validation
-  budgetItemsData = budgetItems as BudgetItem[];
   
   const today = new Date()
   const { data: teamMembers = [], isLoading: isLoadingTeamMembers } = useGetProjectTeamMembersQuery(projectId)
@@ -157,6 +153,9 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     label: `${user.first_name} ${user.last_name} (${user.username})`,
   }))
 
+  // Create dynamic form schema based on budget items
+  const formSchema = createFormSchema(budgetItems as BudgetItem[])
+
   const {
     register,
     handleSubmit,
@@ -164,9 +163,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isValid, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       title: "",
       description: "",
@@ -178,7 +178,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     },
   })
 
-  // Watch budget item and amount for validation summary
+  // Watch values for real-time validation
   const watchedBudgetItem = watch("budget_item")
   const watchedAmount = watch("amount")
   
@@ -187,7 +187,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     item => item.id === watchedBudgetItem
   )
   
-  // Validation states
+  // Real-time validation states
   const exceedsAvailableBudget = selectedBudgetItem && 
     watchedAmount > selectedBudgetItem.truly_available_amount
     
@@ -202,7 +202,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     try {
       const selectedBudgetItem = (budgetItems as BudgetItem[]).find(item => item.id === data.budget_item);
       
-      // Double-check validation before submission
+      // Final validation before submission
       if (selectedBudgetItem && data.amount > selectedBudgetItem.truly_available_amount) {
         toast.error("Expense amount exceeds the truly available budget");
         return;
@@ -244,6 +244,13 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
     }
   }
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      reset()
+    }
+  }, [open, reset])
+
   return (
     <Dialog
       open={open}
@@ -254,7 +261,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
         onOpenChange(isOpen)
       }}
     >
-      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[650px]">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[650px]">
         <DialogHeader>
           <DialogTitle>Add New Expense</DialogTitle>
           <DialogDescription>
@@ -340,20 +347,36 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                 id="amount" 
                 type="number" 
                 step="0.01" 
-                {...register("amount")} 
+                {...register("amount", {
+                  valueAsNumber: true,
+                  onChange: () => {
+                    // Trigger validation on every change
+                    control.trigger("amount");
+                  }
+                })} 
                 disabled={!watchedBudgetItem}
                 className={cn(
-                  errors.amount || exceedsAvailableBudget ? "border-red-500" : ""
+                  "transition-colors",
+                  errors.amount || exceedsAvailableBudget 
+                    ? "border-red-500 focus:ring-red-500" 
+                    : requiresApproval 
+                      ? "border-yellow-500 focus:ring-yellow-500"
+                      : ""
                 )}
               />
-              {errors.amount && (
+              {errors.amount ? (
                 <p className="text-sm text-red-500">{errors.amount.message}</p>
-              )}
-              {exceedsAvailableBudget && (
-                <p className="text-sm text-red-500">
+              ) : exceedsAvailableBudget ? (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
                   Amount exceeds available budget
                 </p>
-              )}
+              ) : requiresApproval ? (
+                <p className="text-sm text-yellow-600 flex items-center gap-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  Amount exceeds approval threshold
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -368,7 +391,8 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
+                          errors.date_incurred && "border-red-500"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -399,7 +423,11 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
 
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
-            <Input id="title" {...register("title")} />
+            <Input 
+              id="title" 
+              {...register("title")} 
+              className={cn(errors.title && "border-red-500")}
+            />
             {errors.title && (
               <p className="text-sm text-red-500">{errors.title.message}</p>
             )}
@@ -407,7 +435,11 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
 
           <div className="space-y-2">
             <Label htmlFor="description">Description *</Label>
-            <Textarea id="description" {...register("description")} />
+            <Textarea 
+              id="description" 
+              {...register("description")} 
+              className={cn(errors.description && "border-red-500")}
+            />
             {errors.description && (
               <p className="text-sm text-red-500">{errors.description.message}</p>
             )}
@@ -428,6 +460,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                   styles={selectStyles}
                   className="react-select-container"
                   classNamePrefix="react-select"
+                  className={errors.category ? "border-red-500 rounded-md" : ""}
                 />
               )}
             />
@@ -465,10 +498,10 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             <Textarea id="notes" {...register("notes")} />
           </div>
 
-          {/* Validation Summary */}
+          {/* Real-time Validation Summary */}
           {selectedBudgetItem && watchedAmount > 0 && (
             <div className={cn(
-              "p-4 rounded-lg border",
+              "p-4 rounded-lg border transition-all",
               exceedsAvailableBudget 
                 ? "bg-red-50 border-red-200 text-red-700" 
                 : requiresApproval
@@ -518,7 +551,7 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
                   <p className="font-medium">
                     {formatCurrency(
                       projectCurrencyCode, 
-                      selectedBudgetItem.truly_available_amount - watchedAmount
+                      Math.max(0, selectedBudgetItem.truly_available_amount - watchedAmount)
                     )}
                   </p>
                 </div>
@@ -546,11 +579,14 @@ export function AddExpenseDialog({ projectId, projectCurrencyCode, open, onOpenC
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting || exceedsAvailableBudget}
+              disabled={isSubmitting || exceedsAvailableBudget || !isValid}
               className={cn(
+                "transition-colors",
                 exceedsAvailableBudget 
                   ? "bg-gray-400 hover:bg-gray-400" 
-                  : "bg-primary hover:bg-primary-dark"
+                  : requiresApproval
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-green-600 hover:bg-green-700"
               )}
             >
               {isSubmitting ? (
