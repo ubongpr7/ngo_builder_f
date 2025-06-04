@@ -254,7 +254,8 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                     {isManager && (
                       <DropdownMenu 
                         open={openDropdowns[member.id] || false}
-                        onOpenChange={(open) => handleDropdownToggle(member.id, open)}
+                          onOpenChange={(open) => setOpenDropdowns(prev => ({ ...prev, [member.id]: open }))}
+
                       >
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
