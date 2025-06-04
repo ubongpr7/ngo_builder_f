@@ -113,17 +113,34 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
     }
   }
 
-  const openRoleDialog = (member: any) => {
+  // New handlers that close dropdown before opening dialogs
+  const handleOpenRoleDialog = (member: ProjectTeamMember) => {
+    // Close dropdown first
+    setOpenDropdowns(prev => ({ ...prev, [member.id]: false }))
     setSelectedMember(member.id)
     setNewRole(member.role)
     setRoleDialogOpen(true)
+  }
+
+  const handleOpenExtendDialog = (member: ProjectTeamMember) => {
+    // Close dropdown first
+    setOpenDropdowns(prev => ({ ...prev, [member.id]: false }))
+    setSelectedMember(member.id)
+    setNewEndDate(member.end_date ? new Date(member.end_date) : new Date())
+    setExtendDialogOpen(true)
+  }
+
+  const handleOpenDelete = (id: number) => {
+    // Close dropdown first
+    setOpenDropdowns(prev => ({ ...prev, [id]: false }))
+    handleDeleteMember(id)
   }
 
   const handleRoleChange = async () => {
     if (!selectedMember || !newRole) return
 
     try {
-      // Make sure we're sending the role as a string value, not an object
+      // Make sure we're sending the role as a string value
       const roleValue = typeof newRole === "object" && newRole !== null ? newRole?.value : newRole
 
       await changeRole({
@@ -134,12 +151,6 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
       setRoleDialogOpen(false)
       refetch()
     } catch (error) {}
-  }
-
-  const openExtendDialog = (member: any) => {
-    setSelectedMember(member.id)
-    setNewEndDate(member.end_date ? new Date(member.end_date) : new Date())
-    setExtendDialogOpen(true)
   }
 
   const handleExtendMembership = async () => {
@@ -254,8 +265,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                     {isManager && (
                       <DropdownMenu 
                         open={openDropdowns[member.id] || false}
-                          onOpenChange={(open) => setOpenDropdowns(prev => ({ ...prev, [member.id]: open }))}
-
+                        onOpenChange={(open) => handleDropdownToggle(member.id, open)}
                       >
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -263,20 +273,20 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openRoleDialog(member)}>
+                          <DropdownMenuItem onClick={() => handleOpenRoleDialog(member)}>
                             <span className="flex items-center">
                               <Edit className="h-4 w-4 mr-2" />
                               Change Role
                             </span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openExtendDialog(member)}>
+                          <DropdownMenuItem onClick={() => handleOpenExtendDialog(member)}>
                             <span className="flex items-center">
                               <Clock className="h-4 w-4 mr-2" />
                               {member.end_date ? "Change End Date" : "Add End Date"}
                             </span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleDeleteMember(member.id)}
+                            onClick={() => handleOpenDelete(member.id)}
                             className="text-red-600"
                           >
                             <span className="flex items-center">
