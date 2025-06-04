@@ -26,7 +26,7 @@ export function ProjectDashboard({ userRoles, className }: ProjectDashboardProps
     refetch: refreshStats,
     isFetching: isRefreshingStats,
   } = useGetProjectStatisticsQuery()
-
+console.log("Project Statistics:", projectStatistics)
   const {
     data: projectsData,
     isLoading: projectsLoading,
