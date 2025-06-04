@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react"
 import { Chart, registerables } from "chart.js"
-import { statusToChartData } from "@/utils/chart-helpers"
+import { statusToChartData, transformStatusCounts } from "@/utils/chart-helpers"
 import { ChartContainer } from "./chart-container"
 
 // Register Chart.js components
 Chart.register(...registerables)
 
 interface StatusChartProps {
-  statusCounts: Record<string, number>
+  statusCounts: any
   isLoading?: boolean
   onRefresh?: () => void
   currencyCode?: string
@@ -27,7 +27,7 @@ export function StatusChart({ statusCounts, isLoading = false, onRefresh, curren
       chartInstance.current.destroy()
     }
 
-    const { labels, data, colors } = statusToChartData(statusCounts)
+    const { labels, data, colors } = transformStatusCounts(statusCounts)
 
     // Create new chart
     const ctx = chartRef.current.getContext("2d")

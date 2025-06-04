@@ -1,26 +1,24 @@
 import type { Project } from "@/types/project"
 
-// Convert status counts to chart data
+// Your existing function
 export function statusToChartData(statusCounts: Record<string, number> = {}) {
   const labels = []
   const data = []
   const colors = []
 
   const colorMap: Record<string, string> = {
-    active: "#10B981", // green
-    planning: "#3B82F6", // blue
-    planned: "#3B82F6", // blue
-    in_progress: "#6366F1", // indigo
-    on_hold: "#F59E0B", // amber
-    completed: "#6B7280", // gray
-    cancelled: "#EF4444", // red
-    submitted: "#8B5CF6", // purple
+    active: "#10B981",       // green
+    planning: "#3B82F6",     // blue
+    planned: "#3B82F6",      // blue
+    in_progress: "#6366F1",  // indigo
+    on_hold: "#F59E0B",      // amber
+    completed: "#6B7280",    // gray
+    cancelled: "#EF4444",    // red
+    submitted: "#8B5CF6",    // purple
   }
 
-  // Sort statuses in a logical order
   const statusOrder = ["submitted", "planning", "planned", "active", "in_progress", "on_hold", "completed", "cancelled"]
 
-  // Format status labels for display
   const statusLabels: Record<string, string> = {
     active: "Active",
     planning: "Planning",
@@ -32,16 +30,24 @@ export function statusToChartData(statusCounts: Record<string, number> = {}) {
     submitted: "Submitted",
   }
 
-  // Add statuses in the defined order
   statusOrder.forEach((status) => {
     if (status in statusCounts) {
-      labels.push(statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1).replace("_", " "))
+      labels.push(statusLabels[status] || status.replace(/_/g, " "))
       data.push(statusCounts[status])
       colors.push(colorMap[status] || "#CBD5E1") // Default to slate-300
     }
   })
 
   return { labels, data, colors }
+}
+
+// 🆕 Convert array format to expected object
+export function transformStatusCounts(arrayData: { status: string; count: number }[]) {
+  const transformed: Record<string, number> = {}
+  arrayData.forEach(({ status, count }) => {
+    transformed[status] = count
+  })
+  return statusToChartData(transformed)
 }
 
 // Convert type counts to chart data
