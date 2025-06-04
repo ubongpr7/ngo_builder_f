@@ -2,19 +2,20 @@
 
 import { useEffect, useRef } from "react"
 import { Chart, registerables } from "chart.js"
-import { categoryToChartData } from "@/utils/chart-helpers"
+import { categoryToChartData, transformChartData } from "@/utils/chart-helpers"
 import { ChartContainer } from "./chart-container"
 
 // Register Chart.js components
 Chart.register(...registerables)
 
 interface CategoryChartProps {
-  categoryCounts: Record<string, number>
+  categoryCounts: any
   isLoading?: boolean
   onRefresh?: () => void
+  currencyCode: string
 }
 
-export function CategoryChart({ categoryCounts, isLoading = false, onRefresh }: CategoryChartProps) {
+export function CategoryChart({ categoryCounts, isLoading = false, onRefresh, currencyCode }: CategoryChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
 
@@ -25,8 +26,13 @@ export function CategoryChart({ categoryCounts, isLoading = false, onRefresh }: 
     if (chartInstance.current) {
       chartInstance.current.destroy()
     }
-
-    const { labels, data, colors } = categoryToChartData(categoryCounts)
+    const { labels, data, colors } = transformChartData({
+      arrayData: categoryCounts.map((item: { category_name: any; count: any; }) => ({
+        category_name: item.category_name,
+        count: item.count
+      })),
+      interest: "category"
+    })
 
     // Create new chart
     const ctx = chartRef.current.getContext("2d")

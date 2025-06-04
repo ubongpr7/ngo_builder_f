@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react"
 import { Chart, registerables } from "chart.js"
-import { typeToChartData } from "@/utils/chart-helpers"
+import { transformChartData, typeToChartData } from "@/utils/chart-helpers"
 import { ChartContainer } from "./chart-container"
 
 // Register Chart.js components
 Chart.register(...registerables)
 
 interface TypeChartProps {
-  typeCounts: Record<string, number>
+  typeCounts: any
   isLoading?: boolean
   onRefresh?: () => void
   currencyCode?: string
@@ -27,7 +27,15 @@ export function TypeChart({ typeCounts, isLoading = false, onRefresh, currencyCo
       chartInstance.current.destroy()
     }
 
-    const { labels, data, colors } = typeToChartData(typeCounts)
+    // const { labels, data, colors } = typeToChartData(typeCounts)
+    // const { labels, data, colors } = transformStatusCounts({arrayData:typeCounts, interest: 'project_type'})
+const { labels, data, colors }  = transformChartData({
+  arrayData: (typeCounts).map((item:{ project_type: any; count: any; }) => ({
+    type: item.project_type,
+    count: item.count
+  })),
+  interest: "type"
+})
 
     // Create new chart
     const ctx = chartRef.current.getContext("2d")
@@ -96,3 +104,7 @@ export function TypeChart({ typeCounts, isLoading = false, onRefresh, currencyCo
     </ChartContainer>
   )
 }
+function transformStatusCounts(arg0: { arrayData: any; interest: string }): { labels: any; data: any; colors: any } {
+  throw new Error("Function not implemented.")
+}
+

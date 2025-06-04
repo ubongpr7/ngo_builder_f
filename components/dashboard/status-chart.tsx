@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { Chart, registerables } from "chart.js"
-import { statusToChartData, transformStatusCounts } from "@/utils/chart-helpers"
+import { statusToChartData, transformChartData,  } from "@/utils/chart-helpers"
 import { ChartContainer } from "./chart-container"
 
 // Register Chart.js components
@@ -27,7 +27,7 @@ export function StatusChart({ statusCounts, isLoading = false, onRefresh, curren
       chartInstance.current.destroy()
     }
 
-    const { labels, data, colors } = transformStatusCounts(statusCounts)
+    const { labels, data, colors } = transformChartData({arrayData:statusCounts, interest: 'status'})
 
     // Create new chart
     const ctx = chartRef.current.getContext("2d")

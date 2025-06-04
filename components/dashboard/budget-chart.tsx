@@ -12,9 +12,10 @@ interface BudgetChartProps {
   budgetStats: any
   isLoading?: boolean
   onRefresh?: () => void
+  currencyCode?: string
 }
 
-export function BudgetChart({ budgetStats, isLoading = false, onRefresh }: BudgetChartProps) {
+export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currencyCode }: BudgetChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
 
