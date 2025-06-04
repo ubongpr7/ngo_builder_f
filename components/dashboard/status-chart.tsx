@@ -12,12 +12,13 @@ interface StatusChartProps {
   statusCounts: Record<string, number>
   isLoading?: boolean
   onRefresh?: () => void
+  currencyCode?: string
 }
 
-export function StatusChart({ statusCounts, isLoading = false, onRefresh }: StatusChartProps) {
+export function StatusChart({ statusCounts, isLoading = false, onRefresh, currencyCode }: StatusChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
-
+  console.log("StatusChart rendered with statusCounts:", statusCounts)
   useEffect(() => {
     if (!chartRef.current || isLoading) return
 

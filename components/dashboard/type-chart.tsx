@@ -12,12 +12,13 @@ interface TypeChartProps {
   typeCounts: Record<string, number>
   isLoading?: boolean
   onRefresh?: () => void
+  currencyCode?: string
 }
 
-export function TypeChart({ typeCounts, isLoading = false, onRefresh }: TypeChartProps) {
+export function TypeChart({ typeCounts, isLoading = false, onRefresh, currencyCode }: TypeChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
-
+  console.log("TypeChart rendered with typeCounts:", typeCounts)
   useEffect(() => {
     if (!chartRef.current || isLoading) return
 
