@@ -196,7 +196,7 @@ export interface UpdateStatistics {
 export interface ProjectTeamMember {
   id: number
   project: number
-  user: {
+  user_details: {
     id: number
     username: string
     first_name: string

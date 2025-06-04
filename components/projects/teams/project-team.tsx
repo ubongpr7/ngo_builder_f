@@ -1,15 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, UserPlus, Mail, Calendar, AlertTriangle, Loader2, Trash2, Edit, Clock } from "lucide-react"
+import { Search, UserPlus, Mail, Calendar, AlertTriangle, Loader2, MoreHorizontal, Edit, Clock, Trash2 } from "lucide-react"
 import { format } from "date-fns"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import {
   useGetProjectTeamQuery,
@@ -28,6 +33,8 @@ import {
 } from "@/components/ui/dialog"
 import { ReactSelectField } from "@/components/ui/react-select-field"
 import { DateInput } from "@/components/ui/date-input"
+import { User } from "@/types/finance"
+import { ProjectTeamMember } from "@/types/project"
 
 interface ProjectTeamProps {
   projectId: number
@@ -44,7 +51,8 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
 
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
-
+  const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
+  
   // State for role change dialog
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<number | null>(null)
@@ -65,7 +73,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
   ]
 
   // Filter team members based on search term and active tab
-  const filteredMembers = teamMembers.filter((member) => {
+  const filteredMembers = (teamMembers as ProjectTeamMember[]).filter((member) => {
     const user = member.user_details || { first_name: "", last_name: "", email: "" }
     const matchesSearch =
       `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,7 +124,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
 
     try {
       // Make sure we're sending the role as a string value, not an object
-      const roleValue = typeof newRole === "object" && newRole !== null ? newRole.value : newRole
+      const roleValue = typeof newRole === "object" && newRole !== null ? newRole?.value : newRole
 
       await changeRole({
         id: selectedMember,
@@ -146,6 +154,14 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
       refetch()
     } catch (error) {}
   }
+
+  // Handle dropdown state for each member
+  const handleDropdownToggle = useCallback((memberId: number, open: boolean) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [memberId]: open
+    }))
+  }, [])
 
   if (isLoading) {
     return (
@@ -226,7 +242,7 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers?.map((member) => {
+          {(filteredMembers as ProjectTeamMember[])?.map((member) => {
             const user = member.user_details || { first_name: "", last_name: "", email: "" }
             return (
               <Card key={member.id}>
@@ -236,57 +252,39 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                       {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                     </Badge>
                     {isManager && (
-                      <div className="flex gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => openRoleDialog(member)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Change Role</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => openExtendDialog(member)}
-                              >
-                                <Clock className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
+                      <DropdownMenu 
+                        open={openDropdowns[member.id] || false}
+                        onOpenChange={(open) => handleDropdownToggle(member.id, open)}
+                      >
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openRoleDialog(member)}>
+                            <span className="flex items-center">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Change Role
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openExtendDialog(member)}>
+                            <span className="flex items-center">
+                              <Clock className="h-4 w-4 mr-2" />
                               {member.end_date ? "Change End Date" : "Add End Date"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-red-600 hover:text-red-700"
-                                onClick={() => handleDeleteMember(member.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Remove Member</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteMember(member.id)}
+                            className="text-red-600"
+                          >
+                            <span className="flex items-center">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Remove Member
+                            </span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
                 </CardHeader>
@@ -340,20 +338,6 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
                     <Mail className="mr-2 h-4 w-4" />
                     Contact
                   </Button>
-                  <div className="flex gap-2">
-                    {isManager && (
-                      <>
-                        <Button variant="outline" size="sm" onClick={() => openRoleDialog(member)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Role
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => openExtendDialog(member)}>
-                          <Clock className="mr-2 h-4 w-4" />
-                          {member.end_date ? "End Date" : "Set End"}
-                        </Button>
-                      </>
-                    )}
-                  </div>
                 </CardFooter>
               </Card>
             )
