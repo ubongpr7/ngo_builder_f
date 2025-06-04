@@ -44,7 +44,8 @@ import {
 } from "@/redux/features/projects/updateApiSlice"
 import { UpdateGalleryView } from "./update-gallery-view"
 import { formatCurrency } from "@/lib/currency-utils"
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { MoreHorizontal } from "lucide-react"
 interface ProjectUpdatesProps {
   projectId: number
   isManager?: boolean
@@ -211,6 +212,11 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
     setFilters({})
     setFilterDialogOpen(false)
   }
+const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
+
+const closeDropdown = (updateId: number) => {
+  setOpenDropdowns(prev => ({ ...prev, [updateId]: false }))
+}
 
   // Get media type icon
   const getMediaTypeIcon = (mediaType: string) => {
@@ -429,41 +435,46 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                               {formatCurrency(currency_code,update.funds_spent_today)}
                             </Badge>
                           )}
-                          {(isManager || isTeamMember) && (
-                            <div className="flex gap-1">
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => toggleUpdateExpansion(update.id)}
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">{isExpanded ? "Collapse" : "Expand"}</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                                      onClick={() => handleDeleteUpdate(update)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">Delete</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </div>
-                          )}
+                       {(isManager || isTeamMember) && (
+                        <DropdownMenu 
+                          open={openDropdowns[update.id] || false}
+                          onOpenChange={(open) => setOpenDropdowns(prev => ({ ...prev, [update.id]: open }))}
+                        >
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => {
+                              toggleUpdateExpansion(update.id)
+                              closeDropdown(update.id)
+                            }}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              {isExpanded ? "Collapse" : "Expand"}
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem onClick={() => {
+                              handleEditUpdate(update)
+                              closeDropdown(update.id)
+                            }}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => {
+                                handleDeleteUpdate(update)
+                                closeDropdown(update.id)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                         </div>
                       </div>
                     </CardHeader>
@@ -594,31 +605,6 @@ export function ProjectUpdates({ projectId, isManager, is_DB_admin, isTeamMember
                     <CardFooter className="flex justify-between border-t pt-4">
                       <div className="text-sm text-gray-500">
                         {format(new Date(update.created_at), "MMM d, yyyy h:mm a")}
-                      </div>
-                      <div className="flex gap-2">
-                        {!isExpanded && (
-                          <Button variant="outline" size="sm" onClick={() => toggleUpdateExpansion(update.id)}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Button>
-                        )}
-                        {(isManager || isTeamMember) && (
-                          <Button variant="outline" size="sm" onClick={() => handleEditUpdate(update)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Button>
-                        )}
-                        {(isManager || isTeamMember) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:border-red-300"
-                            onClick={() => handleDeleteUpdate(update)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </Button>
-                        )}
                       </div>
                     </CardFooter>
                   </Card>
