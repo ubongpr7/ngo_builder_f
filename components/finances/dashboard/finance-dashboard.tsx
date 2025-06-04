@@ -94,7 +94,7 @@ export function FinanceDashboard() {
             <Download className="h-4 w-4" />
             Export
           </Button>
-
+{/* Filters 
           <DashboardFilters
             filters={filters}
             onFiltersChange={setFilters}
@@ -103,6 +103,7 @@ export function FinanceDashboard() {
             refreshInterval={refreshInterval}
             onRefreshIntervalChange={setRefreshInterval}
           />
+*/}
         </div>
       </div>
 

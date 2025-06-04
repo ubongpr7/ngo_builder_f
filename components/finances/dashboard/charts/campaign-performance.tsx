@@ -6,7 +6,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Legend
 import { Target } from "lucide-react"
 
 interface CampaignPerformanceProps {
-  data: any[]
+  data: any
   isLoading?: boolean
 }
 
@@ -40,37 +40,11 @@ export function CampaignPerformance({ data, isLoading }: CampaignPerformanceProp
     )
   }
 
-  // Ensure data is an array before using slice
-  const campaignData = Array.isArray(data)
-    ? data
-    : [
-        {
-          id: 1,
-          name: "Emergency Relief Fund",
-          current_amount: 75000,
-          target_amount: 100000,
-          donor_count: 245,
-          currency: "USD",
-        },
-        {
-          id: 2,
-          name: "Education Initiative",
-          current_amount: 45000,
-          target_amount: 80000,
-          donor_count: 156,
-          currency: "USD",
-        },
-        {
-          id: 3,
-          name: "Clean Water Project",
-          current_amount: 32000,
-          target_amount: 50000,
-          donor_count: 89,
-          currency: "USD",
-        },
-      ]
+  // Extract campaigns from the data
+  const campaignData = data?.campaigns || [];
 
-  const topCampaigns = campaignData.slice(0, 5)
+  // Prepare top campaigns for display
+  const topCampaigns = campaignData.slice(0, 5);
 
   return (
     <Card>
@@ -86,11 +60,11 @@ export function CampaignPerformance({ data, isLoading }: CampaignPerformanceProp
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={topCampaigns} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} angle={-45} textAnchor="end" height={80} />
+              <XAxis dataKey="title" tick={{ fontSize: 12 }} angle={-45} textAnchor="end" height={80} />
               <YAxis tick={{ fontSize: 12 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Legend />
-              <Bar dataKey="current_amount" fill="var(--color-raised)" name="Amount Raised" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="total_raised" fill="var(--color-raised)" name="Amount Raised" radius={[4, 4, 0, 0]} />
               <Bar
                 dataKey="target_amount"
                 fill="var(--color-target)"
@@ -105,15 +79,13 @@ export function CampaignPerformance({ data, isLoading }: CampaignPerformanceProp
         <div className="grid grid-cols-3 gap-4 mt-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
-              {topCampaigns?.reduce((sum, campaign) => sum + (campaign?.current_amount || 0), 0)?.toLocaleString() ||
-                "0"}
+              {topCampaigns?.reduce((sum, campaign) => sum + (campaign?.total_raised || 0), 0)?.toLocaleString() || "0"}
             </div>
             <div className="text-sm text-gray-600">Total Raised</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
-              {topCampaigns?.reduce((sum, campaign) => sum + (campaign?.target_amount || 0), 0)?.toLocaleString() ||
-                "0"}
+              {topCampaigns?.reduce((sum, campaign) => sum + (campaign?.target_amount || 0), 0)?.toLocaleString() || "0"}
             </div>
             <div className="text-sm text-gray-600">Total Target</div>
           </div>
