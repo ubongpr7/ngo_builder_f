@@ -50,7 +50,6 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [showStats, setShowStats] = useState(false)
-  const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
 
   const [updateStatusDialog, setUpdateStatusDialog] = useState<number | null>(null);
   const [completeDialog, setCompleteDialog] = useState<number | null>(null);
@@ -59,33 +58,24 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
   const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
 
 
-  const handleDropdownToggle = useCallback((milestoneId: number, open: boolean) => {
-    setOpenDropdowns(prev => ({ ...prev, [milestoneId]: open }));
-  }, []);
-
   // Dialog open handlers
   const handleOpenStatusDialog = (milestoneId: number) => {
-    handleDropdownToggle(milestoneId, false);
     setUpdateStatusDialog(milestoneId);
   };
 
   const handleOpenCompleteDialog = (milestoneId: number) => {
-    handleDropdownToggle(milestoneId, false);
     setCompleteDialog(milestoneId);
   };
 
   const handleOpenEditDialog = (milestoneId: number) => {
-    handleDropdownToggle(milestoneId, false);
     setEditDialog(milestoneId);
   };
 
   const handleOpenAssignDialog = (milestoneId: number) => {
-    handleDropdownToggle(milestoneId, false);
     setAssignDialog(milestoneId);
   };
 
   const handleOpenDeleteDialog = (milestoneId: number) => {
-    handleDropdownToggle(milestoneId, false);
     setDeleteDialog(milestoneId);
   };
 
@@ -362,9 +352,8 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </Button>
 
                   {/* Actions Dropdown */}
-                               <DropdownMenu 
-                open={openDropdowns[milestone.id] || false}
-                onOpenChange={(open) => handleDropdownToggle(milestone.id, open)}
+              <DropdownMenu 
+                
               >
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
