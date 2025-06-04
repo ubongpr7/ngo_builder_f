@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -52,6 +52,47 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
   const [showStats, setShowStats] = useState(false)
   const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
 
+  const [updateStatusDialog, setUpdateStatusDialog] = useState<number | null>(null);
+  const [completeDialog, setCompleteDialog] = useState<number | null>(null);
+  const [editDialog, setEditDialog] = useState<number | null>(null);
+  const [assignDialog, setAssignDialog] = useState<number | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<number | null>(null);
+
+
+  const handleDropdownToggle = useCallback((milestoneId: number, open: boolean) => {
+    setOpenDropdowns(prev => ({ ...prev, [milestoneId]: open }));
+  }, []);
+
+  // Dialog open handlers
+  const handleOpenStatusDialog = (milestoneId: number) => {
+    handleDropdownToggle(milestoneId, false);
+    setUpdateStatusDialog(milestoneId);
+  };
+
+  const handleOpenCompleteDialog = (milestoneId: number) => {
+    handleDropdownToggle(milestoneId, false);
+    setCompleteDialog(milestoneId);
+  };
+
+  const handleOpenEditDialog = (milestoneId: number) => {
+    handleDropdownToggle(milestoneId, false);
+    setEditDialog(milestoneId);
+  };
+
+  const handleOpenAssignDialog = (milestoneId: number) => {
+    handleDropdownToggle(milestoneId, false);
+    setAssignDialog(milestoneId);
+  };
+
+  const handleOpenDeleteDialog = (milestoneId: number) => {
+    handleDropdownToggle(milestoneId, false);
+    setDeleteDialog(milestoneId);
+  };
+
+  // Get milestone by ID
+  const getMilestoneById = (id: number) => {
+    return milestones.find(m => m.id === id);
+  };
   // Filter milestones based on search term and active tab
   const filteredMilestones = milestones.filter((milestone) => {
     const matchesSearch =
@@ -62,10 +103,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
     return matchesSearch && milestone.status.toLowerCase() === activeTab.toLowerCase()
   })
 
-  // Handle dropdown toggle
-  const handleDropdownToggle = (milestoneId: number, open: boolean) => {
-    setOpenDropdowns(prev => ({ ...prev, [milestoneId]: open }))
-  }
+
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -324,90 +362,58 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                   </Button>
 
                   {/* Actions Dropdown */}
-                  <DropdownMenu 
-                    open={openDropdowns[milestone.id] || false}
-                    onOpenChange={(open) => handleDropdownToggle(milestone.id, open)}
+                               <DropdownMenu 
+                open={openDropdowns[milestone.id] || false}
+                onOpenChange={(open) => handleDropdownToggle(milestone.id, open)}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Actions</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleOpenStatusDialog(milestone.id)}>
+                    <span className="flex items-center w-full">
+                      <Flag className="mr-2 h-4 w-4" />
+                      Update Status
+                    </span>
+                  </DropdownMenuItem>
+
+                  {milestone.status !== "completed" && (
+                    <DropdownMenuItem onClick={() => handleOpenCompleteDialog(milestone.id)}>
+                      <span className="flex items-center w-full">
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Complete
+                      </span>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuItem onClick={() => handleOpenEditDialog(milestone.id)}>
+                    <span className="flex items-center w-full">
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => handleOpenAssignDialog(milestone.id)}>
+                    <span className="flex items-center w-full">
+                      <Users className="mr-2 h-4 w-4" />
+                      Assign Users
+                    </span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onClick={() => handleOpenDeleteDialog(milestone.id)}
+                    className="text-red-600"
                   >
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Actions</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <UpdateMilestoneStatusDialog
-                          milestone={milestone}
-                          onSuccess={handleSuccess}
-                          trigger={
-                            <span className="flex items-center w-full">
-                              <Flag className="mr-2 h-4 w-4" />
-                              Update Status
-                            </span>
-                          }
-                        />
-                      </DropdownMenuItem>
-
-                      {milestone.status !== "completed" && (
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <CompleteMilestoneDialog
-                            milestone={milestone}
-                            onSuccess={handleSuccess}
-                            trigger={
-                              <span className="flex items-center w-full">
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Complete
-                              </span>
-                            }
-                          />
-                        </DropdownMenuItem>
-                      )}
-
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <AddEditMilestoneDialog
-                          projectId={projectId}
-                          milestone={milestone}
-                          onSuccess={handleSuccess}
-                          trigger={
-                            <span className="flex items-center w-full">
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </span>
-                          }
-                        />
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <AssignUsersMilestoneDialog
-                          milestone={milestone}
-                          onSuccess={handleSuccess}
-                          projectId={projectId}
-                          trigger={
-                            <span className="flex items-center w-full">
-                              <Users className="mr-2 h-4 w-4" />
-                              Assign Users
-                            </span>
-                          }
-                        />
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem 
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-red-600"
-                      >
-                        <DeleteMilestoneDialog
-                          milestone={milestone}
-                          onSuccess={handleSuccess}
-                          trigger={
-                            <span className="flex items-center w-full">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </span>
-                          }
-                        />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    <span className="flex items-center w-full">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
                 </CardFooter>
               )}
             </Card>

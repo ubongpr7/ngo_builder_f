@@ -417,3 +417,4 @@ export function ProjectTeam({ projectId, isManager, is_DB_admin, isTeamMember }:
     </div>
   )
 }
+  
