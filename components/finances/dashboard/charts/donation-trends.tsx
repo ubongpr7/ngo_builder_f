@@ -6,27 +6,30 @@ import { TrendingUp, DollarSign } from "lucide-react"
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 interface DonationTrendsProps {
-  data?: any[]
+  data?: any
   isLoading: boolean
   detailed?: boolean
 }
 
 export function DonationTrends({ data, isLoading, detailed = false }: DonationTrendsProps) {
-  // Mock data for demonstration
-  const mockData = [
-    { month: "Jan", donations: 12500, donors: 45, campaigns: 3 },
-    { month: "Feb", donations: 15200, donors: 52, campaigns: 4 },
-    { month: "Mar", donations: 18900, donors: 68, campaigns: 5 },
-    { month: "Apr", donations: 16800, donors: 61, campaigns: 4 },
-    { month: "May", donations: 22100, donors: 78, campaigns: 6 },
-    { month: "Jun", donations: 25400, donors: 89, campaigns: 7 },
-  ]
+  // Ensure data is available and structured correctly
+  const currencyData = data?.currencies ? Object.values(data.currencies)[0] : null;
 
-  // Ensure chartData is always an array
-  const chartData = Array.isArray(data) ? data : mockData
+  // Extract daily trends from the currency data
+  const dailyTrends = currencyData?.daily_trends || [];
+  
+  // Prepare chart data
+  const chartData = dailyTrends.map(item => ({
+    day: item.day,
+    donations: item.total,
+    donors: item.count,
+    campaigns: currencyData.top_campaigns.length // Assuming campaigns are constant for the currency
+  }));
 
   // Safe calculation with fallback
-  const totalDonations = chartData?.reduce((sum, item) => sum + (item.donations || 0), 0) || 0
+  const totalDonations = chartData?.reduce((sum, item) => sum + (item.donations || 0), 0) || 0;
+  const totalDonors = currencyData?.donor_stats?.total_donors || 0;
+  const avgDonation = totalDonors > 0 ? (totalDonations / totalDonors).toFixed(2) : "0";
 
   if (isLoading) {
     return (
@@ -42,7 +45,7 @@ export function DonationTrends({ data, isLoading, detailed = false }: DonationTr
     )
   }
 
-  const avgGrowth = 12.5 // Mock calculation
+  const avgGrowth = 12.5; // Placeholder for average growth calculation
 
   return (
     <Card className={detailed ? "col-span-2" : ""}>
@@ -76,7 +79,7 @@ export function DonationTrends({ data, isLoading, detailed = false }: DonationTr
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} className="text-xs" />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} className="text-xs" />
               <YAxis
                 axisLine={false}
                 tickLine={false}
@@ -117,22 +120,19 @@ export function DonationTrends({ data, isLoading, detailed = false }: DonationTr
           <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {chartData?.reduce((sum, item) => sum + (item.donors || 0), 0) || 0}
+                {totalDonors}
               </div>
               <div className="text-xs text-gray-600">Total Donors</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                $
-                {totalDonations > 0 && chartData?.reduce((sum, item) => sum + (item.donors || 0), 0) > 0
-                  ? (totalDonations / chartData.reduce((sum, item) => sum + (item.donors || 0), 0)).toFixed(0)
-                  : "0"}
+                ${avgDonation}
               </div>
               <div className="text-xs text-gray-600">Avg Donation</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                {chartData?.reduce((sum, item) => sum + (item.campaigns || 0), 0) || 0}
+                {currencyData?.top_campaigns.length || 0}
               </div>
               <div className="text-xs text-gray-600">Active Campaigns</div>
             </div>
@@ -142,4 +142,3 @@ export function DonationTrends({ data, isLoading, detailed = false }: DonationTr
     </Card>
   )
 }
-
