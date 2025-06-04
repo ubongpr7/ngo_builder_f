@@ -68,6 +68,9 @@ export function FinanceDashboard() {
     )
   }
 
+  // Get the selected currency data
+  const selectedCurrencyData = filters.currency !== "all" ? data?.currencies[filters.currency] : null;
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -107,7 +110,7 @@ export function FinanceDashboard() {
       <AlertsPanel />
 
       {/* KPI Grid */}
-      <KPIGrid data={data?.overview} isLoading={isLoading} />
+      <KPIGrid data={selectedCurrencyData?.financial_summary} isLoading={isLoading} />
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
@@ -121,35 +124,35 @@ export function FinanceDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DonationTrends data={data?.donationTrends} isLoading={isLoading} />
-            <CashFlowForecast data={data?.cashFlow} isLoading={isLoading} />
+            <DonationTrends data={selectedCurrencyData?.daily_trends} isLoading={isLoading} />
+            <CashFlowForecast data={selectedCurrencyData?.financial_summary} isLoading={isLoading} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <BudgetUtilization data={data?.budgetUtilization} isLoading={isLoading} />
+              <BudgetUtilization data={selectedCurrencyData?.budget_utilization_percentage} isLoading={isLoading} />
             </div>
-            <RecentTransactions data={data?.recentTransactions} isLoading={isLoading} />
+            <RecentTransactions data={selectedCurrencyData?.recent_transactions} isLoading={isLoading} />
           </div>
         </TabsContent>
 
         <TabsContent value="donations" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DonationTrends data={data?.donationTrends} isLoading={isLoading} detailed />
-            <TopDonors data={data?.topDonors} isLoading={isLoading} />
+            <DonationTrends data={selectedCurrencyData?.daily_trends} isLoading={isLoading} detailed />
+            <TopDonors data={selectedCurrencyData?.top_donors} isLoading={isLoading} />
           </div>
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-6">
-          <CampaignPerformance data={data?.campaignPerformance} isLoading={isLoading} />
+          <CampaignPerformance data={selectedCurrencyData?.campaigns} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="budgets" className="space-y-6">
-          <BudgetUtilization data={data?.budgetUtilization} isLoading={isLoading} detailed />
+          <BudgetUtilization data={selectedCurrencyData?.budget_utilization_percentage} isLoading={isLoading} detailed />
         </TabsContent>
 
         <TabsContent value="grants" className="space-y-6">
-          <GrantPipeline data={data?.grantPipeline} isLoading={isLoading} />
+          <GrantPipeline data={selectedCurrencyData?.grant_pipeline} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
     </div>
