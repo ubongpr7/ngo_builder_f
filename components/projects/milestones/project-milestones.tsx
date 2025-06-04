@@ -420,6 +420,60 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
           ))}
         </div>
       )}
+
+      {/* Dialogs */}
+      {updateStatusDialog && (
+        <UpdateMilestoneStatusDialog 
+              milestone={getMilestoneById(updateStatusDialog)!}
+              onSuccess={() => {
+                handleSuccess();
+                setUpdateStatusDialog(null);
+              }}
+            />
+      )}
+
+      {completeDialog && (
+        <CompleteMilestoneDialog 
+              milestone={getMilestoneById(completeDialog)!}
+              onSuccess={() => {
+                handleSuccess();
+                setCompleteDialog(null);
+              }}
+            />
+      )}
+
+      {editDialog && (
+        <AddEditMilestoneDialog
+              projectId={projectId}
+              milestone={getMilestoneById(editDialog)}
+              onSuccess={() => {
+                handleSuccess();
+                setEditDialog(null);
+              }}
+            />
+      )}
+
+      {assignDialog && (
+        <AssignUsersMilestoneDialog
+              milestone={getMilestoneById(assignDialog)!}
+              projectId={projectId}
+              onSuccess={() => {
+                handleSuccess();
+                setAssignDialog(null);
+              }}
+            />
+      )}
+
+      {deleteDialog && (
+        <DeleteMilestoneDialog
+              milestone={getMilestoneById(deleteDialog)!}
+              onSuccess={() => {
+                handleSuccess();
+                setDeleteDialog(null);
+              }}
+            />
+      )}
     </div>
   )
 }
+
