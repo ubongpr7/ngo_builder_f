@@ -177,7 +177,7 @@ export function AnalyticsSection({
                   onRefresh={handleRefresh}
                 />
                 <TypeChart
-                  typeCounts={currencyStats?.type_counts || []}
+                  typeCounts={currencyStats?.type_counts[0] }
                   currencyCode={selectedCurrency}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
