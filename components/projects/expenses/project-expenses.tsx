@@ -19,6 +19,7 @@ import {
   Edit,
   PlusCircle,
   Eye,
+  MoreHorizontal,
 } from "lucide-react"
 import { AddExpenseDialog } from "./add-expense-dialog"
 import { EditExpenseDialog } from "./edit-expense-dialog"
@@ -34,6 +35,12 @@ import {
   useGetExpenseStatisticsQuery,
 } from "@/redux/features/projects/expenseApiSlice"
 import { toast } from "react-toastify"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface ProjectExpensesProps {
   projectId: number
@@ -43,7 +50,7 @@ interface ProjectExpensesProps {
   projectCurrencyCode: string
 }
 
-export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember,projectCurrencyCode }: ProjectExpensesProps) {
+export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMember, projectCurrencyCode }: ProjectExpensesProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [filters, setFilters] = useState<any>({})
@@ -55,8 +62,8 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const [rejectExpenseOpen, setRejectExpenseOpen] = useState(false)
   const [reimburseExpenseOpen, setReimburseExpenseOpen] = useState(false)
   const [viewReceiptOpen, setViewReceiptOpen] = useState(false)
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<any>(null)
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null)
 
   // API queries and mutations
   const { data: expenses = [], isLoading, refetch } = useGetExpensesByProjectQuery(projectId)
@@ -116,7 +123,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
     try {
       await approveExpense({ id: expense.id, notes: "" }).unwrap()
       toast.success('Expense approved successfully')
-      
+      setOpenDropdownId(null)
       refresh()
     } catch (error) {
       toast.error('Failed to approve expense')
@@ -127,6 +134,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const handleQuickReject = (expense: any) => {
     setSelectedExpense(expense)
     setRejectExpenseOpen(true)
+    setOpenDropdownId(null)
   }
 
   // Handle quick reimburse
@@ -134,6 +142,7 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
     try {
       await reimburseExpense({ id: expense.id, notes: "" }).unwrap()
       toast.success("Expense reimbursed successfully")
+      setOpenDropdownId(null)
       refresh()
     } catch (error) {
       console.error("Failed to reimburse expense:", error)
@@ -145,36 +154,28 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
   const handleViewReceipt = (expense: any) => {
     setSelectedExpense(expense)
     setViewReceiptOpen(true)
+    setOpenDropdownId(null)
   }
 
   // Handle edit expense
   const handleEditExpense = (expense: any) => {
     setSelectedExpense(expense)
     setEditExpenseOpen(true)
+    setOpenDropdownId(null)
   }
 
   // Handle approve with notes
   const handleApproveWithNotes = (expense: any) => {
     setSelectedExpense(expense)
     setApproveExpenseOpen(true)
+    setOpenDropdownId(null)
   }
 
   // Handle reimburse with notes
   const handleReimburseWithNotes = (expense: any) => {
     setSelectedExpense(expense)
     setReimburseExpenseOpen(true)
-  }
-
-  // Handle filter apply
-  const handleFilterApply = (newFilters: any) => {
-    setFilters(newFilters)
-    setFilterDialogOpen(false)
-  }
-
-  // Handle filter clear
-  const handleFilterClear = () => {
-    setFilters({})
-    setFilterDialogOpen(false)
+    setOpenDropdownId(null)
   }
 
   if (isLoading) {
@@ -355,29 +356,6 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                   )}
                 </div>
 
-                {expense.receipt && (
-                  <div className="flex items-center gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="p-0 h-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                            onClick={() => handleViewReceipt(expense)}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Receipt
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>View receipt image</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                )}
-
                 {expense.notes && (
                   <div className="pt-2 border-t border-gray-100">
                     <div className="text-sm font-medium mb-1">Notes</div>
@@ -386,79 +364,53 @@ export function ProjectExpenses({ projectId, isManager, is_DB_admin, isTeamMembe
                 )}
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                <TooltipProvider>
-                  {expense.status === "pending" && is_DB_admin && (
-                    <>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 rounded-full border-green-500 text-green-600 hover:bg-green-50"
-                            onClick={() => handleApproveWithNotes(expense)}
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Approve expense</p>
-                        </TooltipContent>
-                      </Tooltip>
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-9 w-9 rounded-full border-red-500 text-red-600 hover:bg-red-50"
-                            onClick={() => handleQuickReject(expense)}
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Reject expense</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
-
-                  {expense.status === "approved" && isManager && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 rounded-full border-blue-500 text-blue-600 hover:bg-blue-50"
-                          onClick={() => handleReimburseWithNotes(expense)}
-                        >
-                          <DollarSign className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Mark as reimbursed</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-
-                  {(isManager || isTeamMember) && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-9 w-9 rounded-full border-amber-500 text-amber-600 hover:bg-amber-50"
-                          onClick={() => handleEditExpense(expense)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit expense</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </TooltipProvider>
+                <DropdownMenu
+                  open={openDropdownId === expense.id}
+                  onOpenChange={(open) => setOpenDropdownId(open ? expense.id : null)}
+                >
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="flex items-center gap-1">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span>Actions</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {expense.receipt && (
+                      <DropdownMenuItem onClick={() => handleViewReceipt(expense)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Receipt
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {(isManager || isTeamMember) && (
+                      <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Expense
+                      </DropdownMenuItem>
+                    )}
+                    
+                    {expense.status === "pending" && is_DB_admin && (
+                      <>
+                        <DropdownMenuItem onClick={() => handleApproveWithNotes(expense)}>
+                          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                          <span className="text-green-600">Approve</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem onClick={() => handleQuickReject(expense)}>
+                          <XCircle className="h-4 w-4 mr-2 text-red-600" />
+                          <span className="text-red-600">Reject</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    
+                    {expense.status === "approved" && isManager && (
+                      <DropdownMenuItem onClick={() => handleReimburseWithNotes(expense)}>
+                        <DollarSign className="h-4 w-4 mr-2 text-blue-600" />
+                        <span className="text-blue-600">Reimburse</span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CardFooter>
             </Card>
           ))}
