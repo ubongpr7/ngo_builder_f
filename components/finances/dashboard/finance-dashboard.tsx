@@ -17,39 +17,29 @@ import { RecentTransactions } from "./charts/recent-transactions"
 import { TopDonors } from "./top-donors"
 import { AlertsPanel } from "./alerts-panel"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function FinanceDashboard() {
-  const [filters, setFilters] = useState({
-    dateRange: "30d",
-    currency: "all",
-    project: "all",
-    department: "all",
-  })
-
-  const [autoRefresh, setAutoRefresh] = useState(true)
-  const [refreshInterval, setRefreshInterval] = useState(30000) // 30 seconds
-
-  const { data, isLoading, error, refetch, lastUpdated } = useDashboardData(filters)
+  const [selectedCurrency, setSelectedCurrency] = useState("all");
+  const { data, isLoading, error, refetch, lastUpdated } = useDashboardData({ currency: selectedCurrency });
 
   // Auto-refresh functionality
   useEffect(() => {
-    if (!autoRefresh) return
-
     const interval = setInterval(() => {
-      refetch()
-    }, refreshInterval)
+      refetch();
+    }, 30000); // 30 seconds
 
-    return () => clearInterval(interval)
-  }, [autoRefresh, refreshInterval, refetch])
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const handleRefresh = () => {
-    refetch()
-  }
+    refetch();
+  };
 
   const handleExport = () => {
     // Export functionality
-    console.log("Exporting dashboard data...")
-  }
+    console.log("Exporting dashboard data...");
+  };
 
   if (error) {
     return (
@@ -65,11 +55,14 @@ export function FinanceDashboard() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  // Get the selected currency data
-  const selectedCurrencyData = filters.currency !== "all" ? data?.currencies[filters.currency] : null;
+  // Get available currencies from the data
+  const availableCurrencies = data?.currencies ? Object.values(data.currencies).map(c => ({
+    code: c.currency_code,
+    name: c.currency_name
+  })) : [];
 
   return (
     <div className="space-y-6 p-6">
@@ -94,16 +87,22 @@ export function FinanceDashboard() {
             <Download className="h-4 w-4" />
             Export
           </Button>
-{/* Filters 
-          <DashboardFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            autoRefresh={autoRefresh}
-            onAutoRefreshChange={setAutoRefresh}
-            refreshInterval={refreshInterval}
-            onRefreshIntervalChange={setRefreshInterval}
-          />
-*/}
+
+          {/* Currency Selector */}
+          {availableCurrencies.length > 0 && (
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCurrencies.map(currency => (
+                  <SelectItem key={currency.code} value={currency.code}>
+                    {currency.name} ({currency.code})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
@@ -111,7 +110,7 @@ export function FinanceDashboard() {
       <AlertsPanel />
 
       {/* KPI Grid */}
-      <KPIGrid data={selectedCurrencyData?.financial_summary} isLoading={isLoading} />
+      <KPIGrid data={data?.overview} isLoading={isLoading} />
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
@@ -125,35 +124,35 @@ export function FinanceDashboard() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DonationTrends data={selectedCurrencyData?.daily_trends} isLoading={isLoading} />
-            <CashFlowForecast data={selectedCurrencyData?.financial_summary} isLoading={isLoading} />
+            <DonationTrends data={data?.donationTrends} isLoading={isLoading} />
+            <CashFlowForecast data={data?.cashFlow} isLoading={isLoading} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <BudgetUtilization data={selectedCurrencyData?.budget_utilization_percentage} isLoading={isLoading} />
+              <BudgetUtilization data={data?.budgetUtilization} isLoading={isLoading} />
             </div>
-            <RecentTransactions data={selectedCurrencyData?.recent_transactions} isLoading={isLoading} />
+            <RecentTransactions data={data?.recentTransactions} isLoading={isLoading} />
           </div>
         </TabsContent>
 
         <TabsContent value="donations" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <DonationTrends data={selectedCurrencyData?.daily_trends} isLoading={isLoading} detailed />
-            <TopDonors data={selectedCurrencyData?.top_donors} isLoading={isLoading} />
+            <DonationTrends data={data?.donationTrends} isLoading={isLoading} detailed />
+            <TopDonors data={data?.topDonors} isLoading={isLoading} />
           </div>
         </TabsContent>
 
         <TabsContent value="campaigns" className="space-y-6">
-          <CampaignPerformance data={selectedCurrencyData?.campaigns} isLoading={isLoading} />
+          <CampaignPerformance data={data?.campaignPerformance} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="budgets" className="space-y-6">
-          <BudgetUtilization data={selectedCurrencyData?.budget_utilization_percentage} isLoading={isLoading} detailed />
+          <BudgetUtilization data={data?.budgetUtilization} isLoading={isLoading} detailed />
         </TabsContent>
 
         <TabsContent value="grants" className="space-y-6">
-          <GrantPipeline data={selectedCurrencyData?.grant_pipeline} isLoading={isLoading} />
+          <GrantPipeline data={data?.grantPipeline} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
     </div>

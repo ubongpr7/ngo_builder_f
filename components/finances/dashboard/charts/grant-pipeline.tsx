@@ -6,7 +6,7 @@ import { FileText, Clock, CheckCircle, XCircle } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 
 interface GrantPipelineProps {
-  data: any[]
+  data: any
   isLoading?: boolean
 }
 
@@ -29,47 +29,15 @@ export function GrantPipeline({ data, isLoading }: GrantPipelineProps) {
     )
   }
 
-  // Mock data for when API doesn't return array
-  const mockData = [
-    {
-      title: "Education Initiative Grant",
-      funder: "Gates Foundation",
-      amount: 250000,
-      status: "approved",
-      submitted_date: "2024-01-15",
-    },
-    {
-      title: "Healthcare Access Program",
-      funder: "WHO Foundation",
-      amount: 180000,
-      status: "under_review",
-      submitted_date: "2024-02-01",
-    },
-    {
-      title: "Clean Water Project",
-      funder: "Water.org",
-      amount: 320000,
-      status: "submitted",
-      submitted_date: "2024-02-15",
-    },
-    {
-      title: "Women Empowerment Fund",
-      funder: "UN Women",
-      amount: 150000,
-      status: "rejected",
-      submitted_date: "2024-01-30",
-    },
-    {
-      title: "Youth Development Program",
-      funder: "UNICEF",
-      amount: 200000,
-      status: "approved",
-      submitted_date: "2024-01-10",
-    },
-  ]
+  // Extract data from the response
+  const summary = data?.summary || {};
+  const pipelineStatus = data?.pipeline_status || [];
+  const upcomingDeadlines = data?.upcoming_deadlines || [];
 
-  // Ensure data is an array
-  const grantData = Array.isArray(data) ? data : mockData
+  const totalGrants = summary.total_grants || 0;
+  const totalPipelineValue = summary.total_pipeline_value || 0;
+  const activeGrants = summary.active_grants || 0;
+  const successRate = summary.success_rate || 0;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -97,22 +65,6 @@ export function GrantPipeline({ data, isLoading }: GrantPipelineProps) {
     }
   }
 
-  const statusCounts =
-    grantData?.reduce(
-      (acc, grant) => {
-        const status = grant?.status || "submitted"
-        acc[status] = (acc[status] || 0) + 1
-        return acc
-      },
-      {} as Record<string, number>,
-    ) || {}
-
-  const totalAmount = grantData?.reduce((sum, grant) => sum + (grant?.amount || 0), 0) || 0
-  const approvedAmount =
-    grantData?.filter((g) => g?.status === "approved").reduce((sum, grant) => sum + (grant?.amount || 0), 0) || 0
-
-  const successRate = grantData?.length ? ((statusCounts.approved || 0) / grantData.length) * 100 : 0
-
   return (
     <Card>
       <CardHeader>
@@ -126,19 +78,19 @@ export function GrantPipeline({ data, isLoading }: GrantPipelineProps) {
         {/* Pipeline Overview */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="text-center p-3 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{statusCounts.submitted || 0}</div>
-            <div className="text-sm text-gray-600">Submitted</div>
+            <div className="text-2xl font-bold text-blue-600">{totalGrants}</div>
+            <div className="text-sm text-gray-600">Total Grants</div>
           </div>
           <div className="text-center p-3 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{statusCounts.under_review || 0}</div>
+            <div className="text-2xl font-bold text-yellow-600">{pipelineStatus.filter(g => g.status === "under_review").length}</div>
             <div className="text-sm text-gray-600">Under Review</div>
           </div>
           <div className="text-center p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{statusCounts.approved || 0}</div>
+            <div className="text-2xl font-bold text-green-600">{pipelineStatus.filter(g => g.status === "approved").length}</div>
             <div className="text-sm text-gray-600">Approved</div>
           </div>
           <div className="text-center p-3 bg-red-50 rounded-lg">
-            <div className="text-2xl font-bold text-red-600">{statusCounts.rejected || 0}</div>
+            <div className="text-2xl font-bold text-red-600">{pipelineStatus.filter(g => g.status === "rejected").length}</div>
             <div className="text-sm text-gray-600">Rejected</div>
           </div>
         </div>
@@ -151,30 +103,26 @@ export function GrantPipeline({ data, isLoading }: GrantPipelineProps) {
           </div>
           <Progress value={successRate} className="h-2" />
           <div className="flex justify-between text-xs text-gray-600 mt-1">
-            <span>${approvedAmount.toLocaleString()} approved</span>
-            <span>${totalAmount.toLocaleString()} total</span>
+            <span>${totalPipelineValue.toLocaleString()} total</span>
           </div>
         </div>
 
-        {/* Recent Grants */}
+        {/* Upcoming Deadlines */}
         <div className="space-y-3">
-          <h4 className="font-medium text-sm text-gray-700">Recent Applications</h4>
-          {grantData?.slice(0, 5).map((grant, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-            >
+          <h4 className="font-medium text-sm text-gray-700">Upcoming Deadlines</h4>
+          {upcomingDeadlines.map((deadline, index) => (
+            <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
-                {getStatusIcon(grant?.status || "submitted")}
+                <Clock className="h-4 w-4 text-yellow-600" />
                 <div>
-                  <div className="font-medium text-sm">{grant?.title || "Unknown Grant"}</div>
-                  <div className="text-xs text-gray-600">{grant?.funder || "Unknown Funder"}</div>
+                  <div className="font-medium text-sm">{deadline.grant_title || "Unknown Grant"}</div>
+                  <div className="text-xs text-gray-600">{deadline.report_type || "Unknown Report"}</div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-medium text-sm">${(grant?.amount || 0).toLocaleString()}</div>
-                <Badge variant="secondary" className={getStatusColor(grant?.status || "submitted")}>
-                  {(grant?.status || "submitted").replace("_", " ")}
+                <div className="font-medium text-sm">{new Date(deadline.due_date).toLocaleDateString()}</div>
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+                  Due in {deadline.days_until_due} days
                 </Badge>
               </div>
             </div>
@@ -184,7 +132,7 @@ export function GrantPipeline({ data, isLoading }: GrantPipelineProps) {
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t">
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">${totalAmount.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-purple-600">${totalPipelineValue.toLocaleString()}</div>
             <div className="text-sm text-gray-600">Total Pipeline Value</div>
           </div>
           <div className="text-center">
