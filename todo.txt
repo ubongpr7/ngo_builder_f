@@ -32,37 +32,111 @@ before
 }
 
 after
-
 {
-    "currency_id": 5,
-    "currency_code": "USD",
-    "currency_name": "usd",
-    "period": "month",
-    "date_range": {
-        "start": "2025-06-01T15:40:54.983316+00:00",
-        "end": "2025-06-04T15:40:54.983316+00:00"
+    "currencies": {
+        "2": {
+            "currency_id": 2,
+            "currency_code": "EUR",
+            "currency_name": "eur",
+            "period": "month",
+            "date_range": {
+                "start": "2025-06-01T16:52:00.043567+00:00",
+                "end": "2025-06-04T16:52:00.043567+00:00"
+            },
+            "financial_summary": {
+                "total_donations": 0.0,
+                "total_grants_received": 0.0,
+                "total_expenses": 600.0,
+                "net_income": -600.0,
+                "total_account_balance": 1569.44,
+                "total_budget_allocated": 50000.0,
+                "total_budget_spent": 600.0,
+                "budget_utilization_percentage": 1.2
+            },
+            "activity_counts": {
+                "active_campaigns": 1,
+                "active_grants": 0,
+                "pending_expenses": 0,
+                "overdue_reports": 0,
+                "active_accounts": 1
+            },
+            "health_indicators": {
+                "financial_health": "concerning",
+                "budget_health": "good",
+                "liquidity_health": "good",
+                "liquidity_ratio": 1569.44
+            }
+        },
+        "115": {
+            "currency_id": 115,
+            "currency_code": "NGN",
+            "currency_name": "ngn",
+            "period": "month",
+            "date_range": {
+                "start": "2025-06-01T16:52:00.043567+00:00",
+                "end": "2025-06-04T16:52:00.043567+00:00"
+            },
+            "financial_summary": {
+                "total_donations": 500.0,
+                "total_grants_received": 0.0,
+                "total_expenses": 0.0,
+                "net_income": 500.0,
+                "total_account_balance": 1440000.0,
+                "total_budget_allocated": 0.0,
+                "total_budget_spent": 0.0,
+                "budget_utilization_percentage": 0.0
+            },
+            "activity_counts": {
+                "active_campaigns": 0,
+                "active_grants": 0,
+                "pending_expenses": 0,
+                "overdue_reports": 0,
+                "active_accounts": 1
+            },
+            "health_indicators": {
+                "financial_health": "good",
+                "budget_health": "good",
+                "liquidity_health": "good",
+                "liquidity_ratio": 1440000.0
+            }
+        },
+        "5": {
+            "currency_id": 5,
+            "currency_code": "USD",
+            "currency_name": "usd",
+            "period": "month",
+            "date_range": {
+                "start": "2025-06-01T16:52:00.043567+00:00",
+                "end": "2025-06-04T16:52:00.043567+00:00"
+            },
+            "financial_summary": {
+                "total_donations": 0.0,
+                "total_grants_received": 0.0,
+                "total_expenses": 0.0,
+                "net_income": 0.0,
+                "total_account_balance": 294.11,
+                "total_budget_allocated": 5400.0,
+                "total_budget_spent": 0.0,
+                "budget_utilization_percentage": 0.0
+            },
+            "activity_counts": {
+                "active_campaigns": 0,
+                "active_grants": 0,
+                "pending_expenses": 0,
+                "overdue_reports": 0,
+                "active_accounts": 1
+            },
+            "health_indicators": {
+                "financial_health": "concerning",
+                "budget_health": "good",
+                "liquidity_health": "good",
+                "liquidity_ratio": 294.11
+            }
+        }
     },
-    "financial_summary": {
-        "total_donations": 0.0,
-        "total_grants_received": 0.0,
-        "total_expenses": 0.0,
-        "net_income": 0.0,
-        "total_account_balance": 294.11,
-        "total_budget_allocated": 5400.0,
-        "total_budget_spent": 0.0,
-        "budget_utilization_percentage": 0.0
-    },
-    "activity_counts": {
-        "active_campaigns": 0,
-        "active_grants": 0,
-        "pending_expenses": 0,
-        "overdue_reports": 0,
-        "active_accounts": 1
-    },
-    "health_indicators": {
-        "financial_health": "concerning",
-        "budget_health": "good",
-        "liquidity_health": "good",
-        "liquidity_ratio": 294.11
+    "generated_at": "2025-06-04T16:52:07.717461+00:00",
+    "filters_applied": {
+        "period": "month",
+        "currency": 5
     }
 }

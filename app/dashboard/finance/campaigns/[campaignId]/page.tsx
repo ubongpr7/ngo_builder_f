@@ -28,7 +28,7 @@ import {
   useGetCampaignDonorAnalysisQuery,
   useGetCampaignPaymentAnalysisQuery,
   useGetCampaignDonationsQuery,
-  useGetBankAccountsQuery,
+  useGetBankAccountsForCampaignQuery,
   useUpdateCampaignMonetaryFieldsMutation,
   useExportCampaignDataMutation,
 } from "@/redux/features/finance/donation-campaigns"
@@ -86,7 +86,7 @@ export default function ComprehensiveCampaignDashboard() {
     campaignId,
     page_size: 20,
   })
-  const { data: bankAccounts, refetch: refetchBankAccounts } = useGetBankAccountsQuery(campaignId)
+  const { data: bankAccounts, refetch: refetchBankAccounts } = useGetBankAccountsForCampaignQuery(campaignId)
 
   // Mutations
   const [updateMonetaryFields] = useUpdateCampaignMonetaryFieldsMutation()
