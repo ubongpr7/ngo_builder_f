@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,6 +18,7 @@ import {
   Edit,
   BarChart,
   ExternalLink,
+  MoreHorizontal,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -30,6 +29,14 @@ import { UpdateMilestoneStatusDialog } from "./update-milestone-status-dialog"
 import { CompleteMilestoneDialog } from "./complete-milestone-dialog"
 import { DeleteMilestoneDialog } from "./delete-milestone-dialog"
 import { MilestoneStatistics } from "./milestone-statistics"
+ 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 interface ProjectMilestonesProps {
   projectId: number
@@ -43,6 +50,7 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("all")
   const [showStats, setShowStats] = useState(false)
+  const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
 
   // Filter milestones based on search term and active tab
   const filteredMilestones = milestones.filter((milestone) => {
@@ -53,6 +61,11 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
     if (activeTab === "all") return matchesSearch
     return matchesSearch && milestone.status.toLowerCase() === activeTab.toLowerCase()
   })
+
+  // Handle dropdown toggle
+  const handleDropdownToggle = (milestoneId: number, open: boolean) => {
+    setOpenDropdowns(prev => ({ ...prev, [milestoneId]: open }))
+  }
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -310,88 +323,91 @@ export function ProjectMilestones({ projectId, isManager, is_DB_admin, isTeamMem
                     </Link>
                   </Button>
 
-                  
-                  <UpdateMilestoneStatusDialog
-                    milestone={milestone}
-                    onSuccess={handleSuccess}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className=" bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
-                      >
-                        <Flag className="mr-2 h-4 w-4" />
-                        Status
+                  {/* Actions Dropdown */}
+                  <DropdownMenu 
+                    open={openDropdowns[milestone.id] || false}
+                    onOpenChange={(open) => handleDropdownToggle(milestone.id, open)}
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-9 w-9 rounded-full">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Actions</span>
                       </Button>
-                    }
-                  />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <UpdateMilestoneStatusDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <span className="flex items-center w-full">
+                              <Flag className="mr-2 h-4 w-4" />
+                              Update Status
+                            </span>
+                          }
+                        />
+                      </DropdownMenuItem>
 
-                  {milestone.status !== "completed" && (
-                    <>
+                      {milestone.status !== "completed" && (
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <CompleteMilestoneDialog
+                            milestone={milestone}
+                            onSuccess={handleSuccess}
+                            trigger={
+                              <span className="flex items-center w-full">
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Complete
+                              </span>
+                            }
+                          />
+                        </DropdownMenuItem>
+                      )}
 
-                      <CompleteMilestoneDialog
-                        milestone={milestone}
-                        onSuccess={handleSuccess}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className=" bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Complete
-                          </Button>
-                        }
-                      />
-                    </>
-                  )}
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <AddEditMilestoneDialog
+                          projectId={projectId}
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <span className="flex items-center w-full">
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </span>
+                          }
+                        />
+                      </DropdownMenuItem>
 
-                  <AddEditMilestoneDialog
-                    projectId={projectId}
-                    milestone={milestone}
-                    onSuccess={handleSuccess}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className=" bg-amber-50 text-amber-600 hover:bg-amber-100 hover:text-amber-700"
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <AssignUsersMilestoneDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          projectId={projectId}
+                          trigger={
+                            <span className="flex items-center w-full">
+                              <Users className="mr-2 h-4 w-4" />
+                              Assign Users
+                            </span>
+                          }
+                        />
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem 
+                        onSelect={(e) => e.preventDefault()}
+                        className="text-red-600"
                       >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                    }
-                  />
-
-                  <AssignUsersMilestoneDialog
-                    milestone={milestone}
-                    onSuccess={handleSuccess}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className=" bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700"
-                      >
-                        <Users className="mr-2 h-4 w-4" />
-                        Assign
-                      </Button>
-                    }
-                    projectId={projectId}
-                  />
-
-                  <DeleteMilestoneDialog
-                    milestone={milestone}
-                    onSuccess={handleSuccess}
-                    trigger={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className=" bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </Button>
-                    }
-                  />
+                        <DeleteMilestoneDialog
+                          milestone={milestone}
+                          onSuccess={handleSuccess}
+                          trigger={
+                            <span className="flex items-center w-full">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </span>
+                          }
+                        />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardFooter>
               )}
             </Card>
