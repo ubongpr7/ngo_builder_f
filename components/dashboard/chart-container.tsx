@@ -17,6 +17,7 @@ interface ChartContainerProps {
   className?: string
   height?: string
   icon?: React.ReactNode
+  description?: string
 }
 
 export function ChartContainer({

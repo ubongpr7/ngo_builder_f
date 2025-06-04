@@ -29,10 +29,12 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 mr-2" />
             Finance
           </TabsTrigger>
+          {/*  Add Settings tab
           <TabsTrigger value="settings" className="flex items-center justify-center">
             <Settings className="h-4 w-4 mr-2" />
             Settings
           </TabsTrigger>
+           */}
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">

@@ -315,7 +315,7 @@ export const donationCampaignsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Bank Account Management
-    getBankAccounts: builder.query<
+    getBankAccountsForCampaign: builder.query<
       {
         campaign_title: string
         total_accounts: number
@@ -532,7 +532,7 @@ export const {
   useGetCampaignPaymentAnalysisQuery,
 
   // Bank Account Management
-  useGetBankAccountsQuery,
+  useGetBankAccountsForCampaignQuery,
   useAddBankAccountToCampaignMutation,
   useSetPrimaryBankAccountMutation,
 

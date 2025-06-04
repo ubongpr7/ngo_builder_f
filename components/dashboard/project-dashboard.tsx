@@ -259,7 +259,8 @@ export function ProjectDashboard({ userRoles, className }: ProjectDashboardProps
 
       {/* Analytics Section */}
       <AnalyticsSection
-        projectStatistics={projectStatistics}
+        projectStatistics={projectStatistics || {}}
+        projectStats={projectStats}
         selectedCurrency={selectedCurrency}
         projects={projects || []}
         isLoading={statsLoading || projectsLoading}
