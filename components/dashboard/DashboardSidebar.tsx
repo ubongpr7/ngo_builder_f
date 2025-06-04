@@ -220,9 +220,7 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/finance/budgets" icon={BarChart3}>
                   Budgets
                 </NavItem>
-                <NavItem href="/dashboard/finance/expenses" icon={FileText}>
-                  Expenses
-                </NavItem>
+                
               </NavSection>
             )}
           </nav>
