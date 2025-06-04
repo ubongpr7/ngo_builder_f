@@ -1,3 +1,4 @@
+// ProjectDashboard.tsx
 "use client"
 
 import { DashboardCard } from "@/components/ui/dashboard-card"
@@ -7,12 +8,19 @@ import { useGetMilestoneStatisticsQuery } from "@/redux/features/projects/milest
 import { useGetExpenseStatisticsQuery } from "@/redux/features/projects/expenseApiSlice"
 import { useGetRecentUpdatesQuery } from "@/redux/features/projects/updateApiSlice"
 import { Button } from "@/components/ui/button"
-import { formatCurrency } from "@/lib/utils"
-import { useState, useEffect } from "react"
+import { formatCurrency } from "@/lib/currency-utils" // Updated import
+import { useState, useEffect, useMemo } from "react"
 import type { Project } from "@/types/project"
 import { usePermissions } from "@/components/permissionHander"
 import { AnalyticsSection } from "@/components/dashboard/analytics-section"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select"
 
 interface ProjectDashboardProps {
   userRoles?: any
@@ -20,13 +28,15 @@ interface ProjectDashboardProps {
 }
 
 export function ProjectDashboard({ userRoles, className }: ProjectDashboardProps) {
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  
   const {
     data: projectStatistics,
     isLoading: statsLoading,
     refetch: refreshStats,
     isFetching: isRefreshingStats,
   } = useGetProjectStatisticsQuery()
-console.log("Project Statistics:", projectStatistics)
+
   const {
     data: projectsData,
     isLoading: projectsLoading,
@@ -60,12 +70,21 @@ console.log("Project Statistics:", projectStatistics)
   const projects = projectsData as Project[]
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // Function to refresh all data
-  const refreshAllData = async () => {
-    setIsRefreshing(true)
-    await Promise.all([refreshStats(), refreshProjects(), refreshMilestones(), refreshExpenses(), refreshUpdates()])
-    setIsRefreshing(false)
-  }
+  // Get available currencies
+  const availableCurrencies = useMemo(() => {
+    if (!projectStatistics?.currencies) return [];
+    return Object.values(projectStatistics.currencies).map(c => ({
+      code: c.summary.currency_code,
+      name: c.summary.currency_name
+    }));
+  }, [projectStatistics]);
+
+  // Auto-select first currency if none selected
+  useEffect(() => {
+    if (availableCurrencies.length > 0 && !availableCurrencies.some(c => c.code === selectedCurrency)) {
+      setSelectedCurrency(availableCurrencies[0].code);
+    }
+  }, [availableCurrencies, selectedCurrency]);
 
   // Calculate project statistics
   const [projectStats, setProjectStats] = useState({
@@ -80,24 +99,22 @@ console.log("Project Statistics:", projectStatistics)
   })
 
   useEffect(() => {
-    if (projects) {
+    if (projects && projectStatistics) {
       const active = projects.filter(
         (p) => p.status === "planned" || p.status === "in_progress" || p.status === "active" || p.status === "planning",
-      )?.length
-      const completed =
-        projectStatistics?.status_counts.completed || projects.filter((p) => p.status === "completed")?.length
-      const submitted =
-        projectStatistics?.status_counts.submitted || projects.filter((p) => p.status === "submitted")?.length
-      const overbudget = projects.filter((p) => p.is_overbudget)?.length
-      const totalBudget =
-        projectStatistics?.budget_stats.total_budget ||
-        projects.reduce((sum, p) => {
-          if (["cancelled", "submitted", "rejected"].includes(p.status)) {
-            return sum
-          }
-          return Number(sum) + (Number(p.budget) || 0)
-        }, 0)
-      const totalSpent = projectStatistics?.budget_stats.total_spent || 0
+      )?.length;
+      
+      const completed = projects.filter((p) => p.status === "completed")?.length;
+      const submitted = projects.filter((p) => p.status === "submitted")?.length;
+      const overbudget = projects.filter((p) => p.is_overbudget)?.length;
+      
+      // Find the selected currency stats
+      const currencyStats = Object.values(projectStatistics.currencies).find(
+        c => c.summary.currency_code === selectedCurrency
+      );
+      
+      const totalBudget = currencyStats?.summary.total_budget || 0;
+      const totalSpent = currencyStats?.summary.total_spent || 0;
 
       setProjectStats({
         total: projects?.length,
@@ -107,52 +124,20 @@ console.log("Project Statistics:", projectStatistics)
         overbudget,
         totalBudget,
         totalSpent,
-        averageBudget: totalBudget / active,
+        averageBudget: currencyStats?.summary.avg_budget || 0,
       })
     }
-  }, [projects, projectStatistics])
+  }, [projects, projectStatistics, selectedCurrency])
 
-  const budgetUtilization =
-    projectStats.totalBudget > 0 ? (projectStats.totalSpent / projectStats.totalBudget) * 100 : 0
+  const budgetUtilization = projectStats.totalBudget > 0 
+    ? (projectStats.totalSpent / projectStats.totalBudget) * 100 
+    : 0;
 
-  // Calculate the combined approved and reimbursed expenses percentage
-  const calculateProcessedExpensesPercentage = () => {
-    if (expensesLoading || !expenseStats?.total_expenses) return 0
-
-    const approved = expenseStats.total_expenses.approved || 0
-    const total = expenseStats.total_expenses.total || 1
-    return Math.round((approved / total) * 100)
-  }
-
-  // Format dates for display
-  const formatDate = (dateString: string) => {
-    if (!dateString) return ""
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    })
-  }
-
-  // Get status badge color
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-green-100 text-green-800 border-green-300"
-      case "planning":
-      case "planned":
-        return "bg-blue-100 text-blue-800 border-blue-300"
-      case "on_hold":
-        return "bg-amber-100 text-amber-800 border-amber-300"
-      case "completed":
-        return "bg-gray-100 text-gray-800 border-gray-300"
-      case "cancelled":
-        return "bg-red-100 text-red-800 border-red-300"
-      case "submitted":
-        return "bg-purple-100 text-purple-800 border-purple-300"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-300"
-    }
+  // Function to refresh all data
+  const refreshAllData = async () => {
+    setIsRefreshing(true)
+    await Promise.all([refreshStats(), refreshProjects(), refreshMilestones(), refreshExpenses(), refreshUpdates()])
+    setIsRefreshing(false)
   }
 
   // Check if any data is currently being refreshed
@@ -168,25 +153,43 @@ console.log("Project Statistics:", projectStatistics)
     <div className={className}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Project Management</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshAllData}
-                disabled={isAnyDataRefreshing}
-                className="transition-all duration-200 hover:bg-gray-100"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isAnyDataRefreshing ? "animate-spin" : ""}`} />
-                {isAnyDataRefreshing ? "Refreshing..." : "Refresh"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Refresh project data</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex items-center gap-2">
+          {/* Currency selector */}
+          {availableCurrencies.length > 0 && (
+            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCurrencies.map(currency => (
+                  <SelectItem key={currency.code} value={currency.code}>
+                    {currency.code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refreshAllData}
+                  disabled={isAnyDataRefreshing}
+                  className="transition-all duration-200 hover:bg-gray-100"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isAnyDataRefreshing ? "animate-spin" : ""}`} />
+                  {isAnyDataRefreshing ? "Refreshing..." : "Refresh"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh project data</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -242,8 +245,8 @@ console.log("Project Statistics:", projectStatistics)
         {/* Budget Card */}
         <DashboardCard
           title="Budget"
-          value={projectsLoading ? "—" : formatCurrency(projectStats.totalBudget)}
-          description={`${formatCurrency(projectStats.totalSpent)} spent`}
+          value={projectsLoading ? "—" : formatCurrency(selectedCurrency, projectStats.totalBudget)}
+          description={`${formatCurrency(selectedCurrency, projectStats.totalSpent)} spent`}
           icon={<DollarSign className="h-4 w-4 text-black" />}
           trend={{
             value: Number(budgetUtilization.toFixed(2)),
@@ -257,6 +260,7 @@ console.log("Project Statistics:", projectStatistics)
       {/* Analytics Section */}
       <AnalyticsSection
         projectStatistics={projectStatistics}
+        selectedCurrency={selectedCurrency}
         projects={projects || []}
         isLoading={statsLoading || projectsLoading}
         isRefreshing={isRefreshingStats || isRefreshingProjects}

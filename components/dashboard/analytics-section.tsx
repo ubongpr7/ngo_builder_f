@@ -1,6 +1,7 @@
+// AnalyticsSection.tsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { StatusChart } from "./status-chart"
 import { TypeChart } from "./type-chart"
 import { BudgetChart } from "./budget-chart"
@@ -14,9 +15,11 @@ import type { Project } from "@/types/project"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { ProjectStatistics, ProjectSummary } from "@/types/statistics"
 
 interface AnalyticsSectionProps {
-  projectStatistics: any
+  projectStatistics: ProjectStatistics
+  selectedCurrency: string
   projects: Project[]
   isLoading: boolean
   isRefreshing?: boolean
@@ -25,6 +28,7 @@ interface AnalyticsSectionProps {
 
 export function AnalyticsSection({
   projectStatistics,
+  selectedCurrency,
   projects,
   isLoading,
   isRefreshing = false,
@@ -33,6 +37,22 @@ export function AnalyticsSection({
   const [expanded, setExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
   const [animateRefresh, setAnimateRefresh] = useState(false)
+
+  // Get stats for selected currency
+  const currencyStats = useMemo(() => {
+    if (!projectStatistics?.currencies) return null;
+    return Object.values(projectStatistics.currencies).find(
+      c => c.summary.currency_code === selectedCurrency
+    );
+  }, [projectStatistics, selectedCurrency]);
+
+  // Create budget_stats object for compatibility
+  const budget_stats = currencyStats ? {
+    total_budget: currencyStats.summary.total_budget,
+    total_spent: currencyStats.summary.total_spent,
+    avg_budget: currencyStats.summary.avg_budget,
+    utilization: currencyStats.summary.budget_utilization
+  } : null;
 
   // Auto-collapse on small screens
   useEffect(() => {
@@ -151,19 +171,21 @@ export function AnalyticsSection({
             <TabsContent value="overview" className="space-y-4 animate-in fade-in-50 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <StatusChart
-                  statusCounts={projectStatistics?.status_counts || {}}
+                  statusCounts={currencyStats?.status_counts || []}
+                  currencyCode={selectedCurrency}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
                 <TypeChart
-                  typeCounts={projectStatistics?.type_counts || {}}
+                  typeCounts={currencyStats?.type_counts || []}
+                  currencyCode={selectedCurrency}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TimelineChart
-                  timelineStats={projectStatistics?.timeline_stats || {}}
+                  timelineStats={currencyStats?.timeline_stats || {}}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
@@ -178,7 +200,8 @@ export function AnalyticsSection({
             <TabsContent value="budget" className="animate-in fade-in-50 duration-300">
               <div className="grid grid-cols-1 gap-4">
                 <BudgetChart
-                  budgetStats={projectStatistics?.budget_stats || {}}
+                  budgetStats={budget_stats}
+                  currencyCode={selectedCurrency}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
@@ -188,7 +211,8 @@ export function AnalyticsSection({
             <TabsContent value="categories" className="animate-in fade-in-50 duration-300">
               <div className="grid grid-cols-1 gap-4">
                 <CategoryChart
-                  categoryCounts={projectStatistics?.category_counts || {}}
+                  categoryCounts={currencyStats?.category_counts || []}
+                  currencyCode={selectedCurrency}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
@@ -203,7 +227,7 @@ export function AnalyticsSection({
                   onRefresh={handleRefresh}
                 />
                 <TimelineChart
-                  timelineStats={projectStatistics?.timeline_stats || {}}
+                  timelineStats={currencyStats?.timeline_stats || {}}
                   isLoading={isLoading || isRefreshing}
                   onRefresh={handleRefresh}
                 />
@@ -214,16 +238,22 @@ export function AnalyticsSection({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in-50 duration-300">
           <StatusChart
-            statusCounts={projectStatistics?.status_counts || {}}
+            statusCounts={currencyStats?.status_counts || []}
+            currencyCode={selectedCurrency}
             isLoading={isLoading || isRefreshing}
             onRefresh={handleRefresh}
           />
           <BudgetChart
-            budgetStats={projectStatistics?.budget_stats || {}}
+            budgetStats={budget_stats}
+            currencyCode={selectedCurrency}
             isLoading={isLoading || isRefreshing}
             onRefresh={handleRefresh}
           />
-          <ProjectRanking projects={projects || []} isLoading={isLoading || isRefreshing} onRefresh={handleRefresh} />
+          <ProjectRanking
+            projects={projects || []}
+            isLoading={isLoading || isRefreshing}
+            onRefresh={handleRefresh}
+          />
         </div>
       )}
     </Card>

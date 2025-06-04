@@ -4,9 +4,9 @@ import type {
   Project, 
   ProjectUpdate, 
   ProjectCategory, 
-  ProjectStatistics, 
   UpdateStatistics 
 } from "@/types/project"
+import { ProjectStatistics } from "@/types/statistics"
 
 interface GetProjectsParams {
   status?: string
