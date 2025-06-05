@@ -129,7 +129,7 @@ export default function BlogPage() {
           </div>
         </div>
 
-        {/* Newsletter Signup */}
+        {/* Newsletter Signup
         <div className="bg-green-50 p-8 rounded-xl border border-green-500">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-2xl font-bold mb-4">Subscribe to Our Newsletter</h2>
@@ -143,6 +143,7 @@ export default function BlogPage() {
             </div>
           </div>
         </div>
+         */}
       </div>
     </div>
   )

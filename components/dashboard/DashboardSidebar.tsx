@@ -22,6 +22,11 @@ import {
   Briefcase,
   Globe2,
   HandshakeIcon,
+  Contact2,
+  LucideGift,
+  Star,
+  HelpCircle,
+  Book,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -201,32 +206,7 @@ export default function DashboardSidebar() {
               </NavSection>
             )}
 
-            <NavSection title="Community" name="general" icon={HandshakeIcon}>
-              <NavItem href="/my-donations" icon={Wallet}>
-                 My Donations
-                </NavItem>
-              <NavItem href="/donate" icon={FileText}>
-                Donate
-              </NavItem>
-              
-              {/* 
-              <NavItem href="/general/contacts" icon={Users}>
-                Contacts
-              </NavItem>
-              <NavItem href="/general/contacts" icon={Users}>
-                Contacts
-              </NavItem>
-              <NavItem href="/dashboard/general/partners" icon={Users}>
-                Partners
-              </NavItem>
-              <NavItem href="/dashboard/general/volunteers" icon={Users}>
-                Volunteers
-              </NavItem>
-              <NavItem href="/dashboard/general/donors" icon={Users}>
-                Top Donors
-              </NavItem>
-              */}
-            </NavSection>
+            
             {/* Finance Section - Admin and Executive only */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive) && (
               <NavSection title="Finance Management" name="finance" icon={Wallet}>
@@ -246,7 +226,37 @@ export default function DashboardSidebar() {
                 </NavItem>
                 
               </NavSection>
+
             )}
+            <NavSection title="Community" name="general" icon={HandshakeIcon}>
+              <NavItem href="/my-donations" icon={Wallet}>
+                 My Donations
+                </NavItem>
+              <NavItem href="/donate" icon={LucideGift}>
+                Donate
+              </NavItem>
+
+              <NavItem href="/contact" icon={Contact2}>
+              Contacts
+              </NavItem>
+              <NavItem href="/general/blog" icon={Users}>
+              Blogs
+              </NavItem>
+              <NavItem href="/core-values" icon={Star}>
+                Core Values
+                </NavItem>
+              <NavItem href="/vision-mission" icon={Star}>
+                Mission & Vision
+                </NavItem>
+                <NavItem href="/faqs" icon={HelpCircle}>
+                  FAQs
+                  </NavItem>
+                  <NavItem href="/history" icon={Book}>
+                    History
+                  </NavItem>
+              {/* 
+              */}
+            </NavSection>
           </nav>
         </div>
         <div className="mt-auto border-t p-1">
