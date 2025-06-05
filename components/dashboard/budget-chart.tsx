@@ -20,7 +20,7 @@ interface BudgetChartProps {
 export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currencyCode }: BudgetChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
-
+  console.log(budgetStats)
   useEffect(() => {
     if (!chartRef.current || isLoading) return
 
