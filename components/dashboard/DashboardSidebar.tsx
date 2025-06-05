@@ -20,6 +20,8 @@ import {
   ChevronDown,
   X,
   Briefcase,
+  Globe2,
+  HandshakeIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -199,6 +201,32 @@ export default function DashboardSidebar() {
               </NavSection>
             )}
 
+            <NavSection title="Community" name="general" icon={HandshakeIcon}>
+              <NavItem href="/my-donations" icon={Wallet}>
+                 My Donations
+                </NavItem>
+              <NavItem href="/donate" icon={FileText}>
+                Donate
+              </NavItem>
+              
+              {/* 
+              <NavItem href="/general/contacts" icon={Users}>
+                Contacts
+              </NavItem>
+              <NavItem href="/general/contacts" icon={Users}>
+                Contacts
+              </NavItem>
+              <NavItem href="/dashboard/general/partners" icon={Users}>
+                Partners
+              </NavItem>
+              <NavItem href="/dashboard/general/volunteers" icon={Users}>
+                Volunteers
+              </NavItem>
+              <NavItem href="/dashboard/general/donors" icon={Users}>
+                Top Donors
+              </NavItem>
+              */}
+            </NavSection>
             {/* Finance Section - Admin and Executive only */}
             {(userRoles.isDBAdmin || userRoles.isDBExecutive) && (
               <NavSection title="Finance Management" name="finance" icon={Wallet}>
@@ -212,9 +240,7 @@ export default function DashboardSidebar() {
                 <NavItem href="/dashboard/finance/funding-sources" icon={Wallet}>
                   Funding Sources
                 </NavItem>
-                <NavItem href="/my-donations" icon={Wallet}>
-                 My Donations
-                </NavItem>
+                
                 <NavItem href="/dashboard/finance/budgets" icon={BarChart3}>
                   Budgets
                 </NavItem>

@@ -175,15 +175,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
   const currencyOptions = currencies.map((currency: CurrencyInterface) => ({
     value: currency.id.toString(), // Use ID as value
     label: `${currency.code} - ${currency.name}`,
-  })) || [
-    // Fallback options if API fails - use IDs if you know them
-    { value: "1", label: "USD - US Dollar" },
-    { value: "2", label: "EUR - Euro" },
-    { value: "3", label: "GBP - British Pound" },
-    { value: "4", label: "NGN - Nigerian Naira" },
-    { value: "5", label: "GHS - Ghanaian Cedi" },
-    { value: "6", label: "KES - Kenyan Shilling" },
-  ]
+  })) 
 
   // Custom styles for react-select
   const selectStyles = {
