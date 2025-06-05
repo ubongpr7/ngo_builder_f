@@ -79,6 +79,7 @@ export function DonatePageContent() {
         {/* Active Campaigns Section */}
         <ActiveCampaignsPublic onDonateClick={handleDonateClick} />
 
+        
         <div id="donation-form" className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-12">
           <div className="p-8">
             <h2 className="text-2xl font-bold mb-6 text-center">Make a Donation</h2>
@@ -103,7 +104,7 @@ export function DonatePageContent() {
                 <div className="text-center">
                   <Button
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => handleDonateClick("one-time")}
+                    onClick={() => handleDonateClick("one-time", { id: 2, title: "Support Our Mission " })}
                   >
                     <Heart className="mr-2 h-4 w-4" />
                     Donate Now
@@ -115,7 +116,7 @@ export function DonatePageContent() {
                 <div className="text-center">
                   <Button
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => handleDonateClick("monthly")}
+                    onClick={() => handleDonateClick("monthly",{ id: 2, title: "Support Our Mission " })}
                   >
                     <Heart className="mr-2 h-4 w-4" />
                     Donate Monthly
