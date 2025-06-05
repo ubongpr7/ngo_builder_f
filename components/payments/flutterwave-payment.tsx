@@ -16,6 +16,7 @@ import { useGetBankAccountByIdQuery } from "@/redux/features/finance/bank-accoun
 import { useGetDonationByIdQuery } from "@/redux/features/finance/donations"
 import { useGetInKindDonationByIdQuery } from "@/redux/features/finance/in-kind-donations"
 import { useGetRecurringDonationByIdQuery } from "@/redux/features/finance/recurring-donations"
+import { formatCurrency, formatCurrencyCompact } from "@/lib/currency-utils"
 
 
 interface FlutterwavePaymentProps {
@@ -50,7 +51,7 @@ export function FlutterwavePayment({
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success" | "failed">("idle")
   const [isInitiating, setIsInitiating] = useState(false)
   const [flutterwaveConfig, setFlutterwaveConfig] = useState<any>(null)
-  const d_type = donationData?.type || "one-time"
+  const d_type = donationData?.type||donationData?.d_type || "one-time"
   const donationDataId = donationData?.id
 
   // Fetch donation and bank account data
@@ -72,7 +73,7 @@ export function FlutterwavePayment({
   const hasError =  bankAccountError
 
   // Get donation type safely
-
+  const currency = donationData?.currency?.code ||donationData?.currency|| "USD"
   // Generate transaction reference
   const tx_ref = `donation_${d_type}_${donationData?.id}_${Date.now()}`
 
@@ -83,7 +84,7 @@ export function FlutterwavePayment({
         public_key: bankAccount.api_key,
         tx_ref,
         amount: donationData.amount,
-        currency: donationData.currency || "USD",
+        currency: currency,
         payment_options: d_type === "recurring" ? "card" : "card,banktransfer,mobilemoney,ussd",
         ...(d_type === "recurring" &&
           donationData.payment_plan_id && {
@@ -296,7 +297,7 @@ export function FlutterwavePayment({
           <h3 className="text-lg font-semibold mb-2">Payment Successful!</h3>
           <p className="text-gray-600 text-center mb-4">
             Thank you for your {d_type} donation of{" "}
-            {formatAmount(donationData.amount, donationData.currency?.code || "USD")}.
+            {formatCurrency( currency,donationData.amount)}.
           </p>
           <Button onClick={() => (window.location.href = "/donations")} className="w-full">
             View Donations
@@ -344,7 +345,7 @@ export function FlutterwavePayment({
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Amount:</span>
             <span className="font-semibold">
-              {formatAmount(donationData.amount, donationData.currency?.code || "USD")}
+              {formatCurrency(currency, donationData.amount)}
             </span>
           </div>
           <div className="flex justify-between items-center mb-2">
@@ -364,7 +365,7 @@ export function FlutterwavePayment({
               Processing...
             </>
           ) : (
-            `Pay ${formatAmount(donationData.amount, donationData.currency?.code || "USD")}`
+            `Pay ${formatCurrency(currency, donationData.amount)}`
           )}
         </Button>
 
