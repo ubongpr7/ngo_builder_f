@@ -176,8 +176,11 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     value: currency.id.toString(), // Use ID as value
     label: `${currency.code} - ${currency.name}`,
   })) 
+  const selectedRCurrencyCode = currencies.find(
+  (c) => String(c.id) == String(recurringForm.currency)
+)?.code || 'USD';
   const selectedCurrencyCode = currencies.find(
-  (c) => String(c.id) === String(recurringForm.currency)
+  (c) => String(c.id) == String(oneTimeForm.currency)
 )?.code || 'USD';
 
 
@@ -838,7 +841,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <Button type="submit" className="w-full" disabled={isCreatingRecurring}>
                         {isCreatingRecurring
                           ? "Setting up..."
-                          : `Set up ${formatCurrency(selectedCurrencyCode, recurringForm.amount) } ${recurringForm.frequency} donation`}
+                          : `Set up ${formatCurrency(selectedRCurrencyCode, recurringForm.amount) } ${recurringForm.frequency} donation`}
                       </Button>
                     </form>
                   </CardContent>
