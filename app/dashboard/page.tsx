@@ -21,11 +21,11 @@ export default function DashboardPage() {
             <BarChart3 className="h-4 w-4 mr-2" />
             Overview
           </TabsTrigger>
+          {/*  Add Settings tab
           <TabsTrigger value="projects" className="flex items-center justify-center">
             <FileText className="h-4 w-4 mr-2" />
             Projects
           </TabsTrigger>
-          {/*  Add Settings tab
 
           <TabsTrigger value="finance" className="flex items-center justify-center">
             <DollarSign className="h-4 w-4 mr-2" />
