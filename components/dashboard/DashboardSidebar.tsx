@@ -235,11 +235,11 @@ export default function DashboardSidebar() {
               <NavItem href="/donate" icon={LucideGift}>
                 Donate
               </NavItem>
-
+            
               <NavItem href="/contact" icon={Contact2}>
               Contacts
               </NavItem>
-              <NavItem href="/general/blog" icon={Users}>
+              <NavItem href="/blog" icon={Users}>
               Blogs
               </NavItem>
               <NavItem href="/core-values" icon={Star}>

@@ -27,6 +27,7 @@ import { useGetMyDonationsQuery } from "@/redux/features/finance/donations"
 import { useGetMyInKindDonationsQuery } from "@/redux/features/finance/in-kind-donations"
 import { useGetMyRecurringDonationsQuery } from "@/redux/features/finance/recurring-donations"
 import Link from "next/link"
+import { PaymentHandler } from "@/components/payments/payment-handler"
 
 interface UserDonationsProps {
   userId?: number
@@ -35,8 +36,8 @@ interface UserDonationsProps {
 // Type definitions for better type safety
 interface RegularDonation {
   id: number
-  campaign?: string
-  project?: string
+  campaign?: { title?: string }
+  project?: { title?: string }
   amount: number
   currency?: { code: string }
   status: string
@@ -52,8 +53,8 @@ interface RegularDonation {
 
 interface InKindDonation {
   id: number
-  campaign?: string
-  project?: string
+  campaign?: { title?: string }
+  project?: { title?: string }
   item_description: string
   category?: string
   quantity: number
@@ -70,8 +71,8 @@ interface InKindDonation {
 
 interface RecurringDonation {
   id: number
-  campaign?: string
-  project?: string
+  campaign?: { title?: string }
+  project?: { title?: string }
   amount: number
   currency?: { code: string }
   frequency: string
@@ -90,17 +91,13 @@ interface RecurringDonation {
 
 export function UserDonations() {
   const [activeTab, setActiveTab] = useState("regular")
+  const [showPayment, setShowPayment] = useState(false)
+  const [currentDonation, setCurrentDonation] = useState<RegularDonation | InKindDonation | RecurringDonation | null>(null)
 
   // Fetch all donation types
   const { data: regularDonations, isLoading: isLoadingRegular, refetch: refetchRegular } = useGetMyDonationsQuery({})
-
   const { data: inKindDonations, isLoading: isLoadingInKind, refetch: refetchInKind } = useGetMyInKindDonationsQuery({})
-
-  const {
-    data: recurringDonations,
-    isLoading: isLoadingRecurring,
-    refetch: refetchRecurring,
-  } = useGetMyRecurringDonationsQuery({})
+  const { data: recurringDonations, isLoading: isLoadingRecurring, refetch: refetchRecurring } = useGetMyRecurringDonationsQuery({})
 
   const getStatusBadge = (status: string) => {
     const statusLower = status?.toLowerCase() || ""
@@ -136,6 +133,12 @@ export function UserDonations() {
             Paused
           </Badge>
         )
+      case "inactive":
+        return (
+          <Badge variant="outline" className="bg-gray-300 text-gray-700">
+            {status}
+          </Badge>
+        )
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -161,6 +164,25 @@ export function UserDonations() {
     }
   }
 
+  // Payment handler open
+  const handlePaymentOpen = (donation: RegularDonation | InKindDonation | RecurringDonation) => {
+    setCurrentDonation(donation)
+    setShowPayment(true)
+  }
+
+  // Payment handler complete
+  const handlePaymentComplete = () => {
+    setShowPayment(false)
+    setCurrentDonation(null)
+    void handleRefresh()
+  }
+
+  // Payment handler cancel
+  const handlePaymentCancel = () => {
+    setShowPayment(false)
+    setCurrentDonation(null)
+  }
+
   // Regular Donations Component
   const RegularDonationsTab = () => (
     <div className="space-y-4">
@@ -179,11 +201,11 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign?.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                     </div>
                     {donation.project && (
-                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project?.title}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project.title}</p>
                     )}
                     <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center space-x-1">
@@ -221,6 +243,12 @@ export function UserDonations() {
                   {donation.processor_fee_percentage && (
                     <div className="text-xs text-muted-foreground">Fee: {donation.processor_fee_percentage}%</div>
                   )}
+                  {/* Payment button for pending or inactive status */}
+                  {["pending", "inactive"].includes(donation.status.toLowerCase()) && (
+                    <Button className="mt-2" onClick={() => handlePaymentOpen(donation)}>
+                      Complete Payment
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -254,7 +282,7 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign?.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                     </div>
                     <div className="space-y-1">
@@ -298,6 +326,12 @@ export function UserDonations() {
                         formatCurrency(donation.valuation_currency?.code || "USD", donation.effective_value)}
                     </div>
                   )}
+                  {/* Payment button for pending or inactive status */}
+                  {["pending", "inactive"].includes(donation.status.toLowerCase()) && (
+                    <Button className="mt-2" onClick={() => handlePaymentOpen(donation)}>
+                      Complete Payment
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -331,7 +365,7 @@ export function UserDonations() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="font-semibold">{donation.campaign.title || "General Donation"}</h3>
+                      <h3 className="font-semibold">{donation.campaign?.title || "General Donation"}</h3>
                       {getStatusBadge(donation.status)}
                       {donation.is_healthy && (
                         <Badge variant="outline" className="bg-green-50 text-green-700">
@@ -345,7 +379,7 @@ export function UserDonations() {
                       )}
                     </div>
                     {donation.project && (
-                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project?.title}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Project: {donation.project.title}</p>
                     )}
                     <div className="space-y-1">
                       <p className="text-sm">
@@ -391,6 +425,12 @@ export function UserDonations() {
                       {donation.formatted_total_donated ||
                         formatCurrency(donation.currency?.code || "USD", donation.total_donated)}
                     </div>
+                  )}
+                  {/* Payment button for pending or inactive status */}
+                  {["pending", "inactive"].includes(donation.status.toLowerCase()) && (
+                    <Button className="mt-2" onClick={() => handlePaymentOpen(donation)}>
+                      Complete Payment
+                    </Button>
                   )}
                 </div>
               </div>
@@ -519,6 +559,16 @@ export function UserDonations() {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Payment Handler */}
+      {showPayment && currentDonation && (
+        <PaymentHandler
+          donationData={currentDonation}
+          onComplete={handlePaymentComplete}
+          onCancel={handlePaymentCancel}
+        />
+      )}
     </div>
   )
 }
+
