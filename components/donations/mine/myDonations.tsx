@@ -156,22 +156,16 @@ export function UserDonations() {
     }
   }
 
-  const formatDateTime = (dateString: string) => {
-    try {
-      return format(parseISO(dateString), "MMM dd, yyyy HH:mm")
-    } catch {
-      return "Invalid date"
-    }
-  }
-
   // Payment handler open
   const handlePaymentOpen = (donation: RegularDonation | InKindDonation | RecurringDonation) => {
+    console.log("Opening Payment Handler for donation:", donation)
     setCurrentDonation(donation)
     setShowPayment(true)
   }
 
   // Payment handler complete
   const handlePaymentComplete = () => {
+    console.log("Payment completed")
     setShowPayment(false)
     setCurrentDonation(null)
     void handleRefresh()
@@ -179,6 +173,7 @@ export function UserDonations() {
 
   // Payment handler cancel
   const handlePaymentCancel = () => {
+    console.log("Payment canceled")
     setShowPayment(false)
     setCurrentDonation(null)
   }
@@ -441,7 +436,7 @@ export function UserDonations() {
         <div className="text-center py-12">
           <Repeat className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No recurring donations</h3>
-          <p className="text-muted-foreground mb-4">Set up a recurring donation to make ongoing impact</p>
+          <p className="text-muted -foreground mb-4">Set up a recurring donation to make ongoing impact</p>
         </div>
       )}
     </div>
@@ -560,15 +555,27 @@ export function UserDonations() {
         </CardContent>
       </Card>
 
-      {/* Payment Handler */}
+      {/* Payment Handler with overlay style */}
       {showPayment && currentDonation && (
-        <PaymentHandler
-          donationData={currentDonation}
-          onComplete={handlePaymentComplete}
-          onCancel={handlePaymentCancel}
-        />
+        <div
+          className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center p-4"
+          onClick={() => setShowPayment(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="payment-handler-title"
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PaymentHandler
+              donationData={currentDonation}
+              onComplete={handlePaymentComplete}
+              onCancel={handlePaymentCancel}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
 }
-
