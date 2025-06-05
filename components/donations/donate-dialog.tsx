@@ -695,7 +695,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <Button type="submit" className="w-full" disabled={isCreatingDonation}>
                         {isCreatingDonation
                           ? "Processing..."
-                          : `Donate ${formatCurrency(oneTimeForm.currency, Number.parseFloat(oneTimeForm.amount) || 0)}`}
+                          : `Donate ${formatCurrency(oneTimeForm.currency, oneTimeForm.amount) }`}
                       </Button>
                     </form>
                   </CardContent>
@@ -834,7 +834,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <Button type="submit" className="w-full" disabled={isCreatingRecurring}>
                         {isCreatingRecurring
                           ? "Setting up..."
-                          : `Set up ${formatCurrency(recurringForm.currency, Number.parseFloat(recurringForm.amount) || 0)} ${recurringForm.frequency} donation`}
+                          : `Set up ${formatCurrency(recurringForm.currency, recurringForm.amount) } ${recurringForm.frequency} donation`}
                       </Button>
                     </form>
                   </CardContent>
