@@ -416,7 +416,6 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
         notes: recurringForm.notes || null,
 
         // Default values
-        status: "active",
         max_failed_payments: 3,
       }
 

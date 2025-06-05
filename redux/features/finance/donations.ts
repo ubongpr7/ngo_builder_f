@@ -46,18 +46,7 @@ export const donationsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create donation
-    createDonation: builder.mutation<
-      Donation,
-      Partial<Donation> & {
-        currency_id: number
-        campaign_id?: number
-        project_id?: number
-        donor_id?: number
-        converted_currency_id?: number
-        processor_fee_currency_id?: number
-        deposited_to_account_id?: number
-      }
-    >({
+    createDonation: builder.mutation({
       query: (donation) => ({
         url: `/${backend}/donations/`,
         method: "POST",

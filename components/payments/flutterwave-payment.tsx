@@ -91,9 +91,9 @@ export function FlutterwavePayment({
             payment_plan: donationData.payment_plan_id,
           }),
         customer: {
-          email: donationData.donor_email || "",
-          phone_number: donationData.donor_phone || "",
-          name: donationData.donor_name || "",
+          email: donationData.donor_email ||donationData?.donor?.email ||"",
+          phone_number: donationData.donor_phone || donationData?.donor?.phone_number || "",
+          name: donationData.donor_name ||donationData?.donor?.full_name || "",
         },
         customizations: {
           title: "Donation Payment",

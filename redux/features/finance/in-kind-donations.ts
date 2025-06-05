@@ -41,16 +41,7 @@ export const inKindDonationsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create in-kind donation
-    createInKindDonation: builder.mutation<
-      InKindDonation,
-      Partial<InKindDonation> & {
-        valuation_currency_id: number
-        campaign_id?: number
-        project_id?: number
-        donor_id?: number
-        received_by_id?: number
-      }
-    >({
+    createInKindDonation: builder.mutation({
       query: (inKindDonation) => ({
         url: `/${backend}/in-kind-donations/`,
         method: "POST",

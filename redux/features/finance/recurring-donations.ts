@@ -46,14 +46,7 @@ export const recurringDonationsApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Create recurring donation
-    createRecurringDonation: builder.mutation<
-      RecurringDonation,
-      Partial<RecurringDonation> & {
-        currency_id: number
-        campaign_id?: number
-        project_id?: number
-      }
-    >({
+    createRecurringDonation: builder.mutation({
       query: (recurringDonation) => ({
         url: `/${backend}/recurring-donations/`,
         method: "POST",
