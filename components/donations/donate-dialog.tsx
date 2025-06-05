@@ -176,6 +176,10 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
     value: currency.id.toString(), // Use ID as value
     label: `${currency.code} - ${currency.name}`,
   })) 
+  const selectedCurrencyCode = currencies.find(
+  (c) => String(c.id) === String(recurringForm.currency)
+)?.code || 'USD';
+
 
   // Custom styles for react-select
   const selectStyles = {
@@ -695,7 +699,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <Button type="submit" className="w-full" disabled={isCreatingDonation}>
                         {isCreatingDonation
                           ? "Processing..."
-                          : `Donate ${formatCurrency((currencies?.find((c) => Number(c.id) === Number(recurringForm.currency))?.code||'USD'), oneTimeForm.amount) }`}
+                          : `Donate ${formatCurrency(selectedCurrencyCode, oneTimeForm.amount) }`}
                       </Button>
                     </form>
                   </CardContent>
@@ -834,7 +838,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                       <Button type="submit" className="w-full" disabled={isCreatingRecurring}>
                         {isCreatingRecurring
                           ? "Setting up..."
-                          : `Set up ${formatCurrency((currencies?.find((c) => Number(c.id) === Number(recurringForm.currency))?.code||'USD'), recurringForm.amount) } ${recurringForm.frequency} donation`}
+                          : `Set up ${formatCurrency(selectedCurrencyCode, recurringForm.amount) } ${recurringForm.frequency} donation`}
                       </Button>
                     </form>
                   </CardContent>
