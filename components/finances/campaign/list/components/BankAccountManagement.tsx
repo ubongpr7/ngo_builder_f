@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Banknote, Plus, Star, Settings } from "lucide-react"
+import { formatCurrency } from "@/lib/currency-utils"
 
 interface BankAccountManagementProps {
   bankAccounts: any
@@ -15,12 +16,14 @@ export function BankAccountManagement({ bankAccounts, campaignId }: BankAccountM
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-2xl font-bold">Bank Account Management</h3>
-          <p className="text-muted-foreground">Manage bank accounts for {bankAccounts?.campaign_title}</p>
+          <p className="text-muted-foreground">Manage bank accounts for {bankAccounts?.campaign_title} Campaign</p>
         </div>
+        {/* Add Button
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Account
         </Button>
+         */}
       </div>
 
       {/* Accounts Grid */}
@@ -46,7 +49,7 @@ export function BankAccountManagement({ bankAccounts, campaignId }: BankAccountM
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="text-2xl font-bold">{account.bank_account.formatted_balance}</div>
+                <div className="text-2xl font-bold">{formatCurrency(account.bank_account.currency.code,account.bank_account.current_balance,{compact:true})}</div>
                 <div className="text-sm text-muted-foreground">Current Balance</div>
               </div>
 
