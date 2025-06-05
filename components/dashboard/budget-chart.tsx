@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from "react"
 import { Chart, registerables } from "chart.js"
-import { formatBudgetData, formatCurrencyCompact } from "@/utils/chart-helpers"
+import { formatBudgetData,  } from "@/utils/chart-helpers"
+
 import { ChartContainer } from "./chart-container"
-import { formatCurrency } from "@/lib/currency-utils"
+import { formatCurrencyCompact } from "@/lib/currency-utils"
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -76,7 +77,7 @@ export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currenc
             y: {
               beginAtZero: true,
               ticks: {
-                callback: (value) => formatCurrency(currencyCode || "USD", value),
+                callback: (value) => formatCurrencyCompact(currencyCode || "USD",Number(value)),
               },
               grid: {
                 borderDash: [2, 4],
