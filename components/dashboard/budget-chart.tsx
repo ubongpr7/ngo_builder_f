@@ -60,7 +60,7 @@ export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currenc
                   const value = context.raw as number
                   return `${new Intl.NumberFormat("en-US", {
                     style: "currency",
-                    currency: "USD",
+                    currency: currencyCode || "USD",
                   }).format(value)}`
                 },
               },
