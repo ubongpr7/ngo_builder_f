@@ -5,7 +5,7 @@ import { Chart, registerables } from "chart.js"
 import { formatBudgetData,  } from "@/utils/chart-helpers"
 
 import { ChartContainer } from "./chart-container"
-import { formatCurrencyCompact } from "@/lib/currency-utils"
+import { formatCurrency, formatCurrencyCompact } from "@/lib/currency-utils"
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -20,7 +20,7 @@ interface BudgetChartProps {
 export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currencyCode }: BudgetChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null)
   const chartInstance = useRef<Chart | null>(null)
-  console.log(budgetStats)
+
   useEffect(() => {
     if (!chartRef.current || isLoading) return
 
@@ -77,7 +77,7 @@ export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currenc
             y: {
               beginAtZero: true,
               ticks: {
-                callback: (value) => formatCurrencyCompact(currencyCode || "USD",Number(value)),
+                callback: (value) => formatCurrency(currencyCode || "USD",value,{compact: true}),
               },
               grid: {
                 borderDash: [2, 4],
