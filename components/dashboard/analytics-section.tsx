@@ -51,7 +51,8 @@ export function AnalyticsSection({
     total_budget: currencyStats.summary.total_budget,
     total_spent: currencyStats.summary.total_spent,
     avg_budget: currencyStats.summary.avg_budget,
-    utilization: currencyStats.summary.budget_utilization
+    utilization: currencyStats.summary.budget_utilization,
+    total_allocated: currencyStats.summary.total_allocated,
   } : null;
 
   // Auto-collapse on small screens
