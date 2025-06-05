@@ -19,7 +19,7 @@ import { AlertsPanel } from "./alerts-panel"
 import { useDashboardData } from "@/hooks/use-dashboard-data"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-export function FinanceDashboard() {
+export function FinanceDashboard(userRoles:any) {
   const [selectedCurrency, setSelectedCurrency] = useState("all");
   const { data, isLoading, error, refetch, lastUpdated } = useDashboardData({ currency: selectedCurrency });
 
@@ -58,7 +58,6 @@ export function FinanceDashboard() {
     );
   }
 
-  // Get available currencies from the data
   const availableCurrencies = data?.currencies ? Object.values(data.currencies).map(c => ({
     code: c.currency_code,
     name: c.currency_name

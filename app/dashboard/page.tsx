@@ -25,11 +25,13 @@ export default function DashboardPage() {
             <FileText className="h-4 w-4 mr-2" />
             Projects
           </TabsTrigger>
+          {/*  Add Settings tab
+
           <TabsTrigger value="finance" className="flex items-center justify-center">
             <DollarSign className="h-4 w-4 mr-2" />
             Finance
           </TabsTrigger>
-          {/*  Add Settings tab
+
           <TabsTrigger value="settings" className="flex items-center justify-center">
             <Settings className="h-4 w-4 mr-2" />
             Settings
@@ -39,17 +41,21 @@ export default function DashboardPage() {
 
         <TabsContent value="overview" className="space-y-6">
           <ProjectDashboard userRoles={userRoles} />
+            {/* Placeholder for Overview content
           <FinanceDashboard userRoles={userRoles} />
-        </TabsContent>
-
-        <TabsContent value="projects">
-          <ProjectDashboard userRoles={userRoles} />
-        </TabsContent>
-
-        <TabsContent value="finance">
-          <FinanceDashboard userRoles={userRoles} />
-        </TabsContent>
-
+           */}
+           </TabsContent>
+           
+           <TabsContent value="projects">
+           <ProjectDashboard userRoles={userRoles} />
+           </TabsContent>
+           {/* 
+            
+            <TabsContent value="finance">
+            <FinanceDashboard userRoles={userRoles} />
+            </TabsContent>
+            */}
+            
         <TabsContent value="settings">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">Dashboard Settings</h2>
