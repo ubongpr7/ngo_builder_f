@@ -5,7 +5,7 @@ import { Chart, registerables } from "chart.js"
 import { formatBudgetData,  } from "@/utils/chart-helpers"
 
 import { ChartContainer } from "./chart-container"
-import { formatCurrency, formatCurrencyCompact } from "@/lib/currency-utils"
+import { formatCurrencyCompact } from "@/lib/currency-utils"
 
 // Register Chart.js components
 Chart.register(...registerables)
@@ -77,7 +77,7 @@ export function BudgetChart({ budgetStats, isLoading = false, onRefresh, currenc
             y: {
               beginAtZero: true,
               ticks: {
-                callback: (value) => formatCurrency(currencyCode || "USD",value,{compact: true}),
+                callback: (value) => formatCurrencyCompact(currencyCode || "USD",Number(value)),
               },
               grid: {
                 borderDash: [2, 4],
