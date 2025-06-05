@@ -598,6 +598,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                         <div className="mt-2">
                           <Select
                             name="payment_method"
+                            className="hidden"
                             options={paymentMethodOptions}
                             value={paymentMethodOptions.find((option) => option.value === oneTimeForm.payment_method)}
                             onChange={(option) =>
@@ -771,6 +772,7 @@ export function DonationDialog({ open, setOpen, recurring = false, selectedCampa
                         <Label>Payment Method *</Label>
                         <div className="mt-2">
                           <Select
+                            className="hidden"
                             name="payment_method"
                             options={recurringPaymentMethodOptions}
                             value={recurringPaymentMethodOptions.find(
