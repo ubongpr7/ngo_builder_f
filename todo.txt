@@ -1,35 +1,5 @@
 financial_overview
 before 
-{
-    "period": "month",
-    "date_range": {
-        "start": "2025-06-01T15:37:51.273851+00:00",
-        "end": "2025-06-04T15:37:51.273851+00:00"
-    },
-    "financial_summary": {
-        "total_donations": 500.0,
-        "total_grants_received": 0.0,
-        "total_expenses": 600.0,
-        "net_income": -100.0,
-        "total_account_balance": 1441863.55,
-        "total_budget_allocated": 55400.0,
-        "total_budget_spent": 600.0,
-        "budget_utilization_percentage": 1.0830324909747293
-    },
-    "activity_counts": {
-        "active_campaigns": 1,
-        "active_grants": 0,
-        "pending_expenses": 0,
-        "overdue_reports": 0,
-        "active_accounts": 3
-    },
-    "health_indicators": {
-        "financial_health": "concerning",
-        "budget_health": "good",
-        "liquidity_health": "good",
-        "liquidity_ratio": 1441863.55
-    }
-}
 
 after
 {
@@ -265,8 +235,6 @@ after
 
 
 campaign_performance
-after
-
 {
     "currency_id": 2,
     "currency_code": "EUR",
@@ -276,81 +244,59 @@ after
         "total_campaigns": 1,
         "active_campaigns": 1,
         "successful_campaigns": 0,
-        "on_track_campaigns": 0,
+        "on_track_campaigns": 1,
         "success_rate": 0.0,
-        "on_track_rate": 0.0,
-        "total_target_amount": 55000.0,
-        "total_raised": 0.224,
-        "period_raised": 500.0,
-        "overall_progress": 0.00040727272727272726
+        "on_track_rate": 100.0,
+        "total_target_amount": 5500.0,
+        "total_raised": 89.992,
+        "period_raised": 160900.0,
+        "overall_progress": 1.6362181818181818
     },
     "campaigns": [
         {
             "id": 2,
-            "title": "Beyond Aid Funding 1.0",
-            "target_amount": 55000.0,
-            "total_raised": 0.224,
-            "period_raised": 500.0,
-            "progress_percentage": 0.00040727272727272726,
-            "days_remaining": 123,
-            "days_active": 4,
-            "donation_count": 4,
+            "title": "Support Our Mission",
+            "target_amount": 5500.0,
+            "total_raised": 89.992,
+            "period_raised": 160900.0,
+            "progress_percentage": 1.6362181818181818,
+            "days_remaining": 939,
+            "days_active": 0,
+            "donation_count": 9,
             "unique_donors": 2,
-            "avg_donation": 125.0,
-            "daily_avg_period": 16.666666666666668,
-            "target_daily_needed": 447.15265040650405,
-            "is_on_track": false,
-            "performance_score": 3.727287907499842,
+            "avg_donation": 17877.777777777777,
+            "daily_avg_period": 5363.333333333333,
+            "target_daily_needed": 5.761456869009584,
+            "is_on_track": true,
+            "performance_score": 100,
             "currency": "EUR",
-            "start_date": "2025-06-01",
-            "end_date": "2025-10-05",
+            "start_date": "2025-06-06",
+            "end_date": "2027-12-31",
             "is_featured": true
         }
     ],
     "top_performers": [
         {
             "id": 2,
-            "title": "Beyond Aid Funding 1.0",
-            "target_amount": 55000.0,
-            "total_raised": 0.224,
-            "period_raised": 500.0,
-            "progress_percentage": 0.00040727272727272726,
-            "days_remaining": 123,
-            "days_active": 4,
-            "donation_count": 4,
+            "title": "Support Our Mission",
+            "target_amount": 5500.0,
+            "total_raised": 89.992,
+            "period_raised": 160900.0,
+            "progress_percentage": 1.6362181818181818,
+            "days_remaining": 939,
+            "days_active": 0,
+            "donation_count": 9,
             "unique_donors": 2,
-            "avg_donation": 125.0,
-            "daily_avg_period": 16.666666666666668,
-            "target_daily_needed": 447.15265040650405,
-            "is_on_track": false,
-            "performance_score": 3.727287907499842,
+            "avg_donation": 17877.777777777777,
+            "daily_avg_period": 5363.333333333333,
+            "target_daily_needed": 5.761456869009584,
+            "is_on_track": true,
+            "performance_score": 100,
             "currency": "EUR",
-            "start_date": "2025-06-01",
-            "end_date": "2025-10-05",
+            "start_date": "2025-06-06",
+            "end_date": "2027-12-31",
             "is_featured": true
         }
     ],
-    "needs_attention": [
-        {
-            "id": 2,
-            "title": "Beyond Aid Funding 1.0",
-            "target_amount": 55000.0,
-            "total_raised": 0.224,
-            "period_raised": 500.0,
-            "progress_percentage": 0.00040727272727272726,
-            "days_remaining": 123,
-            "days_active": 4,
-            "donation_count": 4,
-            "unique_donors": 2,
-            "avg_donation": 125.0,
-            "daily_avg_period": 16.666666666666668,
-            "target_daily_needed": 447.15265040650405,
-            "is_on_track": false,
-            "performance_score": 3.727287907499842,
-            "currency": "EUR",
-            "start_date": "2025-06-01",
-            "end_date": "2025-10-05",
-            "is_featured": true
-        }
-    ]
+    "needs_attention": []
 }

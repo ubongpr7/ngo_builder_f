@@ -1,5 +1,6 @@
 import { getCookie } from "cookies-next"
 import { apiSlice } from "../services/apiSlice"
+import { act } from "react"
 
 interface User {
   first_name: string
@@ -71,17 +72,15 @@ const authApiSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
-    resendCode: builder.mutation<void, { email: string }>({
+    resendCode: builder.mutation<void, { email: string,action:string }>({
       query: (data) => ({
         url: '/api/v1/accounts/verify/',
-        method: 'GET',
-        params: {  
-          email: data.email,
-        }
+        method: 'POST',
+        body: data
       })
     }),
     
-    verifyCode: builder.mutation<void, { email: string; code: string }>({
+    verifyCode: builder.mutation<void, { email: string; code: string,action:string }>({
       query: (data) => ({
         url: '/api/v1/accounts/verify/',
         method: 'POST',

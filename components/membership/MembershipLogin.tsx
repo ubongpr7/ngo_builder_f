@@ -131,7 +131,7 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
   // Step 1: Handle email submission and send verification code
   const handleEmailSubmit = async (data: EmailFormData) => {
     try {
-      await sendCode({ email: data.email }).unwrap()
+      await sendCode({ action: 'send_code', email: data.email }).unwrap()
       setVerifiedEmail(data.email)
       setCurrentStep("VERIFICATION")
       setResendCooldown(60)
@@ -146,6 +146,7 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
   const handleVerificationSubmit = async (data: VerificationFormData) => {
     try {
       await verifyCode({
+        action: 'verify_code',
         email: verifiedEmail,
         code: data.code,
       }).unwrap()
@@ -173,8 +174,6 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
         window.location.href = nextUrl
       } else {
         window.location.href = user.profile ? "/dashboard" : "/profile/update"
-
-        // router.push(user.profile ? "/dashboard" : "/profile/update")
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err)
@@ -187,7 +186,7 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
     if (resendCooldown > 0) return
 
     try {
-      await sendCode({ email: verifiedEmail }).unwrap()
+      await sendCode({ action: 'send_code', email: verifiedEmail }).unwrap()
       setResendCooldown(60)
       toast.success("Code resent. Check your email for the new verification code")
     } catch (err) {
@@ -374,7 +373,7 @@ function LoginFormContent({ nextUrl }: { nextUrl: string }) {
 }
 
 // Export the main component with Suspense boundary
-export default function VerificationLoginForm( ) {
+export default function VerificationLoginForm() {
   return (
     <Suspense fallback={<div className="max-w-md w-full space-y-6 mx-auto text-center">Loading...</div>}>
       <LoginFormWithParams />
