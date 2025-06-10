@@ -18,7 +18,6 @@ interface RolesFormProps {
   profileId: string
 }
 
-// Define role groups
 const roleGroups = {
   leadership: ["is_ceo", "is_DB_executive"],
   staff: ["is_DB_staff", "is_DB_admin"],
