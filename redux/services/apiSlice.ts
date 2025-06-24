@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 import type { BaseQueryFn, FetchArgs as OriginalFetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
-// Extend FetchArgs to include a meta property
 interface FetchArgs extends OriginalFetchArgs {
   meta?: {
     isFileUpload?: boolean

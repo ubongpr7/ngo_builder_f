@@ -16,7 +16,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/president.jpg" alt="Mr Treasure Edwin Inyang" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Mr Treasure Edwin Inyang</h3>
-                        <p className="text-gray-100 mb-4">President/CEO</p>
+                        {/*
+                            */}
+                            <p className="text-gray-100 mb-4">CEO</p>
                     </div>
                     {/* Social Media Icons with Animation */}
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
@@ -36,7 +38,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/secretary.jpg" alt="Dcns Iniobong Daniel Inyang" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Dcns Iniobong Daniel Inyang</h3>
+                        {/* 
                         <p className="text-gray-100 mb-4">Secretary General, BoT</p>
+                        */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
@@ -55,7 +59,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/southeast.jpg" alt="Mrs Chikezie Augusta Akudo" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Mrs Chikezie Augusta Akudo</h3>
+                       {/*
                         <p className="text-gray-100 mb-4">South East Regional Coordinator</p>
+                        */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
@@ -74,7 +80,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/south-south.jpg" alt="Oluyemi Alaba Sunday" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Oluyemi Alaba Sunday</h3>
+                      {/*
                         <p className="text-gray-100 mb-4">South West Regional Coordinator</p>
+                    */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
@@ -93,7 +101,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/soth-west.jpg" alt="Comrade Attah James" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Comrade Attah James</h3>
-                        <p className="text-gray-100 mb-4">North Central Regional Coordinator</p>
+                         {/*
+                            <p className="text-gray-100 mb-4">North Central Regional Coordinator</p>
+                        */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
@@ -112,7 +122,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/north-central.jpg" alt="Ekpe-Iko Kennedy" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Ekpe-Iko Kennedy</h3>
+                       {/*
                         <p className="text-gray-100 mb-4">South South Regional Coordinator</p>
+                        */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
@@ -131,7 +143,9 @@ export default function MeetOurTeam() {
                     <div className="bg-[#171717] text-white text-left">
                         <Image src="/north-east-1.jpg" alt="Ibrahim Alhaji Musa" className="w-full  object-cover mb-4" width={400} height={400} />
                         <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">Ibrahim Alhaji Musa</h3>
-                        <p className="text-gray-100 mb-4">North East Regional Coordinator</p>
+                        {/*
+                            <p className="text-gray-100 mb-4">North East Regional Coordinator</p>
+                        */}
                     </div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex space-x-4 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:-translate-y-1/3">
                         <a href="https://www.facebook.com/" target='_blank' className="text-black bg-white rounded-full p-2 hover:text-green-600">
