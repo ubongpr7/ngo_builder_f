@@ -45,6 +45,10 @@ export const userApiSlice = apiSlice.injectEndpoints({
       query: () => `/profile_api/users/`,
     }),
   
+    getDestinyExecutiveMembers: builder.query<UserData[], void>({
+      query: () => `/profile_api/executive_members/`,
+    }),
+  
     getProjectTeamMembers: builder.query({
       query: (projectId) => `/project_api/project-team-members/?project_id=${projectId}`,
     }),
@@ -58,5 +62,7 @@ export const {
   useGetLoggedInUserQuery,
   useGetCompanyUsersQuery,
   useGetProjectTeamMembersQuery,
+  useGetDestinyExecutiveMembersQuery,
+
   
 } = userApiSlice;

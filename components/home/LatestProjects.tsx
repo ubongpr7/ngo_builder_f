@@ -15,6 +15,7 @@ const projects = [
     date: "June 15, 2023",
     category: "Digital Literacy",
   },
+  
   {
     id: 2,
     title: "Community Health Outreach",

@@ -11,6 +11,7 @@ import MeetOurTeam from "@/components/home/MeetOurTeam"
 import Partners from "@/components/home/Partners"
 
 
+
 export default function Home() {
   return (
     <div className="flex flex-col w-full">
