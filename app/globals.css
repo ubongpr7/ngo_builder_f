@@ -229,3 +229,28 @@ option {
 .table-scroll table::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+
+
+
+/* swiper */
+/* globals.css */
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+
+.swiper-pagination-bullet {
+  background-color: #fff;
+  opacity: 0.5;
+  width: 12px;
+  height: 12px;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #FDD65B;
+  opacity: 1;
+}
+
+.team-swiper {
+  padding: 20px 0;
+}
