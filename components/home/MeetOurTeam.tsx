@@ -153,6 +153,8 @@ export default function MeetOurTeam() {
         {/* Custom pagination container */}
         <div className="custom-pagination flex justify-center mt-8 space-x-2" />
       </div>
+      <br />
+      <br />
       {/* 
 
         <button className="bg-[#FDD65B] text-black font-bold text-2xl px-6 py-2 rounded w-[90%] max-w-md h-[77px] hover:bg-[#469620] hover:text-white transition-all duration-200 ease-in mx-auto mt-8 block">
