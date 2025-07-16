@@ -46,7 +46,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
   
     getDestinyExecutiveMembers: builder.query<UserData[], void>({
-      query: () => `/profile_api/executive_members/`,
+      query: () => `/profile_api/team-members/`,
     }),
   
     getProjectTeamMembers: builder.query({
