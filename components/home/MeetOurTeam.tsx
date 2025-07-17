@@ -150,7 +150,7 @@ export default function MeetOurTeam() {
         </Swiper>
         
         {/* Custom pagination container */}
-        <div className="custom-pagination bg-gray-300/50 flex justify-center mt-8 space-x-2" />
+        <div className="custom-pagination text-gray-300/70 flex justify-center mt-8 space-x-2" />
       </div>
       <br />
       <br />
