@@ -51,7 +51,7 @@ export function TeamMember({
           />
         </div>
         <div className="p-4">
-          <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">{name}</h3>
+          <h3 className="text-xl font-semibold text-[#554307] mb-1">{name}</h3>
           {position && <p className="text-gray-900">{position}</p>}
         </div>
       </div>
