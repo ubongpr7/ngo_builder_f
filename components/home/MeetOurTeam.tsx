@@ -1,4 +1,3 @@
-// components/TeamMember.tsx
 'use client';
 
 import { useGetDestinyExecutiveMembersQuery } from '@/redux/features/users/userApiSlice';
@@ -40,7 +39,7 @@ export function TeamMember({
 
   return (
     <div className="relative group mx-auto max-w-sm">
-      <div className="bg-[#171717] text-white text-left h-full">
+      <div className="bg-white text-white text-left h-full">
         {/* Fixed height container with top-aligned image */}
         <div className="relative h-80 w-full overflow-hidden">
           <Image 
@@ -53,7 +52,7 @@ export function TeamMember({
         </div>
         <div className="p-4">
           <h3 className="text-xl font-semibold text-[#FDD65B] mb-1">{name}</h3>
-          {position && <p className="text-gray-100">{position}</p>}
+          {position && <p className="text-gray-900">{position}</p>}
         </div>
       </div>
       
@@ -99,8 +98,8 @@ export default function MeetOurTeam() {
   }
 
   return (
-    <div className="bg-[#171717] py-12 pb-0">
-      <h1 className="text-4xl md:text-5xl font-extrabold text-white text-center mb-8">
+    <div className="bg-white py-12 pb-0">
+      <h1 className="text-4xl md:text-5xl font-extrabold text-black text-center mb-8">
         Meet Our Team
       </h1>
       <div className="h-2 w-16 bg-[#FDD65B] mb-12 mx-auto"></div>
