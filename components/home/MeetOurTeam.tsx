@@ -108,7 +108,7 @@ export default function MeetOurTeam() {
         {/* Navigation buttons */}
         <button 
           onClick={() => swiperRef.current?.slidePrev()} 
-          className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-black/50 rounded-full p-2 text-white hover:bg-[#FDD65B] hover:text-black transition-all hidden md:block"
+          className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-gray-300/50 rounded-full p-2 text-white hover:bg-[#FDD65B] hover:text-black transition-all hidden md:block"
           aria-label="Previous"
         >
           <ChevronLeft size={32} />
@@ -116,7 +116,7 @@ export default function MeetOurTeam() {
         
         <button 
           onClick={() => swiperRef.current?.slideNext()} 
-          className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-black/50 rounded-full p-2 text-white hover:bg-[#FDD65B] hover:text-black transition-all hidden md:block"
+          className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-gray-300/50 rounded-full p-2 text-white hover:bg-[#FDD65B] hover:text-black transition-all hidden md:block"
           aria-label="Next"
         >
           <ChevronRight size={32} />
