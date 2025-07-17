@@ -240,10 +240,11 @@ option {
 @import 'swiper/css/pagination';
 
 .swiper-pagination-bullet {
-  background-color: #fff;
+  background-color: bg-gray-300;
   opacity: 0.5;
   width: 12px;
   height: 12px;
+
 }
 
 .swiper-pagination-bullet-active {
